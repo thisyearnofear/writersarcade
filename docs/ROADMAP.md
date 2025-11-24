@@ -125,36 +125,57 @@ AVC readers can spend their writer coins to generate unique game interpretations
 - **Revenue Distribution**: 60% writer, 20% platform, 20% creator
 - **AVC Whitelist**: Configured and tested
 
-### 🔄 Phase 5b: Testing & Launch Prep (In Progress)
+### ✅ Phase 5b: Database & Testing Setup (Execution Ready)
 
-#### Database Migrations (Ready)
+#### Schema & Migrations ✅
 ```bash
-# Apply payment and NFT tracking migrations
-npx prisma migrate deploy
+# Migration SQL ready in: prisma/migrations/add_payment_and_nft_tracking/
+npx prisma migrate deploy  # Apply
+npx prisma generate       # Update client types
 ```
 
-**New Features:**
-- **Payment Tracking**: Complete audit trail for all transactions
-- **NFT Tracking**: Token ID, transaction hash, mint timestamp
-- **User Analytics**: Payment history and spending patterns
+**Payment Model:**
+- transactionHash (unique blockchain identifier)
+- action ('generate-game' | 'mint-nft')
+- amount (BigInt for token units)
+- status ('pending' | 'verified' | 'failed')
+- Audit trail: createdAt, verifiedAt
 
-#### Comprehensive Testing (In Progress)
-**Test Categories:**
-- **Web App Free Flow**: Generate games without payment (3 test cases)
-- **Web App Paid Flow**: Connect wallet, customize, pay (4 test cases)  
-- **Mini App Full Flow**: Complete 6-step process (6 test cases)
-- **Cross-Platform**: Same costs and logic (2 test cases)
-- **Error Handling**: Network issues, rejected payments (1+ test cases)
+**Game Model Updates:**
+- nftTokenId (ERC-721 token ID)
+- nftTransactionHash (mint transaction)
+- nftMintedAt (timestamp)
+- paymentId (link to Payment)
 
-**Total: 16+ comprehensive test cases**
+#### Code Consolidation ✅
+- ✅ Mini-app `/api/payments/initiate` → uses PaymentCostService
+- ✅ Web app `/api/payments/initiate` → uses PaymentCostService
+- ✅ Both platforms use `/api/games/generate` unified endpoint
+- ✅ No duplicate payment logic
+- ✅ Identical cost calculations across environments
 
-#### Launch Readiness Checklist
-- ✅ Feature parity 100% complete
-- ✅ All 8 core principles implemented
-- ✅ Unified architecture functional
-- ✅ Payment tracking ready
-- ⏳ End-to-end testing completion
-- ⏳ Go/no-go decision (target: EOW)
+#### Testing Checklist
+**Web App:**
+- [ ] Free flow: Generate without wallet
+- [ ] Paid flow: MetaMask → customize → pay → generate
+- [ ] Cost matches mini-app exactly
+
+**Mini-App:**
+- [ ] Coin selection → URL → customize → pay → play → mint
+- [ ] Payment creation recorded to database
+- [ ] NFT mint tracked (nftTokenId, hash, timestamp)
+
+**Cross-Platform:**
+- [ ] Same cost for same action
+- [ ] Same database structure
+- [ ] Same endpoint logic
+
+**Success Criteria:**
+- ✅ Database migrations apply
+- ✅ Payment model created
+- ✅ Game NFT fields added
+- ✅ Both endpoints unified
+- ⏳ Test execution + go/no-go decision
 
 ## Core Flow (Current Implementation)
 

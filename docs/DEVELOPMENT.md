@@ -361,27 +361,46 @@ npx prisma migrate reset
 }
 ```
 
-## Success Metrics (Current)
+## Phase 5b: Database Migrations & Payment Tracking (Current)
 
-### Phase 5 Complete ✅
-- ✅ Mini App loads without errors
-- ✅ Web app has full payment parity with mini-app
-- ✅ Users can generate games in both environments
-- ✅ Browser wallet connection works (MetaMask, Coinbase, WalletConnect)
-- ✅ Payment flows functional in both environments
-- ✅ 95% code sharing between platforms
-- ✅ All 8 core principles implemented
+### Schema Updates ✅
+- ✅ Payment model created (transactionHash, action, amount, status, userId, writerCoinId)
+- ✅ Game model updated: nftTokenId, nftTransactionHash, nftMintedAt, paymentId
+- ✅ User model updated: payments relationship
+- ✅ Migration SQL generated and ready to apply
+- ✅ Prisma client regenerated with new types
 
-## Success Metrics (Current)
+### Code Consolidation ✅
+- ✅ Mini-app payment endpoints now use shared PaymentCostService
+- ✅ No duplicate cost calculation logic between platforms
+- ✅ Both use same PaymentInfo types
+- ✅ Consistent validation (transactionHash regex)
 
-### Phase 5 Complete ✅
-- ✅ Mini App loads without errors
-- ✅ Web app has full payment parity with mini-app
-- ✅ Users can generate games in both environments
-- ✅ Browser wallet connection works (MetaMask, Coinbase, WalletConnect)
-- ✅ Payment flows functional in both environments
-- ✅ 95% code sharing between platforms
-- ✅ All 8 core principles implemented
+### Execution Steps
+```bash
+# 1. Apply migrations
+npx prisma migrate deploy
+
+# 2. Verify schema
+npx prisma generate
+npx prisma studio
+
+# 3. Test endpoints
+npm run dev
+# Web: http://localhost:3000/
+# Mini-app: http://localhost:3000/mini-app
+
+# 4. Test payment flow (requires DB access)
+# Follow test cases in ROADMAP.md Week 5b section
+```
+
+### Go/No-Go Criteria
+- [ ] Migrations apply without errors
+- [ ] All endpoints respond correctly
+- [ ] Database schema validated
+- [ ] Cross-platform payment logic identical
+- [ ] Error handling tested
+- [ ] No critical bugs found
 
 ---
 
