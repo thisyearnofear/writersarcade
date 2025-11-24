@@ -63,6 +63,13 @@ export interface ChatMessage {
 export interface GameGenerationRequest {
   promptText?: string
   url?: string
+  customization?: {
+    genre?: 'horror' | 'comedy' | 'mystery'
+    difficulty?: 'easy' | 'hard'
+  }
+  payment?: {
+    writerCoinId?: string
+  }
   model?: string
   promptName?: string
   private?: boolean

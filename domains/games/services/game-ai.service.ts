@@ -37,6 +37,8 @@ export class GameAIService {
   /**
    * Generate a new game from prompt text or URL content
    * Enhanced version of original GenerateGame.js
+   * 
+   * Supports optional customization (genre, difficulty) for mini-app experience
    */
   static async generateGame(request: GameGenerationRequest): Promise<GameGenerationResponse> {
     const model = getModel(request.model || 'gpt-4o-mini')
@@ -48,7 +50,7 @@ export class GameAIService {
       promptText = `Generate a game based on content from: ${request.url}`
     }
     
-    const prompt = this.buildGenerationPrompt(promptText)
+    const prompt = this.buildGenerationPrompt(promptText, request.customization)
     
     try {
       const { object: game } = await generateObject({
@@ -172,9 +174,14 @@ export class GameAIService {
   
   /**
    * Build generation prompt (enhanced from original)
+   * 
+   * Optionally constrains genre/difficulty if provided
    */
-  private static buildGenerationPrompt(promptText: string): string {
-    return `I am GameCreator-GPT, an AI specializing in generating creative and engaging game ideas. Generate a unique interactive text-based game idea that avoids common tropes like escape rooms and island games. The game should be exciting, dramatic, and fun.
+  private static buildGenerationPrompt(
+    promptText: string,
+    customization?: { genre?: string; difficulty?: string }
+  ): string {
+    let basePrompt = `I am GameCreator-GPT, an AI specializing in generating creative and engaging game ideas. Generate a unique interactive text-based game idea that avoids common tropes like escape rooms and island games. The game should be exciting, dramatic, and fun.
 
 Please provide a JSON response with the following structure:
 - title: An engaging game title
@@ -182,9 +189,26 @@ Please provide a JSON response with the following structure:
 - subgenre: More specific genre (e.g., "Detective Thriller", "Space Opera")
 - description: Detailed game description that matches the genre
 - tagline: A funny, witty, and edgy tagline the main character would say
-- primaryColor: A hex color with high contrast against #000000
+- primaryColor: A hex color with high contrast against #000000`
 
-${promptText ? `The user has specifically requested a game about: ${promptText}` : ''}`
+    // Add customization constraints if provided
+    if (customization?.genre) {
+      basePrompt += `\n\nIMPORTANT: The genre MUST be ${customization.genre}. Make sure the game fits this genre perfectly.`
+    }
+
+    if (customization?.difficulty) {
+      const difficultyGuide =
+        customization.difficulty === 'easy'
+          ? 'The game should be relatively easy with straightforward choices and clear consequences.'
+          : 'The game should be challenging with complex choices, hidden mechanics, and difficult decisions.'
+      basePrompt += `\n\nDifficulty: ${difficultyGuide}`
+    }
+
+    if (promptText) {
+      basePrompt += `\n\nThe user has specifically requested a game about: ${promptText}`
+    }
+
+    return basePrompt
   }
   
   /**
