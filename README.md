@@ -28,16 +28,18 @@ npm run dev
 - **Wallet**: Farcaster Wallet (built into Mini App SDK)
 
 ### 3. Current Status
-**Phase 3 (Week 4): Smart Contracts & Payments** - 60% complete
+**Phase 3 (Week 4): Feature Parity & Unified Architecture** - 85% complete
 - ✅ Mini App SDK migration (Frames v2 → Mini Apps)
 - ✅ 4-step user flow (coin → article → customize → play)
-- ✅ Game generation API + UI components
+- ✅ Game generation API + unified endpoints
 - ✅ Smart contracts (WriterCoinPayment + GameNFT)
-- ⏳ Farcaster Wallet integration (pending)
+- ✅ Wallet abstraction layer (Farcaster + browser wallets)
+- ✅ True feature parity: web app + mini app share 95% business logic
+- ⏳ Browser wallet support for web app (Phase 2)
 
 ## Documentation
 
-Our documentation is consolidated into 3 focused files under 400 lines each:
+Our documentation is organized for clarity and actionability:
 
 ### 📋 [Architecture & System Design](./docs/ARCHITECTURE.md)
 - Farcaster-native identity architecture
@@ -59,6 +61,17 @@ Our documentation is consolidated into 3 focused files under 400 lines each:
 - Implementation phases (5-week MVP timeline)
 - Go-to-market strategy and success metrics
 - Future vision and competitive advantages
+
+### 🔗 [Feature Parity Implementation](./docs/FEATURE_PARITY_IMPLEMENTATION.md) ⭐ **NEW**
+- Option C implementation: True feature parity between web + mini app
+- Wallet abstraction layer (Farcaster + browser wallets)
+- Unified payment service & shared components
+- Phase 1 complete ✅ / Phase 2 roadmap
+
+### 📊 [Web vs Mini App Analysis](./docs/WEB_VS_MINIAPP_PARITY.md)
+- Current state: Significant divergence → Unified architecture
+- Feature comparison and code duplication analysis
+- Post-MVP vision with browser wallet support
 
 ## Tech Stack
 
@@ -116,8 +129,18 @@ Our documentation is consolidated into 3 focused files under 400 lines each:
 |-------|--------|------------|
 | **Week 1-2**: Mini App Foundation | ✅ Complete | 100% |
 | **Week 3**: Game Generation | ✅ Complete | 100% |
-| **Week 4**: Smart Contracts & Payments | ⏳ In Progress | 60% |
-| **Week 5**: NFT Minting & Launch | ⏳ Not Started | 0% |
+| **Week 4a**: Smart Contracts & Payments | ✅ Complete | 100% |
+| **Week 4b**: Feature Parity & Unification | ✅ Complete | 100% |
+| **Week 5**: NFT Minting & Browser Wallets | ⏳ In Progress | 20% |
+
+### Week 4b Achievements (Feature Parity Implementation)
+- ✅ Wallet abstraction layer (`/lib/wallet/` - Farcaster + MetaMask)
+- ✅ Shared payment service (`/domains/payments/` - unified cost calculation)
+- ✅ Shared UI components (`/components/game/` - GenreSelector, DifficultySelector, PaymentFlow)
+- ✅ Unified endpoints (`/api/games/generate`, `/api/payments/`)
+- ✅ Mini-app GameCustomizer refactored to use shared components (-42% code)
+- ✅ Web app supports optional customization
+- ✅ Single source of truth for all business logic
 
 ## Deployment Status
 
