@@ -75,8 +75,8 @@ export async function POST(request: NextRequest) {
         platformShare: distribution.platformShare.toString(),
         creatorShare: distribution.creatorShare.toString(),
       },
-      contractAddress: process.env.NEXT_PUBLIC_WRITER_COIN_PAYMENT_SEPOLIA,
-      chainId: 84532, // Base Sepolia
+      contractAddress: process.env.NEXT_PUBLIC_WRITER_COIN_PAYMENT_ADDRESS,
+      chainId: 8453, // Base mainnet
     })
   } catch (error) {
     console.error('Payment initiation error:', error)

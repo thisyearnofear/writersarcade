@@ -2,6 +2,13 @@
 
 import { useState } from 'react'
 import { type WriterCoin } from '@/lib/writerCoins'
+import {
+  sendTransaction,
+  encodePayForGameGeneration,
+  encodePayForMinting,
+  getUserWalletAddress,
+  isFarcasterWalletAvailable,
+} from '@/lib/farcasterWallet'
 
 interface PaymentButtonProps {
   writerCoin: WriterCoin
@@ -36,7 +43,18 @@ export function PaymentButton({
     setError(null)
 
     try {
-      // Step 1: Initiate payment on backend
+      // Check wallet availability
+      if (!isFarcasterWalletAvailable()) {
+        throw new Error('Farcaster Wallet is not available in this context')
+      }
+
+      // Step 1: Get user's wallet address
+      const userAddress = await getUserWalletAddress()
+      if (!userAddress) {
+        throw new Error('Failed to get wallet address from Farcaster')
+      }
+
+      // Step 2: Initiate payment on backend to get payment details
       const initiateResponse = await fetch('/api/mini-app/payments/initiate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -52,31 +70,40 @@ export function PaymentButton({
       }
 
       const paymentInfo = await initiateResponse.json()
+      const contractAddress = paymentInfo.contractAddress
 
-      // Step 2: TODO - Call Farcaster Wallet to approve and send transaction
-      // This will involve:
-      // - Showing user approval dialog
-      // - Calling WriterCoinPayment.payForGameGeneration or payForMinting
-      // - Getting transaction hash from user's wallet
-      
-      // For now, show placeholder message
-      const message = action === 'generate-game'
-        ? `Approve ${costFormatted} ${writerCoin.symbol} in your Farcaster wallet to generate the game`
-        : `Approve ${costFormatted} ${writerCoin.symbol} in your Farcaster wallet to mint the NFT`
-      
-      console.log('Payment info:', paymentInfo)
-      console.log('TODO: Show wallet approval dialog:', message)
+      // Step 3: Encode transaction data based on action
+      let transactionData: string
+      if (action === 'generate-game') {
+        transactionData = encodePayForGameGeneration(
+          contractAddress,
+          writerCoin.address,
+          userAddress
+        )
+      } else {
+        transactionData = encodePayForMinting(
+          contractAddress,
+          writerCoin.address,
+          userAddress
+        )
+      }
 
-      // Placeholder: simulate successful transaction
-      // In production, this would come from the wallet
-      const mockTxHash = '0x' + Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')
-      
-      // Step 3: Verify payment on backend
+      // Step 4: Send transaction through Farcaster Wallet
+      const txResult = await sendTransaction({
+        to: contractAddress,
+        data: transactionData,
+      })
+
+      if (!txResult.success || !txResult.transactionHash) {
+        throw new Error(txResult.error || 'Transaction failed')
+      }
+
+      // Step 5: Verify payment on backend
       const verifyResponse = await fetch('/api/mini-app/payments/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          transactionHash: mockTxHash,
+          transactionHash: txResult.transactionHash,
           writerCoinId: writerCoin.id,
           action,
         }),
@@ -87,7 +114,7 @@ export function PaymentButton({
         throw new Error(errorData.error || 'Failed to verify payment')
       }
 
-      onPaymentSuccess?.(mockTxHash)
+      onPaymentSuccess?.(txResult.transactionHash)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An error occurred'
       setError(message)

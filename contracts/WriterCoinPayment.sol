@@ -81,6 +81,12 @@ contract WriterCoinPayment is Ownable, ReentrancyGuard {
     
     event CreatorPoolUpdated(address indexed newPool);
     
+    event CoinConfigUpdated(
+        address indexed coinAddress,
+        uint256 newGenerationCost,
+        uint256 newMintCost
+    );
+    
     constructor(address _platformTreasury, address _creatorPool) {
         require(_platformTreasury != address(0), "Platform treasury cannot be zero");
         require(_creatorPool != address(0), "Creator pool cannot be zero");
@@ -174,6 +180,27 @@ contract WriterCoinPayment is Ownable, ReentrancyGuard {
         require(newPool != address(0), "Pool cannot be zero");
         creatorPool = newPool;
         emit CreatorPoolUpdated(newPool);
+    }
+    
+    /**
+     * @dev Update game generation and mint costs for a whitelisted coin
+     * @param coinAddress The writer coin address
+     * @param newGenerationCost New cost in tokens to generate a game
+     * @param newMintCost New cost in tokens to mint as NFT
+     */
+    function updateCoinConfig(
+        address coinAddress,
+        uint256 newGenerationCost,
+        uint256 newMintCost
+    ) external onlyOwner {
+        require(whitelistedCoins[coinAddress].enabled, "Coin not whitelisted");
+        require(newGenerationCost > 0, "Generation cost must be greater than 0");
+        require(newMintCost > 0, "Mint cost must be greater than 0");
+        
+        whitelistedCoins[coinAddress].gameGenerationCost = newGenerationCost;
+        whitelistedCoins[coinAddress].mintCost = newMintCost;
+        
+        emit CoinConfigUpdated(coinAddress, newGenerationCost, newMintCost);
     }
     
     /**
