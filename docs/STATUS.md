@@ -6,9 +6,9 @@
 
 ## 📊 Current Phase
 
-**Phase 1: Mini App + Farcaster Integration** (Weeks 1-2)
+**Phase 2: Game Generation & Customization** (Week 3)
 
-Status: **70% Complete**
+Status: **85% Complete** (API & UI done, testing pending)
 
 ---
 
@@ -40,20 +40,23 @@ Status: **70% Complete**
 
 ## 🚧 In Progress / Blockers
 
-None - Mini App SDK foundation is complete. Ready to proceed to Week 3.
+- Testing game generation with all 6 genre/difficulty combinations
+- Database schema migration (pending DB access)
 
 ---
 
 ## 📋 Remaining Tasks (Weeks 3-5)
 
 ### Week 3: Game Generation & Customization
-- [ ] Connect GameCustomizer to actual game generation API
-- [ ] Implement genre selector (Horror/Comedy/Mystery)
-- [ ] Implement difficulty selector (Easy/Hard)
-- [ ] Call existing Infinity Arcade game generation service
-- [ ] Stream game response back to UI
-- [ ] Render playable game in-app
-- [ ] Add retry/error handling
+- [x] Create `/api/mini-app/games/generate` endpoint with writer coin validation
+- [x] Implement genre selector (Horror/Comedy/Mystery)
+- [x] Implement difficulty selector (Easy/Hard)
+- [x] Integrate with GameAIService for game generation
+- [x] Create GamePlayer component with interactive gameplay
+- [x] Add play-game step to main flow
+- [x] Update database schema with articleUrl, writerCoinId, difficulty
+- [ ] Test all 6 genre/difficulty combinations
+- [ ] Verify error handling works correctly
 
 ### Week 4: Writer Coin Payments
 - [ ] Write `WriterCoinPayment.sol` smart contract
@@ -128,12 +131,16 @@ WritArcade Mini App Flow:
 ```
 WritArcade/
 ├── app/mini-app/
-│   ├── page.tsx                          ✅ DONE - Main UI with flow
+│   ├── page.tsx                          ✅ DONE - Main flow with 4 steps
 │   ├── layout.tsx                        ✅ DONE - Manifest metadata
+│   ├── api/
+│   │   └── games/
+│   │       └── generate/route.ts         ✅ DONE - Game generation endpoint
 │   └── components/
 │       ├── WriterCoinSelector.tsx        ✅ DONE
 │       ├── ArticleInput.tsx              ✅ DONE
-│       ├── GameCustomizer.tsx            ✅ DONE
+│       ├── GameCustomizer.tsx            ✅ DONE - Genre/difficulty selectors
+│       ├── GamePlayer.tsx                ✅ DONE - Interactive gameplay
 │       └── (PaymentButton.tsx)           ⏳ WEEK 4
 │
 ├── lib/
@@ -288,18 +295,22 @@ useEffect(() => {
 
 ## 🎯 Next Immediate Action
 
-**Week 3: Game Generation**
+**Week 3 Testing (Today)**
 
-```typescript
-// app/mini-app/components/GameCustomizer.tsx needs:
-1. Genre selector implementation
-2. Difficulty selector implementation
-3. Connect to game generation API endpoint
-4. Stream response to UI
-5. Render playable game
+```
+1. Test all 6 genre/difficulty combinations
+2. Verify error handling (invalid URL, API timeout, etc)
+3. Database migration when DB access available
+4. Full end-to-end flow testing
 ```
 
-Estimated effort: **3-4 days**
+**Week 4: Writer Coin Payments**
+- Smart contracts (WriterCoinPayment.sol, GameNFT.sol)
+- Farcaster Wallet payment integration
+- Payment verification before game generation
+- NFT minting flow
+
+Estimated effort for Week 4: **3-4 days**
 
 ---
 

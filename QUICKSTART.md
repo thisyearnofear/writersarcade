@@ -1,8 +1,8 @@
 # WritArcade Quick Start
 
-**Current Status**: Phase 1 (70%) - Mini App SDK foundation complete
+**Current Status**: Phase 2 (85%) - Game generation API & UI complete
 
-**You are here**: Ready for Week 3 (Game Generation Integration)
+**You are here**: Week 3 Testing Phase
 
 ---
 
@@ -29,25 +29,15 @@ cat docs/WEEK3_PLAN.md      # What you're building next
 cat docs/ROADMAP.md         # Full 5-week vision
 ```
 
-### 3. Your Next Task (Week 3)
-**Goal**: Generate playable games from articles
+### 3. Week 3 Complete
+**What's done**:
+- ✅ API endpoint: `app/mini-app/api/games/generate/route.ts`
+- ✅ GameCustomizer: Genre (Horror/Comedy/Mystery) + Difficulty (Easy/Hard)
+- ✅ GamePlayer component: Interactive gameplay with streaming UI
+- ✅ Main flow: 4-step progression (coin → article → customize → play)
+- ✅ Database schema: Added articleUrl, writerCoinId, difficulty fields
 
-**File to create**: `app/mini-app/api/games/generate/route.ts`
-
-**Expected flow**:
-```
-User fills GameCustomizer form
-  ↓
-Clicks "Generate Game"
-  ↓
-POST /api/games/generate
-  ↓
-Backend calls Infinity Arcade
-  ↓
-Game JSON returned
-  ↓
-GamePlayer renders interactive game
-```
+**Current task**: Test all 6 combinations + verify error handling
 
 ---
 
@@ -62,16 +52,16 @@ lib/paragraph.ts            Article fetching
 
 ### UI Components
 ```
-app/mini-app/page.tsx                          Main flow
-app/mini-app/components/WriterCoinSelector.tsx User picks coin
-app/mini-app/components/ArticleInput.tsx       User pastes URL
-app/mini-app/components/GameCustomizer.tsx     User picks genre/difficulty
-app/mini-app/components/GamePlayer.tsx         ⏳ CREATE THIS (Week 3)
+app/mini-app/page.tsx                          ✅ Main flow (4 steps)
+app/mini-app/components/WriterCoinSelector.tsx ✅ User picks coin
+app/mini-app/components/ArticleInput.tsx       ✅ User pastes URL
+app/mini-app/components/GameCustomizer.tsx     ✅ User picks genre/difficulty
+app/mini-app/components/GamePlayer.tsx         ✅ DONE (Week 3)
 ```
 
-### API Endpoints (To Create)
+### API Endpoints
 ```
-app/mini-app/api/games/generate/route.ts      ⏳ CREATE THIS (Week 3)
+app/mini-app/api/games/generate/route.ts      ✅ DONE (Week 3) - Writer coin validation
 app/mini-app/api/games/mint/route.ts          ⏳ CREATE THIS (Week 5)
 ```
 
@@ -83,18 +73,22 @@ contracts/GameNFT.sol                          ⏳ CREATE THIS (Week 4)
 
 ---
 
-## 🎯 Week 3 Checklist
+## 🎯 Week 3 Progress
 
-- [ ] Create `app/mini-app/api/games/generate/route.ts`
-- [ ] Connect to Infinity Arcade game generation
-- [ ] Create `app/mini-app/components/GamePlayer.tsx`
-- [ ] Add `play-game` step to main flow
+**Completed**:
+- [x] Create `app/mini-app/api/games/generate/route.ts`
+- [x] Connect to GameAIService for generation
+- [x] Create `app/mini-app/components/GamePlayer.tsx`
+- [x] Add `play-game` step to main flow
+- [x] Update database schema for games (articleUrl, writerCoinId, difficulty)
+- [x] Handle errors gracefully
+
+**Remaining**:
 - [ ] Test all 6 genre/difficulty combos
-- [ ] Update database schema for games
-- [ ] Handle errors gracefully
+- [ ] Database migration (pending DB access)
 - [ ] Deploy to staging
 
-**Effort**: 10-14 hours over 3-4 days
+**Effort spent**: ~5 hours | **Remaining**: ~3-5 hours
 
 ---
 

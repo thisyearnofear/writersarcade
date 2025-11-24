@@ -4,7 +4,7 @@
 
 **Timeline**: 3-4 days
 
-**Status**: 🚀 Ready to start
+**Status**: ✅ API & UI Complete - Testing Phase
 
 ---
 
@@ -160,13 +160,16 @@ npm run db:push
 ## Success Criteria
 
 - [x] GameCustomizer shows genre/difficulty selectors
-- [ ] API endpoint accepts game generation requests
+- [x] API endpoint accepts game generation requests
+- [x] Game renders properly in Mini App
+- [x] GamePlayer component with interactive UI
+- [x] Main flow has play-game step
+- [x] Database schema supports mini-app fields
 - [ ] Game generation completes in <30 seconds
-- [ ] Game renders properly in Mini App
 - [ ] All 6 genre/difficulty combinations work
 - [ ] Errors display user-friendly messages
 - [ ] Loading states work smoothly
-- [ ] Database stores generated games
+- [ ] Database migration applied
 
 ---
 
@@ -174,22 +177,21 @@ npm run db:push
 
 ```
 app/mini-app/
-├── page.tsx                          (Main flow coordinator)
-├── layout.tsx                        (Manifest metadata)
-└── components/
-    ├── WriterCoinSelector.tsx        ✅ DONE
-    ├── ArticleInput.tsx              ✅ DONE
-    ├── GameCustomizer.tsx            ✅ DONE (now with API)
-    ├── GamePlayer.tsx                ⏳ NEW
-    ├── PaymentButton.tsx             ⏳ WEEK 4
-    └── MintButton.tsx                ⏳ WEEK 5
-
-app/mini-app/api/
-├── games/
-│   ├── generate/
-│   │   └── route.ts                  ⏳ NEW (Main work)
-│   └── mint/
-│       └── route.ts                  ⏳ WEEK 5
+├── page.tsx                          ✅ Main flow coordinator (4 steps)
+├── layout.tsx                        ✅ Manifest metadata
+├── components/
+│   ├── WriterCoinSelector.tsx        ✅ DONE
+│   ├── ArticleInput.tsx              ✅ DONE
+│   ├── GameCustomizer.tsx            ✅ DONE (genre/difficulty)
+│   ├── GamePlayer.tsx                ✅ DONE - Interactive gameplay
+│   ├── PaymentButton.tsx             ⏳ WEEK 4
+│   └── MintButton.tsx                ⏳ WEEK 5
+└── api/
+    └── games/
+        ├── generate/
+        │   └── route.ts              ✅ DONE - Writer coin validation + game generation
+        └── mint/
+            └── route.ts              ⏳ WEEK 5
 ```
 
 ---
@@ -286,13 +288,13 @@ Need to confirm existing game generation service is available and callable.
 ## Post-Week 3 Checklist
 
 Before moving to Week 4, confirm:
-- [x] Game generation works end-to-end
-- [x] All 6 combinations tested
+- [ ] Game generation works end-to-end
+- [ ] All 6 combinations tested (CURRENT)
 - [x] Error handling in place
-- [x] Database stores games correctly
+- [ ] Database stores games correctly (pending migration)
 - [x] UI responds quickly
-- [x] Deploy to staging works
-- [x] Ready for Week 4 (Payments)
+- [ ] Deploy to staging works
+- [ ] Ready for Week 4 (Payments)
 
 ---
 
