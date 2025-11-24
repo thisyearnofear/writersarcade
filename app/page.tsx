@@ -18,7 +18,7 @@ export default function HomePage() {
             </h1>
             <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
               Turn any article into an interactive, mintable game. 
-              Pay with newsletter memecoins to create your unique interpretation.
+              Pay with writer coins to create your unique interpretation.
             </p>
             
             {/* Game Generator */}
@@ -62,7 +62,7 @@ export default function HomePage() {
                 </div>
                 <h3 className="text-xl font-semibold mb-3">Customize & Generate</h3>
                 <p className="text-gray-400">
-                  Choose your style, AI model, and creative parameters. Pay with memecoin.
+                  Choose your style, AI model, and creative parameters. Pay with writer coins.
                 </p>
               </div>
               

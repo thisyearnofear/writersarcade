@@ -37,7 +37,7 @@ npm run dev
 
 ## Documentation
 
-Our documentation is consolidated into 4 focused files under 400 lines each:
+Our documentation is consolidated into 3 focused files under 400 lines each:
 
 ### 📋 [Architecture & System Design](./docs/ARCHITECTURE.md)
 - Farcaster-native identity architecture
@@ -59,12 +59,6 @@ Our documentation is consolidated into 4 focused files under 400 lines each:
 - Implementation phases (5-week MVP timeline)
 - Go-to-market strategy and success metrics
 - Future vision and competitive advantages
-
-### 📅 [Week 3 Implementation Plan](./docs/WEEK3_PLAN.md)
-- Detailed week 3 tasks and completed status
-- Game generation API integration
-- Testing procedures for 6 genre/difficulty combinations
-- Post-testing checklist for Week 4 preparation
 
 ## Tech Stack
 

@@ -39,7 +39,7 @@ The database serves these core purposes for WritArcade:
 - **Generation History**: Track which articles generated which games
 
 #### **Onchain Integration Data**
-- **Payment Records**: Memecoin transactions for game generation
+- **Payment Records**: Writer coin transactions for game generation
 - **NFT Metadata**: Game minting information
 - **Revenue Tracking**: Creator royalty distribution
 

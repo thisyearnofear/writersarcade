@@ -1,7 +1,7 @@
 /**
  * Writer Coin Configuration
  * 
- * Defines the whitelisted writer coins (memecoins) that can be used
+ * Defines the whitelisted writer coins that can be used
  * to generate games from articles. Each writer coin is associated with
  * a specific Paragraph author/newsletter.
  */

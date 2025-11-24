@@ -111,7 +111,7 @@ Status: **60% Complete** (Contracts + UI done, Farcaster wallet pending)
 - [x] Test token transfers with Farcaster Wallet
 
 **Week 4b**: Payment Flow
-- [x] Add "Pay with DEGEN" button
+- [x] Add "Pay with Writer Coin" button
 - [x] Trigger Farcaster Wallet approval flow
 - [ ] Verify payment on-chain
 - [ ] Unlock game generation after payment
@@ -227,8 +227,8 @@ Estimated effort for Week 4: **3-4 days**
 ### MVP Revenue Streams
 
 1. **Platform Cut** (20% of game generation)
-   - 100 games/week × 100 DEGEN × 20% = 2,000 DEGEN/week
-   - At $0.01/DEGEN = $20/week
+   - 100 games/week × 100 $AVC × 20% = 2,000 $AVC/week
+   - At $0.01/$AVC = $20/week
    - **Not a priority at MVP stage**
 
 2. **Focus**: Prove product-market fit first
@@ -249,11 +249,11 @@ Estimated effort for Week 4: **3-4 days**
 2. Pastes Paragraph article URL (e.g., `paragraph.com/@writer/article`)
 3. Selects game genre (Horror/Comedy/Mystery)
 4. Selects difficulty (Easy/Hard)
-5. Clicks "Generate Game for 100 DEGEN"
+5. Clicks "Generate Game for 100 $AVC"
 6. Approves spending in Farcaster Wallet
 7. Watches game generate (AI streaming response)
 8. Plays game immediately in-app
-9. (Optional) Clicks "Mint as NFT for 50 DEGEN"
+9. (Optional) Clicks "Mint as NFT for 50 $AVC"
 10. Shares game link on Farcaster
 
 **Result**: User created + minted a game in <5 minutes, shareable on Farcaster, costs ~$1-2 USD
