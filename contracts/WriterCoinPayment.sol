@@ -87,7 +87,11 @@ contract WriterCoinPayment is Ownable, ReentrancyGuard {
         uint256 newMintCost
     );
     
-    constructor(address _platformTreasury, address _creatorPool) {
+    constructor(
+        address initialOwner,
+        address _platformTreasury,
+        address _creatorPool
+    ) Ownable(initialOwner) {
         require(_platformTreasury != address(0), "Platform treasury cannot be zero");
         require(_creatorPool != address(0), "Creator pool cannot be zero");
         
