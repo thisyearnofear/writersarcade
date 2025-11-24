@@ -58,52 +58,42 @@ export function isInFarcasterContext(): boolean {
 
 /**
  * Get Farcaster profile for a wallet address
- * Uses Neynar API (free tier supports bulk lookups)
+ * Proxies through backend API to keep Neynar key secure
  */
 export async function getFarcasterProfile(
     walletAddress: string
 ): Promise<FarcasterProfile | null> {
     try {
-        const apiKey = process.env.NEXT_PUBLIC_NEYNAR_API_KEY || process.env.NEYNAR_API_KEY
-
-        if (!apiKey) {
-            console.warn('NEYNAR_API_KEY not configured, skipping Farcaster profile fetch')
+        // Validate wallet address format
+        if (!walletAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
+            console.warn('Invalid wallet address format:', walletAddress)
             return null
         }
 
+        // Use backend proxy to keep API key secure
         const response = await fetch(
-            `https://api.neynar.com/v2/farcaster/user/bulk-by-address?addresses=${walletAddress}`,
-            {
-                headers: {
-                    'api_key': apiKey,
-                },
-            }
+            `/api/farcaster/profile?walletAddress=${encodeURIComponent(walletAddress)}`
         )
 
         if (!response.ok) {
-            console.error('Neynar API error:', response.status)
+            console.error('Profile lookup failed:', response.status)
             return null
         }
 
         const data = await response.json()
 
-        if (!data || Object.keys(data).length === 0) {
+        // Check if profile exists
+        if (!data.fid || !data.username) {
             return null
         }
 
-        // Get first user from response
-        const users = Object.values(data) as any[]
-        const user = users[0]?.[0]
-
-        if (!user) return null
-
         return {
-            fid: user.fid,
-            username: user.username,
-            displayName: user.display_name || user.username,
-            bio: user.profile?.bio?.text,
-            pfpUrl: user.pfp_url,
-            verifiedAddresses: user.verified_addresses?.eth_addresses || [],
+            fid: data.fid,
+            username: data.username,
+            displayName: data.displayName,
+            bio: data.bio,
+            pfpUrl: data.pfpUrl,
+            verifiedAddresses: data.verifiedAddresses || [],
         }
     } catch (error) {
         console.error('Failed to fetch Farcaster profile:', error)
