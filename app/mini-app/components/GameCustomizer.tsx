@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { type WriterCoin } from '@/lib/writerCoins'
+import { PaymentButton } from './PaymentButton'
 
 interface GameCustomizerProps {
     writerCoin: WriterCoin
@@ -18,8 +19,17 @@ export function GameCustomizer({ writerCoin, articleUrl, onBack, onGameGenerated
     const [difficulty, setDifficulty] = useState<Difficulty>('easy')
     const [isGenerating, setIsGenerating] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [paymentApproved, setPaymentApproved] = useState(false)
 
-    const handleGenerateGame = async () => {
+    const handlePaymentSuccess = async (transactionHash: string) => {
+        setPaymentApproved(true)
+        setError(null)
+        
+        // After payment succeeds, generate the game
+        await generateGame()
+    }
+
+    const generateGame = async () => {
         setIsGenerating(true)
         setError(null)
         try {
@@ -44,6 +54,7 @@ export function GameCustomizer({ writerCoin, articleUrl, onBack, onGameGenerated
         } catch (err) {
             const message = err instanceof Error ? err.message : 'An error occurred'
             setError(message)
+            setPaymentApproved(false)
             console.error('Error generating game:', err)
         } finally {
             setIsGenerating(false)
@@ -133,14 +144,22 @@ export function GameCustomizer({ writerCoin, articleUrl, onBack, onGameGenerated
                     </div>
                 )}
 
-                {/* Generate Button */}
-                <button
-                    onClick={handleGenerateGame}
-                    disabled={isGenerating}
-                    className="w-full rounded-lg bg-purple-600 px-6 py-4 font-semibold text-white transition-colors hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                    {isGenerating ? 'Generating Game...' : 'Generate Game'}
-                </button>
+                {/* Payment & Generation */}
+                {!paymentApproved ? (
+                    <PaymentButton
+                        writerCoin={writerCoin}
+                        action="generate-game"
+                        onPaymentSuccess={handlePaymentSuccess}
+                        onPaymentError={(err) => setError(err)}
+                        disabled={isGenerating}
+                    />
+                ) : (
+                    <div className="rounded-lg bg-green-500/20 border border-green-500/50 p-4">
+                        <p className="text-sm text-green-200">
+                            ✅ Payment confirmed! Generating your game...
+                        </p>
+                    </div>
+                )}
 
                 {/* Info */}
                 <div className="rounded-lg bg-purple-900/30 p-4">

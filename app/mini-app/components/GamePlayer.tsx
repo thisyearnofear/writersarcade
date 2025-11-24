@@ -1,18 +1,23 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { PaymentButton } from './PaymentButton'
+import { type WriterCoin } from '@/lib/writerCoins'
 
 interface GamePlayerProps {
     game: any
     onBack: () => void
+    writerCoin?: WriterCoin
 }
 
-export function GamePlayer({ game, onBack }: GamePlayerProps) {
+export function GamePlayer({ game, onBack, writerCoin }: GamePlayerProps) {
     const [gameContent, setGameContent] = useState<string>('')
     const [options, setOptions] = useState<Array<{ id: number; text: string }>>([])
     const [isLoading, setIsLoading] = useState(false)
     const [sessionId] = useState(() => Math.random().toString(36).slice(2, 11))
     const [gameHistory, setGameHistory] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([])
+    const [showMintDialog, setShowMintDialog] = useState(false)
+    const [isMinting, setIsMinting] = useState(false)
 
     // Start the game
     useEffect(() => {
@@ -72,6 +77,12 @@ export function GamePlayer({ game, onBack }: GamePlayerProps) {
 
         startGame()
     }, [game.slug, sessionId])
+
+    const handleMintSuccess = async () => {
+        setShowMintDialog(false)
+        setIsMinting(false)
+        // Game minted! Could show success message here
+    }
 
     const handleChoice = async (option: { id: number; text: string }) => {
         if (isLoading) return
@@ -212,13 +223,52 @@ export function GamePlayer({ game, onBack }: GamePlayerProps) {
                     Exit Game
                 </button>
                 <button
-                    disabled={true}
-                    className="flex-1 rounded-lg bg-purple-600 px-4 py-3 font-medium text-white opacity-50 cursor-not-allowed"
-                    title="Mint feature coming soon"
+                    onClick={() => setShowMintDialog(true)}
+                    disabled={isMinting}
+                    className="flex-1 rounded-lg bg-green-600 px-4 py-3 font-medium text-white transition-colors hover:bg-green-500 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     Mint as NFT
                 </button>
             </div>
+
+            {/* Mint Dialog */}
+            {showMintDialog && writerCoin && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="mx-4 w-full max-w-md rounded-lg bg-purple-900/95 p-6 shadow-2xl">
+                        <h3 className="mb-4 text-xl font-bold text-white">Mint Game as NFT</h3>
+                        <p className="mb-6 text-purple-200">
+                            Mint this game as an NFT on Base to prove ownership and share it on Farcaster.
+                        </p>
+
+                        <div className="mb-6 rounded-lg bg-purple-800/50 p-4">
+                            <div className="flex items-center justify-between">
+                                <span className="text-purple-300">Mint Cost:</span>
+                                <span className="font-semibold text-white">
+                                    {(Number(writerCoin.mintCost) / 10 ** writerCoin.decimals).toFixed(0)} {writerCoin.symbol}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="mb-6">
+                            <PaymentButton
+                                writerCoin={writerCoin}
+                                action="mint-nft"
+                                onPaymentSuccess={handleMintSuccess}
+                                onPaymentError={() => setShowMintDialog(false)}
+                                disabled={isMinting}
+                            />
+                        </div>
+
+                        <button
+                            onClick={() => setShowMintDialog(false)}
+                            disabled={isMinting}
+                            className="w-full rounded-lg border border-purple-500/50 px-4 py-2 font-medium text-purple-300 transition-colors hover:border-purple-400 hover:bg-white/5 disabled:opacity-50"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Info */}
             <div className="rounded-lg bg-purple-900/30 p-4">

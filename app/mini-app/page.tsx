@@ -142,10 +142,11 @@ export default function MiniAppPage() {
                                 />
                             )}
 
-                            {step === 'play-game' && generatedGame && (
+                            {step === 'play-game' && generatedGame && selectedCoin && (
                                 <GamePlayer
                                     game={generatedGame}
                                     onBack={handleBack}
+                                    writerCoin={selectedCoin}
                                 />
                             )}
                         </div>
