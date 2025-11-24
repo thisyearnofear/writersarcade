@@ -8,7 +8,7 @@
 
 **Phase 3: Smart Contracts & Payments** (Week 4)
 
-Status: **20% Complete** (Contracts written, integration pending)
+Status: **60% Complete** (Contracts + UI done, Farcaster wallet pending)
 
 ---
 
@@ -61,13 +61,15 @@ Status: **20% Complete** (Contracts written, integration pending)
 ### Week 4: Writer Coin Payments
 - [x] Write `WriterCoinPayment.sol` smart contract
 - [x] Write `GameNFT.sol` (ERC-721)
+- [x] Create payment initiation API endpoint (`/api/mini-app/payments/initiate`)
+- [x] Create payment verification API endpoint (`/api/mini-app/payments/verify`)
+- [x] Create PaymentButton component (UI for payment flow)
+- [x] Update GameCustomizer to require payment before generation
+- [x] Add "Mint as NFT" button to GamePlayer (with modal & payment)
+- [x] Handle payment errors gracefully
 - [ ] Deploy to Base Sepolia testnet
-- [ ] Create payment initiation API endpoint
-- [ ] Create payment verification API endpoint
-- [ ] Integrate Farcaster Wallet payment flow
-- [ ] Add "Pay with [Writer Coin]" button
+- [ ] Integrate Farcaster Wallet (sendTransaction) 
 - [ ] Verify payment on-chain before game generation
-- [ ] Handle payment errors gracefully
 
 ### Week 5: NFT Minting & Launch
 - [ ] Add "Mint as NFT" button post-game
@@ -136,14 +138,17 @@ WritArcade/
 │   ├── page.tsx                          ✅ DONE - Main flow with 4 steps
 │   ├── layout.tsx                        ✅ DONE - Manifest metadata
 │   ├── api/
-│   │   └── games/
-│   │       └── generate/route.ts         ✅ DONE - Game generation endpoint
+│   │   ├── games/
+│   │   │   └── generate/route.ts         ✅ DONE - Game generation endpoint
+│   │   └── payments/
+│   │       ├── initiate/route.ts         ✅ WEEK 4 - Payment info endpoint
+│   │       └── verify/route.ts           ✅ WEEK 4 - Payment verification
 │   └── components/
 │       ├── WriterCoinSelector.tsx        ✅ DONE
 │       ├── ArticleInput.tsx              ✅ DONE
-│       ├── GameCustomizer.tsx            ✅ DONE - Genre/difficulty selectors
-│       ├── GamePlayer.tsx                ✅ DONE - Interactive gameplay
-│       └── (PaymentButton.tsx)           ⏳ WEEK 4
+│       ├── GameCustomizer.tsx            ✅ DONE - Genre/difficulty + payment
+│       ├── GamePlayer.tsx                ✅ DONE - Gameplay + mint button
+│       └── PaymentButton.tsx             ✅ WEEK 4 - Reusable payment UI
 │
 ├── lib/
 │   ├── farcaster.ts                      ✅ DONE - Mini App SDK integration
