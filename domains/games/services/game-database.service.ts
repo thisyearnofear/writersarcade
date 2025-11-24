@@ -14,7 +14,12 @@ export class GameDatabaseService {
    */
   static async createGame(
     gameData: GameGenerationResponse,
-    userId?: string
+    userId?: string,
+    miniAppData?: {
+      articleUrl?: string
+      writerCoinId?: string
+      difficulty?: string
+    }
   ): Promise<Game> {
     try {
       // Generate unique slug
@@ -41,6 +46,9 @@ export class GameDatabaseService {
           promptName: gameData.promptName,
           promptText: gameData.promptText,
           promptModel: gameData.promptModel,
+          articleUrl: miniAppData?.articleUrl,
+          writerCoinId: miniAppData?.writerCoinId,
+          difficulty: miniAppData?.difficulty,
           private: false, // Default to public for now
           userId: userId || null,
         }
@@ -65,7 +73,7 @@ export class GameDatabaseService {
           user: {
             select: {
               id: true,
-              username: true,
+              walletAddress: true,
             }
           }
         }
@@ -128,7 +136,7 @@ export class GameDatabaseService {
             user: {
               select: {
                 id: true,
-                username: true,
+                walletAddress: true,
               }
             }
           },
@@ -276,6 +284,9 @@ export class GameDatabaseService {
       imageData: prismaGame.imageData,
       musicPromptText: prismaGame.musicPromptText,
       musicPromptSeedImage: prismaGame.musicPromptSeedImage,
+      articleUrl: prismaGame.articleUrl,
+      writerCoinId: prismaGame.writerCoinId,
+      difficulty: prismaGame.difficulty,
       private: prismaGame.private,
       userId: prismaGame.userId,
       createdAt: prismaGame.createdAt,

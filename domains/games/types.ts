@@ -24,6 +24,11 @@ export interface Game {
   musicPromptText?: string
   musicPromptSeedImage?: string
   
+  // Mini App specific
+  articleUrl?: string
+  writerCoinId?: string
+  difficulty?: string
+  
   // Access control
   private: boolean
   userId?: string

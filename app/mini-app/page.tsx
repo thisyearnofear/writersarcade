@@ -5,6 +5,7 @@ import { readyMiniApp, getFarcasterContext, isInFarcasterContext } from '@/lib/f
 import { WriterCoinSelector } from './components/WriterCoinSelector'
 import { ArticleInput } from './components/ArticleInput'
 import { GameCustomizer } from './components/GameCustomizer'
+import { GamePlayer } from './components/GamePlayer'
 import { type WriterCoin } from '@/lib/writerCoins'
 
 export default function MiniAppPage() {
@@ -12,7 +13,8 @@ export default function MiniAppPage() {
     const [isInFrame, setIsInFrame] = useState(false)
     const [selectedCoin, setSelectedCoin] = useState<WriterCoin | null>(null)
     const [articleUrl, setArticleUrl] = useState('')
-    const [step, setStep] = useState<'select-coin' | 'input-article' | 'customize-game'>('select-coin')
+    const [generatedGame, setGeneratedGame] = useState<any>(null)
+    const [step, setStep] = useState<'select-coin' | 'input-article' | 'customize-game' | 'play-game'>('select-coin')
 
     useEffect(() => {
         async function init() {
@@ -38,12 +40,20 @@ export default function MiniAppPage() {
     }
 
     const handleBack = () => {
-        if (step === 'customize-game') {
+        if (step === 'play-game') {
+            setGeneratedGame(null)
+            setStep('customize-game')
+        } else if (step === 'customize-game') {
             setStep('input-article')
         } else if (step === 'input-article') {
             setStep('select-coin')
             setSelectedCoin(null)
         }
+    }
+
+    const handleGameGenerated = (game: any) => {
+        setGeneratedGame(game)
+        setStep('play-game')
     }
 
     return (
@@ -79,25 +89,32 @@ export default function MiniAppPage() {
                 {isInitialized && (
                     <div className="mx-auto max-w-2xl">
                         {/* Progress Steps */}
-                        <div className="mb-8 flex items-center justify-center space-x-4">
+                        <div className="mb-8 flex items-center justify-center space-x-2 flex-wrap gap-y-2">
                             <StepIndicator
                                 number={1}
-                                label="Select Coin"
+                                label="Coin"
                                 active={step === 'select-coin'}
                                 completed={step !== 'select-coin'}
                             />
-                            <div className="h-px w-12 bg-purple-600"></div>
+                            <div className="h-px w-8 bg-purple-600"></div>
                             <StepIndicator
                                 number={2}
-                                label="Article URL"
+                                label="URL"
                                 active={step === 'input-article'}
-                                completed={step === 'customize-game'}
+                                completed={['customize-game', 'play-game'].includes(step)}
                             />
-                            <div className="h-px w-12 bg-purple-600"></div>
+                            <div className="h-px w-8 bg-purple-600"></div>
                             <StepIndicator
                                 number={3}
-                                label="Customize"
+                                label="Config"
                                 active={step === 'customize-game'}
+                                completed={step === 'play-game'}
+                            />
+                            <div className="h-px w-8 bg-purple-600"></div>
+                            <StepIndicator
+                                number={4}
+                                label="Play"
+                                active={step === 'play-game'}
                                 completed={false}
                             />
                         </div>
@@ -120,6 +137,14 @@ export default function MiniAppPage() {
                                 <GameCustomizer
                                     writerCoin={selectedCoin}
                                     articleUrl={articleUrl}
+                                    onBack={handleBack}
+                                    onGameGenerated={handleGameGenerated}
+                                />
+                            )}
+
+                            {step === 'play-game' && generatedGame && (
+                                <GamePlayer
+                                    game={generatedGame}
                                     onBack={handleBack}
                                 />
                             )}

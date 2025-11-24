@@ -38,37 +38,42 @@ model Game {
   tagline     String @db.Text
   genre       String
   subgenre    String
-  
+
   // Visual customization
   primaryColor String?
-  
+
   // AI generation metadata (consolidated)
   promptName       String  @default("GenerateGame-v2")
   promptText       String? @db.Text
   promptModel      String  @default("gpt-4o-mini")
-  
+
   // Image generation
   imagePromptModel String? 
   imagePromptName  String?
   imagePromptText  String? @db.Text
   imageData        Bytes?
-  
+
   // Music generation  
   musicPromptText      String?
   musicPromptSeedImage String?
-  
+
+  // Mini App specific fields
+  articleUrl       String?  // Original article URL (Paragraph)
+  writerCoinId     String?  // Which writer coin was used (e.g., "avc")
+  difficulty       String?  // Game difficulty: "easy" or "hard"
+
   // Access control
   private Boolean @default(false)
-  
+
   // Relations
   userId String?
   user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   chats Chat[]
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@map("games")
 }
 
