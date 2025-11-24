@@ -1,0 +1,60 @@
+/**
+ * Payment Domain Types
+ * 
+ * Unified payment structures for both web app + mini app
+ */
+
+export type PaymentAction = 'generate-game' | 'mint-nft'
+
+export interface PaymentCost {
+  action: PaymentAction
+  amount: bigint
+  amountFormatted: string
+  writerCoinId: string
+  writerCoinSymbol: string
+  decimals: number
+}
+
+export interface RevenueDistribution {
+  writerShare: bigint
+  platformShare: bigint
+  creatorShare: bigint
+}
+
+export interface PaymentInfo {
+  writerCoin: {
+    id: string
+    name: string
+    symbol: string
+    address: `0x${string}`
+    decimals: number
+  }
+  action: PaymentAction
+  amount: string // bigint as string
+  amountFormatted: string
+  distribution: {
+    writerShare: string
+    platformShare: string
+    creatorShare: string
+  }
+  contractAddress: `0x${string}` | undefined
+  chainId: number
+}
+
+export interface PaymentInitiateRequest {
+  writerCoinId: string
+  action: PaymentAction
+}
+
+export interface PaymentVerifyRequest {
+  transactionHash: `0x${string}`
+  writerCoinId: string
+  action: PaymentAction
+}
+
+export interface PaymentVerifyResult {
+  success: boolean
+  transactionHash: `0x${string}`
+  verified: boolean
+  error?: string
+}

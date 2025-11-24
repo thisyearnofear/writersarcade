@@ -9,6 +9,13 @@ import { z } from 'zod'
 const generateGameSchema = z.object({
   promptText: z.string().optional(),
   url: z.string().url().optional(),
+  customization: z.object({
+    genre: z.enum(['horror', 'comedy', 'mystery']).optional(),
+    difficulty: z.enum(['easy', 'hard']).optional(),
+  }).optional(),
+  payment: z.object({
+    writerCoinId: z.string().optional(),
+  }).optional(),
   model: z.string().optional(),
   promptName: z.string().optional(),
   private: z.boolean().optional(),
@@ -48,14 +55,19 @@ Make the game capture the essence and themes of this article while being engagin
       }
     }
     
-    // Generate game using consolidated AI service
-    const gameData = await GameAIService.generateGame({
+    // Build game generation request with optional customization
+    const gameRequest = {
       promptText: processedPrompt,
       url: validatedData.url,
+      customization: validatedData.customization,
       model: validatedData.model,
       promptName: validatedData.promptName,
       private: validatedData.private,
-    })
+      payment: validatedData.payment,
+    }
+
+    // Generate game using consolidated AI service
+    const gameData = await GameAIService.generateGame(gameRequest)
     
     // Save to database using enhanced database service
     const savedGame = await GameDatabaseService.createGame(gameData, user?.id)
