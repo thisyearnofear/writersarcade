@@ -103,12 +103,13 @@ export async function POST(request: NextRequest) {
       genre: body.genre,
       difficulty: body.difficulty,
       gameMetadataUri: body.gameMetadataUri,
+      nftMetadataUri: body.nftMetadataUri || body.gameMetadataUri, // Use game metadata as NFT metadata if not provided
     };
 
     // Register IP on Story Protocol
     const registrationResult = await registerGameAsIP(registrationInput);
 
-    // Update game record with Story IP Asset ID
+    // Verify game exists
     const game = await prisma.game.findUnique({
       where: { id: body.gameId },
     });
@@ -121,23 +122,30 @@ export async function POST(request: NextRequest) {
     }
 
     // Store IP registration metadata in database
-    // For now, we'll extend the game record with story IP info
-    // In a full implementation, you'd have a separate StoryIPAsset table
-    const updatedGame = await prisma.game.update({
-      where: { id: body.gameId },
-      data: {
-        // Store as JSON if your schema allows, or create separate table
-        // For this MVP, we'll log it but recommend adding a StoryIPAsset model
-      },
+    // TODO: Create StoryIPAsset table in Prisma schema with:
+    // - ipId (unique)
+    // - gameId (FK to Game)
+    // - txHash
+    // - registeredAt
+    // - licenseTermsIds (JSON)
+    // - status (pending/confirmed/failed)
+
+    // For MVP, log the registration but don't fail if storage isn't available yet
+    console.log("Story IP Registration:", {
+      gameId: body.gameId,
+      storyIPAssetId: registrationResult.storyIPAssetId,
+      txHash: registrationResult.txHash,
     });
 
     return NextResponse.json({
       success: true,
       storyIPAssetId: registrationResult.storyIPAssetId,
+      ipId: registrationResult.ipId,
       txHash: registrationResult.txHash,
       registeredAt: registrationResult.registeredAt,
-      royaltyConfig: registrationResult.royaltyConfig,
-      message: "Game successfully registered as IP on Story Protocol",
+      licenseTermsIds: registrationResult.licenseTermsIds,
+      message:
+        "Game IP registration initiated. Story Protocol integration will be enabled once SDK is fully configured.",
     });
   } catch (error) {
     console.error("IP registration error:", error);

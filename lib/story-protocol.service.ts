@@ -1,12 +1,14 @@
-import { StoryClient } from "@story-protocol/core-sdk";
-import { toHex, Address } from "viem";
-
 /**
- * Story Protocol Service
- * 
- * Handles IP registration, royalty configuration, and NFT linking for WritArcade games.
+ * Story Protocol Service (v1.4.2)
+ *
+ * Handles IP registration, royalty configuration, and license management for WritArcade games.
  * Connects to Story Protocol to register games as intellectual property assets.
+ *
+ * This service is a placeholder for Story Protocol integration.
+ * Full implementation requires completing the SDK API integration based on official examples.
  */
+
+import { Address } from "viem";
 
 export interface IPRegistrationInput {
   title: string;
@@ -18,30 +20,22 @@ export interface IPRegistrationInput {
   genre: "horror" | "comedy" | "mystery";
   difficulty: "easy" | "hard";
   gameMetadataUri: string; // IPFS URI pointing to full game JSON
+  nftMetadataUri: string; // IPFS URI pointing to NFT metadata
 }
 
 export interface IPRegistrationResult {
   storyIPAssetId: string;
+  ipId: string;
   txHash: string;
   registeredAt: number;
-  royaltyConfig: {
-    authorShare: number; // 60%
-    creatorShare: number; // 30%
-    platformShare: number; // 10%
-  };
-}
-
-export interface RoyaltyToken {
-  recipientAddress: Address;
-  share: number; // Basis points (6000 = 60%)
-  name: string; // "Author", "Creator", "Platform"
+  licenseTermsIds: string[] | bigint[];
 }
 
 /**
  * Initialize Story Protocol client
  * Requires: STORY_RPC_URL and STORY_WALLET_KEY in environment
  */
-export async function initializeStoryClient() {
+export function initializeStoryClient() {
   const rpcUrl = process.env.STORY_RPC_URL;
   const privateKey = process.env.STORY_WALLET_KEY;
 
@@ -53,70 +47,57 @@ export async function initializeStoryClient() {
     throw new Error("STORY_WALLET_KEY environment variable is required");
   }
 
-  const client = StoryClient.newClient({
-    transport: rpcUrl,
-    account: privateKey,
-  });
+  // SDK initialization will happen here once fully integrated
+  // See docs/STORY_PROTOCOL_SETUP.md for complete setup guide
 
-  return client;
+  return {
+    rpcUrl,
+    hasValidConfig: true,
+  };
 }
 
 /**
  * Register a game as an IP Asset on Story Protocol
- * 
- * This creates a new IP Asset and configures royalty distribution:
- * - Author: 60% of royalties
- * - Game Creator (user): 30% of royalties
- * - Platform (WritArcade): 10% of royalties
+ *
+ * This creates a new IP Asset with commercial remix license terms
+ * that allows others to create derivatives and share revenue.
+ *
+ * See: https://docs.story.foundation/developers/typescript-sdk/register-ip-asset
+ * Example: https://github.com/storyprotocol/typescript-tutorial/blob/main/scripts/registration/register.ts
  */
 export async function registerGameAsIP(
   input: IPRegistrationInput
 ): Promise<IPRegistrationResult> {
   try {
-    const client = await initializeStoryClient();
+    // Validate configuration
+    const config = initializeStoryClient();
 
-    // 1. Register IP Asset on Story
-    const ipMetadata = {
-      title: input.title,
-      description: input.description,
-      uri: input.gameMetadataUri,
-      attributes: [
-        { key: "articleUrl", value: input.articleUrl },
-        { key: "genre", value: input.genre },
-        { key: "difficulty", value: input.difficulty },
-        { key: "author", value: input.authorParagraphUsername },
-        { key: "gameCreator", value: input.gameCreatorAddress },
-      ],
-    };
+    if (!config.hasValidConfig) {
+      throw new Error("Story Protocol client not properly configured");
+    }
 
-    // Register as nonfungible IP
-    const response = await client.ipAsset.registerNonFungibleIP({
-      nftContractAddress: process.env.NEXT_PUBLIC_GAME_NFT_ADDRESS as Address,
-      nftTokenId: toHex(0), // Token ID will be set when minting
-      ipMetadata: ipMetadata,
-      txOptions: { waitForTransaction: true },
-    });
+    // TODO: Implement full Story Protocol SDK registration
+    // Steps:
+    // 1. Initialize StoryClient with wallet and RPC
+    // 2. Generate IP metadata using client.ipAsset.generateIpMetadata()
+    // 3. Hash metadata for integrity verification
+    // 4. Call client.ipAsset.registerIpAsset() with:
+    //    - spgNftContract address
+    //    - ipMetadata with URIs and hashes
+    //    - licenseTermsData (commercial remix flavor)
+    // 5. Wait for transaction confirmation
+    // 6. Return response with ipId, txHash, and license terms
 
-    const storyIPAssetId = response.ipAssetId || response.txHash;
-
-    // 2. Configure royalties
-    const royaltyConfig = buildRoyaltyConfig(
-      input.authorWalletAddress,
-      input.gameCreatorAddress
+    console.warn(
+      "Story Protocol IP registration placeholder - full SDK integration needed"
     );
 
-    // Set up royalty tokens using Story's royalty token contract
-    await configureRoyalties(client, storyIPAssetId, royaltyConfig);
-
     return {
-      storyIPAssetId,
-      txHash: response.txHash,
+      storyIPAssetId: "placeholder",
+      ipId: "placeholder",
+      txHash: "0x0000000000000000000000000000000000000000000000000000000000000000",
       registeredAt: Math.floor(Date.now() / 1000),
-      royaltyConfig: {
-        authorShare: 6000, // 60%
-        creatorShare: 3000, // 30%
-        platformShare: 1000, // 10%
-      },
+      licenseTermsIds: [],
     };
   } catch (error) {
     console.error("Error registering IP on Story Protocol:", error);
@@ -127,172 +108,174 @@ export async function registerGameAsIP(
 }
 
 /**
- * Link an IP Asset to its Base NFT token after minting
- * This creates the connection between Story IP and Base NFT
+ * Get IP Asset details from Story Protocol
+ *
+ * See: https://docs.story.foundation/sdk-reference/ip-asset
  */
-export async function linkIPAssetToNFT(
-  storyIPAssetId: string,
-  baseNFTTokenId: number,
-  baseNFTContractAddress: Address
-): Promise<{ txHash: string; linkedAt: number }> {
+export async function getIPAssetDetails(ipId: string) {
   try {
-    const client = await initializeStoryClient();
+    initializeStoryClient();
 
-    // Link IP to NFT contract
-    const response = await client.ipAsset.linkIPToNFT({
-      ipAssetId: storyIPAssetId,
-      nftContractAddress: baseNFTContractAddress,
-      nftTokenId: toHex(baseNFTTokenId),
-      txOptions: { waitForTransaction: true },
-    });
+    // TODO: Implement using client.ipAsset APIs
+    // Call appropriate SDK method to fetch IP asset metadata from Story
 
     return {
-      txHash: response.txHash,
-      linkedAt: Math.floor(Date.now() / 1000),
+      ipId,
+      title: "Placeholder",
+      description: "This is a placeholder IP asset",
     };
-  } catch (error) {
-    console.error("Error linking IP to NFT:", error);
-    throw new Error(
-      `IP-to-NFT link failed: ${error instanceof Error ? error.message : "Unknown error"}`
-    );
-  }
-}
-
-/**
- * Build royalty configuration for game IP
- * Returns array of royalty recipients and their shares
- */
-function buildRoyaltyConfig(
-  authorAddress: Address,
-  creatorAddress: Address
-): RoyaltyToken[] {
-  const platformAddress = (process.env.NEXT_PUBLIC_WRITARCADE_TREASURY ||
-    process.env.NEXT_PUBLIC_GAME_NFT_ADDRESS) as Address;
-
-  return [
-    {
-      recipientAddress: authorAddress,
-      share: 6000, // 60%
-      name: "Author",
-    },
-    {
-      recipientAddress: creatorAddress,
-      share: 3000, // 30%
-      name: "Creator",
-    },
-    {
-      recipientAddress: platformAddress,
-      share: 1000, // 10%
-      name: "Platform",
-    },
-  ];
-}
-
-/**
- * Configure royalties for an IP Asset
- * Creates Royalty Tokens that can be traded/staked
- */
-async function configureRoyalties(
-  client: any,
-  storyIPAssetId: string,
-  royaltyConfig: RoyaltyToken[]
-): Promise<void> {
-  try {
-    // Register royalty tokens for each recipient
-    for (const recipient of royaltyConfig) {
-      await client.royalty.setRoyalties({
-        ipAssetId: storyIPAssetId,
-        royalties: [
-          {
-            recipientAddress: recipient.recipientAddress,
-            share: recipient.share,
-          },
-        ],
-        txOptions: { waitForTransaction: true },
-      });
-    }
-  } catch (error) {
-    console.error("Error configuring royalties:", error);
-    // Non-fatal: Continue even if royalty setup fails
-    // Can be retried later
-  }
-}
-
-/**
- * Retrieve IP Asset details from Story Protocol
- */
-export async function getIPAssetDetails(storyIPAssetId: string) {
-  try {
-    const client = await initializeStoryClient();
-
-    const asset = await client.ipAsset.getIpAsset({
-      ipAssetId: storyIPAssetId,
-    });
-
-    return asset;
   } catch (error) {
     console.error("Error retrieving IP asset:", error);
     throw new Error(
-      `Failed to retrieve IP asset: ${
-        error instanceof Error ? error.message : "Unknown error"
-      }`
+      `Failed to retrieve IP asset: ${error instanceof Error ? error.message : "Unknown error"}`
     );
   }
 }
 
 /**
- * Get royalty distribution for an IP Asset
+ * Attach additional license terms to an existing IP Asset
+ * This allows the IP owner to offer more licensing options
+ *
+ * See: https://docs.story.foundation/sdk-reference/license
  */
-export async function getRoyaltyDistribution(storyIPAssetId: string) {
+export async function attachLicenseTermsToIP(
+  ipId: string,
+  licenseTermsId: number | bigint
+): Promise<{ txHash: string; attachedAt: number }> {
   try {
-    const client = await initializeStoryClient();
+    initializeStoryClient();
 
-    const royalties = await client.royalty.getRoyalties({
-      ipAssetId: storyIPAssetId,
-    });
+    // TODO: Implement using client.license.attachLicenseTerms()
 
-    return royalties;
+    return {
+      txHash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+      attachedAt: Math.floor(Date.now() / 1000),
+    };
   } catch (error) {
-    console.error("Error retrieving royalties:", error);
+    console.error("Error attaching license terms:", error);
     throw new Error(
-      `Failed to retrieve royalties: ${
-        error instanceof Error ? error.message : "Unknown error"
-      }`
+      `Failed to attach license terms: ${error instanceof Error ? error.message : "Unknown error"}`
     );
   }
 }
 
 /**
- * Get all IP Assets created by a user/creator
+ * Mint license tokens for an IP Asset
+ * This allows users to create derivatives of the IP based on the license terms
+ *
+ * See: https://docs.story.foundation/sdk-reference/license
  */
-export async function getCreatorIPAssets(creatorAddress: Address) {
+export async function mintLicenseTokens(
+  licensorIpId: string,
+  licenseTermsId: number | bigint,
+  receiver: Address,
+  amount: number = 1
+): Promise<{ txHash: string; licenseTokenIds: bigint[] }> {
   try {
-    const client = await initializeStoryClient();
+    initializeStoryClient();
 
-    const assets = await client.ipAsset.getIPAssetsWithWhere({
-      where: {
-        creator: creatorAddress,
-      },
-    });
+    // TODO: Implement using client.license.mintLicenseTokens()
 
-    return assets;
+    return {
+      txHash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+      licenseTokenIds: [],
+    };
   } catch (error) {
-    console.error("Error retrieving creator IP assets:", error);
+    console.error("Error minting license tokens:", error);
     throw new Error(
-      `Failed to retrieve IP assets: ${
-        error instanceof Error ? error.message : "Unknown error"
-      }`
+      `Failed to mint license tokens: ${error instanceof Error ? error.message : "Unknown error"}`
     );
   }
 }
 
 /**
- * Calculate royalty payment to an address for IP Asset sales
- * Used for secondary market transactions
+ * Register a derivative IP Asset based on a parent IP Asset
+ * This creates a new IP that inherits the parent's license terms
+ *
+ * Derivatives automatically configured with:
+ * - Parent's license terms (immutable)
+ * - Revenue sharing to parent based on license terms
+ * - Same royalty policy as parent
  */
-export function calculateRoyaltyPayment(
-  totalPrice: bigint,
-  recipientShare: number // Basis points (6000 = 60%)
-): bigint {
-  return (totalPrice * BigInt(recipientShare)) / BigInt(10000);
+export async function registerDerivativeIP(
+  parentIpId: string,
+  licenseTokenId: number | bigint,
+  derivativeTitle: string,
+  derivativeDescription: string
+): Promise<IPRegistrationResult> {
+  try {
+    initializeStoryClient();
+
+    // TODO: Implement using client.ipAsset.registerIpAndMakeDerivative() or similar
+    // This should:
+    // 1. Create new IP asset for the derivative
+    // 2. Link it to parent through license token burn
+    // 3. Inherit license terms from parent
+    // 4. Establish royalty stream
+
+    return {
+      storyIPAssetId: "placeholder",
+      ipId: "placeholder",
+      txHash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+      registeredAt: Math.floor(Date.now() / 1000),
+      licenseTermsIds: [],
+    };
+  } catch (error) {
+    console.error("Error registering derivative IP:", error);
+    throw new Error(
+      `Failed to register derivative IP: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
+}
+
+/**
+ * Claim royalties from an IP Asset
+ * This allows IP owners to collect revenue generated by their IP
+ *
+ * See: https://docs.story.foundation/sdk-reference/royalty
+ */
+export async function claimRoyalties(
+  ancestorIpId: string,
+  claimer: Address,
+  childIpIds: string[],
+  royaltyPolicies: Address[],
+  currencyTokens: Address[]
+): Promise<{ txHash: string; claimedAt: number }> {
+  try {
+    initializeStoryClient();
+
+    // TODO: Implement using client.royalty.claimAllRevenue()
+
+    return {
+      txHash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+      claimedAt: Math.floor(Date.now() / 1000),
+    };
+  } catch (error) {
+    console.error("Error claiming royalties:", error);
+    throw new Error(
+      `Failed to claim royalties: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
+}
+
+/**
+ * Get claimable royalty revenue for an IP
+ */
+export async function getClaimableRevenue(
+  royaltyVaultIpId: string,
+  claimer: Address,
+  token: Address
+): Promise<bigint> {
+  try {
+    initializeStoryClient();
+
+    // TODO: Implement using client.royalty.claimableRevenue()
+
+    return BigInt(0);
+  } catch (error) {
+    console.error("Error retrieving claimable revenue:", error);
+    throw new Error(
+      `Failed to retrieve claimable revenue: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
 }
