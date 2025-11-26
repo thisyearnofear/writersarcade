@@ -4,9 +4,11 @@ import { useAccount } from 'wagmi'
 import { type WriterCoin } from '@/lib/writerCoins'
 import { PaymentFlow } from './PaymentFlow'
 import { CostPreview } from './CostPreview'
+import { WalletConnectButton } from '@/components/ui/wallet-connect'
 import { PaymentCostService } from '@/domains/payments/services/payment-cost.service'
 import { useMemo } from 'react'
 import type { PaymentAction } from '@/domains/payments/types'
+import { AlertCircle } from 'lucide-react'
 
 interface PaymentOptionProps {
   writerCoin: WriterCoin
@@ -45,13 +47,17 @@ export function PaymentOption({
   if (!isConnected) {
     return (
       <div className="space-y-4">
-        <div className="rounded-lg border border-blue-500/50 bg-blue-500/10 p-4">
-          <p className="text-sm text-blue-200 mb-3">
-            💰 <span className="font-semibold">Payment Required</span>
-          </p>
-          <p className="text-sm text-blue-200">
-            Connect your wallet to enable payment and customization features. You can play games for free without connecting.
-          </p>
+        <div className="rounded-lg border border-amber-600/50 bg-amber-900/20 p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-amber-200 mb-2">Wallet Connection Required</p>
+              <p className="text-sm text-amber-300 mb-3">
+                To proceed with payment and customization, please connect your wallet. You'll need to approve a transaction on the Base blockchain.
+              </p>
+              <WalletConnectButton className="w-full" />
+            </div>
+          </div>
         </div>
 
         {optional && onSkip && (

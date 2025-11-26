@@ -319,7 +319,7 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
               <div className="p-4 rounded-lg bg-gray-800/50 border-l-4 border-purple-500">
                 <div className="flex items-center space-x-2">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span className="text-gray-400">Thinking...</span>
+                  <span className="text-gray-400">The game is responding to your action...</span>
                 </div>
               </div>
             </div>
@@ -335,7 +335,7 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Type your response or action..."
+              placeholder="What do you do? Describe your action or response..."
               disabled={isWaitingForResponse}
               className="flex-1 min-h-[60px] resize-none"
             />

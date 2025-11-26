@@ -1,7 +1,7 @@
 # WritArcade Documentation Index
 
-**Last Updated:** November 24, 2025  
-**Status:** Documentation consolidated to 4 key documents
+**Last Updated:** November 26, 2025  
+**Status:** Documentation consolidated to 4 core documents (lean & maintainable)
 
 ---
 
@@ -124,6 +124,41 @@ See: [ROADMAP.md](./ROADMAP.md#current-status-summary)
 - End-to-end testing across both platforms
 - Production deployment preparation
 - Launch readiness assessment
+
+---
+
+## Beta Testing Checklist
+
+Before public launch, verify:
+
+### Core Features
+- [ ] Game generation from URL works (Substack, Medium, blogs)
+- [ ] Game generation from text input works
+- [ ] Customization options (genre, difficulty) function
+- [ ] Loading states show progress clearly
+- [ ] Success modal displays after generation
+- [ ] Onboarding shows for first-time users
+
+### Error Handling
+- [ ] Invalid URL shows specific error message
+- [ ] Timeout error appears with retry option
+- [ ] Payment failure shows clear explanation
+- [ ] Wallet connection required message is clear
+- [ ] Error cards dismissible
+
+### Payment Flow
+- [ ] Web app: MetaMask/Coinbase/WalletConnect work
+- [ ] Mini-app: Farcaster wallet works
+- [ ] Cost displays correctly before payment
+- [ ] Transaction verification succeeds
+- [ ] Post-payment success confirmation shows
+
+### User Experience
+- [ ] Mobile responsive (all screens)
+- [ ] Button labels are friendly ("Check Article" not "Validate")
+- [ ] Loading messages informative
+- [ ] Error messages specific and helpful
+- [ ] Success modal includes next steps
 
 ---
 

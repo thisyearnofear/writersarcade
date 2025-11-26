@@ -48,8 +48,9 @@ export async function POST(request: NextRequest) {
 ${processedContent.text}\n\nMake the game capture the essence and themes of this article while being engaging and interactive.`
       } catch (error) {
         console.error('Content processing failed:', error)
-        // Fallback to basic URL-based generation
-        processedPrompt = `Generate a game based on content from: ${validatedData.url}`
+        // Re-throw with better message
+        const message = error instanceof Error ? error.message : 'Failed to process URL'
+        throw new Error(`URL processing failed: ${message}`)
       }
     }
     

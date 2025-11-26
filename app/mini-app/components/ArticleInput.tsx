@@ -95,7 +95,7 @@ export function ArticleInput({ writerCoin, onSubmit, onBack }: ArticleInputProps
                             disabled={!url || loading}
                             className="rounded-lg bg-purple-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            {loading ? 'Checking...' : 'Validate'}
+                            {loading ? 'Checking...' : 'Check Article'}
                         </button>
                     </div>
                 </div>

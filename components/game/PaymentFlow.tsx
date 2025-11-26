@@ -5,6 +5,8 @@ import { type WriterCoin } from '@/lib/writerCoins'
 import { detectWalletProvider } from '@/lib/wallet'
 import type { WalletProvider, TransactionRequest } from '@/lib/wallet/types'
 import type { PaymentAction } from '@/domains/payments/types'
+import { ErrorCard } from '@/components/error/ErrorCard'
+import { getUserMessage, retryWithBackoff } from '@/lib/error-handler'
 
 interface PaymentFlowProps {
   writerCoin: WriterCoin
@@ -50,7 +52,7 @@ export function PaymentFlow({
 
   const handlePayment = async () => {
     if (!wallet) {
-      setError('Wallet not available')
+      setError('Wallet not available. Please make sure your wallet is connected.')
       return
     }
 
@@ -58,77 +60,91 @@ export function PaymentFlow({
     setError(null)
 
     try {
-      // Step 1: Get user's wallet address
-      const userAddress = await wallet.getAddress()
-      if (!userAddress) {
-        throw new Error('Failed to get wallet address')
-      }
+      await retryWithBackoff(
+        async () => {
+          // Step 1: Get user's wallet address
+          const userAddress = await wallet.getAddress()
+          if (!userAddress) {
+            throw new Error('Failed to get wallet address. Please make sure your wallet is unlocked.')
+          }
 
-      // Step 2: Initiate payment on backend to get payment details
-      const initiateResponse = await fetch('/api/payments/initiate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          writerCoinId: writerCoin.id,
-          action,
-        }),
+          // Step 2: Initiate payment on backend to get payment details
+          const initiateResponse = await fetch('/api/payments/initiate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              writerCoinId: writerCoin.id,
+              action,
+            }),
+          })
+
+          if (!initiateResponse.ok) {
+            const errorData = await initiateResponse.json().catch(() => ({}))
+            throw new Error(
+              errorData.error || 
+              `Failed to initiate payment (${initiateResponse.status})`
+            )
+          }
+
+          const paymentInfo = await initiateResponse.json()
+          const contractAddress = paymentInfo.contractAddress as `0x${string}`
+
+          if (!contractAddress) {
+            throw new Error('Invalid contract address received from server')
+          }
+
+          // Step 3: Encode transaction data based on action and wallet type
+          let transactionData: `0x${string}`
+
+          if (walletType === 'farcaster') {
+            // Use Farcaster encoding
+            transactionData = encodeFarcasterPayment(contractAddress, writerCoin.address, userAddress, action)
+          } else {
+            // Use browser wallet encoding (same as Farcaster for now)
+            transactionData = encodeFarcasterPayment(contractAddress, writerCoin.address, userAddress, action)
+          }
+
+          // Step 4: Send transaction through wallet provider
+          const txRequest: TransactionRequest = {
+            to: contractAddress,
+            data: transactionData,
+            chainId: 8453,
+          }
+
+          const txResult = await wallet.sendTransaction(txRequest)
+
+          if (!txResult.success || !txResult.transactionHash) {
+            throw new Error(txResult.error || 'Transaction was rejected or failed')
+          }
+
+          // Step 5: Verify payment on backend
+          const verifyResponse = await fetch('/api/payments/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              transactionHash: txResult.transactionHash,
+              writerCoinId: writerCoin.id,
+              action,
+            }),
+          })
+
+          if (!verifyResponse.ok) {
+            const errorData = await verifyResponse.json().catch(() => ({}))
+            throw new Error(
+              errorData.error || 
+              `Failed to verify payment (${verifyResponse.status})`
+            )
+          }
+
+          return txResult.transactionHash
+        },
+        2, // Max 2 retries
+        1500 // 1.5 second base delay
+      ).then((txHash) => {
+        onPaymentSuccess?.(txHash)
       })
-
-      if (!initiateResponse.ok) {
-        const errorData = await initiateResponse.json()
-        throw new Error(errorData.error || 'Failed to initiate payment')
-      }
-
-      const paymentInfo = await initiateResponse.json()
-      const contractAddress = paymentInfo.contractAddress as `0x${string}`
-
-      if (!contractAddress) {
-        throw new Error('No contract address provided')
-      }
-
-      // Step 3: Encode transaction data based on action and wallet type
-      let transactionData: `0x${string}`
-
-      if (walletType === 'farcaster') {
-        // Use Farcaster encoding
-        transactionData = encodeFarcasterPayment(contractAddress, writerCoin.address, userAddress, action)
-      } else {
-        // Use browser wallet encoding (same as Farcaster for now)
-        transactionData = encodeFarcasterPayment(contractAddress, writerCoin.address, userAddress, action)
-      }
-
-      // Step 4: Send transaction through wallet provider
-      const txRequest: TransactionRequest = {
-        to: contractAddress,
-        data: transactionData,
-        chainId: 8453,
-      }
-
-      const txResult = await wallet.sendTransaction(txRequest)
-
-      if (!txResult.success || !txResult.transactionHash) {
-        throw new Error(txResult.error || 'Transaction failed')
-      }
-
-      // Step 5: Verify payment on backend
-      const verifyResponse = await fetch('/api/payments/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          transactionHash: txResult.transactionHash,
-          writerCoinId: writerCoin.id,
-          action,
-        }),
-      })
-
-      if (!verifyResponse.ok) {
-        const errorData = await verifyResponse.json()
-        throw new Error(errorData.error || 'Failed to verify payment')
-      }
-
-      onPaymentSuccess?.(txResult.transactionHash)
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'An error occurred'
+      const message = getUserMessage(err)
       setError(message)
       onPaymentError?.(message)
       console.error('[PaymentFlow] Error:', err)
@@ -161,11 +177,7 @@ export function PaymentFlow({
         )}
       </button>
 
-      {error && (
-        <div className="rounded-lg border border-red-500/50 bg-red-500/20 p-3">
-          <p className="text-sm text-red-200">{error}</p>
-        </div>
-      )}
+      {error && <ErrorCard error={error} onDismiss={() => setError(null)} />}
 
       <div className="rounded-lg bg-purple-900/30 p-3 text-xs text-purple-300">
         <p>

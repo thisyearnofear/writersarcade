@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { marked } from 'marked'
+import { processArticleFromUrl, getPublicationSubscriberCount, fetchPublicationBySlug, parseParagraphUrl } from '@/lib/paragraph-sdk'
 
 
 export interface ContentSource {
@@ -37,6 +38,11 @@ export class ContentProcessorService {
    */
   static async processUrl(url: string): Promise<ProcessedContent> {
     try {
+      // Validate URL format first
+      if (!this.isValidUrl(url)) {
+        throw new Error('Invalid URL format. Please ensure the URL starts with http:// or https://')
+      }
+
       // Determine content type
       const contentType = this.detectContentType(url)
       
@@ -66,7 +72,25 @@ export class ContentProcessorService {
       }
     } catch (error) {
       console.error('Content processing error:', error)
-      throw new Error(`Failed to process content from URL: ${url}`)
+      
+      // Provide specific error messages based on error type
+      if (error instanceof Error) {
+        if (error.message.includes('Invalid URL')) {
+          throw error
+        }
+        if (error.message.includes('Paragraph')) {
+          throw new Error('This URL is not from a supported source. We support Substack, Medium, dev.to, Hashnode, and HackerNews.')
+        }
+        if (error.message.includes('timeout') || error.message.includes('ETIMEDOUT')) {
+          throw new Error('The URL took too long to load. The website might be down or blocking our access.')
+        }
+        if (error.message.includes('404') || error.message.includes('Not Found')) {
+          throw new Error('This URL does not exist or is no longer accessible. Please check the link.')
+        }
+        throw new Error(`Failed to extract content from URL. ${error.message}`)
+      }
+      
+      throw new Error('Failed to process content from URL. Please check that the URL is valid and publicly accessible.')
     }
   }
   
@@ -86,52 +110,33 @@ export class ContentProcessorService {
   }
   
   /**
-   * Enhanced URL scraping with fallback methods
+   * Enhanced URL scraping with SDK integration
    */
   private static async scrapeGenericUrl(url: string): Promise<{ text: string; metadata: Partial<ProcessedContent> }> {
-    if (!url.includes('paragraph.com')) {
+    if (!url.includes('paragraph')) {
       throw new Error('Only Paragraph URLs supported');
     }
 
-    const urlParts = new URL(url).pathname.split('/').filter(Boolean);
-    const publicationSlug = urlParts[0].replace('@', '');
-    const postSlug = urlParts[1] || '';
-
-    if (!publicationSlug || !postSlug) {
-      throw new Error('Invalid Paragraph URL format');
-    }
-
-    const postApiUrl = `https://api.paragraph.com/v1/posts/${publicationSlug}/${postSlug}?includeContent=true`;
-
     try {
-      const postResponse = await axios.get(postApiUrl, { timeout: 10000 });
-
-      const postData = postResponse.data;
-      if (!postData?.markdown) {
-        throw new Error('No content found in response');
+      // Use the SDK to process the article
+      const article = await processArticleFromUrl(url);
+      
+      if (!article) {
+        throw new Error('Failed to process article');
       }
 
-      // Fetch additional metadata using publicationId from post
-      const publicationId = postData.publicationId;
-      const [pubResponse, subResponse] = await Promise.all([
-        axios.get(`https://api.paragraph.com/v1/publications/${publicationId}`, { timeout: 5000 }),
-        axios.get(`https://api.paragraph.com/v1/publications/${publicationId}/subscriberCount`, { timeout: 5000 })
-      ]);
-
-      const pubData = pubResponse.data;
-      const subData = subResponse.data;
+      // Get subscriber count
+      const subscriberCount = await getPublicationSubscriberCount(article.source.publicationId);
 
       const metadata: Partial<ProcessedContent> = {
-        title: postData.title,
-        author: pubData.ownerUserId ? `User ${pubData.ownerUserId}` : undefined, // Can enhance to fetch user details if needed
-        authorWallet: pubData.ownerWalletAddress, // Assuming this exists; adjust based on actual response
-        publishedAt: new Date(postData.publishedAt),
-        publicationName: pubData.name,
-        publicationSummary: pubData.summary,
-        subscriberCount: subData.count
+        title: article.title,
+        author: article.author,
+        publishedAt: article.publishedAt,
+        publicationName: article.source.publicationName,
+        subscriberCount: subscriberCount || undefined,
       };
 
-      return { text: postData.markdown, metadata };
+      return { text: article.plainText, metadata };
     } catch (error) {
       console.error('Paragraph API error:', error);
       throw new Error('Failed to extract content and metadata from Paragraph API');

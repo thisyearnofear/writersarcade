@@ -356,6 +356,41 @@ NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID="your-project-id"
    - Easier testing and maintenance
 
 3. **For the Business**
-   - Reduced technical debt
-   - Unified analytics and metrics
-   - Faster feature development across platforms
+    - Reduced technical debt
+    - Unified analytics and metrics
+    - Faster feature development across platforms
+
+## Content Processing (Paragraph Integration)
+
+### Supported Sources
+- **Paragraph Newsletters** (primary integration)
+- Substack articles
+- Medium posts
+- Dev.to articles
+- Blog URLs
+
+### Content Flow
+```
+1. User submits URL or text
+   ↓
+2. Validate URL format (lib/content-processor.service.ts)
+   ↓
+3. Extract content via Paragraph SDK (lib/paragraph-sdk.ts)
+   ↓
+4. Process & clean text (word count, read time)
+   ↓
+5. Extract metadata (author, publication, subscribers)
+   ↓
+6. Pass to AI for game generation
+```
+
+### Key Functions
+- `ContentProcessorService.processUrl()` - Extract and clean content
+- `processArticleFromUrl()` - Paragraph SDK wrapper
+- `getPublicationSubscriberCount()` - Get publication metrics
+
+### Error Handling
+- Invalid URLs → User-friendly messages
+- Unsupported sources → List supported platforms
+- Timeouts → Suggest retrying or pasting text directly
+- 404s → Indicate URL doesn't exist

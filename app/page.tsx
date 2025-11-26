@@ -1,10 +1,16 @@
+'use client'
+
 import { Suspense } from 'react'
 import { GameGrid } from '@/domains/games/components/game-grid'
 import { GameGeneratorForm } from '@/domains/games/components/game-generator-form'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
+import { OnboardingModal } from '@/components/onboarding/OnboardingModal'
+import { useOnboarding } from '@/hooks/useOnboarding'
 
 export default function HomePage() {
+  const { showOnboarding, dismissOnboarding } = useOnboarding()
+  
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -81,6 +87,8 @@ export default function HomePage() {
       </main>
       
       <Footer />
+      
+      <OnboardingModal isOpen={showOnboarding} onClose={dismissOnboarding} />
     </div>
   )
 }

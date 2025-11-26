@@ -514,3 +514,34 @@ npm run lint         # ✅ 0 errors, 53 warnings
 ---
 
 **Phase 5c: BUILD SYSTEM COMPLETE** - ESLint 9 configured, Next.js 16 fully compatible, production build passes.
+
+---
+
+## Code Quality & Core Principles
+
+### Development Principles
+1. **ENHANCEMENT FIRST** - Enhance existing components before creating new ones
+2. **AGGRESSIVE CONSOLIDATION** - Delete unnecessary code rather than deprecating
+3. **DRY** - Single source of truth (error-handler.ts, ProgressBar.tsx, ErrorCard.tsx)
+4. **CLEAN** - Clear separation of concerns with explicit dependencies
+5. **MODULAR** - Composable, testable, independent modules
+
+### Before Adding Features
+- [ ] Audit codebase for related patterns
+- [ ] Try enhancing existing components first
+- [ ] Question every abstraction
+- [ ] If a component is used only once, inline it (< 30 lines)
+- [ ] If a component is used 2+ times, make it a component
+
+### Key Reusable Components
+- `components/ui/ProgressBar.tsx` - Progress UI (used by Onboarding + Loading)
+- `components/error/ErrorCard.tsx` - Consistent error display
+- `components/success/SuccessModal.tsx` - Success confirmation
+- `lib/error-handler.ts` - Single source for error categorization & messages
+
+### Code Review Checklist
+- No custom error divs (use ErrorCard)
+- No duplicate progress UI (use ProgressBar)
+- No imports deeper than 2 levels
+- Components > 100 lines have tests
+- Dead code reviewed and removed
