@@ -157,7 +157,14 @@ export class GameDatabaseService {
       
     } catch (error) {
       console.error('Failed to get games:', error)
-      throw new Error('Failed to fetch games')
+      // Return empty result instead of throwing on database errors
+      return {
+        games: [],
+        total: 0,
+        limit,
+        offset,
+        hasMore: false,
+      }
     }
   }
   
