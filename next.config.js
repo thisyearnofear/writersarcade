@@ -16,19 +16,7 @@ const nextConfig = {
     // Enable strict type checking
     tsconfigPath: './tsconfig.json',
   },
-  webpack: (config) => {
-    // Exclude test files and unnecessary files from bundle
-    config.module.rules.push({
-      test: /\.(test|spec)\.(js|ts)$/,
-      use: 'null-loader'
-    });
-    // Also exclude thread-stream test directory entirely
-    config.module.rules.push({
-      test: /thread-stream\/test/,
-      use: 'null-loader'
-    });
-    return config;
-  }
+  turbopack: {}
 }
 
 module.exports = nextConfig
