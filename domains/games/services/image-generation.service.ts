@@ -6,11 +6,52 @@
  * - Game cover images: Called once at game creation
  * - Narrative images: Called per-turn to visualize story moments
  * - Caching: Prevents duplicate API calls for identical prompts
+ * - Model experimentation: A/B tests different Venice models for comic quality
  * - Server-side API: Uses /api/generate-image endpoint to keep API key secure
  */
+
+export interface ImageGenerationResult {
+  imageUrl: string | null
+  model: string
+  timestamp: number
+}
+
 export class ImageGenerationService {
   private static readonly API_ENDPOINT = '/api/generate-image'
-  private static readonly CACHE = new Map<string, string>() // prompt → base64 image
+  private static readonly CACHE = new Map<string, ImageGenerationResult>() // prompt → result with metadata
+  
+  // Venice AI models to test (excluding nano-banana-pro for cost)
+  private static readonly MODELS = [
+    'venice-sd35',      // Default, works with all features ($0.01)
+    'qwen-image',       // Highest quality ($0.01)
+    'hidream',          // Fast generation ($0.01)
+    'wai-Illustrious',  // Anime/illustration focused ($0.01) - good for comic style!
+  ]
+  
+  // Track model performance over time
+  private static readonly MODEL_RATINGS = new Map<string, { count: number; score: number }>()
+  
+  private static getRandomModel(): string {
+    // Weight selection by quality ratings if available
+    const ratings = Array.from(this.MODEL_RATINGS.entries())
+    if (ratings.length > 0) {
+      // Weighted random selection - higher rated models chosen more often
+      const totalScore = ratings.reduce((sum, [_, { score }]) => sum + score, 0)
+      const weights = ratings.map(([model, { score }]) => ({ 
+        model, 
+        weight: (score || 1) / totalScore 
+      }))
+      
+      let random = Math.random()
+      for (const { model, weight } of weights) {
+        random -= weight
+        if (random <= 0) return model
+      }
+    }
+    
+    // Fallback: uniform random from all models
+    return this.MODELS[Math.floor(Math.random() * this.MODELS.length)]
+  }
 
   /**
    * Generate an image for a game based on its metadata (cover art)
@@ -21,7 +62,7 @@ export class ImageGenerationService {
     genre: string
     subgenre: string
     tagline: string
-  }): Promise<string | null> {
+  }): Promise<ImageGenerationResult> {
     const prompt = this.buildGameCoverPrompt(game)
     return this.fetchImage(prompt)
   }
@@ -29,27 +70,55 @@ export class ImageGenerationService {
   /**
    * Generate an image for a narrative moment (per-turn)
    * Called during gameplay to visualize the current story beat
+   * Returns both image and model used for A/B testing
    */
   static async generateNarrativeImage(context: {
     narrative: string        // The AI-generated narrative text
     genre: string            // Game genre for style consistency
     primaryColor?: string    // Game's primary color for palette matching
-  }): Promise<string | null> {
+  }): Promise<ImageGenerationResult> {
     const prompt = this.buildNarrativePrompt(context)
     return this.fetchImage(prompt)
+  }
+
+  /**
+   * Record user feedback on image quality for model optimization
+   */
+  static recordModelFeedback(model: string, rating: number): void {
+    const current = this.MODEL_RATINGS.get(model) || { count: 0, score: 0 }
+    current.count += 1
+    current.score = (current.score + rating) / current.count // Running average
+    this.MODEL_RATINGS.set(model, current)
+    console.log(`Model ${model} rating: ${current.score.toFixed(2)} (${current.count} ratings)`)
+  }
+
+  /**
+   * Get current model performance stats
+   */
+  static getModelStats(): Record<string, { count: number; score: number }> {
+    const stats: Record<string, { count: number; score: number }> = {}
+    for (const [model, data] of this.MODEL_RATINGS.entries()) {
+      stats[model] = data
+    }
+    return stats
   }
 
   /**
    * Core image generation fetch logic (shared by all generation types)
    * Calls server-side API endpoint which handles Venice API key securely
    * Implements caching to prevent duplicate API calls
+   * Tracks model performance for A/B testing
    */
-  private static async fetchImage(prompt: string): Promise<string | null> {
+  private static async fetchImage(
+    prompt: string
+  ): Promise<ImageGenerationResult> {
     // Check cache first
     if (this.CACHE.has(prompt)) {
       console.log('Image cache hit for prompt')
-      return this.CACHE.get(prompt) || null
+      return this.CACHE.get(prompt)!
     }
+
+    const selectedModel = this.getRandomModel()
 
     try {
       const response = await fetch(this.API_ENDPOINT, {
@@ -59,32 +128,47 @@ export class ImageGenerationService {
         },
         body: JSON.stringify({
           prompt,
+          model: selectedModel,
           type: 'narrative', // or 'game' - for future flexibility
         }),
       })
 
       if (!response.ok) {
         console.error('Image generation API error:', response.status)
-        return null
+        return {
+          imageUrl: null,
+          model: selectedModel,
+          timestamp: Date.now(),
+        }
       }
 
       const data = await response.json()
 
-      if (data.imageUrl) {
-        // Cache for future identical prompts
-        this.CACHE.set(prompt, data.imageUrl)
-        return data.imageUrl
+      const result: ImageGenerationResult = {
+        imageUrl: data.imageUrl || null,
+        model: selectedModel,
+        timestamp: Date.now(),
       }
 
-      return null
+      if (data.imageUrl) {
+        // Cache for future identical prompts
+        this.CACHE.set(prompt, result)
+      }
+
+      return result
     } catch (error) {
       console.error('Image generation failed:', error)
-      return null
+      return {
+        imageUrl: null,
+        model: selectedModel,
+        timestamp: Date.now(),
+      }
     }
   }
 
   /**
    * Build prompt for game cover art (called once)
+   * Comic-style artwork for game cards and NFT displays
    */
   private static buildGameCoverPrompt(game: {
     title: string
@@ -92,49 +176,50 @@ export class ImageGenerationService {
     genre: string
     subgenre: string
   }): string {
-    const genreStyles: Record<string, string> = {
-      horror: 'dark, ominous, atmospheric, moody lighting, shadows',
-      mystery: 'noir, dramatic lighting, mysterious atmosphere, intrigue',
-      comedy: 'bright, colorful, whimsical, playful, vibrant',
-      adventure: 'epic, cinematic, grand scale, dramatic',
-      'sci-fi': 'futuristic, technological, neon, cyberpunk aesthetic',
-      fantasy: 'magical, ethereal, mystical, enchanted',
+    const genreComicStyles: Record<string, string> = {
+      horror: 'dark comic book cover art, bold inking, moody lighting, ominous atmosphere, graphic novel style',
+      mystery: 'noir comic cover, dramatic lighting, mysterious and intrigue, detective aesthetic, comic style',
+      comedy: 'bright cartoon comic cover, colorful, whimsical, playful illustration, comic style',
+      adventure: 'epic comic cover, grand scale, dramatic action, dynamic composition, comic book style',
+      'sci-fi': 'futuristic comic cover, technological aesthetic, neon accents, cyberpunk illustration, sci-fi comic style',
+      fantasy: 'magical comic cover, mystical illustration, enchanted atmosphere, fantasy comic style',
     }
 
-    const style = genreStyles[game.genre.toLowerCase()] || 'cinematic, dramatic'
+    const style = genreComicStyles[game.genre.toLowerCase()] || 'comic panel illustration, bold lines'
 
-    return `A ${style} scene representing "${game.title}". ${game.description.substring(0, 200)}. High quality digital art, game cover art style, professional illustration.`
+    return `${style} for a game titled "${game.title}". ${game.description.substring(0, 200)}. High quality comic book illustration, professional artwork, expressive and detailed. NOT photorealistic.`
   }
 
   /**
    * Build prompt for narrative moment (called per-turn)
-   * Extracts key details from narrative to create contextual images
+   * Extracts key details from narrative to create contextual COMIC PANELS
+   * Emphasizes comic/illustration aesthetic over photorealism
    */
   private static buildNarrativePrompt(context: {
     narrative: string
     genre: string
     primaryColor?: string
   }): string {
-    const genreStyles: Record<string, string> = {
-      horror: 'dark, ominous, atmospheric, moody lighting, high contrast shadows',
-      mystery: 'noir, dramatic lighting, suspicious atmosphere, shadowy',
-      comedy: 'bright, vibrant, playful, colorful, humorous visual style',
-      adventure: 'cinematic, epic, grand scale, dramatic action, dynamic lighting',
-      'sci-fi': 'futuristic, technological, neon accents, sleek, otherworldly',
-      fantasy: 'magical, ethereal, mystical, glowing effects, enchanted atmosphere',
+    const genreComicStyles: Record<string, string> = {
+      horror: 'dark comic book panel, bold inking, high contrast shadows, moody lighting, ominous atmosphere, graphic novel style',
+      mystery: 'noir comic panel, dramatic shadows, suspicious atmosphere, comic book illustration, bold lines, high contrast',
+      comedy: 'bright cartoon comic panel, exaggerated expressions, vibrant colors, playful illustration, comic style, humorous',
+      adventure: 'action comic panel, dynamic poses, motion lines, epic scale, dramatic composition, comic book illustration',
+      'sci-fi': 'futuristic comic panel, tech aesthetic, neon accents, science fiction illustration, bold comic style, otherworldly',
+      fantasy: 'magical comic panel, mystical illustration, glowing effects, enchanted atmosphere, fantasy comic style, detailed',
     }
 
-    const style = genreStyles[context.genre.toLowerCase()] || 'cinematic, dramatic'
+    const style = genreComicStyles[context.genre.toLowerCase()] || 'comic panel illustration, bold lines, digital art style'
 
-    // Extract key narrative elements (first 500 chars to keep prompt focused)
-    const narrativeExcerpt = context.narrative.substring(0, 500)
+    // Extract key narrative elements (first 400 chars to keep prompt focused)
+    const narrativeExcerpt = context.narrative.substring(0, 400)
 
     // Build color instruction if primaryColor provided
     const colorInstruction = context.primaryColor 
-      ? `, with ${context.primaryColor} color accents`
+      ? `, featuring ${context.primaryColor} color palette and accents`
       : ''
 
-    return `A ${style} illustration depicting the following scene${colorInstruction}: "${narrativeExcerpt}". High quality digital art, game scene illustration style, professional artwork, immersive and detailed.`
+    return `${style} depicting this scene${colorInstruction}: "${narrativeExcerpt}". Comic book illustration, professional artwork, high quality digital art, expressive and dynamic. NOT photorealistic. Comic/illustrated aesthetic.`
   }
 
   /**
@@ -147,7 +232,10 @@ export class ImageGenerationService {
   /**
    * Get cache stats (for debugging/monitoring)
    */
-  static getCacheStats(): { size: number } {
-    return { size: this.CACHE.size }
+  static getCacheStats(): { size: number; models: Record<string, { count: number; score: number }> } {
+    return { 
+      size: this.CACHE.size,
+      models: this.getModelStats(),
+    }
   }
 }

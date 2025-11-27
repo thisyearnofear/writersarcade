@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(req: NextRequest) {
   try {
-    const { prompt, type } = await req.json()
+    const { prompt, type, model } = await req.json()
 
     if (!prompt || !type) {
       return NextResponse.json(
@@ -21,6 +21,10 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Use specified model or default to venice-sd35
+    const selectedModel = model || 'venice-sd35'
+    console.log(`Generating image with model: ${selectedModel}`)
+
     const response = await fetch('https://api.venice.ai/api/v1/image/generate', {
       method: 'POST',
       headers: {
@@ -29,7 +33,7 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         prompt,
-        model: 'venice-sd35',
+        model: selectedModel,
         width: 1024,
         height: 1024,
         format: 'png',

@@ -58,7 +58,7 @@ export async function POST(
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          // Start the game using AI service
+          // Start the game using AI service (panel 1 of 10)
           const gameStream = GameAIService.startGame(
             {
               title: game.title,

@@ -1,11 +1,13 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { Loader2, Play, Send, MessageCircle, Image as ImageIcon } from 'lucide-react'
+import { Loader2, Play, Send, BookOpen } from 'lucide-react'
 import { Game, ChatMessage, GameplayOption } from '../types'
-import { ImageGenerationService } from '../services/image-generation.service'
+import { ImageGenerationService, type ImageGenerationResult } from '../services/image-generation.service'
+import { ComicPanelCard } from './comic-panel-card'
+import { ComicBookFinale, type ComicBookFinalePanelData } from './comic-book-finale'
 
 interface GamePlayInterfaceProps {
   game: Game
@@ -13,38 +15,12 @@ interface GamePlayInterfaceProps {
 
 interface ChatEntry extends ChatMessage {
   options?: GameplayOption[]
-  narrativeImage?: string  // Per-turn generated image
-  isGeneratingImage?: boolean
+  imageModel?: string             // Which Venice AI model generated this image
+  imageRating?: number            // User rating (1-5) for this image
+  narrativeImage?: string | null  // Comic panel image URL
 }
 
-// Utility: Parse markdown formatting from text
-function parseMarkdownText(
-  text: string,
-  primaryColor: string = '#8b5cf6'
-): (string | JSX.Element)[] {
-  const parts: (string | JSX.Element)[] = []
-  let lastIndex = 0
-  const boldRegex = /\*\*(.+?)\*\*/g
-  let match
-
-  while ((match = boldRegex.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push(text.substring(lastIndex, match.index))
-    }
-    parts.push(
-      <span key={`bold-${match.index}`} className="font-bold" style={{ color: primaryColor }}>
-        {match[1]}
-      </span>
-    )
-    lastIndex = boldRegex.lastIndex
-  }
-
-  if (lastIndex < text.length) {
-    parts.push(text.substring(lastIndex))
-  }
-
-  return parts.length > 0 ? parts : [text]
-}
+const MAX_COMIC_PANELS = 10
 
 export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
   const [sessionId, setSessionId] = useState<string | null>(null)
@@ -53,8 +29,12 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [userInput, setUserInput] = useState('')
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false)
-  const [showMobileImage, setShowMobileImage] = useState(false)
+  const [showComicFinale, setShowComicFinale] = useState(false)
+  const [isMinting, setIsMinting] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const assistantMessageCount = messages.filter(m => m.role === 'assistant').length
+  const canAddMorePanels = assistantMessageCount < MAX_COMIC_PANELS
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -143,11 +123,7 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
                       lastMessage.content = content.substring(0, match.index).trim()
                     }
 
-                    // Trigger image generation for this narrative moment
-                    if (lastMessage.content && !lastMessage.narrativeImage) {
-                      lastMessage.isGeneratingImage = true
-                      generateNarrativeImage(lastMessage)
-                    }
+                    // Image generation now handled by ComicPanelCard component
                   }
                   return newMessages
                 })
@@ -259,11 +235,7 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
                       lastMessage.content = content.substring(0, match.index).trim()
                     }
 
-                    // Trigger image generation for this narrative moment
-                    if (lastMessage.content && !lastMessage.narrativeImage) {
-                      lastMessage.isGeneratingImage = true
-                      generateNarrativeImage(lastMessage)
-                    }
+                    // Image generation now handled by ComicPanelCard component
                   }
                   return newMessages
                 })
@@ -283,51 +255,77 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
     }
   }
 
-  const generateNarrativeImage = async (message: ChatEntry) => {
-    try {
-      const imageUrl = await ImageGenerationService.generateNarrativeImage({
-        narrative: message.content,
-        genre: game.genre,
-        primaryColor: game.primaryColor,
-      })
-
-      if (imageUrl) {
-        setMessages(prev => {
-          const newMessages = [...prev]
-          const targetMessage = newMessages.find(m => m.id === message.id)
-          if (targetMessage) {
-            targetMessage.narrativeImage = imageUrl
-            targetMessage.isGeneratingImage = false
-          }
-          return newMessages
-        })
-      } else {
-        // Clear loading state even if generation failed
-        setMessages(prev => {
-          const newMessages = [...prev]
-          const targetMessage = newMessages.find(m => m.id === message.id)
-          if (targetMessage) {
-            targetMessage.isGeneratingImage = false
-          }
-          return newMessages
-        })
+  const handleImageGenerated = (messageId: string, result: ImageGenerationResult) => {
+    setMessages(prev => {
+      const newMessages = [...prev]
+      const targetMessage = newMessages.find(m => m.id === messageId)
+      if (targetMessage) {
+        targetMessage.imageModel = result.model
+        targetMessage.narrativeImage = result.imageUrl || null
       }
-    } catch (error) {
-      console.error('Failed to generate narrative image:', error)
-      // Clear loading state on error
-      setMessages(prev => {
-        const newMessages = [...prev]
-        const targetMessage = newMessages.find(m => m.id === message.id)
-        if (targetMessage) {
-          targetMessage.isGeneratingImage = false
-        }
-        return newMessages
-      })
+      return newMessages
+    })
+  }
+
+  const handleImageRating = (messageId: string, rating: number) => {
+    // Record feedback to optimize model selection
+    const message = messages.find(m => m.id === messageId)
+    if (message?.imageModel) {
+      ImageGenerationService.recordModelFeedback(message.imageModel, rating)
     }
+
+    // Update UI to show rating
+    setMessages(prev => {
+      const newMessages = [...prev]
+      const targetMessage = newMessages.find(m => m.id === messageId)
+      if (targetMessage) {
+        targetMessage.imageRating = rating
+      }
+      return newMessages
+    })
   }
 
   const handleOptionClick = (option: GameplayOption) => {
     sendMessage(option.text)
+  }
+
+  const buildComicPanels = (): ComicBookFinalePanelData[] => {
+    const assistantMessages = messages.filter(m => m.role === 'assistant').slice(0, MAX_COMIC_PANELS)
+    
+    return assistantMessages.map((message, idx) => {
+      // Find the user's choice that comes after this assistant message
+      const messageIndex = messages.indexOf(message)
+      const nextUserMessage = messages
+        .slice(messageIndex + 1)
+        .find(m => m.role === 'user')
+      
+      return {
+        id: message.id,
+        narrativeText: message.content,
+        imageUrl: message.narrativeImage || null,
+        imageModel: message.imageModel || 'unknown',
+        userChoice: nextUserMessage?.content || undefined,
+      }
+    })
+  }
+
+  const handleMintComic = async (panelData: ComicBookFinalePanelData[]) => {
+    setIsMinting(true)
+    try {
+      // TODO: Implement NFT minting with full comic panel sequence
+      // This should:
+      // 1. Upload all panels to IPFS
+      // 2. Create metadata with panel sequence
+      // 3. Call mint contract with full comic metadata
+      console.log('Minting comic with panels:', panelData)
+      // For now, just show success
+      alert('Minting implementation coming soon!')
+    } catch (error) {
+      console.error('Mint failed:', error)
+      alert('Failed to mint comic')
+    } finally {
+      setIsMinting(false)
+    }
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -427,6 +425,21 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
     )
   }
 
+  // COMIC FINALE SCREEN - Story completion view
+  if (showComicFinale) {
+    return (
+      <ComicBookFinale
+        gameTitle={game.title}
+        genre={game.genre}
+        primaryColor={game.primaryColor || '#8b5cf6'}
+        panels={buildComicPanels()}
+        onBack={() => setShowComicFinale(false)}
+        onMint={handleMintComic}
+        isMinting={isMinting}
+      />
+    )
+  }
+
   // GAME PLAY SCREEN - During game
   return (
     <div
@@ -446,126 +459,83 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
             </div>
           </div>
         ) : (
-          // Story Cards
-          <div className="w-full max-w-4xl mx-auto px-4 py-6 md:py-8 space-y-8">
-            {messages.map((message, idx) => {
-              // Only show assistant messages as story cards
-              if (message.role !== 'assistant') return null
+          // Comic Panel Display
+          <div className="w-full flex flex-col items-center justify-center min-h-full p-4 md:p-8 py-6 md:py-8">
+            {/* Panel Progress Header */}
+            <div className="w-full max-w-3xl mb-6 pb-6 border-b border-white/10 flex items-center justify-between">
+              <div>
+                <p className="text-xs text-gray-400 uppercase tracking-wider font-bold">Story Progress</p>
+                <p className="text-sm text-gray-500 mt-1">Panel {assistantMessageCount} of {MAX_COMIC_PANELS}</p>
+              </div>
+              <div className="w-48 h-2 bg-white/10 rounded-full overflow-hidden">
+                <div
+                  className="h-full transition-all duration-300"
+                  style={{
+                    width: `${(assistantMessageCount / MAX_COMIC_PANELS) * 100}%`,
+                    backgroundColor: game.primaryColor || '#8b5cf6',
+                  }}
+                />
+              </div>
+            </div>
 
-              return (
-                <div key={message.id} className="space-y-4 md:space-y-6 animate-fade-in">
-                  {/* Story Card */}
-                  <div className="rounded-xl overflow-hidden border border-white/10 bg-black/40 backdrop-blur-sm shadow-2xl">
-                    {/* Image Container - Prioritize narrative image, fallback to game cover */}
-                    {(message.narrativeImage || message.isGeneratingImage || game.imageUrl) && (
-                      <div className="w-full h-64 md:h-96 overflow-hidden bg-black/60 relative group">
-                        {message.isGeneratingImage && !message.narrativeImage ? (
-                          // Loading state
-                          <div className="w-full h-full flex items-center justify-center">
-                            <div className="text-center space-y-2">
-                              <Loader2 className="w-8 h-8 animate-spin mx-auto" style={{ color: game.primaryColor || '#8b5cf6' }} />
-                              <p className="text-xs text-gray-400">Visualizing...</p>
-                            </div>
-                          </div>
-                        ) : (
-                          <>
-                            <img
-                              src={message.narrativeImage || game.imageUrl || ''}
-                              alt="Story scene"
-                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                            />
-                            {/* Image overlay gradient */}
-                            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60"></div>
-                          </>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Narrative Content */}
-                    <div className="p-6 md:p-8 space-y-4">
-                      {/* Narrative Text - Formatted for readability */}
-                      <div className="space-y-3 text-base md:text-lg">
-                        {message.content.split('\n').map((line, lineIdx) => {
-                          if (!line.trim()) {
-                            return <div key={`empty-${lineIdx}`} className="h-2" />
-                          }
-                          return (
-                            <p key={`line-${lineIdx}`} className="text-gray-100 leading-relaxed">
-                              {parseMarkdownText(line, game.primaryColor)}
-                            </p>
-                          )
-                        })}
-                      </div>
-
-                      {/* Options - Only show after thinking is done */}
-                      {message.options && message.options.length > 0 && (
-                        <div className="mt-6 pt-6 border-t border-white/10 space-y-3">
-                          <p className="text-sm text-gray-400 uppercase tracking-wide font-semibold">
-                            What will you do?
-                          </p>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            {message.options.map((option) => (
-                              <button
-                                key={option.id}
-                                onClick={() => handleOptionClick(option)}
-                                disabled={isWaitingForResponse}
-                                className="group relative text-left p-4 rounded-lg border-2 transition-all duration-200 disabled:opacity-50 hover:scale-105 active:scale-95"
-                                style={{
-                                  borderColor: game.primaryColor || '#8b5cf6',
-                                  backgroundColor: `${game.primaryColor || '#8b5cf6'}10`,
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.backgroundColor = `${game.primaryColor || '#8b5cf6'}30`
-                                  e.currentTarget.style.boxShadow = `0 0 20px ${game.primaryColor || '#8b5cf6'}40`
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.backgroundColor = `${game.primaryColor || '#8b5cf6'}10`
-                                  e.currentTarget.style.boxShadow = 'none'
-                                }}
-                              >
-                                {/* Option Number Badge */}
-                                <div
-                                  className="inline-flex items-center justify-center w-8 h-8 rounded-full font-bold text-white mb-2"
-                                  style={{
-                                    backgroundColor: game.primaryColor || '#8b5cf6',
-                                  }}
-                                >
-                                  {option.id}
-                                </div>
-
-                                {/* Option Text */}
-                                <p className="font-semibold text-gray-100 text-sm md:text-base leading-tight">
-                                  {parseMarkdownText(option.text, game.primaryColor)}
-                                </p>
-                              </button>
-                            ))}
-                          </div>
+            {/* Panel History Thumbnails (if multiple panels exist) */}
+            {messages.filter(m => m.role === 'assistant').length > 1 && (
+              <div className="w-full max-w-3xl mb-6 pb-6 border-b border-white/10">
+                <p className="text-xs text-gray-400 uppercase tracking-wider font-bold mb-3">Story so far</p>
+                <div className="flex gap-2 overflow-x-auto pb-2">
+                  {messages.map((msg, idx) => 
+                    msg.role === 'assistant' && (
+                      <div
+                        key={msg.id}
+                        className="w-20 h-20 rounded-lg border-2 flex-shrink-0 overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+                        style={{ borderColor: game.primaryColor }}
+                        onClick={() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })}
+                        title={`Panel ${idx + 1}`}
+                      >
+                        <div className="w-full h-full bg-gradient-to-br from-gray-800 to-black flex items-center justify-center text-xs text-gray-400">
+                          {idx + 1}
                         </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Show thinking state after narrative if waiting for response */}
-                  {isWaitingForResponse && idx === messages.length - 1 && (
-                    <div className="flex items-center gap-3 p-4 rounded-lg bg-white/5 border border-white/10 text-gray-400">
-                      <Loader2 className="w-5 h-5 animate-spin" style={{ color: game.primaryColor || '#8b5cf6' }} />
-                      <span className="text-sm md:text-base">Your decision echoes... the story unfolds...</span>
-                    </div>
+                      </div>
+                    )
                   )}
                 </div>
-              )
-            })}
-
-            {/* User Action Display */}
-            {messages.some((m) => m.role === 'user') && (
-              <div className="text-center py-4 text-gray-500 text-sm">
-                ↓ Your next chapter awaits ↓
               </div>
             )}
+
+            {/* Current Comic Panel (only latest assistant message) */}
+            <div className="w-full max-w-3xl space-y-6 animate-fade-in">
+              {messages.map((message, idx) => {
+                // Only show latest assistant message as current panel
+                if (message.role !== 'assistant' || idx !== messages.length - 1) return null
+
+                return (
+                  <ComicPanelCard
+                    key={message.id}
+                    messageId={message.id}
+                    narrativeText={message.content}
+                    genre={game.genre}
+                    primaryColor={game.primaryColor || '#8b5cf6'}
+                    options={message.options || []}
+                    onOptionSelect={handleOptionClick}
+                    isWaiting={isWaitingForResponse}
+                    onImageGenerated={(result) => handleImageGenerated(message.id, result)}
+                    onImageRating={(rating) => handleImageRating(message.id, rating)}
+                  />
+                )
+              })}
+
+              {/* Show thinking state after narrative if waiting for response */}
+              {isWaitingForResponse && (
+                <div className="flex items-center gap-3 p-4 rounded-lg bg-white/5 border border-white/10 text-gray-400">
+                  <Loader2 className="w-5 h-5 animate-spin" style={{ color: game.primaryColor || '#8b5cf6' }} />
+                  <span className="text-sm md:text-base">Next scene loading...</span>
+                </div>
+              )}
+            </div>
+
+            <div ref={messagesEndRef} />
           </div>
         )}
-
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Input Area - Fixed at Bottom */}
@@ -575,40 +545,72 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
           boxShadow: `0 -4px 20px ${game.primaryColor || '#8b5cf6'}10`,
         }}
       >
-        <div className="w-full max-w-4xl mx-auto">
-          <div className="flex gap-3">
-            <Textarea
-              value={userInput}
-              onChange={(e) => setUserInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="What will you do? (Shift+Enter for new line)"
-              disabled={isWaitingForResponse}
-              className="flex-1 min-h-[50px] md:min-h-[60px] resize-none text-sm md:text-base bg-black/50 border border-white/10 text-gray-100 placeholder:text-gray-600 focus-visible:ring-0 focus-visible:border-white/30 rounded-lg p-3 md:p-4"
+        <div className="w-full max-w-4xl mx-auto space-y-3">
+          {/* Panel limit reached */}
+          {!canAddMorePanels && (
+            <div
+              className="p-4 rounded-lg border text-sm"
               style={{
-                caretColor: game.primaryColor || '#8b5cf6',
-              }}
-            />
-            <Button
-              onClick={() => sendMessage(userInput)}
-              disabled={!userInput.trim() || isWaitingForResponse}
-              className="self-end h-[50px] md:h-[60px] px-6 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-current"
-              style={{
-                backgroundColor: game.primaryColor || '#8b5cf6',
-                color: 'white',
+                backgroundColor: `${game.primaryColor || '#8b5cf6'}15`,
+                borderColor: game.primaryColor || '#8b5cf6',
               }}
             >
-              {isWaitingForResponse ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <>
-                  <Send className="w-5 h-5 md:hidden" />
-                  <span className="hidden md:inline flex items-center gap-2">
-                    <Send className="w-5 h-5" />
-                    Make Choice
-                  </span>
-                </>
-              )}
-            </Button>
+              <p className="font-semibold text-gray-100">Your {MAX_COMIC_PANELS}-Panel Story is Complete</p>
+              <p className="text-sm text-gray-400 mt-2">
+                You've reached the end of this chapter. View your complete comic book and mint it as an NFT to preserve your choices and adventure.
+              </p>
+            </div>
+          )}
+
+          <div className="flex gap-3">
+            {canAddMorePanels ? (
+              <>
+                <Textarea
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="What will you do? (Shift+Enter for new line)"
+                  disabled={isWaitingForResponse}
+                  className="flex-1 min-h-[50px] md:min-h-[60px] resize-none text-sm md:text-base bg-black/50 border border-white/10 text-gray-100 placeholder:text-gray-600 focus-visible:ring-0 focus-visible:border-white/30 rounded-lg p-3 md:p-4"
+                  style={{
+                    caretColor: game.primaryColor || '#8b5cf6',
+                  }}
+                />
+                <Button
+                  onClick={() => sendMessage(userInput)}
+                  disabled={!userInput.trim() || isWaitingForResponse}
+                  className="self-end h-[50px] md:h-[60px] px-6 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-current"
+                  style={{
+                    backgroundColor: game.primaryColor || '#8b5cf6',
+                    color: 'white',
+                  }}
+                >
+                  {isWaitingForResponse ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>
+                      <Send className="w-5 h-5 md:hidden" />
+                      <span className="hidden md:inline flex items-center gap-2">
+                        <Send className="w-5 h-5" />
+                        Make Choice
+                      </span>
+                    </>
+                  )}
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={() => setShowComicFinale(true)}
+                className="w-full h-[50px] md:h-[60px] font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-current"
+                style={{
+                  backgroundColor: game.primaryColor || '#8b5cf6',
+                  color: 'white',
+                }}
+              >
+                <BookOpen className="w-5 h-5 mr-2" />
+                Complete Story & View Comic
+              </Button>
+            )}
           </div>
         </div>
       </div>

@@ -1,10 +1,10 @@
-# Surreal World Assets Buildathon 2 - Eligibility & Strategy
+# WritArcade - Story Protocol Buildathon 2025
 
-**Event**: Surreal World Assets Buildathon 2  
-**Host**: Story Protocol (L1 blockchain for IP)  
-**Duration**: 4 weeks (Nov 14, 2025 - Dec 12, 2025)  
-**Prize Pool**: $35,000 USD across 7 main tracks + bonus challenges  
-**Registration**: Nov 14 - Dec 5, 2025  
+**Event**: Surreal World Assets Buildathon 2
+**Host**: Story Protocol (L1 blockchain for IP)
+**Duration**: 4 weeks (Nov 14, 2025 - Dec 12, 2025)
+**Prize Pool**: $35,000 USD across 7 main tracks + bonus challenges
+**Registration**: Nov 14 - Dec 5, 2025
 **Demo Day**: Dec 11, 2025
 
 ---
@@ -292,7 +292,7 @@ WritArcade IP Registration Toolkit (OSS):
 ## Bonus Challenges - High Value Opportunities
 
 ### ✅ GenAI IP Registration Challenge (ABV.dev)
-**Prize**: $250 USDC + $10K+ ABV Enterprise access + credits  
+**Prize**: $250 USDC + $10K+ ABV Enterprise access + credits
 **Match**: **85% - STRONG FIT**
 
 **Challenge**: Build a GenAI app that auto-registers outputs as IP on Story
@@ -307,7 +307,7 @@ WritArcade IP Registration Toolkit (OSS):
 ---
 
 ### ✅ Creative Interface with Yakoa API Challenge
-**Prize**: $250 USDC  
+**Prize**: $250 USDC
 **Match**: **70% - GOOD FIT**
 
 **Challenge**: Build interface to find authentic content, verify originality, show Story registration
@@ -322,10 +322,10 @@ WritArcade IP Registration Toolkit (OSS):
 ---
 
 ### ✅ Dune Analytics Dashboard Challenge (Story Dashboard)
-**Prize**: Free Dune Plus Annual plan  
+**Prize**: Free Dune Plus Annual plan
 **Match**: **65% - GOOD FIT**
 
-**Requirement**: Project must be launched on Story mainnet already (❌ WritArcade hasn't launched on Story yet)  
+**Requirement**: Project must be launched on Story mainnet already (❌ WritArcade hasn't launched on Story yet)
 **Status**: Can build this **after** launching on Story
 
 ---
@@ -371,18 +371,18 @@ WritArcade + Story Protocol:
 ```
 Step 1: User pays on Base
    Article URL + $100 AVC on Base
-   
+
 Step 2: WritArcade generates game
    AI game created locally
-   
+
 Step 3: Register on Story Protocol
    Game metadata + author permissions → Story IP
    Story returns IP Asset ID
-   
+
 Step 4: Mint on Base
    Link Story IP ID → Base NFT mint
    Royalty tokens minted on Story
-   
+
 Step 5: Earn Yield (Optional)
    Creator holds royalty tokens
    Stake on Aave/Compound (native on Story now)
@@ -395,9 +395,9 @@ Step 5: Earn Yield (Optional)
 User: "Make a game from Fred Wilson's article"
 
 1. WritArcade (Base): User sends 100 $AVC → WriterCoinPayment.sol
-   
+
 2. WritArcade Backend: Generate game from article
-   
+
 3. Story Protocol: Register game as IP
    {
      name: "Horror Game #123 from Article X",
@@ -410,18 +410,18 @@ User: "Make a game from Fred Wilson's article"
      ]
    }
    → Returns IP Asset ID on Story
-   
+
 4. Base NFT: Mint game NFT linked to Story IP
    GameNFT.mint(user.eth, {
      storyIPId: "0x123...",
      baseURI: "ipfs://...",
      game: {...}
    })
-   
+
 5. Story: Issue Royalty Tokens
    Royalty tokens auto-issued to addresses in split
    Each token = share of future game revenues
-   
+
 6. Yield (Optional):
    Creators can stake royalty tokens
    Earn APY on Story ecosystem (initially ~5-10%)
@@ -490,7 +490,7 @@ User: "Make a game from Fred Wilson's article"
 
 ### Primary Submission: **IPFi Track**
 
-**Project Title**: 
+**Project Title**:
 > "WritArcade IP: Turn Articles into Fractional Assets"
 
 **Demo Video (30-90 sec)**:
@@ -510,7 +510,7 @@ Scene 6: Secondary market trading (mockup)
 4. **User Experience** ✅ - Seamless game → IP registration
 5. **Presentation** ✅ - Clear value prop (creators earn from derivative work)
 
-**Why We Win**: 
+**Why We Win**:
 - Real creator economy use case (not theoretical)
 - Solves actual problem: authors make money on fan content
 - Differentiates WritArcade as IP-aware platform
@@ -641,22 +641,22 @@ Scene 6: Secondary market trading (mockup)
 ## Decision: Is This Worth It?
 
 ### Pros
-✅ **Perfect Track Match**: IPFi is literally what we're building  
-✅ **Existing Foundation**: Already have game generation + payments  
-✅ **High Prize Potential**: $5K-10K USD + equity exposure  
-✅ **Ecosystem Alignment**: Story Protocol is perfect fit for IP economics  
-✅ **Validation**: Judges are IP experts; good feedback if we don't win  
-✅ **Timeline**: 4 weeks fits our dev cycle  
-✅ **Resume**: Shows multichain + IP architecture expertise  
+✅ **Perfect Track Match**: IPFi is literally what we're building
+✅ **Existing Foundation**: Already have game generation + payments
+✅ **High Prize Potential**: $5K-10K USD + equity exposure
+✅ **Ecosystem Alignment**: Story Protocol is perfect fit for IP economics
+✅ **Validation**: Judges are IP experts; good feedback if we don't win
+✅ **Timeline**: 4 weeks fits our dev cycle
+✅ **Resume**: Shows multichain + IP architecture expertise
 
 ### Cons
-⚠️ **Context Switch**: Shifts focus from Farcaster launch  
-⚠️ **Story Protocol Risk**: Platform relatively new  
-⚠️ **Prize Pool**: $35K shared across 35+ projects = ~$1K average  
-⚠️ **Effort**: 3-4 weeks of solid work needed  
+⚠️ **Context Switch**: Shifts focus from Farcaster launch
+⚠️ **Story Protocol Risk**: Platform relatively new
+⚠️ **Prize Pool**: $35K shared across 35+ projects = ~$1K average
+⚠️ **Effort**: 3-4 weeks of solid work needed
 
 ### My Recommendation
-**YES, participate in IPFi track**. 
+**YES, participate in IPFi track**.
 
 This is not a distraction—it's **the natural evolution of WritArcade**. Story Protocol + IP registration is exactly what makes creator coins valuable. Winning or placing would:
 1. Validate the product-market fit
@@ -749,6 +749,7 @@ STORY_WALLET_KEY="0x..."  # Generate: node -e "console.log(require('ethers').Wal
 # Story Contract Addresses
 NEXT_PUBLIC_STORY_IP_REGISTRY="0x..."
 NEXT_PUBLIC_STORY_ROYALTY_CONTRACT="0x..."
+
 NEXT_PUBLIC_WRITARCADE_TREASURY="0x..."
 
 # IPFS Gateway
@@ -781,7 +782,7 @@ npx hardhat run scripts/approve-author.ts --network story-testnet \
 
 ### Game Flow
 ```
-Generate Game → Upload to IPFS → Register on Story → Mint Royalty Tokens 
+Generate Game → Upload to IPFS → Register on Story → Mint Royalty Tokens
 → [Optional: Mint NFT on Base] → Link IP to NFT → Complete
 ```
 
@@ -815,8 +816,7 @@ Generate Game → Upload to IPFS → Register on Story → Mint Royalty Tokens
 - **Demo Day**: Dec 11, 2025 (virtual)
 
 ### Troubleshooting
-**"Story RPC unreachable"** → Check STORY_RPC_URL, verify testnet online  
-**"STORY_WALLET_KEY not found"** → Generate key, add to .env.local  
-**"Author not approved"** → Run approve-author script  
+**"Story RPC unreachable"** → Check STORY_RPC_URL, verify testnet online
+**"STORY_WALLET_KEY not found"** → Generate key, add to .env.local
+**"Author not approved"** → Run approve-author script
 **"Contract deployment fails"** → Ensure hardhat configured, wallet funded
-

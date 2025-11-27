@@ -168,18 +168,24 @@ export class GameAIService {
   }
 
   /**
-   * Continue game conversation with user input
-   * Enhanced version of original ChatGame.js
-   */
+     * Continue game conversation with user input
+     * Story-aware version with panel pacing awareness
+     * Enforces 60-130 words per panel with intelligent escalation
+     */
   static async* chatGame(
     messages: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>,
     userInput: string,
-    model: string = 'gpt-4o-mini'
+    model: string = 'gpt-4o-mini',
+    currentPanel: number = 1,
+    maxPanels: number = 10
   ): AsyncGenerator<GameplayResponse> {
 
     const aiModel = getModel(model)
 
-    // Add user input to conversation
+    // Build story pacing guidance based on position in narrative
+    const paceGuidance = this.getPacingGuidance(currentPanel, maxPanels)
+
+    // Add system message enforcing word count and pacing to conversation
     const conversationMessages = [
       ...messages,
       { role: 'user' as const, content: userInput }
@@ -189,6 +195,13 @@ export class GameAIService {
       const { textStream } = await streamText({
         model: aiModel,
         messages: conversationMessages,
+        system: `You are a comic-style game engine for a ${maxPanels}-panel story (currently at panel ${currentPanel}).
+
+  WORD COUNT REQUIREMENT: Keep narrative to 60-130 words (roughly 4-8 sentences). Use vivid, visual language.
+
+  ${paceGuidance}
+
+  CRITICAL: Always end with exactly 4 numbered options (1. 2. 3. 4.) on separate lines.`
       })
 
       let content = ''
@@ -201,8 +214,16 @@ export class GameAIService {
         }
       }
 
+      // Enforce word count limits (60-130 words)
+      const trimmedContent = this.enforceWordCount(content, 60, 130)
+      
+      if (trimmedContent !== content) {
+        const wordCount = trimmedContent.split(/\s+/).filter(w => w.length > 0).length
+        console.log(`[Panel ${currentPanel}/${maxPanels}] Word count enforced: ${wordCount} words`)
+      }
+
       // Parse options from response
-      const options = this.parseGameOptions(content)
+      const options = this.parseGameOptions(trimmedContent)
 
       if (options.length > 0) {
         yield {
@@ -219,6 +240,86 @@ export class GameAIService {
       console.error('Game chat error:', error)
       throw new Error('Failed to process game input')
     }
+  }
+
+  /**
+   * Provide pacing guidance based on story position
+   * Helps AI understand narrative structure and when to escalate/resolve
+   */
+  private static getPacingGuidance(currentPanel: number, maxPanels: number): string {
+    const thirdPoint = Math.floor(maxPanels / 3)
+    const twoThirdPoint = Math.floor((maxPanels * 2) / 3)
+    
+    if (currentPanel <= thirdPoint) {
+      return `NARRATIVE PHASE: SETUP & EXPOSITION
+Build the world and introduce conflict. Establish stakes and intrigue. Players are just beginning their journey.`
+    } else if (currentPanel <= twoThirdPoint) {
+      return `NARRATIVE PHASE: RISING ACTION & ESCALATION
+Deepen the conflict and raise the stakes. Add complications and plot twists. Build momentum toward climax.`
+    } else {
+      return `NARRATIVE PHASE: CLIMAX & RESOLUTION
+Bring the story to its peak. Resolve central conflicts. Provide meaningful closure to player choices and consequences.`
+    }
+  }
+
+  /**
+   * Enforce word count between min and max
+   * Extracts narrative before options and trims/adjusts word count
+   */
+  private static enforceWordCount(content: string, minWords: number, maxWords: number): string {
+    // Find where options start
+    const optionStartPattern = /^[-*]?\s*1[.)]\s+/m
+    const match = content.match(optionStartPattern)
+
+    if (!match || !match.index) {
+      // No options found, trim narrative to word count
+      return this.trimToWordCount(content, minWords, maxWords)
+    }
+
+    // Split narrative from options
+    const narrativeSection = content.substring(0, match.index).trim()
+    const optionsSection = content.substring(match.index).trim()
+
+    // Trim narrative to word count range
+    const trimmedNarrative = this.trimToWordCount(narrativeSection, minWords, maxWords)
+
+    // Combine trimmed narrative with all options
+    return trimmedNarrative + '\n\n' + optionsSection
+  }
+
+  /**
+   * Trim text to a specific word count range
+   * Prefers to keep near maxWords but respects minWords floor
+   */
+  private static trimToWordCount(text: string, minWords: number, maxWords: number): string {
+    const words = text.split(/\s+/).filter(w => w.length > 0)
+    
+    // If already within range, return as-is
+    if (words.length >= minWords && words.length <= maxWords) {
+      return words.join(' ')
+    }
+
+    // If too long, truncate to maxWords and find sentence boundary
+    if (words.length > maxWords) {
+      let truncated = words.slice(0, maxWords).join(' ')
+      
+      // Try to end at sentence boundary
+      const lastPeriod = Math.max(
+        truncated.lastIndexOf('.'),
+        truncated.lastIndexOf('!'),
+        truncated.lastIndexOf('?')
+      )
+      
+      if (lastPeriod > minWords / 6) {
+        // If we can end at a sentence and still have decent length, do it
+        truncated = truncated.substring(0, lastPeriod + 1)
+      }
+      
+      return truncated
+    }
+
+    // If too short, return what we have (AI should respect word count in future attempts)
+    return words.join(' ')
   }
 
   /**
@@ -265,30 +366,32 @@ Please provide a JSON response with the following structure:
   /**
    * Build start game prompt (enhanced from original)
    * Now optionally includes article context for narrative continuity
+   * Enforces 60-130 words for opening panel
    */
   private static buildStartGamePrompt(game: any, articleContext?: string): string {
-    const basePrompt = `You are an interactive text game engine.
+    const basePrompt = `You are an interactive text game engine designed for visual comic-style gameplay.
 
-# GAME DETAILS
-Title: ${game.title}
-Genre: ${game.genre}
-Subgenre: ${game.subgenre}
-Description: ${game.description}
-Tagline: ${game.tagline}
+  # GAME DETAILS
+  Title: ${game.title}
+  Genre: ${game.genre}
+  Subgenre: ${game.subgenre}
+  Description: ${game.description}
+  Tagline: ${game.tagline}
 
-${articleContext ? `# ARTICLE CONTEXT (use to enhance narrative authenticity)
-${articleContext}
+  ${articleContext ? `# ARTICLE CONTEXT (use to enhance narrative authenticity)
+  ${articleContext}
 
-` : ''}# RULES
-* Stay in character and maintain the game's tone
-* Keep responses relatively short for tight feedback loops
-* Always end with exactly 4 numbered options (1. 2. 3. 4.)
-* Be concise, witty, and engaging
-* Ensure the story aligns with the game description${articleContext ? ' and incorporates themes from the article' : ''}
-* Make choices meaningful with real consequences
-* Begin each option with the number, period, and space (e.g., "1. ")
+  ` : ''}# CRITICAL RULES - COMIC PANEL FORMAT
+  * Keep narrative to 60-130 words (roughly 4-8 sentences maximum)
+  * Use vivid, visual language that translates to imagery
+  * Paint clear pictures for the comic panel image
+  * No lengthy backstory or explanations - show, don't tell
+  * Dramatic and engaging tone only
+  * Always end with exactly 4 numbered options (1. 2. 3. 4.)
+  * Begin each option with the number, period, and space (e.g., "1. ")
+  * Make choices meaningful with real consequences
 
-Start the game now. Set the scene and present 4 initial choices.`
+  Start the game now. Set the scene and present 4 initial choices.`
 
     return basePrompt
   }
@@ -363,4 +466,6 @@ Start the game now. Set the scene and present 4 initial choices.`
 
     return options.sort((a, b) => a.id - b.id)
   }
+
+
 }

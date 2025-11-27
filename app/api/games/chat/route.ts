@@ -56,17 +56,23 @@ export async function POST(request: NextRequest) {
         content: chat.content,
       }))
     
+    // Calculate current panel number (assistant messages = panels)
+    const currentPanelNumber = chatHistory.filter(m => m.role === 'assistant').length + 1
+    const maxPanels = 10 // Match MAX_COMIC_PANELS from frontend
+    
     // Start streaming response
     const encoder = new TextEncoder()
     
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          // Get AI response
+          // Get AI response with panel awareness
           const chatStream = GameAIService.chatGame(
             messages,
             message,
-            'gpt-4o-mini' // TODO: Get from game or user preference
+            'gpt-4o-mini', // TODO: Get from game or user preference
+            currentPanelNumber,
+            maxPanels
           )
           
           let assistantContent = ''

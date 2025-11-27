@@ -1,6 +1,6 @@
 # WritArcade Development Guide
 
-**Last Updated:** November 27, 2025  
+**Last Updated:** November 27, 2025
 **Status:** Phase 5b Complete - UI/UX Polish & Visual Identity
 
 ## Quick Start
@@ -13,7 +13,7 @@ npm install
 # Start dev server (uses turbopack)
 npm run dev
 
-# Opens: 
+# Opens:
 # Web app: http://localhost:3000/
 # Mini-app: http://localhost:3000/mini-app
 ```
@@ -38,7 +38,7 @@ npm run dev
 - Auto-retry mechanism triggers after 2 seconds
 
 **Common Issues & Fixes:**
-- Missing OpenAI API key → Games won't generate  
+- Missing OpenAI API key → Games won't generate
 - Missing Venice API key → Games generate without images (graceful)
 - Options not parsing → Check browser console for errors
 - Genre not respected → Automatic retry logic activates
@@ -76,8 +76,8 @@ NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID="your-project-id"
 ## Mini App SDK Integration
 
 ### Migration from Frames v2
-**Removed:** `@farcaster/frame-sdk` v0.0.64  
-**Added:** `@farcaster/miniapp-sdk` v0.2.1  
+**Removed:** `@farcaster/frame-sdk` v0.0.64
+**Added:** `@farcaster/miniapp-sdk` v0.2.1
 **Rationale:** Frames v2 deprecated in March 2025; Mini Apps is the current standard
 
 ### Core Integration (`lib/farcaster.ts`)
@@ -86,7 +86,7 @@ NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID="your-project-id"
 import sdk from '@farcaster/frame-sdk'
 await initializeFarcasterSDK() // Returns boolean
 
-// After  
+// After
 import { sdk } from '@farcaster/miniapp-sdk'
 await sdk.actions.ready() // Signals Mini App is ready
 await getFarcasterContext() // Gets user/client context
@@ -227,7 +227,7 @@ if (showCustomization && !isConnected) {
 // Genre selection
 const [genre, setGenre] = useState<'horror' | 'comedy' | 'mystery'>('horror')
 
-// Difficulty selection  
+// Difficulty selection
 const [difficulty, setDifficulty] = useState<'easy' | 'hard'>('easy')
 
 // Customization sent to unified endpoint

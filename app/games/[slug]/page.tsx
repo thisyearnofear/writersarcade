@@ -21,9 +21,9 @@ export default async function GamePage({ params }: GamePageProps) {
 
   // Generate image if not exists (async, non-blocking)
   if (!game.imageUrl) {
-    ImageGenerationService.generateGameImage(game).then(imageUrl => {
-      if (imageUrl) {
-        GameDatabaseService.updateGameImage(game.id, imageUrl).catch(console.error)
+    ImageGenerationService.generateGameImage(game).then(result => {
+      if (result.imageUrl) {
+        GameDatabaseService.updateGameImage(game.id, result.imageUrl).catch(console.error)
       }
     }).catch(console.error)
   }

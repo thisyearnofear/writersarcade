@@ -1,6 +1,6 @@
 # WritArcade Architecture
 
-**Last Updated:** November 24, 2025  
+**Last Updated:** November 24, 2025
 **Status:** Phase 5 Complete - True Feature Parity Achieved
 
 ## Overview
@@ -42,7 +42,7 @@ const wallet = detectWalletProvider() // Farcaster or Browser
 ```typescript
 /lib/wallet/
 ├── types.ts          → WalletProvider interface
-├── farcaster.ts      → Farcaster Mini App SDK implementation  
+├── farcaster.ts      → Farcaster Mini App SDK implementation
 ├── browser.ts        → MetaMask/browser wallet implementation
 └── index.ts          → Auto-detection + factory
 ```
@@ -88,14 +88,14 @@ const wallet = detectWalletProvider() // Farcaster or Browser
 Mini-app:  /api/mini-app/payments/initiate
 Web app:   (no payment support)
 
-Mini-app:  /api/mini-app/games/generate  
+Mini-app:  /api/mini-app/games/generate
 Web app:   /api/games/generate (different)
 ```
 
 **After (unified):**
 ```
 /api/games/generate      → Both environments
-/api/payments/initiate   → Both environments  
+/api/payments/initiate   → Both environments
 /api/payments/verify     → Both environments
 ```
 
@@ -108,13 +108,13 @@ Web app:   /api/games/generate (different)
 
 ### Game Data Storage
 - **Generated Games**: AI-generated game metadata (title, description, prompts)
-- **Game Sessions**: Persistent gameplay across visits  
+- **Game Sessions**: Persistent gameplay across visits
 - **Chat History**: Full conversation threads for each game
 - **Game Assets**: Generated images, music, custom prompts
 
 ### Payment Tracking
 - **Payment Records**: Writer coin transactions for game generation
-- **NFT Metadata**: Game minting information  
+- **NFT Metadata**: Game minting information
 - **Revenue Tracking**: Creator royalty distribution
 - **Audit Trail**: Complete transaction history
 
@@ -139,7 +139,7 @@ model Game {
   id               String   @id @default(cuid())
   title            String
   articleUrl       String?
-  genre            String?   // "horror" | "comedy" | "mystery"  
+  genre            String?   // "horror" | "comedy" | "mystery"
   difficulty       String?   // "easy" | "hard"
   content          Json      // Full game JSON
   writerCoinId     String?   // Token used for generation
@@ -149,7 +149,7 @@ model Game {
   nftTransactionHash String? // Mint tx hash
   nftMintedAt      DateTime? // When NFT was minted
   paymentId        String?   // Link to Payment record
-  
+
   creator          User?     @relation(fields: [creatorId], references: [id])
   payment          Payment?  @relation(fields: [paymentId], references: [id])
 }
@@ -164,7 +164,7 @@ model Payment {
   writerCoinId     String    // Token used
   createdAt        DateTime  @default(now())
   verifiedAt       DateTime?
-  
+
   user             User?     @relation(fields: [userId], references: [id])
   games            Game[]    // Games linked to this payment
 }
@@ -213,7 +213,7 @@ const WRITER_COINS = [
     symbol: "$AVC",
     address: "0x06FC3D5D2369561e28F28F261148576520F5e49D6ea",
     writer: "Fred Wilson",
-    paragraphAuthor: "fredwilson", 
+    paragraphAuthor: "fredwilson",
     paragraphUrl: "https://avc.xyz/",
     gameGenerationCost: 100n,
     mintCost: 50n,
@@ -252,12 +252,12 @@ const WRITER_COINS = [
 ```solidity
 contract WriterCoinPayment {
   mapping(address => bool) public allowedWriterCoins;
-  
+
   function payForGameGeneration(
     address writerCoin,
     address user
   ) external returns (uint256 paymentId);
-  
+
   function payForMinting(
     address writerCoin,
     address user
@@ -265,7 +265,7 @@ contract WriterCoinPayment {
 }
 ```
 
-### GameNFT.sol  
+### GameNFT.sol
 ```solidity
 contract GameNFT is ERC721URIStorage {
   struct GameMetadata {
@@ -276,9 +276,9 @@ contract GameNFT is ERC721URIStorage {
     string difficulty;
     uint256 createdAt;
   }
-  
+
   mapping(uint256 => GameMetadata) public games;
-  
+
   function mintGame(
     address to,
     string memory tokenURI,
