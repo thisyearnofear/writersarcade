@@ -22,9 +22,9 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
     },
     {
       title: "Step 1: Choose Your Content",
-      description: "Paste an article URL or describe your game idea",
+      description: "Paste a Paragraph.xyz article URL or describe your game idea",
       visual: "📝",
-      content: "Works with Substack, Medium, blogs, news articles, or your own ideas"
+      content: "Works exclusively with Paragraph.xyz articles from supported authors"
     },
     {
       title: "Step 2: Customize (Optional)",

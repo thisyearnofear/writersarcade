@@ -85,7 +85,7 @@ export default function GamesPage() {
           <div className="max-w-6xl mx-auto">
             <h1 className="text-5xl font-bold mb-4">Game Gallery</h1>
             <p className="text-gray-400 text-lg">
-              Explore {stats?.publicGames || 0} games created from articles and newsletters
+              Explore {stats?.publicGames || 0} games created from Paragraph.xyz articles
             </p>
           </div>
         </section>

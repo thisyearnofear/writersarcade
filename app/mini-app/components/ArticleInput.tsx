@@ -129,7 +129,7 @@ export function ArticleInput({ writerCoin, onSubmit, onBack }: ArticleInputProps
                 {/* Help Text */}
                 <div className="rounded-lg bg-purple-900/30 p-4">
                     <p className="text-xs text-purple-300">
-                        💡 <span className="font-semibold">Tip:</span> Make sure you're using an article from {writerCoin.writer}'s Paragraph newsletter. The URL should start with {writerCoin.paragraphUrl}
+                        💡 <span className="font-semibold">Tip:</span> Make sure you're using an article from {writerCoin.writer}'s Paragraph publication. The URL should start with {writerCoin.paragraphUrl}
                     </p>
                 </div>
             </div>

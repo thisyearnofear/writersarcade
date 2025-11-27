@@ -7,8 +7,6 @@
 
 ### 1. Local Setup
 ```bash
-cd /Users/udingethe/Dev/WritArcade
-
 # Install dependencies
 npm install
 
@@ -19,6 +17,25 @@ npm run dev
 # Web app: http://localhost:3000/
 # Mini-app: http://localhost:3000/mini-app
 ```
+
+### 2. Quick Testing (5 minutes)
+
+**Basic Game Generation:**
+1. Navigate to generator, paste any Paragraph.xyz URL
+2. Click "Create Game" (no customization) → Verify 4 options parse correctly
+
+**Customization Testing:**
+1. Select Genre = "Horror", connect wallet, generate custom game
+2. Verify horror-themed content and article context integration
+
+**Error Handling:**
+- Test offline/network errors → Should show red banner (no alert dialogs)
+- Auto-retry mechanism triggers after 2 seconds
+
+**Common Issues & Fixes:**
+- Missing OpenAI API key → Games won't generate  
+- Options not parsing → Check browser console for errors
+- Genre not respected → Automatic retry logic activates
 
 ### 2. Environment Configuration
 ```bash

@@ -81,7 +81,7 @@ function categorizeError(message: string, context?: string): ErrorInfo {
       type: 'URL_INVALID',
       message,
       userMessage:
-        'Please enter a valid article URL (e.g., from Substack, Medium, or your blog). ' +
+        'Please enter a valid Paragraph.xyz article URL. ' +
         'Make sure it starts with "http://" or "https://".',
       retryable: true,
     }

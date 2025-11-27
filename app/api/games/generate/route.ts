@@ -78,6 +78,8 @@ ${processedContent.text}\n\nMake the game capture the essence and themes of this
       publicationSummary: processedContent.publicationSummary,
       subscriberCount: processedContent.subscriberCount,
       articlePublishedAt: processedContent.publishedAt,
+      // Include article context for narrative continuity
+      articleContext: `Article: "${processedContent.title}"\nAuthor: ${processedContent.author || 'Unknown'}\nKey points: ${processedContent.text.substring(0, 500)}...`,
     } : undefined
     const savedGame = await GameDatabaseService.createGame(gameData, user?.id, miniAppData)
     

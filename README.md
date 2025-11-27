@@ -4,13 +4,28 @@ Transform articles into playable, mintable games where readers can spend writer 
 
 ## Vision
 
-Give AVC readers a new way to engage: turn Fred Wilson's articles into playable, mintable games using $AVC tokens. Users select genre (Horror/Comedy/Mystery) + difficulty (Easy/Hard), pay 100 $AVC, generate unique game interpretations, and optionally mint as Base NFTs for 50 $AVC.
+**Collaborative Content Creation with Newsletter Authors on Paragraph.xyz**
+
+WritArcade enables readers to collaborate with their favorite newsletter authors by transforming articles into unique, playable games. Starting with Fred Wilson's AVC newsletter, users spend $AVC tokens to generate novel game experiences based on Fred's content, creating a new revenue stream that benefits everyone:
+
+- **Writers** (Fred Wilson): Earn 35% of all transaction revenue from games based on their content
+- **Game Creators**: Earn 35% revenue share when others play their generated games  
+- **Token Burn**: 20% of all transactions burned for deflationary tokenomics
+- **Platform**: Sustains development with 10% platform fee
+
+This creates a sustainable ecosystem where high-quality content drives new forms of engagement, writers monetize their archives, and readers become creative collaborators rather than passive consumers.
 
 ## Core Flow
 
 ```
-User in Farcaster → Select Writer Coin → Paste Article URL → Customize Game → Pay & Generate → Play → Mint as NFT
+User in Farcaster → Select $AVC → Paste Fred's Article URL → Customize Game Style → Pay 100 $AVC → AI Generates Game → Play → Mint as NFT (50 $AVC)
 ```
+
+**Revenue Distribution (via 0xSplits):**
+- 35% → Fred Wilson's treasury (writer collaboration)
+- 35% → Game creator (for future plays of their specific game)  
+- 20% → Token burn (deflationary mechanism)
+- 10% → Platform development & operations
 
 ## Quick Start
 
@@ -92,11 +107,17 @@ Our documentation is consolidated into 4 comprehensive guides:
 
 ## Writer Coins (MVP)
 
-### $AVC (Fred Wilson)
-- **Address**: `0x06FC3D5D2369561e28F261148576520F5e49D6ea`
+### $AVC (Fred Wilson) - Collaboration Model
+- **Address**: `0x06FC3D5D2369561e28F261148576520F5e49D6ea`  
+- **Paragraph Publication**: https://avc.xyz/ (Fred Wilson's newsletter)
 - **Game Generation**: 100 $AVC
 - **NFT Minting**: 50 $AVC
-- **Revenue Split**: 60% writer, 20% platform, 20% community pool
+- **Revenue Split** (via 0xSplits + Story Protocol):
+  - 35% → Fred Wilson (content collaboration revenue)
+  - 35% → Game creator (ongoing revenue when others play)
+  - 20% → Token burn (deflationary mechanism)
+  - 10% → Platform (sustainable development)
+- **IP Layer**: Story Protocol manages derivative rights and ongoing royalties
 
 ### Additional Tokens
 - Writer Coin #2: TBD

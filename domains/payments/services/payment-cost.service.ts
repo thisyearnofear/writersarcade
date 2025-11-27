@@ -45,7 +45,7 @@ export class PaymentCostService {
     const amount = action === 'generate-game' ? coin.gameGenerationCost : coin.mintCost
 
     if (action === 'generate-game') {
-      // Game generation: 60% writer, 20% platform, 20% creator pool
+      // Game generation: 35% writer, 35% creator, 20% burn, 10% platform
       return {
         writerShare: (amount * BigInt(coin.revenueDistribution.writer)) / BigInt(100),
         platformShare: (amount * BigInt(coin.revenueDistribution.platform)) / BigInt(100),

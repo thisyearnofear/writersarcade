@@ -19,6 +19,7 @@ export class GameDatabaseService {
       articleUrl?: string
       writerCoinId?: string
       difficulty?: string
+      articleContext?: string
     }
   ): Promise<Game> {
     try {
@@ -47,6 +48,7 @@ export class GameDatabaseService {
           promptText: gameData.promptText,
           promptModel: gameData.promptModel,
           articleUrl: miniAppData?.articleUrl,
+          articleContext: miniAppData?.articleContext,
           writerCoinId: miniAppData?.writerCoinId,
           difficulty: miniAppData?.difficulty,
           private: false, // Default to public for now
@@ -292,6 +294,7 @@ export class GameDatabaseService {
       musicPromptText: prismaGame.musicPromptText,
       musicPromptSeedImage: prismaGame.musicPromptSeedImage,
       articleUrl: prismaGame.articleUrl,
+      articleContext: prismaGame.articleContext,
       writerCoinId: prismaGame.writerCoinId,
       difficulty: prismaGame.difficulty,
       private: prismaGame.private,

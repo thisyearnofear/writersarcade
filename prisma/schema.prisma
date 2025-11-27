@@ -65,6 +65,7 @@ model Game {
   publicationSummary String?
   subscriberCount    Int?
   articlePublishedAt DateTime?
+  articleContext     String?  @db.Text  // Article summary used for game start narrative continuity
   writerCoinId       String?  // Which writer coin was used (e.g., "avc")
   difficulty         String?  // Game difficulty: "easy" or "hard"
 

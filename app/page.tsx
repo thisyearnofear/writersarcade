@@ -58,7 +58,7 @@ export default function HomePage() {
                 </div>
                 <h3 className="text-xl font-semibold mb-3">Submit Content</h3>
                 <p className="text-gray-400">
-                  Paste an article URL or text from your favorite newsletter or blog
+                  Paste a Paragraph.xyz article URL from supported authors
                 </p>
               </div>
               

@@ -68,7 +68,8 @@ export async function POST(
               tagline: game.tagline,
             },
             sessionId,
-            game.promptModel
+            game.promptModel,
+            game.articleContext // Pass article context for narrative continuity
           )
           
           let assistantContent = ''

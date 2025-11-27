@@ -99,6 +99,10 @@ The game should:
         articleUrl: validatedData.articleUrl,
         writerCoinId: validatedData.writerCoinId,
         difficulty: validatedData.difficulty,
+        // Include article context for better game start narrative continuity
+        articleContext: processedContent 
+          ? `Article: "${processedContent.title}"\nAuthor: ${processedContent.author || 'Unknown'}\nKey points: ${processedContent.text.substring(0, 500)}...`
+          : undefined,
       }
     )
 

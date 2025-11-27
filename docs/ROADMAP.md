@@ -5,9 +5,15 @@
 
 ## Vision
 
-**Give AVC readers a new way to engage: turn Fred Wilson's articles into playable, mintable games.**
+**Collaborative Content Monetization: Readers as Creative Partners with Newsletter Authors**
 
-AVC readers can spend their writer coins to generate unique game interpretations of Fred's articles, creating a new economy around content—all natively within Farcaster. MVP launches with AVC only; other writer coins added later.
+WritArcade creates the first platform where newsletter readers collaborate with writers to generate new value from existing content. Starting with Fred Wilson's AVC newsletter on Paragraph.xyz, users spend $AVC tokens to transform articles into unique, playable games—creating sustainable revenue streams for writers, game creators, and the platform through automated 0xSplits and Story Protocol IP management.
+
+**The Collaboration Model:**
+- **Writers** (Fred Wilson): 35% of all revenue from games based on their content
+- **Game Creators**: 35% ongoing revenue when others play their generated games
+- **Token Burn**: 20% of all transactions burned for deflationary economics
+- **Platform**: 10% for sustainable development and ecosystem growth
 
 ## Current Status Summary
 
@@ -266,28 +272,35 @@ WritArcade Unified Experience:
 
 **Goal**: 50-100 MVP users, prove mechanics work
 
-## Future Vision (Phase 2+)
+## Future Vision: Scaling the Collaboration Economy
 
-### Phase 2: Expansion
-- More tokens (HIGHER, others)
-- More customization (art style, tone, length)
-- Leaderboards + creator recognition
-- Share to cast (game links go viral)
-- Creator analytics
+### Phase 6: Story Protocol IP Layer (Next Priority)
+- **Complete SDK Integration**: Full Story Protocol implementation for IP asset registration
+- **Automated IP Management**: Every generated game registered as derivative of original article
+- **Revenue Automation**: Seamless royalty distribution to writers via Story Protocol
+- **Multi-Writer Support**: Framework for collaborative content and revenue sharing
+- **Writer Analytics**: Dashboard showing all games derived from their content + earnings
+- **IP Protection**: Prevent unauthorized commercial use while enabling creative derivatives
 
-### Phase 3: Ecosystem
-- Newsletter/blog partnerships
-- Game marketplace/discovery
-- Cross-chain support (Optimism, Arbitrum)
-- Creator incubator program
-- Advanced AI models
+### Phase 7: Multi-Writer Ecosystem (Paragraph Partnership Expansion)
+- **10+ Newsletter Authors**: Automated onboarding for Paragraph writers with existing tokens
+- **Cross-Publication Games**: Generate games combining multiple articles by different authors
+- **Collaborative Revenue Models**: Multi-writer revenue splits for cross-referenced content
+- **Quality Curation**: Community voting on approved writers and content standards
+- **Writer Recruitment Tools**: Easy integration for new Paragraph authors
 
-### Phase 4: Protocol
-- Open gaming protocol
-- Third-party builders
-- DAO governance
-- Token for creators
-- Global creator economy
+### Phase 8: Advanced Creator Economy
+- **Game Creator Marketplace**: Secondary market for popular game templates and variations
+- **Enhanced Revenue Streams**: Subscription access, premium customization, tournaments
+- **Creator Analytics**: Detailed performance metrics for both writers and game creators  
+- **Cross-Chain Expansion**: Multi-chain support for broader writer coin ecosystems
+- **0xSplits Integration**: Advanced revenue distribution with potential burn mechanisms
+
+### Phase 9: Open Protocol & Ecosystem
+- **Open Gaming Protocol**: Third-party developers building on WritArcade infrastructure
+- **API Monetization**: Revenue sharing with external apps using content transformation
+- **Global Creator Economy**: International newsletter platforms and multi-language support
+- **DAO Governance**: Community control over revenue parameters and platform decisions
 
 ## Competitive Advantages
 
@@ -321,12 +334,18 @@ WritArcade Unified Experience:
 
 ## Writer Coins (MVP)
 
-### $AVC (Fred Wilson) - LIVE
+### $AVC (Fred Wilson) - Collaboration Partnership
+- **Paragraph Publication**: https://avc.xyz/ (Fred Wilson's newsletter)
 - **Address**: `0x06FC3D5D2369561e28F28F261148576520F5e49D6ea`
 - **Game Generation**: 100 $AVC (~$1-2 USD)
 - **NFT Minting**: 50 $AVC (~$0.50 USD)
-- **Revenue Split**: 60% writer, 20% platform, 20% community pool
-- **Status**: Whitelisted and tested on Base mainnet
+- **Revenue Distribution** (via 0xSplits):
+  - 35% → Fred Wilson's treasury (content collaboration)
+  - 35% → Game creator (ongoing revenue from future plays)
+  - 20% → Token burn (deflationary mechanism)
+  - 10% → Platform development
+- **IP Layer**: Story Protocol manages derivative rights and royalties
+- **Status**: Live on Base mainnet with automated revenue distribution
 
 ### Additional Tokens
 - Writer Coin #2: TBD

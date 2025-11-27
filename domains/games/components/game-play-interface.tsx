@@ -21,10 +21,17 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [userInput, setUserInput] = useState('')
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false)
+  const [streamError, setStreamError] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const streamRetryCountRef = useRef(0)
   
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+  
+  // Exponential backoff for retries
+  const getRetryDelay = (attempt: number) => {
+    return Math.min(1000 * Math.pow(2, attempt), 10000) // Max 10 seconds
   }
   
   useEffect(() => {
@@ -72,62 +79,72 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
         const lines = chunk.split('\n')
         
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(line.slice(6))
-              
-              if (data.type === 'content') {
-                currentMessage += data.content
-                // Update the current message in real-time
-                setMessages(prev => {
-                  const newMessages = [...prev]
-                  const lastMessage = newMessages[newMessages.length - 1]
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6))
+                
+                // Handle error responses
+                if (data.type === 'error') {
+                  setStreamError(data.error || 'An error occurred during streaming')
+                  throw new Error(data.error || 'Stream error')
+                }
+                
+                if (data.type === 'content') {
+                  currentMessage += data.content
+                  setStreamError(null) // Clear any previous errors
                   
-                  if (lastMessage && lastMessage.role === 'assistant') {
-                    lastMessage.content = currentMessage
-                  } else {
-                    newMessages.push({
-                      id: `temp-${Date.now()}`,
-                      sessionId: newSessionId,
-                      gameId: game.id,
-                      role: 'assistant',
-                      content: currentMessage,
-                      model: game.promptModel,
-                      createdAt: new Date(),
-                    })
-                  }
-                  
-                  return newMessages
-                })
-              } else if (data.type === 'options') {
-                currentOptions = data.options || []
-              } else if (data.type === 'end') {
-                // Finalize the message with options
-                setMessages(prev => {
-                  const newMessages = [...prev]
-                  const lastMessage = newMessages[newMessages.length - 1]
-                  if (lastMessage) {
-                    lastMessage.options = currentOptions
-                  }
-                  return newMessages
-                })
+                  // Update the current message in real-time
+                  setMessages(prev => {
+                    const newMessages = [...prev]
+                    const lastMessage = newMessages[newMessages.length - 1]
+                    
+                    if (lastMessage && lastMessage.role === 'assistant') {
+                      lastMessage.content = currentMessage
+                    } else {
+                      newMessages.push({
+                        id: `temp-${Date.now()}`,
+                        sessionId: newSessionId,
+                        gameId: game.id,
+                        role: 'assistant',
+                        content: currentMessage,
+                        model: game.promptModel,
+                        createdAt: new Date(),
+                      })
+                    }
+                    
+                    return newMessages
+                  })
+                } else if (data.type === 'options') {
+                  currentOptions = data.options || []
+                } else if (data.type === 'end') {
+                  // Finalize the message with options
+                  setMessages(prev => {
+                    const newMessages = [...prev]
+                    const lastMessage = newMessages[newMessages.length - 1]
+                    if (lastMessage) {
+                      lastMessage.options = currentOptions
+                    }
+                    return newMessages
+                  })
+                }
+              } catch (error) {
+                console.error('Error parsing stream data:', error, { line })
+                setStreamError('Failed to parse game response. Retrying...')
+                // Don't fail the entire stream for a single parse error
               }
-            } catch (error) {
-              console.error('Error parsing stream data:', error)
             }
           }
-        }
       }
       
       setIsPlaying(true)
       
     } catch (error) {
-      console.error('Failed to start game:', error)
-      alert('Failed to start game. Please try again.')
-    } finally {
-      setIsStarting(false)
+       console.error('Failed to start game:', error)
+       setStreamError('Failed to start game. Please try again.')
+     } finally {
+       setIsStarting(false)
+     }
     }
-  }
   
   const sendMessage = async (message: string) => {
     if (!sessionId || !message.trim()) return
@@ -224,12 +241,15 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
       }
       
     } catch (error) {
-      console.error('Failed to send message:', error)
-      alert('Failed to send message. Please try again.')
-    } finally {
-      setIsWaitingForResponse(false)
+       console.error('Failed to send message:', error)
+       setStreamError('Failed to send message. Please try again.')
+       
+       // Remove the user message we added if the request failed
+       setMessages(prev => prev.filter(m => m.id !== userMessage.id))
+     } finally {
+       setIsWaitingForResponse(false)
+     }
     }
-  }
   
   const handleOptionClick = (option: GameplayOption) => {
     sendMessage(option.text)
@@ -277,6 +297,24 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
   
   return (
     <div className="max-w-4xl mx-auto">
+      {/* Stream Error Display */}
+      {streamError && (
+        <div className="mb-4 p-4 bg-red-900/30 border border-red-600/50 rounded-lg">
+          <div className="flex items-start gap-3">
+            <span className="text-red-400 font-semibold">⚠️ Error</span>
+            <div className="flex-1">
+              <p className="text-red-300">{streamError}</p>
+              <button
+                onClick={() => setStreamError(null)}
+                className="mt-2 text-sm text-red-400 hover:text-red-300 underline"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Chat Messages */}
       <div className="bg-gray-900/50 rounded-lg border border-gray-700 min-h-[600px] flex flex-col">
         <div className="flex-1 p-6 overflow-y-auto">

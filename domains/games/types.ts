@@ -26,6 +26,7 @@ export interface Game {
   
   // Mini App specific
   articleUrl?: string
+  articleContext?: string
   writerCoinId?: string
   difficulty?: string
   

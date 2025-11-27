@@ -3,7 +3,7 @@
  * 
  * Defines the whitelisted writer coins that can be used
  * to generate games from articles. Each writer coin is associated with
- * a specific Paragraph author/newsletter.
+ * a specific Paragraph author/publication.
  */
 
 export interface WriterCoin {
@@ -47,9 +47,10 @@ export const WRITER_COINS: WriterCoin[] = [
         mintCost: BigInt(50 * 10 ** 18), // 50 $AVC
         decimals: 18,
         revenueDistribution: {
-            writer: 60, // 60% to Fred Wilson's treasury
-            platform: 20, // 20% to WritArcade
-            creatorPool: 20, // 20% to community pool
+            writer: 35, // 35% to Fred Wilson's treasury
+            creator: 35, // 35% to game creator
+            burn: 20, // 20% token burn (deflationary)
+            platform: 10, // 10% to WritArcade
         },
     },
     // TODO: Add Writer Coin #2

@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useAccount } from 'wagmi'
 import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ProgressBar } from '@/components/ui/ProgressBar'
@@ -23,11 +22,10 @@ interface GameGeneratorFormProps {
 export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
   const { isConnected } = useAccount()
   const [isGenerating, setIsGenerating] = useState(false)
-  const [promptText, setPromptText] = useState('')
   const [url, setUrl] = useState('')
   const [genre, setGenre] = useState<GameGenre>('horror')
   const [difficulty, setDifficulty] = useState<GameDifficulty>('easy')
-  const [showCustomization, setShowCustomization] = useState(false)
+  const [showCustomization, setShowCustomization] = useState(true)
   const [showPayment, setShowPayment] = useState(false)
   const [paymentApproved, setPaymentApproved] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -66,8 +64,8 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
       setLoadingStep('validate')
       
       // Validate input
-      if (!promptText.trim() && !url.trim()) {
-        throw new Error('Please provide either text or a URL')
+      if (!url.trim()) {
+        throw new Error('Please provide a Paragraph.xyz article URL')
       }
       setStepStatuses((prev) => ({ ...prev, validate: 'completed' }))
 
@@ -76,50 +74,68 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
       setStepStatuses((prev) => ({ ...prev, extract: 'completed' }))
 
       setLoadingStep('generate')
-      const result = await retryWithBackoff(
-        async () => {
-          const response = await fetch('/api/games/generate', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
+       
+       let lastError: Error | null = null
+       let attempt = 0
+       const maxAttempts = 3
+       
+       const result = await retryWithBackoff(
+         async () => {
+           attempt++
+           
+           const response = await fetch('/api/games/generate', {
+             method: 'POST',
+             headers: {
+               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              promptText: promptText.trim() || undefined,
-              url: url.trim() || undefined,
-              ...(showCustomization && paymentApproved && {
-                customization: {
-                  genre,
-                  difficulty,
-                },
-              }),
-              ...(paymentApproved && {
-                payment: {
-                  writerCoinId: writerCoin.id,
-                },
-              }),
-            }),
-          })
+             body: JSON.stringify({
+               url: url.trim(),
+               ...(showCustomization && paymentApproved && {
+                 customization: {
+                   genre,
+                   difficulty,
+                 },
+               }),
+               ...(paymentApproved && {
+                 payment: {
+                   writerCoinId: writerCoin.id,
+                 },
+               }),
+               // Add attempt metadata for server-side agentic retry
+               _attempt: attempt,
+               _maxAttempts: maxAttempts,
+             }),
+           })
 
-          // Handle network errors
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}))
-            throw new Error(
-              errorData.error || 
-              `Generation failed (${response.status}): ${response.statusText}`
-            )
-          }
+           // Handle network errors
+           if (!response.ok) {
+             const errorData = await response.json().catch(() => ({}))
+             const errorMsg = 
+               errorData.error || 
+               `Generation failed (${response.status}): ${response.statusText}`
+             
+             lastError = new Error(errorMsg)
+             
+             // On validation or schema errors, log for retry insight
+             if (response.status === 400) {
+               console.warn(`Attempt ${attempt}/${maxAttempts} failed with validation error:`, errorMsg)
+             }
+             
+             throw lastError
+           }
 
-          const result = await response.json()
+           const result = await response.json()
 
-          if (!result.success) {
-            throw new Error(result.error || 'Failed to generate game')
-          }
+           if (!result.success) {
+             lastError = new Error(result.error || 'Failed to generate game')
+             throw lastError
+           }
 
-          return result
-        },
-        2, // Max 2 retries for generation
-        2000 // 2 second base delay
-      )
+           return result
+         },
+         2, // Max 2 retries for generation (plus initial attempt = 3 total)
+         2000 // 2 second base delay
+       )
       setStepStatuses((prev) => ({ ...prev, generate: 'completed' }))
 
       setLoadingStep('save')
@@ -135,7 +151,6 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
       onGameGenerated?.(result.data)
 
       // Reset form
-      setPromptText('')
       setUrl('')
       setPaymentApproved(false)
       setShowPayment(false)
@@ -159,8 +174,8 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!promptText.trim() && !url.trim()) {
-      setError('Please provide either text or a URL')
+    if (!url.trim()) {
+      setError('Please provide a Paragraph.xyz article URL')
       return
     }
 
@@ -188,38 +203,18 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
           {/* URL Input */}
           <div>
             <Label htmlFor="url" className="text-sm font-medium">
-              Article URL (Newsletter, Blog, etc.)
+              Paragraph.xyz Article URL
             </Label>
             <Input
               id="url"
               type="url"
-              placeholder="https://substack.com/... or https://medium.com/... or https://blog.com/..."
+              placeholder="https://paragraph.xyz/@author/article-title"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               className="mt-1"
             />
           </div>
 
-          {/* Divider */}
-          <div className="flex items-center space-x-4">
-            <div className="flex-1 border-t border-gray-600"></div>
-            <span className="text-sm text-gray-400 font-medium">OR</span>
-            <div className="flex-1 border-t border-gray-600"></div>
-          </div>
-
-          {/* Text Input */}
-          <div>
-            <Label htmlFor="promptText" className="text-sm font-medium">
-              Describe your game idea
-            </Label>
-            <Textarea
-              id="promptText"
-              placeholder="E.g., 'A space detective solving a murder mystery' or 'Medieval kingdom building adventure'..."
-              value={promptText}
-              onChange={(e) => setPromptText(e.target.value)}
-              className="mt-1 min-h-[120px] resize-none"
-            />
-          </div>
 
           {/* Loading Progress */}
           {isGenerating && (
@@ -309,7 +304,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                 className="text-sm font-medium text-purple-400 hover:text-purple-300 flex items-center gap-2"
               >
                 <span>{showCustomization ? '▼' : '▶'}</span>
-                Customize Game Style (Optional - Genre & Difficulty)
+                Customize Game Style (Genre & Difficulty)
               </button>
 
               {showCustomization && (
@@ -329,8 +324,8 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
             onRetry={() => generateGame()}
             onDismiss={() => setError(null)}
             suggestions={[
-              'Check that your URL is valid and publicly accessible',
-              'Try pasting article text directly instead of a URL',
+              'Check that your Paragraph.xyz URL is valid and publicly accessible',
+              'Ensure the URL is from a supported author',
               'Make sure your internet connection is stable',
             ]}
           />
@@ -385,11 +380,10 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
       <div className="mt-8 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
         <h3 className="font-medium mb-2">💡 Tips for better games:</h3>
         <ul className="text-sm text-gray-300 space-y-1">
-          <li>• Paste URLs from Substack, Medium, blogs, or news articles</li>
-          <li>• Describe specific themes, genres, or characters you want</li>
-          <li>• Try: "A cyberpunk detective story" or "Medieval fantasy adventure"</li>
-          <li>• The AI will create unique interpretations of your content</li>
-          <li>• Customize genre and difficulty for more control over game generation</li>
+          <li>• Paste URLs from Paragraph.xyz articles by supported authors</li>
+          <li>• Choose genre and difficulty settings that match the article's tone</li>
+          <li>• The AI will create unique game interpretations based on the article content</li>
+          <li>• Different genres will influence how the story is gamified</li>
         </ul>
       </div>
 

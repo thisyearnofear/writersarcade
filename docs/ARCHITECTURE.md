@@ -170,10 +170,15 @@ model Payment {
 }
 ```
 
-## Writer Coin Economics
+## Writer Coin Economics: Collaboration Revenue Model
 
-### Initial Writer Coins
-- **$AVC** (Fred Wilson's AVC newsletter) — `0x06FC3D5D2369561e28F28F261148576520F5e49D6ea`
+### Collaborative Content Monetization
+WritArcade creates sustainable revenue streams through a three-way collaboration between writers, game creators, and the platform. Using automated 0xSplits and Story Protocol IP management, every transaction benefits all stakeholders.
+
+### $AVC (Fred Wilson) - Partnership Model
+- **Paragraph Publication**: https://avc.xyz/ (Fred Wilson's newsletter)
+- **Token Address**: `0x06FC3D5D2369561e28F28F261148576520F5e49D6ea`
+- **Collaboration Framework**: Readers transform Fred's content into games, creating new value from existing articles
 - **Writer Coin #2** — TBD
 - **Writer Coin #3** — TBD
 
@@ -182,9 +187,10 @@ model Payment {
 **Game Generation** (100 tokens):
 ```
 User pays 100 $AVC
-├─ 60 $AVC → Writer's treasury
-├─ 20 $AVC → WritArcade Platform  
-└─ 20 $AVC → Creator/Community Pool
+├─ 35 $AVC → Writer's treasury
+├─ 35 $AVC → Game Creator
+├─ 20 $AVC → Token Burn (deflationary)
+└─ 10 $AVC → WritArcade Platform
 ```
 
 **NFT Minting** (50 tokens):
@@ -207,13 +213,34 @@ const WRITER_COINS = [
     symbol: "$AVC",
     address: "0x06FC3D5D2369561e28F28F261148576520F5e49D6ea",
     writer: "Fred Wilson",
-    paragraphAuthor: "fredwilson",
+    paragraphAuthor: "fredwilson", 
+    paragraphUrl: "https://avc.xyz/",
     gameGenerationCost: 100n,
     mintCost: 50n,
-    decimals: 18
+    decimals: 18,
+    revenueDistribution: {
+      writer: 35,      // Fred Wilson's collaboration revenue
+      creator: 35,     // Game creator ongoing revenue
+      burn: 20,        // Token burn (deflationary mechanism)
+      platform: 10     // WritArcade sustainability
+    }
   }
 ]
 ```
+
+### Revenue Automation Framework
+
+**0xSplits Integration** (Planned):
+- Automated revenue distribution using 0xSplits contracts
+- Real-time settlement to writer, creator, and platform treasuries
+- Transparent on-chain revenue tracking
+- Optional burn mechanism for deflationary tokenomics
+
+**Story Protocol IP Layer** (Phase 6):
+- Every generated game registered as IP Asset derived from original article
+- Automated royalty collection for writers on derivative works
+- IP attribution linking games back to Paragraph articles
+- Protection against unauthorized commercial use while enabling creative derivatives
 
 ## Smart Contracts (Base Mainnet)
 
@@ -369,20 +396,34 @@ NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID="your-project-id"
 - Dev.to articles
 - Blog URLs
 
-### Content Flow
+### Game Generation Pipeline
+
+**AI Implementation:**
+- **Models**: GPT-4o-mini (default), Claude-3, auto-fallback system
+- **Structured Output**: JSON schema validation (Zod) for consistent format
+- **Streaming**: Real-time text generation with automatic option parsing
+- **Quality Control**: Auto-retry on genre mismatch, option parsing validation
+
+**Content Flow:**
 ```
-1. User submits URL or text
+1. User submits Paragraph.xyz URL
    ↓
-2. Validate URL format (lib/content-processor.service.ts)
+2. ContentProcessorService.processUrl() → Extract & clean content
    ↓
-3. Extract content via Paragraph SDK (lib/paragraph-sdk.ts)
+3. GameAIService.generateGame() → AI creates structured game JSON
    ↓
-4. Process & clean text (word count, read time)
+4. Quality validation → Auto-retry if genre mismatch detected
    ↓
-5. Extract metadata (author, publication, subscribers)
+5. GameAIService.startGame() → Interactive streaming gameplay
    ↓
-6. Pass to AI for game generation
+6. Option parsing → Automatic detection of numbered choices (1. 2. 3. 4.)
 ```
+
+**Error Handling & Reliability:**
+- Graceful AI model fallback (OpenAI → Claude → retry)
+- Stream parsing handles partial responses and connection issues
+- Genre validation ensures customization requests are respected
+- Article context integration guarantees games reference source material
 
 ### Key Functions
 - `ContentProcessorService.processUrl()` - Extract and clean content

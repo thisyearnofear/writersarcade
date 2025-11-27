@@ -11,8 +11,8 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'WritArcade - Turn Articles into Mintable Games',
-  description: 'Transform articles from newsletters and blogs into interactive, mintable games using AI',
-  keywords: ['AI', 'games', 'articles', 'NFT', 'memecoin', 'newsletter'],
+  description: 'Transform Paragraph.xyz articles into interactive, mintable games using AI',
+  keywords: ['AI', 'games', 'articles', 'NFT', 'memecoin', 'paragraph'],
 }
 
 export default function RootLayout({
