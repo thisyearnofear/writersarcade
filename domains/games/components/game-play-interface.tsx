@@ -589,7 +589,7 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
                </div>
              </div>
 
-            {/* Current Comic Panel - Show the current interactive panel until next is ready */}
+            {/* Current Comic Panel - Only show when BOTH text and images are ready */}
              <div className="w-full space-y-8">
                {messages.map((message, idx) => {
                  // Only render assistant messages that have options (completed/ready to interact)
@@ -603,7 +603,23 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
                  
                  if (hasLaterCompletedPanel) return null
 
-                 // Show this panel (wait for image, but keep panel visible with loading state)
+                 // GATE: Only show panel if image is ready (text always ready at this point)
+                 const imageReady = message.narrativeImage !== undefined
+                 if (!imageReady) {
+                   return (
+                     <div key={message.id} className="h-64 flex items-center justify-center">
+                       <div className="text-center space-y-3">
+                         <Loader2
+                           className="w-8 h-8 animate-spin mx-auto"
+                           style={{ color: game.primaryColor || '#8b5cf6' }}
+                         />
+                         <p className="text-sm text-gray-400">Preparing your panel...</p>
+                       </div>
+                     </div>
+                   )
+                 }
+
+                 // Show this panel only when image is ready
                  return (
                    <div key={message.id} className="animate-in fade-in duration-700 ease-out">
                      <ComicPanelCard
@@ -621,12 +637,11 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
                        responseReady={responseReady}
                        narrativeImage={message.narrativeImage || undefined}
                        imageModel={message.imageModel}
+                       shouldRevealContent={true}
                      />
                    </div>
                  )
                })}
-
-               {/* Loading state removed - now shown on selected button only */}
              </div>
 
              <div ref={messagesEndRef} className="h-8" />

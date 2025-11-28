@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, Share2, Download, Zap } from 'lucide-react'
 import type { ChatMessage, GameplayOption } from '../types'
+import { ImageLightbox } from './image-lightbox'
 
 export interface ComicBookFinalePanelData {
   id: string
@@ -33,6 +34,7 @@ export function ComicBookFinale({
   isMinting = false,
 }: ComicBookFinaleProps) {
   const [currentPanelIndex, setCurrentPanelIndex] = useState(0)
+  const [isImageExpanded, setIsImageExpanded] = useState(false)
   const currentPanel = panels[currentPanelIndex]
   const totalPanels = panels.length
 
@@ -49,12 +51,33 @@ export function ComicBookFinale({
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (isImageExpanded) return // Lightbox handles navigation
     if (e.key === 'ArrowRight') handleNext()
     if (e.key === 'ArrowLeft') handlePrev()
   }
 
   return (
-    <div
+    <>
+      <ImageLightbox
+        isOpen={isImageExpanded}
+        imageUrl={currentPanel.imageUrl}
+        imageModel={currentPanel.imageModel}
+        narrativeText={currentPanel.narrativeText}
+        panelNumber={currentPanelIndex + 1}
+        totalPanels={totalPanels}
+        primaryColor={primaryColor}
+        onClose={() => setIsImageExpanded(false)}
+        onNavigate={(direction) => {
+          if (direction === 'next' && currentPanelIndex < totalPanels - 1) {
+            setCurrentPanelIndex(currentPanelIndex + 1)
+          } else if (direction === 'prev' && currentPanelIndex > 0) {
+            setCurrentPanelIndex(currentPanelIndex - 1)
+          }
+        }}
+        canNavigatePrev={currentPanelIndex > 0}
+        canNavigateNext={currentPanelIndex < totalPanels - 1}
+      />
+      <div
       className="min-h-screen w-full flex flex-col"
       style={{
         background: `linear-gradient(135deg, ${primaryColor}05, black)`,
@@ -106,7 +129,10 @@ export function ComicBookFinale({
             }}
           >
             {/* Image */}
-            <div className="w-full h-96 md:h-[28rem] overflow-hidden bg-black relative group">
+            <div
+              className="w-full h-96 md:h-[28rem] overflow-hidden bg-black relative group cursor-pointer"
+              onClick={() => currentPanel.imageUrl && setIsImageExpanded(true)}
+            >
               {currentPanel.imageUrl ? (
                 <>
                   <img
@@ -115,6 +141,9 @@ export function ComicBookFinale({
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60"></div>
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-all duration-200 opacity-0 group-hover:opacity-100">
+                    <div className="text-white text-sm font-medium">Click to expand</div>
+                  </div>
                 </>
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
@@ -271,5 +300,6 @@ export function ComicBookFinale({
         </div>
       </div>
     </div>
+    </>
   )
 }
