@@ -177,7 +177,7 @@ export class GameAIService {
     userInput: string,
     model: string = 'gpt-4o-mini',
     currentPanel: number = 1,
-    maxPanels: number = 10
+    maxPanels: number = 5
   ): AsyncGenerator<GameplayResponse> {
 
     const aiModel = getModel(model)
@@ -203,7 +203,10 @@ export class GameAIService {
 
   ${paceGuidance}
 
-  CRITICAL: Always end with exactly 4 numbered options (1. 2. 3. 4.) on separate lines.`
+  ${currentPanel === maxPanels 
+    ? 'FINAL PANEL RULES: This story MUST conclude. The options should lead to different endings/resolutions, not continue the story. Make choices about HOW the story ends, not what happens next.'
+    : 'CRITICAL: Always end with exactly 4 numbered options (1. 2. 3. 4.) on separate lines.'
+  }`
       })
 
       let content = ''
@@ -249,18 +252,23 @@ export class GameAIService {
    * Helps AI understand narrative structure and when to escalate/resolve
    */
   private static getPacingGuidance(currentPanel: number, maxPanels: number): string {
-    const thirdPoint = Math.floor(maxPanels / 3)
-    const twoThirdPoint = Math.floor((maxPanels * 2) / 3)
-    
-    if (currentPanel <= thirdPoint) {
-      return `NARRATIVE PHASE: SETUP & EXPOSITION
-Build the world and introduce conflict. Establish stakes and intrigue. Players are just beginning their journey.`
-    } else if (currentPanel <= twoThirdPoint) {
-      return `NARRATIVE PHASE: RISING ACTION & ESCALATION
-Deepen the conflict and raise the stakes. Add complications and plot twists. Build momentum toward climax.`
+    if (currentPanel === 1) {
+      return `PANEL 1/5: OPENING & HOOK
+Establish the setting and main character quickly. Introduce the central conflict or mystery. Hook the reader immediately with an engaging situation.`
+    } else if (currentPanel === 2) {
+      return `PANEL 2/5: DEVELOPMENT & COMPLICATION
+Develop the conflict introduced in panel 1. Add a complication or twist. Deepen the stakes - what's really at risk?`
+    } else if (currentPanel === 3) {
+      return `PANEL 3/5: RISING ACTION & ESCALATION
+CRITICAL: Halfway point - escalate dramatically! Introduce the biggest challenge or reveal. Build toward the climax. Time is running out!`
+    } else if (currentPanel === 4) {
+      return `PANEL 4/5: CLIMAX & TURNING POINT
+URGENT: This is the climactic moment! Face the main conflict head-on. Major decisions with serious consequences. The story's peak tension happens NOW.`
+    } else if (currentPanel === 5) {
+      return `PANEL 5/5: FINAL RESOLUTION
+CONCLUSION REQUIRED: This is the FINAL panel. You MUST bring the story to a satisfying conclusion. Resolve the central conflict, show consequences of choices, and provide closure. No cliffhangers - the story ends here!`
     } else {
-      return `NARRATIVE PHASE: CLIMAX & RESOLUTION
-Bring the story to its peak. Resolve central conflicts. Provide meaningful closure to player choices and consequences.`
+      return `STORY COMPLETE: No more panels should be generated.`
     }
   }
 

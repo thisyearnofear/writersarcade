@@ -57,8 +57,21 @@ export async function POST(request: NextRequest) {
       }))
     
     // Calculate current panel number (assistant messages = panels)
-    const currentPanelNumber = chatHistory.filter(m => m.role === 'assistant').length + 1
-    const maxPanels = 10 // Match MAX_COMIC_PANELS from frontend
+    const assistantMessageCount = chatHistory.filter(m => m.role === 'assistant').length
+    const currentPanelNumber = assistantMessageCount + 1
+    const maxPanels = 5 // Match MAX_COMIC_PANELS from frontend
+    
+    // CRITICAL: Prevent generation beyond max panels
+    if (assistantMessageCount >= maxPanels) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Story is complete! View your finished comic.',
+          gameComplete: true 
+        },
+        { status: 400 }
+      )
+    }
     
     // Start streaming response
     const encoder = new TextEncoder()

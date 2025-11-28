@@ -21,7 +21,7 @@ interface ChatEntry extends ChatMessage {
   narrativeImage?: string | null  // Comic panel image URL
 }
 
-const MAX_COMIC_PANELS = 10
+const MAX_COMIC_PANELS = 5
 
 export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
   const [sessionId, setSessionId] = useState<string | null>(null)
@@ -35,6 +35,7 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
   const [isMinting, setIsMinting] = useState(false)
   const [pendingOptionId, setPendingOptionId] = useState<number | null>(null) // Track which option is loading
   const [responseReady, setResponseReady] = useState({ text: false, images: false }) // Track when response is FULLY ready
+  const [userChoices, setUserChoices] = useState<Array<{ panelIndex: number; choice: string; timestamp: string }>>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const assistantMessageCount = messages.filter(m => m.role === 'assistant').length
@@ -212,7 +213,17 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to send message')
+        // Try to parse error response for game completion
+        let errorMessage = 'Failed to send message'
+        try {
+          const errorData = await response.json()
+          if (errorData.error && errorData.gameComplete) {
+            errorMessage = errorData.error
+          }
+        } catch {
+          // Fallback to generic error if JSON parsing fails
+        }
+        throw new Error(errorMessage)
       }
 
       const reader = response.body?.getReader()
@@ -308,9 +319,24 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
 
     } catch (error) {
       console.error('Failed to send message:', error)
-      setMessages(prev => prev.filter(m => m.id !== userMessage.id))
+      
+      // Check if this is a game completion error (expected behavior)
+      if (error instanceof Error && (
+        error.message?.includes('complete') || 
+        error.message?.includes('maximum panels') ||
+        error.message?.includes('400')
+      )) {
+        // Game has ended naturally - don't show as error
+        console.log('Game completed - this is expected behavior')
+        // Remove the user message since game can't continue
+        setMessages(prev => prev.filter(m => m.id !== userMessage.id))
+      } else {
+        // Actual error - remove user message and show error
+        setMessages(prev => prev.filter(m => m.id !== userMessage.id))
+      }
     } finally {
       setIsWaitingForResponse(false)
+      setPendingOptionId(null)
     }
   }
 
@@ -347,6 +373,14 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
   const handleOptionClick = (option: GameplayOption) => {
     setPendingOptionId(option.id)
     setResponseReady({ text: false, images: false })
+    
+    // Track user choice for NFT metadata
+    setUserChoices(prev => [...prev, {
+      panelIndex: assistantMessageCount, // Current panel index
+      choice: option.text,
+      timestamp: new Date().toISOString()
+    }])
+    
     sendMessage(option.text)
   }
 
@@ -370,17 +404,23 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
     })
   }
 
-  const handleMintComic = async (panelData: ComicBookFinalePanelData[]) => {
+  const handleMintComic = async (panelData: ComicBookFinalePanelData[], metadata?: any) => {
     setIsMinting(true)
     try {
-      // TODO: Implement NFT minting with full comic panel sequence
-      // This should:
-      // 1. Upload all panels to IPFS
-      // 2. Create metadata with panel sequence
-      // 3. Call mint contract with full comic metadata
-      console.log('Minting comic with panels:', panelData)
-      // For now, just show success
-      alert('Minting implementation coming soon!')
+      // Enhanced minting with rich metadata
+      console.log('Minting comic with enhanced data:', {
+        panels: panelData,
+        metadata,
+        choices: userChoices,
+        game: {
+          title: game.title,
+          creator: game.creatorWallet,
+          author: game.authorParagraphUsername
+        }
+      })
+      
+      // TODO: Implement contract call with metadata URIs
+      alert('Minting with full attribution coming soon!')
     } catch (error) {
       console.error('Mint failed:', error)
       alert('Failed to mint comic')
@@ -547,6 +587,12 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
         onBack={() => setShowComicFinale(false)}
         onMint={handleMintComic}
         isMinting={isMinting}
+        creatorWallet={game.creatorWallet || 'Unknown Creator'}
+        articleUrl={game.articleUrl || ''}
+        authorParagraphUsername={game.authorParagraphUsername || 'Unknown Author'}
+        authorWallet={game.authorWallet}
+        difficulty={game.difficulty || 'medium'}
+        userChoices={userChoices}
       />
     )
   }

@@ -1,9 +1,10 @@
 'use client'
 
-import { CheckCircle, Share2, Eye, Copy } from 'lucide-react'
+import { CheckCircle, Eye, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { ShareDropdown } from '@/components/ui/share-dropdown'
 
 interface SuccessModalProps {
   isOpen: boolean
@@ -13,6 +14,7 @@ interface SuccessModalProps {
   gameSlug?: string
   transactionHash?: string
   action: 'mint' | 'generate'
+  genre?: string
 }
 
 export function SuccessModal({
@@ -23,11 +25,21 @@ export function SuccessModal({
   gameSlug,
   transactionHash,
   action,
+  genre = 'Adventure',
 }: SuccessModalProps) {
   const [copied, setCopied] = useState(false)
   const router = useRouter()
 
   const gameUrl = gameSlug ? `${window.location.origin}/games/${gameSlug}` : null
+
+  const shareData = gameSlug ? {
+    gameTitle: title,
+    genre,
+    panelCount: 5, // Default for generated games
+    title,
+    text: `Just ${action === 'mint' ? 'minted' : 'created'} "${title}" on WritArcade!`,
+    url: gameUrl || window.location.href,
+  } : null
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -88,13 +100,13 @@ export function SuccessModal({
                   Play
                 </Button>
 
-                <Button
-                  onClick={() => handleCopy(gameUrl!)}
-                  className="flex-1 bg-purple-600 hover:bg-purple-700 flex items-center justify-center gap-2"
-                >
-                  <Share2 className="w-4 h-4" />
-                  {copied ? '✓' : 'Share'}
-                </Button>
+                {shareData && (
+                  <ShareDropdown 
+                    data={shareData}
+                    variant="default"
+                    className="flex-1"
+                  />
+                )}
               </>
             )}
           </div>

@@ -81,12 +81,13 @@ ${processedContent.text}\n\nMake the game capture the essence and themes of this
     // Generate game using consolidated AI service
     const gameData = await GameAIService.generateGame(gameRequest)
     
-    // Save to database using enhanced database service
+    // Save to database using enhanced database service  
     const miniAppData = processedContent ? {
       articleUrl: validatedData.url,
       difficulty: validatedData.customization?.difficulty,
       writerCoinId: validatedData.payment?.writerCoinId,
       authorWallet: processedContent.authorWallet,
+      authorParagraphUsername: processedContent.author, // Extract from URL parsing
       publicationName: processedContent.publicationName,
       publicationSummary: processedContent.publicationSummary,
       subscriberCount: processedContent.subscriberCount,
@@ -94,7 +95,18 @@ ${processedContent.text}\n\nMake the game capture the essence and themes of this
       // Include article context for narrative continuity
       articleContext: `Article: "${processedContent.title}"\nAuthor: ${processedContent.author || 'Unknown'}\nKey points: ${processedContent.text.substring(0, 500)}...`,
     } : undefined
-    const savedGame = await GameDatabaseService.createGame(gameData, user?.id, miniAppData)
+    
+    // Enhance game data with attribution
+    const enhancedGameData = {
+      ...gameData,
+      creatorWallet: user?.walletAddress,
+      authorWallet: processedContent?.authorWallet,
+      authorParagraphUsername: processedContent?.author,
+      articleUrl: validatedData.url,
+      difficulty: validatedData.customization?.difficulty
+    }
+    
+    const savedGame = await GameDatabaseService.createGame(enhancedGameData, user?.id, miniAppData)
     
     return NextResponse.json({
       success: true,

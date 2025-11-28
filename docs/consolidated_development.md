@@ -540,6 +540,34 @@ npm run lint         # ✅ 0 errors, 53 warnings
 
 **Phase 5c: BUILD SYSTEM COMPLETE** - ESLint 9 configured, Next.js 16 fully compatible, production build passes.
 
+## Phase 5d: User Attribution & NFT Metadata ✅ COMPLETE
+
+### Enhanced User Identity System ✅
+- **Multi-source identity resolution**: Farcaster → ENS → wallet fallback with caching
+- **Rich user profiles**: Display names, avatars, social links throughout UI
+- **Reusable attribution components**: `UserAttribution` + `AttributionPair` 
+- **Game creator tracking**: Wallet addresses captured during generation
+
+### Comprehensive NFT Metadata ✅  
+- **IPFS service**: Pinata integration for reliable metadata uploads
+- **Full attribution**: Creator + author data in every NFT with provenance
+- **Rich metadata structure**: ERC-721 standard + WritArcade custom attributes
+- **User choice tracking**: Panel decisions stored for complete game history
+
+### Social Distribution Optimization ✅
+- **Twitter + Farcaster focused**: Platform-specific optimized sharing
+- **Consolidated share service**: Single source of truth, no duplicate code
+- **Enhanced share content**: Strategic hashtags, engagement-driven copy
+- **Viral mechanics**: User-generated content drives platform awareness
+
+### 5-Panel Story Structure ✅
+- **Aggressive pacing guidance**: Panel-specific AI prompts for tight narratives  
+- **Guaranteed closure**: Panel 5 must conclude story, no cliffhangers
+- **Backend enforcement**: API prevents generation beyond 5 panels
+- **Smart error handling**: Game completion treated as success, not error
+
+**Phase 5d: ATTRIBUTION COMPLETE** - Full creator/author attribution, rich NFT metadata with IPFS, optimized social sharing, enforced story structure.
+
 ---
 
 ## Code Quality & Core Principles

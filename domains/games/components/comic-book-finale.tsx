@@ -2,9 +2,13 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, Share2, Download, Zap } from 'lucide-react'
+import { ChevronLeft, Download, Zap, Grid3X3, Eye, ChevronRight } from 'lucide-react'
 import type { ChatMessage, GameplayOption } from '../types'
 import { ImageLightbox } from './image-lightbox'
+import { ShareDropdown } from '@/components/ui/share-dropdown'
+import { UserAttribution, AttributionPair } from '@/components/ui/user-attribution'
+import { ipfsMetadataService } from '@/lib/services/ipfs-metadata.service'
+import { userIdentityService } from '@/lib/services/user-identity.service'
 
 export interface ComicBookFinalePanelData {
   id: string
@@ -20,8 +24,15 @@ interface ComicBookFinaleProps {
   primaryColor: string
   panels: ComicBookFinalePanelData[]
   onBack: () => void
-  onMint: (panelData: ComicBookFinalePanelData[]) => void
+  onMint: (panelData: ComicBookFinalePanelData[], metadata?: any) => void
   isMinting?: boolean
+  // Attribution data
+  creatorWallet: string
+  articleUrl: string
+  authorParagraphUsername: string
+  authorWallet?: string
+  difficulty?: string
+  userChoices?: Array<{ panelIndex: number; choice: string; timestamp: string }>
 }
 
 export function ComicBookFinale({
@@ -32,11 +43,28 @@ export function ComicBookFinale({
   onBack,
   onMint,
   isMinting = false,
+  creatorWallet,
+  articleUrl,
+  authorParagraphUsername,
+  authorWallet,
+  difficulty = 'medium',
+  userChoices = [],
 }: ComicBookFinaleProps) {
   const [currentPanelIndex, setCurrentPanelIndex] = useState(0)
   const [isImageExpanded, setIsImageExpanded] = useState(false)
+  const [viewMode, setViewMode] = useState<'single' | 'grid' | 'nft-preview'>('single')
   const currentPanel = panels[currentPanelIndex]
   const totalPanels = panels.length
+
+  // Prepare share data using existing game props
+  const shareData = {
+    gameTitle,
+    genre,
+    panelCount: totalPanels,
+    title: gameTitle,
+    text: `Check out my ${genre} comic "${gameTitle}" created with WritArcade! ${totalPanels} panels of interactive storytelling.`,
+    url: window.location.href,
+  }
 
   const handleNext = () => {
     if (currentPanelIndex < totalPanels - 1) {
@@ -54,6 +82,120 @@ export function ComicBookFinale({
     if (isImageExpanded) return // Lightbox handles navigation
     if (e.key === 'ArrowRight') handleNext()
     if (e.key === 'ArrowLeft') handlePrev()
+  }
+
+
+  const handleMintWithMetadata = async () => {
+    try {
+      // 1. Generate comprehensive metadata
+      const creator = await userIdentityService.getGameCreator(creatorWallet)
+      const author = await userIdentityService.getGameAuthor(authorParagraphUsername, authorWallet)
+      
+      const gameData = {
+        title: gameTitle,
+        description: `Interactive ${genre.toLowerCase()} comic created on WritArcade. ${totalPanels} panels of AI-powered storytelling inspired by "${authorParagraphUsername}"'s work.`,
+        genre: genre.toLowerCase(),
+        difficulty: difficulty.toLowerCase(),
+        panels,
+        articleUrl
+      }
+
+      // 2. Upload metadata to IPFS
+      const { nftMetadataUri, gameMetadataUri } = await ipfsMetadataService.uploadGamePackage(
+        gameData,
+        creator,
+        author,
+        userChoices
+      )
+
+      // 3. Call the original mint function with enhanced data
+      onMint(panels, { nftMetadataUri, gameMetadataUri, creator, author })
+      
+    } catch (error) {
+      console.error('Error preparing NFT metadata:', error)
+      // Fallback to original mint behavior
+      onMint(panels)
+    }
+  }
+
+  const handleDownload = () => {
+    // Create a canvas to combine all panels into one image
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const panelWidth = 400
+    const panelHeight = 300
+    const padding = 20
+    const headerHeight = 80
+
+    // Calculate canvas dimensions
+    const canvasWidth = panelWidth + (padding * 2)
+    const canvasHeight = (panelHeight * totalPanels) + (padding * (totalPanels + 1)) + headerHeight
+
+    canvas.width = canvasWidth
+    canvas.height = canvasHeight
+
+    // Fill background
+    ctx.fillStyle = '#000000'
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight)
+
+    // Add title header
+    ctx.fillStyle = primaryColor
+    ctx.font = 'bold 24px Arial'
+    ctx.textAlign = 'center'
+    ctx.fillText(gameTitle, canvasWidth / 2, 35)
+    
+    ctx.fillStyle = '#888888'
+    ctx.font = '14px Arial'
+    ctx.fillText(`${genre} • ${totalPanels} Panels • WritArcade`, canvasWidth / 2, 60)
+
+    // Add panels
+    let loadedImages = 0
+    const totalImages = panels.filter(p => p.imageUrl).length
+
+    panels.forEach((panel, idx) => {
+      if (panel.imageUrl) {
+        const img = new Image()
+        img.crossOrigin = 'anonymous'
+        img.onload = () => {
+          const yPosition = headerHeight + padding + (idx * (panelHeight + padding))
+          
+          // Draw image
+          ctx.drawImage(img, padding, yPosition, panelWidth, panelHeight - 60)
+          
+          // Draw panel number
+          ctx.fillStyle = primaryColor
+          ctx.font = 'bold 16px Arial'
+          ctx.textAlign = 'left'
+          ctx.fillText(`Panel ${idx + 1}`, padding + 10, yPosition + panelHeight - 40)
+          
+          // Draw narrative text (truncated)
+          ctx.fillStyle = '#ffffff'
+          ctx.font = '12px Arial'
+          const truncatedText = panel.narrativeText.slice(0, 60) + (panel.narrativeText.length > 60 ? '...' : '')
+          ctx.fillText(truncatedText, padding + 10, yPosition + panelHeight - 20)
+
+          loadedImages++
+          if (loadedImages === totalImages || totalImages === 0) {
+            // All images loaded, download the canvas
+            const link = document.createElement('a')
+            link.download = `${gameTitle.replace(/[^a-zA-Z0-9]/g, '_')}_comic.png`
+            link.href = canvas.toDataURL('image/png')
+            link.click()
+          }
+        }
+        img.src = panel.imageUrl
+      }
+    })
+
+    // If no images, just download the text version
+    if (totalImages === 0) {
+      const link = document.createElement('a')
+      link.download = `${gameTitle.replace(/[^a-zA-Z0-9]/g, '_')}_comic.png`
+      link.href = canvas.toDataURL('image/png')
+      link.click()
+    }
   }
 
   return (
@@ -104,143 +246,333 @@ export function ComicBookFinale({
             </div>
           </div>
 
-          {/* Panel counter */}
-          <div className="text-right">
-            <div
-              className="text-2xl font-bold"
-              style={{ color: primaryColor }}
+          {/* View mode selector */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant={viewMode === 'single' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('single')}
+              className="gap-2"
             >
-              {currentPanelIndex + 1}/{totalPanels}
-            </div>
-            <p className="text-xs text-gray-400">Panels</p>
+              <Eye className="w-4 h-4" />
+              Single
+            </Button>
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'outline'}
+              size="sm" 
+              onClick={() => setViewMode('grid')}
+              className="gap-2"
+            >
+              <Grid3X3 className="w-4 h-4" />
+              Grid
+            </Button>
+            <Button
+              variant={viewMode === 'nft-preview' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('nft-preview')}
+              className="gap-2"
+              style={{ 
+                backgroundColor: viewMode === 'nft-preview' ? primaryColor : undefined,
+                borderColor: primaryColor 
+              }}
+            >
+              <Zap className="w-4 h-4" />
+              NFT Preview
+            </Button>
           </div>
+
+          {/* Panel counter (only show in single mode) */}
+          {viewMode === 'single' && (
+            <div className="text-right">
+              <div
+                className="text-2xl font-bold"
+                style={{ color: primaryColor }}
+              >
+                {currentPanelIndex + 1}/{totalPanels}
+              </div>
+              <p className="text-xs text-gray-400">Panels</p>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Main content */}
       <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center p-4 md:p-8">
-        <div className="w-full max-w-4xl space-y-6">
-          {/* Large panel display */}
-          <div
-            className="rounded-xl overflow-hidden border-4 shadow-2xl"
-            style={{
-              borderColor: primaryColor,
-              backgroundColor: 'rgba(0,0,0,0.4)',
-            }}
-          >
-            {/* Image */}
+        <div className="w-full max-w-6xl space-y-6">
+          
+          {/* SINGLE PANEL VIEW */}
+          {viewMode === 'single' && (
             <div
-              className="w-full h-96 md:h-[28rem] overflow-hidden bg-black relative group cursor-pointer"
-              onClick={() => currentPanel.imageUrl && setIsImageExpanded(true)}
+              className="rounded-xl overflow-hidden border-4 shadow-2xl max-w-4xl mx-auto"
+              style={{
+                borderColor: primaryColor,
+                backgroundColor: 'rgba(0,0,0,0.4)',
+              }}
             >
-              {currentPanel.imageUrl ? (
-                <>
-                  <img
-                    src={currentPanel.imageUrl}
-                    alt={`Panel ${currentPanelIndex + 1}`}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60"></div>
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-all duration-200 opacity-0 group-hover:opacity-100">
-                    <div className="text-white text-sm font-medium">Click to expand</div>
-                  </div>
-                </>
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
-                  <p className="text-gray-500">No image available</p>
-                </div>
-              )}
-            </div>
-
-            {/* Model badge */}
-            <div className="px-6 py-3 bg-black/40 border-b border-white/10 flex items-center gap-2">
-              <span className="text-xs text-gray-400">Generated with:</span>
-              <span
-                className="text-xs font-mono px-2 py-1 rounded"
-                style={{
-                  backgroundColor: `${primaryColor}20`,
-                  color: primaryColor,
-                }}
-              >
-                {currentPanel.imageModel}
-              </span>
-            </div>
-
-            {/* Narrative in speech bubble */}
-            <div className="p-6 md:p-8 space-y-4">
+              {/* Image */}
               <div
-                className="relative p-4 rounded-lg border-2"
-                style={{
-                  borderColor: primaryColor,
-                  backgroundColor: `${primaryColor}10`,
-                }}
+                className="w-full h-96 md:h-[28rem] overflow-hidden bg-black relative group cursor-pointer"
+                onClick={() => currentPanel.imageUrl && setIsImageExpanded(true)}
               >
-                {/* Speech bubble tail */}
-                <div
-                  className="absolute -bottom-3 left-6 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent"
-                  style={{ borderTopColor: primaryColor }}
-                ></div>
-
-                <p className="text-gray-100 text-base md:text-lg leading-relaxed font-medium">
-                  {currentPanel.narrativeText}
-                </p>
+                {currentPanel.imageUrl ? (
+                  <>
+                    <img
+                      src={currentPanel.imageUrl}
+                      alt={`Panel ${currentPanelIndex + 1}`}
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60"></div>
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-all duration-200 opacity-0 group-hover:opacity-100">
+                      <div className="text-white text-sm font-medium">Click to expand</div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
+                    <p className="text-gray-500">No image available</p>
+                  </div>
+                )}
               </div>
 
-              {/* User choice indicator */}
-              {currentPanel.userChoice && (
-                <div
-                  className="p-3 rounded-lg text-sm"
+              {/* Model badge */}
+              <div className="px-6 py-3 bg-black/40 border-b border-white/10 flex items-center gap-2">
+                <span className="text-xs text-gray-400">Generated with:</span>
+                <span
+                  className="text-xs font-mono px-2 py-1 rounded"
                   style={{
-                    backgroundColor: `${primaryColor}15`,
-                    borderLeft: `3px solid ${primaryColor}`,
+                    backgroundColor: `${primaryColor}20`,
+                    color: primaryColor,
                   }}
                 >
-                  <p className="text-gray-300">
-                    <span className="text-gray-500">Your choice: </span>
-                    <span className="font-semibold">{currentPanel.userChoice}</span>
+                  {currentPanel.imageModel}
+                </span>
+              </div>
+
+              {/* Narrative in speech bubble */}
+              <div className="p-6 md:p-8 space-y-4">
+                <div
+                  className="relative p-4 rounded-lg border-2"
+                  style={{
+                    borderColor: primaryColor,
+                    backgroundColor: `${primaryColor}10`,
+                  }}
+                >
+                  {/* Speech bubble tail */}
+                  <div
+                    className="absolute -bottom-3 left-6 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent"
+                    style={{ borderTopColor: primaryColor }}
+                  ></div>
+
+                  <p className="text-gray-100 text-base md:text-lg leading-relaxed font-medium">
+                    {currentPanel.narrativeText}
                   </p>
                 </div>
-              )}
+
+                {/* User choice indicator */}
+                {currentPanel.userChoice && (
+                  <div
+                    className="p-3 rounded-lg text-sm"
+                    style={{
+                      backgroundColor: `${primaryColor}15`,
+                      borderLeft: `3px solid ${primaryColor}`,
+                    }}
+                  >
+                    <p className="text-gray-300">
+                      <span className="text-gray-500">Your choice: </span>
+                      <span className="font-semibold">{currentPanel.userChoice}</span>
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Navigation controls */}
-          <div className="flex items-center justify-between">
-            <Button
-              onClick={handlePrev}
-              disabled={currentPanelIndex === 0}
-              className="px-4 py-2"
-              variant="outline"
-            >
-              ← Previous
-            </Button>
-
-            {/* Page indicator */}
-            <div className="flex items-center gap-2">
-              {panels.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setCurrentPanelIndex(idx)}
-                  className="w-3 h-3 rounded-full transition-all"
+          {/* GRID VIEW */}
+          {viewMode === 'grid' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {panels.map((panel, idx) => (
+                <div
+                  key={panel.id}
+                  className="rounded-lg overflow-hidden border-2 shadow-lg cursor-pointer transition-transform hover:scale-105"
                   style={{
-                    backgroundColor:
-                      idx === currentPanelIndex ? primaryColor : 'rgba(255,255,255,0.2)',
-                    width: idx === currentPanelIndex ? '32px' : '12px',
+                    borderColor: idx === currentPanelIndex ? primaryColor : 'rgba(255,255,255,0.2)',
+                    backgroundColor: 'rgba(0,0,0,0.4)',
                   }}
-                  title={`Go to panel ${idx + 1}`}
-                />
+                  onClick={() => setCurrentPanelIndex(idx)}
+                >
+                  <div className="aspect-square overflow-hidden bg-black">
+                    {panel.imageUrl ? (
+                      <img
+                        src={panel.imageUrl}
+                        alt={`Panel ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-900">
+                        <p className="text-gray-500 text-sm">No image</p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium" style={{ color: primaryColor }}>
+                        Panel {idx + 1}
+                      </span>
+                      <span className="text-xs text-gray-400">{panel.imageModel}</span>
+                    </div>
+                    <p className="text-xs text-gray-300 line-clamp-2">
+                      {panel.narrativeText}
+                    </p>
+                  </div>
+                </div>
               ))}
             </div>
+          )}
 
-            <Button
-              onClick={handleNext}
-              disabled={currentPanelIndex === totalPanels - 1}
-              className="px-4 py-2"
-              variant="outline"
-            >
-              Next →
-            </Button>
-          </div>
+          {/* NFT PREVIEW */}
+          {viewMode === 'nft-preview' && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-xl font-bold mb-2" style={{ color: primaryColor }}>
+                  📜 Your NFT Comic Preview
+                </h2>
+                <p className="text-gray-400 text-sm">
+                  This is how your comic will appear as an NFT
+                </p>
+              </div>
+              
+              <div
+                className="rounded-xl p-6 border-4 shadow-2xl max-w-2xl mx-auto"
+                style={{
+                  borderColor: primaryColor,
+                  backgroundColor: 'rgba(0,0,0,0.6)',
+                }}
+              >
+                {/* Comic title header */}
+                <div className="text-center mb-6 pb-4 border-b border-white/20">
+                  <h3 className="text-2xl font-bold mb-2">{gameTitle}</h3>
+                  <p className="text-sm text-gray-400 mb-3">{genre} • {totalPanels} Panels</p>
+                  
+                  {/* Attribution in NFT preview */}
+                  <div className="flex items-center justify-center gap-4 text-xs">
+                    <span className="text-gray-500">Created by</span>
+                    <UserAttribution 
+                      type="creator" 
+                      walletAddress={creatorWallet} 
+                      size="sm"
+                      showLink={false}
+                    />
+                    <span className="text-gray-500">•</span>
+                    <span className="text-gray-500">Inspired by</span>
+                    <UserAttribution 
+                      type="author" 
+                      paragraphUsername={authorParagraphUsername}
+                      authorWallet={authorWallet}
+                      size="sm"
+                      showLink={false}
+                    />
+                  </div>
+                </div>
+
+                {/* Vertical comic strip layout */}
+                <div className="space-y-4">
+                  {panels.map((panel, idx) => (
+                    <div
+                      key={panel.id}
+                      className="rounded-lg overflow-hidden border border-white/30"
+                    >
+                      <div className="grid grid-cols-3 gap-0">
+                        {/* Panel number */}
+                        <div className="bg-black/60 p-2 flex items-center justify-center">
+                          <span className="text-sm font-bold" style={{ color: primaryColor }}>
+                            {idx + 1}
+                          </span>
+                        </div>
+                        
+                        {/* Image */}
+                        <div className="aspect-square overflow-hidden bg-black">
+                          {panel.imageUrl ? (
+                            <img
+                              src={panel.imageUrl}
+                              alt={`Panel ${idx + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gray-900">
+                              <span className="text-gray-500 text-xs">No image</span>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Narrative text */}
+                        <div className="p-2 bg-black/40 flex items-center">
+                          <p className="text-xs leading-tight text-gray-200">
+                            {panel.narrativeText.slice(0, 80)}
+                            {panel.narrativeText.length > 80 ? '...' : ''}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* NFT metadata footer */}
+                <div className="mt-6 pt-4 border-t border-white/20 text-center">
+                  <p className="text-xs text-gray-400">
+                    🎨 Generated with WritArcade • Unique Comic NFT
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Navigation controls (only show in single mode) */}
+          {viewMode === 'single' && (
+            <div className="flex items-center justify-between">
+              <Button
+                onClick={handlePrev}
+                disabled={currentPanelIndex === 0}
+                className="px-4 py-2"
+                variant="outline"
+              >
+                ← Previous
+              </Button>
+
+              {/* Page indicator */}
+              <div className="flex items-center gap-2">
+                {panels.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentPanelIndex(idx)}
+                    className="w-3 h-3 rounded-full transition-all"
+                    style={{
+                      backgroundColor:
+                        idx === currentPanelIndex ? primaryColor : 'rgba(255,255,255,0.2)',
+                      width: idx === currentPanelIndex ? '32px' : '12px',
+                    }}
+                    title={`Go to panel ${idx + 1}`}
+                  />
+                ))}
+              </div>
+
+              <Button
+                onClick={handleNext}
+                disabled={currentPanelIndex === totalPanels - 1}
+                className="px-4 py-2"
+                variant="outline"
+              >
+                Next →
+              </Button>
+            </div>
+          )}
+
+          {/* Summary info for grid/NFT views */}
+          {(viewMode === 'grid' || viewMode === 'nft-preview') && (
+            <div className="text-center">
+              <p className="text-gray-400 text-sm">
+                {viewMode === 'grid' ? 'Click any panel to select it' : 'This is your complete comic story'}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -252,40 +584,39 @@ export function ComicBookFinale({
         }}
       >
         <div className="max-w-6xl mx-auto flex items-center justify-between flex-wrap gap-4">
-          {/* Info */}
-          <div className="text-sm text-gray-400">
-            <p>
-              {totalPanels} panels • {genre} game
-            </p>
-            <p className="text-xs mt-1">
-              🎨 Created with WritArcade Comic Engine
-            </p>
+          {/* Attribution & Info */}
+          <div className="space-y-3">
+            <AttributionPair
+              creatorWallet={creatorWallet}
+              authorParagraphUsername={authorParagraphUsername}
+              authorWallet={authorWallet}
+              size="sm"
+              layout="horizontal"
+            />
+            <div className="text-xs text-gray-500">
+              {totalPanels} panels • {genre} • Inspired by <a href={articleUrl} target="_blank" rel="noopener noreferrer" className="hover:text-gray-300 underline">original article</a>
+            </div>
           </div>
 
           {/* Action buttons */}
           <div className="flex gap-3">
-            <Button
-              variant="outline"
-              className="gap-2"
-              title="Share your comic (coming soon)"
-              disabled
-            >
-              <Share2 className="w-4 h-4" />
-              Share
-            </Button>
+            <ShareDropdown 
+              data={shareData}
+              variant="outline" 
+            />
 
             <Button
               variant="outline"
               className="gap-2"
-              title="Download your comic (coming soon)"
-              disabled
+              onClick={handleDownload}
+              title="Download your comic as image"
             >
               <Download className="w-4 h-4" />
               Download
             </Button>
 
             <Button
-              onClick={() => onMint(panels)}
+              onClick={handleMintWithMetadata}
               disabled={isMinting}
               className="gap-2"
               style={{
@@ -294,7 +625,7 @@ export function ComicBookFinale({
               }}
             >
               <Zap className="w-4 h-4" />
-              {isMinting ? 'Minting...' : 'Mint as NFT'}
+              {isMinting ? 'Preparing NFT...' : 'Mint as NFT'}
             </Button>
           </div>
         </div>

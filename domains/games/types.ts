@@ -31,6 +31,11 @@ export interface Game {
   writerCoinId?: string
   difficulty?: string
   
+  // Attribution data
+  creatorWallet?: string
+  authorWallet?: string
+  authorParagraphUsername?: string
+  
   // Access control
   private: boolean
   userId?: string
