@@ -16,9 +16,29 @@ const config: Config = {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        'slide-up': {
+          '0%': { opacity: '0', transform: 'translateY(20px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'scale-in': {
+          '0%': { opacity: '0', transform: 'scale(0.95)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        'glow': {
+          '0%, 100%': { boxShadow: '0 0 10px rgba(139, 92, 246, 0.3)' },
+          '50%': { boxShadow: '0 0 20px rgba(139, 92, 246, 0.6)' },
+        },
       },
       animation: {
         'fade-in': 'fade-in 0.5s ease-out',
+        'slide-up': 'slide-up 0.6s ease-out',
+        'scale-in': 'scale-in 0.4s ease-out',
+        'glow': 'glow 3s ease-in-out infinite',
+      },
+      transitionDelay: {
+        '100': '100ms',
+        '200': '200ms',
+        '300': '300ms',
       },
       colors: {
         border: 'hsl(var(--border))',

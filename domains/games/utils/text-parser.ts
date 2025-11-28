@@ -1,94 +1,107 @@
 /**
  * Text parsing utilities for game content
+ * 
+ * ARCHITECTURE NOTE: Each game turn = ONE comic panel
+ * AI is constrained to 2-3 sentences per turn, so we parse single panel per message
+ * This simplifies rendering and ensures clear visual hierarchy in UI
  */
 
 /**
- * Parse and clean narrative text from AI responses
- * Removes markdown formatting like **Panel 1:**, **Narration:**, etc.
+ * Clean markdown formatting and AI markers from narrative text
+ * Removes:
+ * - All bold markers (** anywhere)
+ * - Panel markers (Panel 1:, Panel 2:, etc.)
+ * - Narration labels
+ * - Extra whitespace
  */
-export function parseNarrativeText(rawText: string): string {
-  let cleaned = rawText
-    // Remove panel indicators
-    .replace(/\*\*Panel \d+:?\*\*\s*/gi, '')
-    // Remove narration markers
-    .replace(/\*\*Narration:?\*\*\s*/gi, '')
-    // Remove options markers
-    .replace(/\*\*Options:?\*\*\s*/gi, '')
-    // Remove other bold markers that might slip through
-    .replace(/\*\*(.*?)\*\*/g, '$1')
-    // Clean up extra whitespace
-    .replace(/\n\s*\n/g, ' ')
+function cleanMarkdown(text: string): string {
+  return text
+    // Remove ALL ** markers (bold formatting)
+    .replace(/\*\*/g, '')
+    // Remove Panel X: markers (with optional bold around them)
+    .replace(/Panel\s+\d+:\s*/gi, '')
+    // Remove Narration: labels (with optional bold around them)
+    .replace(/Narration:\s*/gi, '')
+    // Remove "Choices:" marker if present
+    .replace(/Choices:\s*/gi, '')
+    // Remove extra whitespace (multiple spaces → single space)
     .replace(/\s+/g, ' ')
     .trim()
-
-  return cleaned
 }
 
 /**
- * Extract clean options from AI response text
+ * Extract numbered options (1., 2., 3., 4.) from text
+ * Handles both "1. Option text" and "1) Option text" formats
  */
-export function extractOptions(rawText: string): string[] {
-  // Look for numbered options (1., 2., 3., 4.)
-  const optionMatches = rawText.match(/^\d+\.\s*(.+)$/gm)
+function extractOptions(text: string): string[] {
+  const options: string[] = []
+  const lines = text.split('\n')
   
-  if (optionMatches) {
-    return optionMatches.map(match => 
-      match.replace(/^\d+\.\s*/, '').trim()
-    )
+  const optionPattern = /^[-*]?\s*(\d+)[.)]\s+(.+)$/
+  
+  for (const line of lines) {
+    const match = line.trim().match(optionPattern)
+    if (match?.[2]) {
+      const id = parseInt(match[1])
+      if (id >= 1 && id <= 4) {
+        options.push(match[2].trim())
+      }
+    }
   }
   
-  return []
+  return options
 }
 
 /**
- * Parse multiple panels from AI response
+ * Parse a single comic panel from narrative text
+ * 
+ * @param rawText - AI-generated narrative with options
+ * @returns { narrative: clean narrative text, options: array of choice strings }
+ */
+export function parsePanel(rawText: string): {
+  narrative: string
+  options: string[]
+} {
+  // Split narrative from options section
+  const optionPattern = /^[-*]?\s*1[.)]\s+/m
+  const match = rawText.match(optionPattern)
+  
+  if (!match || match.index === undefined) {
+    // No options found, treat entire text as narrative
+    return {
+      narrative: cleanMarkdown(rawText),
+      options: []
+    }
+  }
+  
+  const narrativeSection = rawText.substring(0, match.index).trim()
+  const optionsSection = rawText.substring(match.index).trim()
+  
+  return {
+    narrative: cleanMarkdown(narrativeSection),
+    options: extractOptions(optionsSection)
+  }
+}
+
+/**
+ * DEPRECATED: Legacy multi-panel parsing
+ * Kept for backward compatibility but should not be used
+ * Use parsePanel() instead
  */
 export function parsePanels(rawText: string): {
   panels: Array<{ narrative: string; imagePrompt?: string }>
   options: string[]
 } {
-  // Split text into sections - panels come before options
-  const optionSplit = rawText.split(/(?:\*\*Options:?\*\*|\n\s*(?=\d+\.))/i)
-  const panelText = optionSplit[0] || ''
-  const optionsText = optionSplit.slice(1).join('\n')
-  
-  // Extract options
-  const options = extractOptions(optionsText)
-  
-  // Split panels by "Panel X:" markers
-  const panelSections = panelText.split(/\*\*Panel \d+:?\*\*/i).filter(section => section.trim())
-  
-  const panels = panelSections.map(section => {
-    const cleanNarrative = parseNarrativeText(section)
-    return {
-      narrative: cleanNarrative,
-      // TODO: Extract image prompts if specified
-      imagePrompt: undefined
-    }
-  })
-  
-  // If no panels found, treat entire text as single panel
-  if (panels.length === 0 && panelText.trim()) {
-    panels.push({
-      narrative: parseNarrativeText(panelText),
-      imagePrompt: undefined
-    })
+  const { narrative, options } = parsePanel(rawText)
+  return {
+    panels: [{ narrative, imagePrompt: undefined }],
+    options
   }
-  
-  return { panels, options }
 }
 
 /**
- * Split text into clean narrative and options (legacy)
+ * DEPRECATED: Use parsePanel() instead
  */
-export function parseGameResponse(rawText: string): {
-  narrative: string
-  options: string[]
-} {
-  const { panels, options } = parsePanels(rawText)
-  
-  // Combine all panels into single narrative for backward compatibility
-  const narrative = panels.map(p => p.narrative).join(' ')
-  
-  return { narrative, options }
+export function parseNarrativeText(rawText: string): string {
+  return parsePanel(rawText).narrative
 }

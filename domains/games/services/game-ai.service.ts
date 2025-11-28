@@ -197,7 +197,9 @@ export class GameAIService {
         messages: conversationMessages,
         system: `You are a comic-style game engine for a ${maxPanels}-panel story (currently at panel ${currentPanel}).
 
-  LENGTH REQUIREMENT: Keep narrative to exactly 2-3 sentences maximum. Use vivid, visual language that's punchy and engaging.
+  SCENE FOCUS: Describe ONE scene only. Do NOT recap previous scenes or include flashbacks. Focus entirely on the NEW moment resulting from the user's choice.
+
+  LENGTH REQUIREMENT: Keep narrative to exactly 2-3 sentences maximum. Use vivid, visual language that's punchy and engaging. Every sentence should describe the CURRENT scene.
 
   ${paceGuidance}
 
@@ -429,16 +431,17 @@ Please provide a JSON response with the following structure:
   ${articleContext}
 
   ` : ''}# CRITICAL RULES - COMIC PANEL FORMAT
-  * Keep narrative to exactly 2-3 sentences maximum
+  * Keep narrative to exactly 2-3 sentences maximum describing ONE SCENE ONLY
   * Use vivid, visual language that translates to imagery
   * Paint clear pictures for the comic panel image
   * No lengthy backstory or explanations - show, don't tell
+  * Every sentence must depict the CURRENT scene being visualized
   * Dramatic and engaging tone only
   * Always end with exactly 4 numbered options (1. 2. 3. 4.)
   * Begin each option with the number, period, and space (e.g., "1. ")
   * Make choices meaningful with real consequences
 
-  Start the game now. Set the scene and present 4 initial choices.`
+  Start the game now. Describe the opening scene vividly in 2-3 sentences, then present 4 initial choices.`
 
     return basePrompt
   }

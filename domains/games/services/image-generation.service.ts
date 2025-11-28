@@ -219,8 +219,8 @@ export class ImageGenerationService {
           body: JSON.stringify({
             prompt,
             model: selectedModel,
-            width: 1024,
-            height: 1024,
+            width: 1440,    // Landscape for comic panels
+            height: 810,    // 16:9 aspect ratio
             format: 'png',
           }),
         })
@@ -309,10 +309,12 @@ export class ImageGenerationService {
   }
 
   /**
-   * Build prompt for narrative moment (called per-turn)
-   * Extracts key details from narrative to create contextual COMIC PANELS
-   * Emphasizes comic/illustration aesthetic over photorealism
-   */
+    * Build prompt for narrative moment (called per-turn)
+    * Extracts key details from narrative to create contextual COMIC PANELS
+    * Emphasizes comic/illustration aesthetic over photorealism
+    * 
+    * Strategy: Extract FIRST coherent scene/paragraph (2-3 sentences) for focused image generation
+    */
   private static buildNarrativePrompt(context: {
     narrative: string
     genre: string
@@ -329,15 +331,40 @@ export class ImageGenerationService {
 
     const style = genreComicStyles[context.genre.toLowerCase()] || 'comic panel illustration, bold lines, digital art style'
 
-    // Extract key narrative elements (first 400 chars to keep prompt focused)
-    const narrativeExcerpt = context.narrative.substring(0, 400)
+    // Extract FIRST coherent scene: take sentences until we have 2-3 sentences or reach ~300 chars
+    // This prevents mixing multiple scenes into one image prompt
+    const extractFirstScene = (text: string): string => {
+      const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0)
+      let scene = ''
+      let sentenceCount = 0
+      
+      // Take first 2-3 sentences
+      for (const sentence of sentences) {
+        if (sentenceCount >= 3) break
+        if (scene.length > 300 && sentenceCount >= 2) break
+        
+        scene += (scene ? ' ' : '') + sentence
+        sentenceCount++
+      }
+      
+      return scene.trim()
+    }
+
+    const narrativeExcerpt = extractFirstScene(context.narrative)
 
     // Build color instruction if primaryColor provided
     const colorInstruction = context.primaryColor 
       ? `, featuring ${context.primaryColor} color palette and accents`
       : ''
 
-    return `${style} depicting this scene${colorInstruction}: "${narrativeExcerpt}". Comic book illustration, professional artwork, high quality digital art, expressive and dynamic. NOT photorealistic. Comic/illustrated aesthetic.`
+    const prompt = `${style} depicting this scene${colorInstruction}: "${narrativeExcerpt}". Comic book illustration, professional artwork, high quality digital art, expressive and dynamic. NOT photorealistic. Comic/illustrated aesthetic.`
+    
+    // Log for debugging - shows what prompt was sent to image generator
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[Image Generation] Narrative excerpt: ${narrativeExcerpt.substring(0, 80)}...`)
+    }
+    
+    return prompt
   }
 
   /**
