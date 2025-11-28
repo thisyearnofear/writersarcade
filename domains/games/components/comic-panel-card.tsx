@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Loader2, Star } from 'lucide-react'
 import { GameplayOption } from '../types'
 import { ImageGenerationService, ImageGenerationResult } from '../services/image-generation.service'
+import { parseNarrativeText, parsePanels } from '../utils/text-parser'
 
 interface ComicPanelCardProps {
   messageId: string  // Unique identifier for this panel (prevents duplicate generations)
@@ -16,6 +17,7 @@ interface ComicPanelCardProps {
   isWaiting: boolean
   onImageGenerated?: (result: ImageGenerationResult) => void
   onImageRating?: (rating: number) => void
+  onImagesReady?: () => void // New: Callback when all images are loaded
 }
 
 export function ComicPanelCard({
@@ -28,207 +30,212 @@ export function ComicPanelCard({
   isWaiting,
   onImageGenerated,
   onImageRating,
+  onImagesReady,
 }: ComicPanelCardProps) {
-  const [imageData, setImageData] = useState<ImageGenerationResult | null>(null)
-  const [isGeneratingImage, setIsGeneratingImage] = useState(true)
-  const [userRating, setUserRating] = useState<number | null>(null)
+  const { panels, options: parsedOptions } = parsePanels(narrativeText)
+  const [panelImages, setPanelImages] = useState<(ImageGenerationResult | null)[]>([])
+  const [isGeneratingImages, setIsGeneratingImages] = useState(true)
+  const [userRatings, setUserRatings] = useState<(number | null)[]>([])
+  const hasMultiplePanels = panels.length > 1
   
   // Track if we've already generated an image for this messageId (prevents duplicate generations)
   const generationAttemptedRef = useRef(false)
   const messageIdRef = useRef(messageId)
 
-  // Generate image only once per unique messageId
+  // Initialize arrays for multi-panel support
   useEffect(() => {
-    // If messageId changed, reset the ref and allow new generation
+    setPanelImages(new Array(panels.length).fill(null))
+    setUserRatings(new Array(panels.length).fill(null))
+  }, [panels.length])
+
+  const generateAllImages = useCallback(async () => {
+    setIsGeneratingImages(true)
+    const results = await Promise.allSettled(
+      panels.map(panel => 
+        ImageGenerationService.generateImage({
+          prompt: panel.narrative,
+          genre,
+          style: 'comic_book',
+          aspectRatio: 'landscape'
+        })
+      )
+    )
+    
+    const images = results.map(result => 
+      result.status === 'fulfilled' ? result.value : { imageUrl: null, model: 'failed', timestamp: Date.now() }
+    )
+    
+    setPanelImages(images)
+    setIsGeneratingImages(false)
+    
+    // Notify parent of first successful image
+    const firstSuccess = images.find(img => img.imageUrl)
+    if (firstSuccess) onImageGenerated?.(firstSuccess)
+    
+    // Notify parent that all images are ready (even if some failed)
+    onImagesReady?.()
+  }, [genre, onImageGenerated, onImagesReady, panels])
+
+  // Generate images for all panels (only if not already generated)
+  useEffect(() => {
     if (messageIdRef.current !== messageId) {
       messageIdRef.current = messageId
       generationAttemptedRef.current = false
     }
     
-    // Only generate if we haven't already tried for this messageId
-    if (!generationAttemptedRef.current && narrativeText) {
+    if (!generationAttemptedRef.current && panels.length > 0) {
       generationAttemptedRef.current = true
-      generateImage()
+      console.log('Generating images for panels:', { count: panels.length, cacheSize: ImageGenerationService.getCacheStats?.().size })
+      generateAllImages()
     }
-  }, [messageId, narrativeText])
+  }, [messageId, panels, generateAllImages])
 
-  const generateImage = async () => {
-    setIsGeneratingImage(true)
-    setUserRating(null)
-    try {
-      const result = await ImageGenerationService.generateNarrativeImage({
-        narrative: narrativeText,
-        genre,
-        primaryColor,
-      })
-      setImageData(result)
-      onImageGenerated?.(result)
-    } catch (error) {
-      console.error('Failed to generate narrative image:', error)
-      setImageData({
-        imageUrl: null,
-        model: 'failed',
-        timestamp: Date.now(),
-      })
-    } finally {
-      setIsGeneratingImage(false)
-    }
+  const handleRating = (panelIndex: number, rating: number) => {
+    setUserRatings(prev => {
+      const updated = [...prev]
+      updated[panelIndex] = rating
+      return updated
+    })
+    onImageRating?.(rating)
   }
 
-  const handleRating = (rating: number) => {
-    setUserRating(rating)
-    if (imageData?.model) {
-      ImageGenerationService.recordModelFeedback(imageData.model, rating)
-      onImageRating?.(rating)
-    }
+  // Show loading until all images ready
+  if (isGeneratingImages) {
+    return (
+      <div className="w-full max-w-4xl mx-auto p-8">
+        <div 
+          className="rounded-xl border-2 p-12 text-center"
+          style={{
+            borderColor: primaryColor,
+            backgroundColor: `${primaryColor}05`
+          }}
+        >
+          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4" style={{ color: primaryColor }} />
+          <h3 className="text-xl font-semibold text-white mb-2">Crafting Your Scene</h3>
+          <p className="text-gray-400">
+            Generating {panels.length} panel{panels.length > 1 ? 's' : ''} with visuals...
+          </p>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div
-      className="rounded-xl overflow-hidden border-4 shadow-2xl"
-      style={{
-        borderColor: primaryColor,
-        backgroundColor: 'rgba(0,0,0,0.4)',
-      }}
-    >
-      {/* Comic Panel Image */}
-      <div className="w-full h-72 md:h-96 overflow-hidden bg-black relative group">
-        {isGeneratingImage && !imageData?.imageUrl ? (
-          <div className="w-full h-full flex items-center justify-center">
-            <div className="text-center space-y-2">
-              <Loader2 className="w-8 h-8 animate-spin mx-auto" style={{ color: primaryColor }} />
-              <p className="text-xs text-gray-400">Drawing scene...</p>
-            </div>
-          </div>
-        ) : imageData?.imageUrl ? (
-          <>
-            <img
-              src={imageData.imageUrl}
-              alt="Story panel"
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-            />
-            {/* Bottom gradient overlay for text readability */}
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60"></div>
-          </>
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
-            <p className="text-gray-500 text-sm">Unable to generate image</p>
-          </div>
-        )}
-      </div>
-
-      {/* Model Badge & Rating (if image generated) */}
-      {imageData?.model && imageData.model !== 'failed' && (
-        <div className="px-6 py-3 bg-black/40 border-b border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-400">Generated with:</span>
-            <span
-              className="text-xs font-mono px-2 py-1 rounded"
-              style={{
-                backgroundColor: `${primaryColor}20`,
-                color: primaryColor,
-              }}
-            >
-              {imageData.model}
-            </span>
-          </div>
-
-          {/* 5-Star Rating */}
-          {!userRating ? (
-            <div className="flex gap-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  onClick={() => handleRating(star)}
-                  className="text-lg hover:scale-125 transition-transform cursor-pointer"
-                  style={{ color: primaryColor }}
-                  title={`Rate ${star} star${star > 1 ? 's' : ''}`}
-                >
-                  ☆
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div className="flex gap-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <span
-                  key={star}
-                  className="text-lg"
-                  style={{ color: star <= userRating ? primaryColor : '#404040' }}
-                >
-                  ★
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Comic Panel Content */}
-      <div className="p-6 md:p-8 space-y-6">
-        {/* Speech Bubble Style Narrative */}
+    <div className="w-full max-w-6xl mx-auto space-y-8">
+      {/* Render each panel */}
+      {panels.map((panel, index) => (
         <div
-          className="relative p-4 rounded-lg border-2"
+          key={index}
+          className={`rounded-xl border-2 shadow-2xl overflow-hidden ${
+            index % 2 === 0 ? 'lg:flex-row' : 'lg:flex-row-reverse'
+          } flex flex-col lg:flex`}
           style={{
             borderColor: primaryColor,
-            backgroundColor: `${primaryColor}10`,
+            backgroundColor: 'rgba(0,0,0,0.6)',
           }}
         >
-          {/* Speech bubble tail */}
-          <div
-            className="absolute -bottom-3 left-6 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent"
-            style={{ borderTopColor: primaryColor }}
-          ></div>
+          {/* Comic Panel Image */}
+          <div className="w-full lg:w-1/2 h-72 lg:h-96 overflow-hidden bg-black relative">
+            {panelImages[index]?.imageUrl ? (
+              <>
+                <img
+                  src={panelImages[index].imageUrl}
+                  alt={`Story panel ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+                {/* Model badge */}
+                <div className="absolute top-4 left-4">
+                  <span className="text-xs font-mono px-2 py-1 rounded bg-black/70 text-white">
+                    {panelImages[index].model || 'AI Generated'}
+                  </span>
+                </div>
+                {/* Rating stars */}
+                <div className="absolute top-4 right-4 flex gap-1">
+                  {!userRatings[index] ? (
+                    <>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          onClick={() => handleRating(index, star)}
+                          className="text-lg hover:scale-110 transition-transform cursor-pointer text-white/70 hover:text-white"
+                        >
+                          ☆
+                        </button>
+                      ))}
+                    </>
+                  ) : (
+                    <>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <span
+                          key={star}
+                          className="text-lg"
+                          style={{ color: star <= userRatings[index]! ? primaryColor : '#404040' }}
+                        >
+                          ★
+                        </span>
+                      ))}
+                    </>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
+                <p className="text-gray-500">Image unavailable</p>
+              </div>
+            )}
+          </div>
 
-          <p className="text-gray-100 text-base md:text-lg leading-relaxed font-medium">
-            {narrativeText}
-          </p>
-        </div>
-
-        {/* Action Choices */}
-        {options.length > 0 && (
-          <div className="pt-4 space-y-3">
-            <p className="text-xs text-gray-400 uppercase tracking-wider font-bold">What happens next?</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {options.map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => onOptionSelect(option)}
-                  disabled={isWaiting}
-                  className="group relative text-left p-4 rounded-lg border-2 transition-all duration-200 disabled:opacity-50 hover:scale-105 active:scale-95"
-                  style={{
-                    borderColor: primaryColor,
-                    backgroundColor: `${primaryColor}10`,
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = `${primaryColor}30`
-                    e.currentTarget.style.boxShadow = `0 0 20px ${primaryColor}40`
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = `${primaryColor}10`
-                    e.currentTarget.style.boxShadow = 'none'
-                  }}
-                >
-                  {/* Option Number Badge */}
-                  <div
-                    className="inline-flex items-center justify-center w-8 h-8 rounded-full font-bold text-white mb-2"
-                    style={{
-                      backgroundColor: primaryColor,
-                    }}
-                  >
-                    {option.id}
-                  </div>
-
-                  {/* Option Text */}
-                  <p className="font-semibold text-gray-100 text-sm md:text-base leading-tight">
-                    {option.text}
-                  </p>
-                </button>
-              ))}
+          {/* Content Section */}
+          <div className="flex-1 p-6 lg:p-8 flex flex-col justify-center">
+            <div className="space-y-4">
+              <h3 className="text-sm font-mono text-gray-400">
+                Panel {index + 1} of {panels.length}
+              </h3>
+              <p className="text-lg lg:text-xl leading-relaxed text-gray-100 font-medium">
+                {panel.narrative}
+              </p>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      ))}
+
+      {/* Options Section - Full width grid */}
+      {(parsedOptions.length > 0 || options.length > 0) && (
+        <div className="w-full">
+          <div className="mb-6 text-center">
+            <h3 className="text-xl font-semibold text-white mb-2">What happens next?</h3>
+            <p className="text-gray-400 text-sm">Choose your path to continue the story</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {(parsedOptions.length > 0 ? parsedOptions : options.map(o => o.text)).map((option, index) => (
+              <button
+                key={index}
+                onClick={() => onOptionSelect(typeof option === 'string' ? { id: index + 1, text: option } : option)}
+                disabled={isWaiting}
+                className="p-6 rounded-xl border-2 text-left transition-all duration-200 hover:shadow-lg hover:shadow-current hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  borderColor: `${primaryColor}40`,
+                  backgroundColor: `${primaryColor}10`,
+                  color: 'white',
+                }}
+              >
+                <div className="flex items-start gap-3">
+                  <span 
+                    className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
+                    style={{ backgroundColor: primaryColor }}
+                  >
+                    {index + 1}
+                  </span>
+                  <span className="text-base leading-relaxed">
+                    {typeof option === 'string' ? option : option.text}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

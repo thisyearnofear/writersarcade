@@ -8,7 +8,10 @@ const walletAuthSchema = z.object({
 
 export async function POST(req: Request) {
     try {
+        console.log('Wallet auth request received')
+        
         if (!process.env.DATABASE_URL) {
+            console.error('DATABASE_URL not configured')
             return NextResponse.json(
                 { success: false, error: 'Database not configured' },
                 { status: 503 }
@@ -43,9 +46,14 @@ export async function POST(req: Request) {
             maxAge: 60 * 60 * 24 * 7, // 1 week
         })
 
+        console.log('Wallet auth successful for:', user.walletAddress)
         return response
     } catch (error) {
         console.error('Wallet auth error:', error)
+        console.error('Error details:', {
+            message: error instanceof Error ? error.message : 'Unknown error',
+            stack: error instanceof Error ? error.stack : 'No stack trace'
+        })
         return NextResponse.json(
             { success: false, error: 'Failed to authenticate wallet' },
             { status: 500 }

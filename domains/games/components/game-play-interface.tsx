@@ -8,6 +8,7 @@ import { Game, ChatMessage, GameplayOption } from '../types'
 import { ImageGenerationService, type ImageGenerationResult } from '../services/image-generation.service'
 import { ComicPanelCard } from './comic-panel-card'
 import { ComicBookFinale, type ComicBookFinalePanelData } from './comic-book-finale'
+import { parsePanels } from '../utils/text-parser'
 
 interface GamePlayInterfaceProps {
   game: Game
@@ -27,6 +28,8 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
   const [messages, setMessages] = useState<ChatEntry[]>([])
   const [isStarting, setIsStarting] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [isContentReady, setIsContentReady] = useState(false) // New: Track when all content is loaded
+  const [loadingProgress, setLoadingProgress] = useState({ text: false, images: false }) // New: Track loading stages
   const [userInput, setUserInput] = useState('')
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false)
   const [showComicFinale, setShowComicFinale] = useState(false)
@@ -42,8 +45,10 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
 
   const startGame = async () => {
     setIsStarting(true)
+    setLoadingProgress({ text: false, images: false })
 
     try {
+      // Step 1: Create session
       const sessionResponse = await fetch('/api/session/new')
       const sessionData = await sessionResponse.json()
 
@@ -54,6 +59,7 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
       const newSessionId = sessionData.data.sessionId
       setSessionId(newSessionId)
 
+      // Step 2: Generate initial narrative content
       const startResponse = await fetch(`/api/games/${game.slug}/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -70,6 +76,7 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
       let currentMessage = ''
       let currentOptions: GameplayOption[] = []
 
+      // Process the streaming response but don't switch screens yet
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
@@ -84,48 +91,59 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
 
               if (data.type === 'content') {
                 currentMessage += data.content
-
-                setMessages(prev => {
-                  const newMessages = [...prev]
-                  const lastMessage = newMessages[newMessages.length - 1]
-
-                  if (lastMessage && lastMessage.role === 'assistant') {
-                    lastMessage.content = currentMessage
-                  } else {
-                    newMessages.push({
-                      id: `temp-${Date.now()}`,
-                      sessionId: newSessionId,
-                      gameId: game.id,
-                      role: 'assistant',
-                      content: currentMessage,
-                      model: game.promptModel,
-                      createdAt: new Date(),
-                    })
-                  }
-
-                  return newMessages
-                })
+                // Don't update UI yet - keep user on hero screen
               } else if (data.type === 'options') {
                 currentOptions = data.options || []
               } else if (data.type === 'end') {
-                setMessages(prev => {
-                  const newMessages = [...prev]
-                  const lastMessage = newMessages[newMessages.length - 1]
-                  if (lastMessage) {
-                    lastMessage.options = currentOptions
+                // Text generation complete
+                setLoadingProgress(prev => ({ ...prev, text: true }))
+                
+                // Now create the message for image generation
+                const content = currentMessage
+                const optionStartRegex = /[\n\r]+\s*1[.)]\s+/
+                const match = content.match(optionStartRegex)
+                
+                const cleanContent = match && match.index && currentOptions.length > 0 
+                  ? content.substring(0, match.index).trim() 
+                  : content
 
-                    // Strip options from content to avoid repetition
-                    const content = lastMessage.content
-                    const optionStartRegex = /[\n\r]+\s*1[.)]\s+/
-                    const match = content.match(optionStartRegex)
+                const finalMessage: ChatEntry = {
+                  id: `initial-${newSessionId}`,
+                  sessionId: newSessionId,
+                  gameId: game.id,
+                  role: 'assistant',
+                  content: cleanContent,
+                  options: currentOptions,
+                  model: game.promptModel,
+                  createdAt: new Date(),
+                }
 
-                    if (match && match.index && currentOptions.length > 0) {
-                      lastMessage.content = content.substring(0, match.index).trim()
-                    }
-
-                    // Image generation now handled by ComicPanelCard component
-                  }
-                  return newMessages
+                setMessages([finalMessage])
+                
+                // Now generate images for all panels while still on hero screen
+                setLoadingProgress(prev => ({ ...prev, text: true }))
+                
+                // Parse panels from the narrative
+                const { panels } = parsePanels(cleanContent)
+                
+                // Generate all images in parallel
+                Promise.allSettled(
+                  panels.map(panel =>
+                    ImageGenerationService.generateImage({
+                      prompt: panel.narrative,
+                      genre: game.genre,
+                      style: 'comic_book',
+                      aspectRatio: 'landscape'
+                    })
+                  )
+                ).then(results => {
+                  const successful = results.filter(r => r.status === 'fulfilled' && r.value.imageUrl).length
+                  console.log(`Hero screen image generation: ${successful}/${results.length} successful, cache size: ${ImageGenerationService.getCacheStats?.().size}`)
+                  setLoadingProgress(prev => ({ ...prev, images: true }))
+                }).catch(err => {
+                  console.error('Hero screen image generation error:', err)
+                  // Continue anyway - show gameplay even if images failed
+                  setLoadingProgress(prev => ({ ...prev, images: true }))
                 })
               }
             } catch (error) {
@@ -135,14 +153,26 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
         }
       }
 
-      setIsPlaying(true)
-
     } catch (error) {
       console.error('Failed to start game:', error)
-    } finally {
       setIsStarting(false)
     }
+    // Note: Don't set isStarting to false yet - let image loading complete
   }
+
+  // New: Handle when images are ready from ComicPanelCard
+  const handleImagesReady = () => {
+    setLoadingProgress(prev => ({ ...prev, images: true }))
+  }
+
+  // Check if all content is ready
+  useEffect(() => {
+    // Transition to game screen only when BOTH text AND images are ready
+    if (loadingProgress.text && loadingProgress.images) {
+      setIsPlaying(true)
+      setIsStarting(false)
+    }
+  }, [loadingProgress.text, loadingProgress.images])
 
   const sendMessage = async (message: string) => {
     if (!sessionId || !message.trim()) return
@@ -404,7 +434,11 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
                 {isStarting ? (
                   <>
                     <Loader2 className="w-5 h-5 md:w-6 md:h-6 mr-2 animate-spin" />
-                    <span>Starting...</span>
+                    <span>
+                      {!loadingProgress.text ? 'Crafting your story...' : 
+                       !loadingProgress.images ? 'Generating visuals...' :
+                       'Almost ready...'}
+                    </span>
                   </>
                 ) : (
                   <>
@@ -413,6 +447,26 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
                   </>
                 )}
               </Button>
+              
+              {/* Loading Progress Indicators */}
+              {isStarting && (
+                <div className="mt-4 flex justify-center gap-2">
+                  <div className={`w-3 h-3 rounded-full transition-colors duration-500 ${
+                    loadingProgress.text ? 'bg-green-500' : 'bg-gray-600 animate-pulse'
+                  }`} 
+                  style={{
+                    backgroundColor: loadingProgress.text ? (game.primaryColor || '#8b5cf6') : undefined
+                  }}
+                  />
+                  <div className={`w-3 h-3 rounded-full transition-colors duration-500 ${
+                    loadingProgress.images ? 'bg-green-500' : 'bg-gray-600 animate-pulse'
+                  }`}
+                  style={{
+                    backgroundColor: loadingProgress.images ? (game.primaryColor || '#8b5cf6') : undefined
+                  }}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Optional: Tips section on mobile */}
@@ -502,8 +556,8 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
               </div>
             )}
 
-            {/* Current Comic Panel (only latest assistant message) */}
-            <div className="w-full max-w-3xl space-y-6 animate-fade-in">
+            {/* Current Comic Panel (only latest assistant message) - Multi Panel Support */}
+            <div className="w-full space-y-6 animate-fade-in">
               {messages.map((message, idx) => {
                 // Only show latest assistant message as current panel
                 if (message.role !== 'assistant' || idx !== messages.length - 1) return null
@@ -520,6 +574,7 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
                     isWaiting={isWaitingForResponse}
                     onImageGenerated={(result) => handleImageGenerated(message.id, result)}
                     onImageRating={(rating) => handleImageRating(message.id, rating)}
+                    onImagesReady={handleImagesReady}
                   />
                 )
               })}
@@ -564,40 +619,12 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
 
           <div className="flex gap-3">
             {canAddMorePanels ? (
-              <>
-                <Textarea
-                  value={userInput}
-                  onChange={(e) => setUserInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="What will you do? (Shift+Enter for new line)"
-                  disabled={isWaitingForResponse}
-                  className="flex-1 min-h-[50px] md:min-h-[60px] resize-none text-sm md:text-base bg-black/50 border border-white/10 text-gray-100 placeholder:text-gray-600 focus-visible:ring-0 focus-visible:border-white/30 rounded-lg p-3 md:p-4"
-                  style={{
-                    caretColor: game.primaryColor || '#8b5cf6',
-                  }}
-                />
-                <Button
-                  onClick={() => sendMessage(userInput)}
-                  disabled={!userInput.trim() || isWaitingForResponse}
-                  className="self-end h-[50px] md:h-[60px] px-6 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg hover:shadow-current"
-                  style={{
-                    backgroundColor: game.primaryColor || '#8b5cf6',
-                    color: 'white',
-                  }}
-                >
-                  {isWaitingForResponse ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <>
-                      <Send className="w-5 h-5 md:hidden" />
-                      <span className="hidden md:inline flex items-center gap-2">
-                        <Send className="w-5 h-5" />
-                        Make Choice
-                      </span>
-                    </>
-                  )}
-                </Button>
-              </>
+              // Options are now displayed within MultiPanelCard - no input needed here
+              <div className="w-full text-center py-2">
+                <p className="text-gray-500 text-xs">
+                  {isWaitingForResponse ? 'Generating next scene...' : 'Continue your adventure by selecting an option above'}
+                </p>
+              </div>
             ) : (
               <Button
                 onClick={() => setShowComicFinale(true)}

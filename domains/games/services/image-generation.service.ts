@@ -17,7 +17,17 @@ export interface ImageGenerationResult {
 }
 
 export class ImageGenerationService {
-  private static readonly API_ENDPOINT = '/api/generate-image'
+  private static getApiEndpoint(): string {
+    // Handle both client and server-side calls
+    if (typeof window !== 'undefined') {
+      return `${window.location.origin}/api/generate-image`
+    }
+    // Server-side: use absolute URL for fetch
+    // Next.js uses 3000 by default, but respects PORT env var at startup
+    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http'
+    const host = process.env.VERCEL_URL || 'localhost:3000'
+    return `${protocol}://${host}/api/generate-image`
+  }
   private static readonly CACHE = new Map<string, ImageGenerationResult>() // prompt → result with metadata
   
   // Venice AI models to test (excluding nano-banana-pro for cost)
@@ -54,6 +64,66 @@ export class ImageGenerationService {
   }
 
   /**
+   * Generate image for game panels (multi-panel support)
+   */
+  static async generateImage(params: {
+    prompt: string
+    genre: string
+    style?: string
+    aspectRatio?: string
+  }): Promise<ImageGenerationResult> {
+    const cacheKey = `${params.prompt}_${params.genre}_${params.style || 'comic'}`
+    
+    // Check cache first
+    if (this.CACHE.has(cacheKey)) {
+      console.log('Image cache hit for:', cacheKey.substring(0, 50) + '...')
+      return this.CACHE.get(cacheKey)!
+    }
+
+    try {
+      const enhancedPrompt = this.buildNarrativePrompt({
+        narrative: params.prompt,
+        genre: params.genre
+      })
+      const selectedModel = this.getRandomModel()
+      
+      const response = await fetch(this.getApiEndpoint(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: enhancedPrompt,
+          type: 'narrative',
+          model: selectedModel,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      
+      const result: ImageGenerationResult = {
+        imageUrl: data.imageUrl || null,
+        model: selectedModel,
+        timestamp: Date.now(),
+      }
+
+      // Cache the result
+      this.CACHE.set(cacheKey, result)
+      
+      return result
+    } catch (error) {
+      console.error('Image generation failed:', error)
+      return {
+        imageUrl: null,
+        model: 'failed',
+        timestamp: Date.now(),
+      }
+    }
+  }
+
+  /**
    * Generate an image for a game based on its metadata (cover art)
    */
   static async generateGameImage(game: {
@@ -77,8 +147,13 @@ export class ImageGenerationService {
     genre: string            // Game genre for style consistency
     primaryColor?: string    // Game's primary color for palette matching
   }): Promise<ImageGenerationResult> {
-    const prompt = this.buildNarrativePrompt(context)
-    return this.fetchImage(prompt)
+    // Use the new generateImage method for consistency
+    return this.generateImage({
+      prompt: context.narrative,
+      genre: context.genre,
+      style: 'comic_book',
+      aspectRatio: 'landscape'
+    })
   }
 
   /**
@@ -105,7 +180,7 @@ export class ImageGenerationService {
 
   /**
    * Core image generation fetch logic (shared by all generation types)
-   * Calls server-side API endpoint which handles Venice API key securely
+   * Calls Venice API directly if server-side, or through API endpoint if client-side
    * Implements caching to prevent duplicate API calls
    * Tracks model performance for A/B testing
    */
@@ -121,36 +196,79 @@ export class ImageGenerationService {
     const selectedModel = this.getRandomModel()
 
     try {
-      const response = await fetch(this.API_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          prompt,
-          model: selectedModel,
-          type: 'narrative', // or 'game' - for future flexibility
-        }),
-      })
+      let data
 
-      if (!response.ok) {
-        console.error('Image generation API error:', response.status)
-        return {
-          imageUrl: null,
-          model: selectedModel,
-          timestamp: Date.now(),
+      // If server-side, call Venice API directly (avoid HTTP round-trip to own endpoint)
+      if (typeof window === 'undefined') {
+        const veniceApiKey = process.env.VENICE_API_KEY
+        if (!veniceApiKey) {
+          console.warn('Venice API key not configured')
+          return {
+            imageUrl: null,
+            model: selectedModel,
+            timestamp: Date.now(),
+          }
         }
+
+        const veniceResponse = await fetch('https://api.venice.ai/api/v1/image/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${veniceApiKey}`,
+          },
+          body: JSON.stringify({
+            prompt,
+            model: selectedModel,
+            width: 1024,
+            height: 1024,
+            format: 'png',
+          }),
+        })
+
+        if (!veniceResponse.ok) {
+          const errorText = await veniceResponse.text()
+          console.error('Venice API error:', veniceResponse.status, errorText)
+          return {
+            imageUrl: null,
+            model: selectedModel,
+            timestamp: Date.now(),
+          }
+        }
+
+        data = await veniceResponse.json()
+      } else {
+        // Client-side: use local API endpoint
+        const response = await fetch(this.getApiEndpoint(), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            prompt,
+            model: selectedModel,
+            type: 'narrative',
+          }),
+        })
+
+        if (!response.ok) {
+          console.error('Image generation API error:', response.status)
+          return {
+            imageUrl: null,
+            model: selectedModel,
+            timestamp: Date.now(),
+          }
+        }
+
+        data = await response.json()
       }
 
-      const data = await response.json()
-
       const result: ImageGenerationResult = {
-        imageUrl: data.imageUrl || null,
+        imageUrl: data.images?.[0] ? `data:image/png;base64,${data.images[0]}` : (data.imageUrl || null),
         model: selectedModel,
         timestamp: Date.now(),
       }
 
-      if (data.imageUrl) {
+      if (result.imageUrl) {
         // Cache for future identical prompts
         this.CACHE.set(prompt, result)
       }

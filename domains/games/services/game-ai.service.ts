@@ -170,7 +170,7 @@ export class GameAIService {
   /**
      * Continue game conversation with user input
      * Story-aware version with panel pacing awareness
-     * Enforces 60-130 words per panel with intelligent escalation
+     * Enforces 2-3 sentences per panel with intelligent escalation
      */
   static async* chatGame(
     messages: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>,
@@ -197,7 +197,7 @@ export class GameAIService {
         messages: conversationMessages,
         system: `You are a comic-style game engine for a ${maxPanels}-panel story (currently at panel ${currentPanel}).
 
-  WORD COUNT REQUIREMENT: Keep narrative to 60-130 words (roughly 4-8 sentences). Use vivid, visual language.
+  LENGTH REQUIREMENT: Keep narrative to exactly 2-3 sentences maximum. Use vivid, visual language that's punchy and engaging.
 
   ${paceGuidance}
 
@@ -214,8 +214,8 @@ export class GameAIService {
         }
       }
 
-      // Enforce word count limits (60-130 words)
-      const trimmedContent = this.enforceWordCount(content, 60, 130)
+      // Enforce sentence limits (2-3 sentences)
+      const trimmedContent = this.enforceSentenceCount(content, 2, 3)
       
       if (trimmedContent !== content) {
         const wordCount = trimmedContent.split(/\s+/).filter(w => w.length > 0).length
@@ -263,7 +263,54 @@ Bring the story to its peak. Resolve central conflicts. Provide meaningful closu
   }
 
   /**
-   * Enforce word count between min and max
+   * Enforce sentence count between min and max
+   * Extracts narrative before options and trims/adjusts sentence count
+   */
+  private static enforceSentenceCount(content: string, minSentences: number, maxSentences: number): string {
+    // Find where options start
+    const optionStartPattern = /^[-*]?\s*1[.)]\s+/m
+    const match = content.match(optionStartPattern)
+
+    if (!match || !match.index) {
+      // No options found, trim narrative to sentence count
+      return this.trimToSentenceCount(content, minSentences, maxSentences)
+    }
+
+    // Split narrative from options
+    const narrativeSection = content.substring(0, match.index).trim()
+    const optionsSection = content.substring(match.index).trim()
+
+    // Trim narrative to sentence count range
+    const trimmedNarrative = this.trimToSentenceCount(narrativeSection, minSentences, maxSentences)
+
+    // Combine trimmed narrative with all options
+    return trimmedNarrative + '\n\n' + optionsSection
+  }
+
+  /**
+   * Trim text to a specific sentence count range
+   */
+  private static trimToSentenceCount(text: string, minSentences: number, maxSentences: number): string {
+    // Split by sentence endings
+    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0)
+    
+    // If already within range, return as-is
+    if (sentences.length >= minSentences && sentences.length <= maxSentences) {
+      return text
+    }
+
+    // If too long, truncate to maxSentences
+    if (sentences.length > maxSentences) {
+      const trimmed = sentences.slice(0, maxSentences).join('. ').trim()
+      return trimmed + (trimmed.endsWith('.') ? '' : '.')
+    }
+
+    // If too short, return what we have
+    return text
+  }
+
+  /**
+   * Enforce word count between min and max (legacy)
    * Extracts narrative before options and trims/adjusts word count
    */
   private static enforceWordCount(content: string, minWords: number, maxWords: number): string {
@@ -366,7 +413,7 @@ Please provide a JSON response with the following structure:
   /**
    * Build start game prompt (enhanced from original)
    * Now optionally includes article context for narrative continuity
-   * Enforces 60-130 words for opening panel
+   * Enforces 2-3 sentences for opening panel
    */
   private static buildStartGamePrompt(game: any, articleContext?: string): string {
     const basePrompt = `You are an interactive text game engine designed for visual comic-style gameplay.
@@ -382,7 +429,7 @@ Please provide a JSON response with the following structure:
   ${articleContext}
 
   ` : ''}# CRITICAL RULES - COMIC PANEL FORMAT
-  * Keep narrative to 60-130 words (roughly 4-8 sentences maximum)
+  * Keep narrative to exactly 2-3 sentences maximum
   * Use vivid, visual language that translates to imagery
   * Paint clear pictures for the comic panel image
   * No lengthy backstory or explanations - show, don't tell

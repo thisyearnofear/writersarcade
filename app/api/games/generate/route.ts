@@ -26,10 +26,23 @@ const generateGameSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('Game generation request received')
+    
+    // Check environment variables
+    if (!process.env.OPENAI_API_KEY && !process.env.ANTHROPIC_API_KEY) {
+      console.error('No AI API keys configured')
+      return NextResponse.json(
+        { success: false, error: 'AI service not configured' },
+        { status: 503 }
+      )
+    }
+    
     const body = await request.json()
+    console.log('Request body received:', { hasUrl: !!body.url, hasPromptText: !!body.promptText })
     
     // Get current user (optional)
     const user = await optionalAuth()
+    console.log('User auth result:', { userId: user?.id, userWallet: user?.walletAddress })
     
     // Validate request
     const validatedData = generateGameSchema.parse(body)
@@ -95,6 +108,11 @@ ${processedContent.text}\n\nMake the game capture the essence and themes of this
     
   } catch (error) {
     console.error('Game generation error:', error)
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace',
+      name: error instanceof Error ? error.name : 'Unknown'
+    })
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
