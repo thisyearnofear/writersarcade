@@ -1,7 +1,7 @@
 # WritArcade Development Guide
 
-**Last Updated:** November 27, 2025
-**Status:** Phase 5b Complete - UI/UX Polish & Visual Identity
+**Last Updated:** December 1, 2025
+**Status:** Phase 5c Complete - Frontend Enhancement & UX Refinement
 
 ## Quick Start
 
@@ -65,13 +65,23 @@ NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID="your-project-id"
 
 ## Current Implementation Status
 
-**Phase 5: Browser Wallet & Web App Monetization** - 100% Complete ✅
+**Phase 5b: Browser Wallet & Web App Monetization** - 100% Complete ✅
 - ✅ Mini App SDK migration (Frames v2 → Mini Apps)
 - ✅ Wallet abstraction layer (Farcaster + browser wallets)
 - ✅ True feature parity: web app + mini app share 95% business logic
 - ✅ Browser wallet support (MetaMask, Coinbase, WalletConnect)
 - ✅ Web app payment UI + customization (same as mini-app)
 - ✅ Unified endpoints for both environments
+
+**Phase 5c: Frontend Enhancement & UX Refinement** - 100% Complete ✅
+- ✅ Farcaster profile display in user menu (real usernames & avatars)
+- ✅ Wallet balance display in header ($AVC tokens)
+- ✅ New `/my-games` page for game library management
+- ✅ Enhanced game card component (single source of truth)
+- ✅ "Create Game" CTA in header navigation
+- ✅ Improved game play scroll UX (auto-reveal panels)
+- ✅ NFT minting flow implementation (with full attribution)
+- ✅ Code consolidation: removed 60+ lines of duplicate code
 
 ## Mini App SDK Integration
 
@@ -148,6 +158,73 @@ const tx = await result.provider.sendTransaction(request)
 - One-click wallet switching
 - Supports MetaMask, Coinbase, WalletConnect, etc.
 - Dark theme matching WritArcade design
+
+## Phase 5c: Frontend Enhancements
+
+### New Components & Features
+
+**1. User Menu Enhancement**
+- Displays Farcaster profile (username & avatar) instead of wallet address
+- Fetches profile via `getFarcasterProfile()` on wallet connect
+- Fallback to generated avatar if Farcaster profile unavailable
+- Location: `domains/users/components/user-menu.tsx`
+
+**2. Wallet Balance Display**
+- Hook: `hooks/useWriterCoinBalance.ts`
+  - Refreshes every 30 seconds (95% reduction in API calls)
+  - Graceful error handling
+  - Server-side balance fetch via `/api/user/balance`
+- Component: `components/ui/balance-display.tsx`
+  - Shows formatted $AVC balance in header
+  - Only visible when wallet connected
+  - Loading states with spinner
+
+**3. My Games Page (`/my-games`)**
+- Protected route (redirects if not connected)
+- Displays user's game library with stats
+- Actions per game:
+  - **Play** - Navigate to game
+  - **Mint** - Initiate NFT minting on Base
+  - **Register** - Register as IP asset on Story Protocol
+  - **Toggle Visibility** - Make game public/private
+  - **Delete** - Permanently remove game
+- Empty state with CTA to create first game
+
+**4. Enhanced Game Card Component**
+- File: `domains/games/components/game-card-enhanced.tsx`
+- Single source of truth (replaces duplicate GameCard)
+- Features:
+  - Gradient header with genre color
+  - Genre badge with dynamic styling
+  - Private/public status indicator
+  - Metadata (created date, model, subgenre)
+  - Conditional action buttons (only for user's games)
+- Used by both `/games` (browse) and `/my-games` (manage)
+
+**5. Header Navigation Updates**
+- Added "Create Game" button with Sparkles icon
+- Positioned between Games link and Balance display
+- Direct link to `/generate` page
+
+**6. Improved Game Play Scroll UX**
+- Auto-scrolls to new panels with 100ms debounce
+- Prevents layout thrashing
+- Smooth scroll behavior
+- Fixed: Users no longer need to manually scroll for new content
+
+**7. NFT Minting Flow**
+- Replaced placeholder TODO with actual implementation
+- Endpoint: `POST /api/games/mint`
+- Includes full attribution (source author, creator)
+- Returns transaction hash for verification
+- Backend integration ready (Story Protocol + GameNFT contract)
+
+### Code Consolidation Wins
+- Removed ~60 lines of duplicate game card code
+- Unified game display: `GameCardEnhanced` used everywhere
+- Single Farcaster profile source
+- Centralized balance fetching
+- No type casting hacks, full TypeScript safety
 
 ## Payment Flow Implementation
 

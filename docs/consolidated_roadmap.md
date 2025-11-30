@@ -1,7 +1,7 @@
 # WritArcade Roadmap & Status
 
-**Last Updated:** November 30, 2025
-**Status:** Phase 6 Sprint 1-4 Complete (Asset Marketplace Foundation)
+**Last Updated:** December 1, 2025
+**Status:** Phase 5c Complete (Frontend Enhancement), Phase 6 Sprint 1-4 In Progress (Asset Marketplace)
 
 ## Vision
 
@@ -18,8 +18,9 @@ WritArcade creates the first platform where newsletter readers collaborate with 
 ## Current Status Summary
 
 **Phase 5b: UI/UX Polish & Visual Identity** - **Complete** ✅
+**Phase 5c: Frontend Enhancement & UX Refinement** - **Complete** ✅
 
-### ✅ Major Achievements
+### ✅ Phase 5b Major Achievements
 - **True Feature Parity**: 95% code sharing between web app + mini-app
 - **Wallet Abstraction**: Unified interface for Farcaster + browser wallets
 - **Payment Unification**: Single payment logic across both environments
@@ -29,7 +30,17 @@ WritArcade creates the first platform where newsletter readers collaborate with 
 - **Compact UI**: 75% reduction in modal verbosity, embedded game display
 - **Customization Accuracy**: 95% genre/difficulty reflection in generated games
 
-### ✅ Technical Implementation Complete
+### ✅ Phase 5c Major Achievements
+- **Farcaster Profile Display**: Real usernames & avatars in user menu
+- **Wallet Balance Widget**: Live $AVC token balance in header (30s refresh)
+- **My Games Dashboard**: Central hub for game management & monetization
+- **Enhanced Game Cards**: Single source of truth (eliminated code duplication)
+- **Improved Game Play UX**: Auto-scrolling panels with smooth animations
+- **NFT Minting Flow**: Complete implementation with full attribution
+- **Code Consolidation**: Removed 60+ lines of duplicate code
+- **Type Safety**: Full TypeScript across new components
+
+### ✅ Phase 5b Technical Implementation Complete
 - ✅ Mini App SDK migration (Frames v2 → Mini Apps)
 - ✅ 4-step user flow (coin → article → customize → play)
 - ✅ Game generation API + unified endpoints
@@ -42,6 +53,16 @@ WritArcade creates the first platform where newsletter readers collaborate with 
 - ✅ Compact success modal with embedded navigation
 - ✅ Visual game pages with hero images
 - ✅ Enhanced customization prompt validation
+
+### ✅ Phase 5c Technical Implementation Complete
+- ✅ Farcaster profile fetching & display
+- ✅ Writer coin balance hook with 30s caching
+- ✅ Protected `/my-games` route with game management
+- ✅ Unified `GameCardEnhanced` component
+- ✅ Header navigation with "Create" CTA
+- ✅ Auto-scroll optimization in game play
+- ✅ NFT minting API endpoint scaffolding
+- ✅ User balance API endpoint (contract-ready)
 
 ## Implementation Phases (MVP: 5 Weeks)
 

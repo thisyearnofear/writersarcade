@@ -14,15 +14,48 @@ import {
 } from 'lucide-react'
 import { useAccount, useDisconnect } from 'wagmi'
 import { WalletConnect } from '@/components/ui/wallet-connect'
+import { getFarcasterProfile } from '@/lib/farcaster'
+import type { FarcasterProfile } from '@/lib/farcaster'
 
 export function UserMenu() {
   const { address, isConnected } = useAccount()
   const { disconnect } = useDisconnect()
   const [isOpen, setIsOpen] = useState(false)
+  const [profile, setProfile] = useState<FarcasterProfile | null>(null)
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false)
   const router = useRouter()
 
-  // TODO: Fetch Farcaster profile client-side using useFarcasterProfile hook
-  const displayName = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : 'User'
+  // Fetch Farcaster profile when wallet connects
+  useEffect(() => {
+    if (!address || !isConnected) {
+      setProfile(null)
+      return
+    }
+
+    const loadProfile = async () => {
+      setIsLoadingProfile(true)
+      try {
+        const farcasterProfile = await getFarcasterProfile(address)
+        setProfile(farcasterProfile)
+      } catch (error) {
+        console.error('Failed to load Farcaster profile:', error)
+        setProfile(null)
+      } finally {
+        setIsLoadingProfile(false)
+      }
+    }
+
+    loadProfile()
+  }, [address, isConnected])
+
+  // Use Farcaster username if available, otherwise wallet address
+  const displayName = profile?.username 
+    ? `@${profile.username}` 
+    : address 
+      ? `${address.slice(0, 6)}...${address.slice(-4)}` 
+      : 'User'
+  
+  const avatarUrl = profile?.pfpUrl || `https://api.dicebear.com/7.x/identicon/svg?seed=${address || 'user'}`
 
   const handleLogout = async () => {
     disconnect()
@@ -46,12 +79,22 @@ export function UserMenu() {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center space-x-3 px-3 py-2 rounded-lg bg-purple-600/10 border border-purple-500/30 hover:bg-purple-600/20 hover:border-purple-500/50 transition-all"
       >
-        <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-          <Wallet className="w-4 h-4 text-white" />
-        </div>
-        <div className="hidden md:flex flex-col items-start">
+        {profile?.pfpUrl ? (
+          <img
+            src={avatarUrl}
+            alt={displayName}
+            className="w-8 h-8 rounded-full"
+          />
+        ) : (
+          <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+            <Wallet className="w-4 h-4 text-white" />
+          </div>
+        )}
+        <div className="hidden md:flex flex-col items-start min-w-0">
           <span className="text-xs text-purple-300 font-medium">Connected</span>
-          <span className="text-sm font-mono text-white">{displayName}</span>
+          <span className={`text-sm ${profile?.username ? 'text-white' : 'font-mono text-gray-300'} truncate`}>
+            {displayName}
+          </span>
         </div>
       </button>
 
@@ -67,9 +110,17 @@ export function UserMenu() {
           <div className="absolute right-0 mt-2 w-72 bg-gray-900 border border-purple-500/30 rounded-lg shadow-xl shadow-purple-500/10 z-20">
             <div className="p-4 border-b border-gray-700 bg-gradient-to-r from-purple-900/20 to-pink-900/20">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                  <Wallet className="w-5 h-5 text-white" />
-                </div>
+                {profile?.pfpUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt={displayName}
+                    className="w-10 h-10 rounded-full"
+                  />
+                ) : (
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                    <Wallet className="w-5 h-5 text-white" />
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-white">{displayName}</div>
                   <div className="text-xs text-purple-300 mt-1 font-mono truncate">

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Game } from '../types'
+import { GameCardEnhanced } from './game-card-enhanced'
 
 interface GameGridProps {
   limit?: number
@@ -80,53 +81,9 @@ export function GameGrid({ limit = 25, search, genre }: GameGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {games.map((game) => (
-        <GameCard key={game.id} game={game} />
+        <GameCardEnhanced key={game.id} game={game} isUserGame={false} />
       ))}
     </div>
-  )
-}
-
-function GameCard({ game }: { game: Game }) {
-  return (
-    <Link 
-      href={`/games/${game.slug}`}
-      className="block bg-gray-800/50 rounded-lg border border-gray-700 hover:border-purple-600 transition-all duration-200 overflow-hidden group"
-    >
-      <div className="p-6">
-        <div className="flex items-start justify-between mb-3">
-          <span 
-            className="px-2 py-1 text-xs rounded-full border"
-            style={{
-              borderColor: game.primaryColor || '#8b5cf6',
-              color: game.primaryColor || '#8b5cf6',
-              backgroundColor: `${game.primaryColor || '#8b5cf6'}20`,
-            }}
-          >
-            {game.genre}
-          </span>
-          {game.private && (
-            <span className="text-xs text-gray-500">Private</span>
-          )}
-        </div>
-        
-        <h3 className="text-xl font-semibold mb-2 group-hover:text-purple-400 transition-colors">
-          {game.title}
-        </h3>
-        
-        <p className="text-gray-400 text-sm mb-3 line-clamp-2">
-          {game.description}
-        </p>
-        
-        <blockquote className="text-purple-300 italic text-sm mb-4 border-l-2 border-purple-600 pl-3">
-          "{game.tagline}"
-        </blockquote>
-        
-        <div className="flex items-center justify-between text-xs text-gray-500">
-          <span>{game.subgenre}</span>
-          <span>{new Date(game.createdAt).toLocaleDateString()}</span>
-        </div>
-      </div>
-    </Link>
   )
 }
 
