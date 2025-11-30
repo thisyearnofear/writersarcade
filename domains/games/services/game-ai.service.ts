@@ -92,13 +92,22 @@ export class GameAIService {
     }
 
     const prompt = this.buildGenerationPrompt(promptText, request.customization)
+    
+    console.log('GameAIService.generateGame called:', {
+      retryCount,
+      modelName: request.model,
+      hasCustomization: !!request.customization,
+      promptLength: prompt.length,
+    })
 
     try {
+      console.log('Calling generateObject with model...')
       const { object: game } = await generateObject({
         model,
         schema: gameGenerationSchema,
         prompt,
       })
+      console.log('generateObject returned:', { title: game.title, genre: game.genre })
 
       // Validate customization constraints
       if (request.customization?.genre) {

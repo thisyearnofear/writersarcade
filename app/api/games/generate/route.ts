@@ -94,7 +94,9 @@ Your game MUST authentically interpret this article's core themes. Players shoul
     }
 
     // Generate game using consolidated AI service
+    console.log('Calling GameAIService.generateGame with prompt length:', gameRequest.promptText?.length)
     const gameData = await GameAIService.generateGame(gameRequest)
+    console.log('AI generation successful:', { title: gameData.title, genre: gameData.genre })
     
     // Save to database using enhanced database service  
     const miniAppData = processedContent ? {
@@ -115,13 +117,16 @@ Your game MUST authentically interpret this article's core themes. Players shoul
     const enhancedGameData = {
       ...gameData,
       creatorWallet: user?.walletAddress,
-      authorWallet: processedContent?.authorWallet,
-      authorParagraphUsername: processedContent?.author,
-      articleUrl: validatedData.url,
-      difficulty: validatedData.customization?.difficulty
     }
     
+    console.log('About to save game to database:', {
+      title: enhancedGameData.title,
+      hasUserId: !!user?.id,
+      hasMiniAppData: !!miniAppData,
+      creatorWallet: enhancedGameData.creatorWallet,
+    })
     const savedGame = await GameDatabaseService.createGame(enhancedGameData, user?.id, miniAppData)
+    console.log('Game saved successfully:', { id: savedGame.id, slug: savedGame.slug })
     
     return NextResponse.json({
       success: true,

@@ -42,40 +42,55 @@ export class GameDatabaseService {
         slug = `${slug}-${Date.now()}`
       }
       
-      const game = await prisma.game.create({
-        data: {
-          title: gameData.title,
-          slug,
-          description: gameData.description,
-          tagline: gameData.tagline,
-          genre: gameData.genre,
-          subgenre: gameData.subgenre,
-          primaryColor: gameData.primaryColor,
-          promptName: gameData.promptName,
-          promptText: gameData.promptText,
-          promptModel: gameData.promptModel,
-          articleUrl: miniAppData?.articleUrl,
-          articleContext: miniAppData?.articleContext,
-          writerCoinId: miniAppData?.writerCoinId,
-          difficulty: miniAppData?.difficulty,
-          // Source material attribution - preserves original author
-          authorParagraphUsername: miniAppData?.authorParagraphUsername,
-          authorWallet: miniAppData?.authorWallet,
-          publicationName: miniAppData?.publicationName,
-          publicationSummary: miniAppData?.publicationSummary,
-          subscriberCount: miniAppData?.subscriberCount,
-          articlePublishedAt: miniAppData?.articlePublishedAt,
-          // Creator attribution
-          creatorWallet: gameData.creatorWallet,
-          private: false, // Default to public for now
-          userId: userId || null,
-        }
+      const gameCreateData = {
+        title: gameData.title,
+        slug,
+        description: gameData.description,
+        tagline: gameData.tagline,
+        genre: gameData.genre,
+        subgenre: gameData.subgenre,
+        primaryColor: gameData.primaryColor,
+        promptName: gameData.promptName,
+        promptText: gameData.promptText,
+        promptModel: gameData.promptModel,
+        articleUrl: miniAppData?.articleUrl,
+        articleContext: miniAppData?.articleContext,
+        writerCoinId: miniAppData?.writerCoinId,
+        difficulty: miniAppData?.difficulty,
+        // Source material attribution - preserves original author
+        authorParagraphUsername: miniAppData?.authorParagraphUsername,
+        authorWallet: miniAppData?.authorWallet,
+        publicationName: miniAppData?.publicationName,
+        publicationSummary: miniAppData?.publicationSummary,
+        subscriberCount: miniAppData?.subscriberCount,
+        articlePublishedAt: miniAppData?.articlePublishedAt,
+        // Creator attribution
+        creatorWallet: gameData.creatorWallet,
+        private: false, // Default to public for now
+        userId: userId || null,
+      }
+      
+      console.log('Creating game with data:', {
+        title: gameCreateData.title,
+        slug: gameCreateData.slug,
+        genre: gameCreateData.genre,
+        hasCreatorWallet: !!gameCreateData.creatorWallet,
+        hasUserId: !!gameCreateData.userId,
       })
       
+      const game = await prisma.game.create({ data: gameCreateData })
+      
+      console.log('Game created successfully:', { id: game.id, slug: game.slug })
       return this.mapPrismaGameToGame(game)
       
     } catch (error) {
       console.error('Failed to create game:', error)
+      console.error('Game creation error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        code: (error as any).code,
+        meta: (error as any).meta,
+        stack: error instanceof Error ? error.stack : undefined,
+      })
       throw new Error('Failed to save game to database')
     }
   }
