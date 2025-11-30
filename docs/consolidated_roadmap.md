@@ -343,12 +343,31 @@ WritArcade (Same Codebase, Different Products)
 - ✅ Database: 3 new tables created, all relations configured
 - ✅ Build: `npm run build` passing, 0 TypeScript errors, 0 breaking changes
 
-**Sprint 2 (Week 2): Marketplace UI & Discovery**
-- [ ] Create `AssetMarketplaceService` with caching (PERFORMANT)
-- [ ] Build `/app/assets/page.tsx` (discover/browse)
-- [ ] Build `/app/assets/[id]/page.tsx` (detail view)
-- [ ] Add `/api/assets/generate/route.ts` endpoint (article → assets)
-- [ ] Implement asset search/filtering (DRY: single query builder)
+**Sprint 2 (Week 2): Marketplace UI & Discovery** ✅ COMPLETE
+- [x] Create `AssetMarketplaceService` with caching (PERFORMANT)
+- [x] Build `/app/assets/page.tsx` (discover/browse)
+- [x] Build `/app/assets/[id]/page.tsx` (detail view)
+- [x] Add `/api/assets/generate/route.ts` endpoint (article → assets)
+- [x] Implement asset search/filtering (DRY: single query builder)
+
+**Implementation Details (Sprint 2):**
+- ✅ `AssetMarketplaceService`: 290-line service with 5-minute TTL caching
+  - `getFeaturedAssets()`, `getAssetsByType()`, `getAssetsByGenre()`, `searchAssets()`
+  - `getTrendingAssets()`, `getAssetDetail()`, `composeGameFromAssets()`
+  - Cache management with pattern-based invalidation
+- ✅ UI Pages (2 client components):
+  - `/app/assets/page.tsx`: Browse/filter/search with pagination (12 items/page)
+  - `/app/assets/[id]/page.tsx`: Detail view with related assets + article source
+  - Filters: Asset Type (character, mechanic, plot, world, dialog), Genre (6 genres)
+  - Search: Full-text across title, description, content
+- ✅ API Endpoints:
+  - `POST /api/assets/generate`: Article → Assets (uses GameAIService.generateAssets)
+  - `GET /api/assets/generate`: Browse/filter/search (with query params)
+  - `GET /api/assets/[id]`: Detail view with related assets
+  - `PATCH /api/assets/[id]`: Update asset
+  - `DELETE /api/assets/[id]`: Delete asset
+- ✅ Asset Transformation: Converts AssetGenerationResponse (characters, storyBeats, mechanics) into individual Asset records
+- ✅ Build: `npm run build` passing, routes registered (/assets, /assets/[id], /api/assets/*, /api/assets/[id]/*)
 
 **Sprint 3 (Week 3): Game Builder from Assets**
 - [ ] Create "Build Game" flow (select assets + customize)
