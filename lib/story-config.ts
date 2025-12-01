@@ -18,20 +18,20 @@ export interface StoryNetworkConfig {
 
 export const STORY_NETWORKS: Record<StoryNetwork, StoryNetworkConfig> = {
   testnet: {
-    name: "Story Protocol Testnet",
-    rpcUrl: "https://testnet-rpc.story.foundation",
-    chainId: 1516, // Story testnet chain ID
-    explorer: "https://testnet-explorer.story.foundation",
-    storyContractRegistry: "0x1234567890123456789012345678901234567890", // Replace with actual
-    storyTokenAddress: "0x0987654321098765432109876543210987654321", // Replace with actual
+    name: "Story Protocol Aeneid Testnet",
+    rpcUrl: "https://aeneid.storyrpc.io",
+    chainId: 1315, // Story Aeneid testnet
+    explorer: "https://aeneid-testnet-explorer.story.foundation",
+    storyContractRegistry: "0x1514000000000000000000000000000000000000",
+    storyTokenAddress: "0x1514000000000000000000000000000000000000",
   },
   mainnet: {
     name: "Story Protocol Mainnet",
-    rpcUrl: "https://mainnet-rpc.story.foundation",
-    chainId: 1514, // Story mainnet chain ID
-    explorer: "https://explorer.story.foundation",
-    storyContractRegistry: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd", // Replace with actual
-    storyTokenAddress: "0xfedcbafedcbafedcbafedcbafedcbafedcbafed", // Replace with actual
+    rpcUrl: "https://story-rpc.xyz",
+    chainId: 1513, // Story mainnet
+    explorer: "https://www.storyscan.io/",
+    storyContractRegistry: "0x...", // Set via env if needed
+    storyTokenAddress: "0x...", // Set via env if needed
   },
 };
 
