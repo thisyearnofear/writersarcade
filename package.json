@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "prisma migrate deploy && next build --webpack",
+    "build": "prisma db push --skip-generate && next build --webpack",
     "start": "next start",
     "lint": "eslint . --fix",
     "type-check": "tsc --noEmit",
