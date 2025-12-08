@@ -12,6 +12,7 @@
  * - All bold markers (** anywhere)
  * - Panel markers (Panel 1:, Panel 2:, etc.)
  * - Narration labels
+ * - Opening Scene: labels
  * - Extra whitespace
  */
 function cleanMarkdown(text: string): string {
@@ -22,6 +23,10 @@ function cleanMarkdown(text: string): string {
     .replace(/Panel\s+\d+:\s*/gi, '')
     // Remove Narration: labels (with optional bold around them)
     .replace(/Narration:\s*/gi, '')
+    // Remove Opening Scene: labels (with optional bold around them)
+    .replace(/Opening\s+Scene:\s*/gi, '')
+    // Remove Final Scene: labels (with optional bold around them)
+    .replace(/Final\s+Scene:\s*/gi, '')
     // Remove "Choices:" marker if present
     .replace(/Choices:\s*/gi, '')
     // Remove extra whitespace (multiple spaces → single space)

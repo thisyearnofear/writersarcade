@@ -124,77 +124,198 @@ export function ComicBookFinale({
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const panelWidth = 400
-    const panelHeight = 300
-    const padding = 20
-    const headerHeight = 80
+    // Add roundRect function to canvas context if not available
+    if (!CanvasRenderingContext2D.prototype.roundRect) {
+      CanvasRenderingContext2D.prototype.roundRect = function(x: number, y: number, width: number, height: number, radius: number) {
+        if (width < 2 * radius) radius = width / 2;
+        if (height < 2 * radius) radius = height / 2;
+        this.beginPath();
+        this.moveTo(x + radius, y);
+        this.arcTo(x + width, y, x + width, y + height, radius);
+        this.arcTo(x + width, y + height, x, y + height, radius);
+        this.arcTo(x, y + height, x, y, radius);
+        this.arcTo(x, y, x + width, y, radius);
+        this.closePath();
+        return this;
+      };
+    }
 
-    // Calculate canvas dimensions
-    const canvasWidth = panelWidth + (padding * 2)
-    const canvasHeight = (panelHeight * totalPanels) + (padding * (totalPanels + 1)) + headerHeight
+    const canvasWidth = 800; // Wider canvas for better text display
+    const canvasHeight = totalPanels > 0 ? 600 + (totalPanels * 500) : 800; // Dynamic height based on panels
+    const padding = 40;
+    const headerHeight = 120;
 
-    canvas.width = canvasWidth
-    canvas.height = canvasHeight
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
 
-    // Fill background
-    ctx.fillStyle = '#000000'
-    ctx.fillRect(0, 0, canvasWidth, canvasHeight)
+    // Fill background with gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
+    gradient.addColorStop(0, '#1a1a1a');
+    gradient.addColorStop(1, '#000000');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-    // Add title header
-    ctx.fillStyle = primaryColor
-    ctx.font = 'bold 24px Arial'
-    ctx.textAlign = 'center'
-    ctx.fillText(gameTitle, canvasWidth / 2, 35)
-    
-    ctx.fillStyle = '#888888'
-    ctx.font = '14px Arial'
-    ctx.fillText(`${genre} • ${totalPanels} Panels • WritArcade`, canvasWidth / 2, 60)
+    // Add title header - centered
+    ctx.fillStyle = primaryColor;
+    ctx.font = 'bold 36px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(gameTitle, canvasWidth / 2, 60);
 
-    // Add panels
-    let loadedImages = 0
-    const totalImages = panels.filter(p => p.imageUrl).length
+    ctx.fillStyle = '#AAAAAA';
+    ctx.font = '18px Arial';
+    ctx.fillText(`${genre} • ${totalPanels} Panels • WritArcade`, canvasWidth / 2, 100);
+
+    // Center line separator
+    ctx.strokeStyle = `${primaryColor}40`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(padding, headerHeight);
+    ctx.lineTo(canvasWidth - padding, headerHeight);
+    ctx.stroke();
+
+    // Add panels with centered layout
+    let loadedImages = 0;
+    const totalImages = panels.filter(p => p.imageUrl).length;
 
     panels.forEach((panel, idx) => {
-      if (panel.imageUrl) {
-        const img = new Image()
-        img.crossOrigin = 'anonymous'
-        img.onload = () => {
-          const yPosition = headerHeight + padding + (idx * (panelHeight + padding))
-          
-          // Draw image
-          ctx.drawImage(img, padding, yPosition, panelWidth, panelHeight - 60)
-          
-          // Draw panel number
-          ctx.fillStyle = primaryColor
-          ctx.font = 'bold 16px Arial'
-          ctx.textAlign = 'left'
-          ctx.fillText(`Panel ${idx + 1}`, padding + 10, yPosition + panelHeight - 40)
-          
-          // Draw narrative text (truncated)
-          ctx.fillStyle = '#ffffff'
-          ctx.font = '12px Arial'
-          const truncatedText = panel.narrativeText.slice(0, 60) + (panel.narrativeText.length > 60 ? '...' : '')
-          ctx.fillText(truncatedText, padding + 10, yPosition + panelHeight - 20)
+      const yPosition = headerHeight + padding + (idx * 500);
 
-          loadedImages++
+      if (panel.imageUrl) {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          // Draw image centered
+          const imageWidth = 640;
+          const imageHeight = 320;
+          const imageX = (canvasWidth - imageWidth) / 2;
+          const imageY = yPosition;
+
+          // Draw image with rounded corners
+          ctx.save();
+          ctx.beginPath();
+          ctx.roundRect(imageX, imageY, imageWidth, imageHeight, 12);
+          ctx.clip();
+          ctx.drawImage(img, imageX, imageY, imageWidth, imageHeight);
+          ctx.restore();
+
+          // Draw narrative text - centered and full text
+          ctx.fillStyle = '#FFFFFF';
+          ctx.font = '16px Arial';
+          ctx.textAlign = 'left';
+
+          // Break text into lines that fit within the canvas width
+          const maxWidth = 700;
+          const lineHeight = 20;
+          const textX = (canvasWidth - maxWidth) / 2;
+          let textY = yPosition + imageHeight + 20;
+
+          const wrapText = (text: string, x: number, y: number, maxWidth: number, lineHeight: number) => {
+            const words = text.split(' ');
+            let line = '';
+            let currentY = y;
+
+            for (let n = 0; n < words.length; n++) {
+              const testLine = line + words[n] + ' ';
+              const metrics = ctx.measureText(testLine);
+              const testWidth = metrics.width;
+
+              if (testWidth > maxWidth && n > 0) {
+                ctx.fillText(line, x, currentY);
+                line = words[n] + ' ';
+                currentY += lineHeight;
+              } else {
+                line = testLine;
+              }
+            }
+            ctx.fillText(line, x, currentY);
+            return currentY;
+          };
+
+          const finalY = wrapText(panel.narrativeText, textX, textY, maxWidth, lineHeight);
+
+          // Add separator between panels
+          if (idx < panels.length - 1) {
+            ctx.strokeStyle = '#444444';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(padding, finalY + 60);
+            ctx.lineTo(canvasWidth - padding, finalY + 60);
+            ctx.stroke();
+          }
+
+          loadedImages++;
           if (loadedImages === totalImages || totalImages === 0) {
             // All images loaded, download the canvas
-            const link = document.createElement('a')
-            link.download = `${gameTitle.replace(/[^a-zA-Z0-9]/g, '_')}_comic.png`
-            link.href = canvas.toDataURL('image/png')
-            link.click()
+            const link = document.createElement('a');
+            link.download = `${gameTitle.replace(/[^a-zA-Z0-9]/g, '_')}_comic.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
           }
-        }
-        img.src = panel.imageUrl
-      }
-    })
+        };
+        img.src = panel.imageUrl;
+      } else {
+        // If no image, just draw text
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = '16px Arial';
+        ctx.textAlign = 'left';
 
-    // If no images, just download the text version
-    if (totalImages === 0) {
-      const link = document.createElement('a')
-      link.download = `${gameTitle.replace(/[^a-zA-Z0-9]/g, '_')}_comic.png`
-      link.href = canvas.toDataURL('image/png')
-      link.click()
+        // Draw narrative text - centered and full text
+        const maxWidth = 700;
+        const lineHeight = 20;
+        const textX = (canvasWidth - maxWidth) / 2;
+        let textY = yPosition + 20;
+
+        const wrapText = (text: string, x: number, y: number, maxWidth: number, lineHeight: number) => {
+          const words = text.split(' ');
+          let line = '';
+          let currentY = y;
+
+          for (let n = 0; n < words.length; n++) {
+            const testLine = line + words[n] + ' ';
+            const metrics = ctx.measureText(testLine);
+            const testWidth = metrics.width;
+
+            if (testWidth > maxWidth && n > 0) {
+              ctx.fillText(line, x, currentY);
+              line = words[n] + ' ';
+              currentY += lineHeight;
+            } else {
+              line = testLine;
+            }
+          }
+          ctx.fillText(line, x, currentY);
+          return currentY;
+        };
+
+        const finalY = wrapText(panel.narrativeText, textX, textY, maxWidth, lineHeight);
+
+        // Add separator between panels
+        if (idx < panels.length - 1) {
+          ctx.strokeStyle = '#444444';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(padding, finalY + 60);
+          ctx.lineTo(canvasWidth - padding, finalY + 60);
+          ctx.stroke();
+        }
+
+        loadedImages++;
+        if (loadedImages === totalImages || totalImages === 0) {
+          // All images loaded (or no images), download the canvas
+          const link = document.createElement('a');
+          link.download = `${gameTitle.replace(/[^a-zA-Z0-9]/g, '_')}_comic.png`;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        }
+      }
+    });
+
+    // If no panels, just download the text version
+    if (totalPanels === 0) {
+      const link = document.createElement('a');
+      link.download = `${gameTitle.replace(/[^a-zA-Z0-9]/g, '_')}_comic.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
     }
   }
 
@@ -474,42 +595,33 @@ export function ComicBookFinale({
                 </div>
 
                 {/* Vertical comic strip layout */}
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {panels.map((panel, idx) => (
                     <div
                       key={panel.id}
-                      className="rounded-lg overflow-hidden border border-white/30"
+                      className="rounded-xl overflow-hidden border-2"
+                      style={{ borderColor: primaryColor + '40' }}
                     >
-                      <div className="grid grid-cols-3 gap-0">
-                        {/* Panel number */}
-                        <div className="bg-black/60 p-2 flex items-center justify-center">
-                          <span className="text-sm font-bold" style={{ color: primaryColor }}>
-                            {idx + 1}
-                          </span>
-                        </div>
-                        
-                        {/* Image */}
-                        <div className="aspect-square overflow-hidden bg-black">
-                          {panel.imageUrl ? (
-                            <img
-                              src={panel.imageUrl}
-                              alt={`Panel ${idx + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-gray-900">
-                              <span className="text-gray-500 text-xs">No image</span>
-                            </div>
-                          )}
-                        </div>
-                        
-                        {/* Narrative text */}
-                        <div className="p-2 bg-black/40 flex items-center">
-                          <p className="text-xs leading-tight text-gray-200">
-                            {panel.narrativeText.slice(0, 80)}
-                            {panel.narrativeText.length > 80 ? '...' : ''}
-                          </p>
-                        </div>
+                      {/* Image */}
+                      <div className="w-full h-48 overflow-hidden bg-black">
+                        {panel.imageUrl ? (
+                          <img
+                            src={panel.imageUrl}
+                            alt={`Scene ${idx + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
+                            <span className="text-gray-500 text-sm">No image</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Narrative text - centered and full text */}
+                      <div className="p-4 bg-black/60">
+                        <p className="text-sm leading-relaxed text-gray-200 text-center">
+                          {panel.narrativeText}
+                        </p>
                       </div>
                     </div>
                   ))}

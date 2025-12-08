@@ -11,13 +11,16 @@ import { AnimatedOptionButton } from './animated-option-button'
 interface ComicPanelCardProps {
   messageId: string
   narrativeText: string
+  genre: string
   primaryColor: string
   options: GameplayOption[]
   onOptionSelect: (option: GameplayOption) => void
   isWaiting: boolean
+  onImageGenerated?: (result: any) => void
   onImageRating?: (rating: number) => void
   onImagesReady?: () => void
   pendingOptionId?: number | null
+  responseReady?: { text: boolean; images: boolean }
   narrativeImage?: string | null
   imageModel?: string
   shouldRevealContent?: boolean
@@ -32,11 +35,9 @@ export function ComicPanelCard({
   options,
   onOptionSelect,
   isWaiting,
-  onImageGenerated,
   onImageRating,
   onImagesReady,
   pendingOptionId,
-  responseReady,
   narrativeImage,
   imageModel,
   shouldRevealContent = true,
