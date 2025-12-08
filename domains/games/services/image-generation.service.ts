@@ -35,7 +35,6 @@ export class ImageGenerationService {
     'venice-sd35',      // Default, works with all features ($0.01)
     'qwen-image',       // Highest quality ($0.01)
     'hidream',          // Fast generation ($0.01)
-    'wai-Illustrious',  // Anime/illustration focused ($0.01) - good for comic style!
   ]
   
   // Track model performance over time

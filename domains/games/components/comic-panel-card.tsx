@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { ZoomIn, Loader2 } from 'lucide-react'
 import { GameplayOption } from '../types'
-import { ImageGenerationService, ImageGenerationResult } from '../services/image-generation.service'
 import { parsePanel } from '../utils/text-parser'
 import { ImageLightbox } from './image-lightbox'
 import { TypewriterEffect } from './typewriter-effect'
@@ -12,19 +11,17 @@ import { AnimatedOptionButton } from './animated-option-button'
 interface ComicPanelCardProps {
   messageId: string
   narrativeText: string
-  genre: string
   primaryColor: string
   options: GameplayOption[]
   onOptionSelect: (option: GameplayOption) => void
   isWaiting: boolean
-  onImageGenerated?: (result: ImageGenerationResult) => void
   onImageRating?: (rating: number) => void
   onImagesReady?: () => void
   pendingOptionId?: number | null
-  responseReady?: { text: boolean; images: boolean }
   narrativeImage?: string | null
   imageModel?: string
   shouldRevealContent?: boolean
+  showLoadingState?: boolean
 }
 
 export function ComicPanelCard({
@@ -43,6 +40,7 @@ export function ComicPanelCard({
   narrativeImage,
   imageModel,
   shouldRevealContent = true,
+  showLoadingState = false,
 }: ComicPanelCardProps) {
   const { narrative, options: parsedOptions } = parsePanel(narrativeText)
   const [imageRating, setImageRating] = useState<number | null>(null)
@@ -171,6 +169,13 @@ export function ComicPanelCard({
                    )}
                  </div>
                </>
+             ) : showLoadingState ? (
+               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-black relative">
+                 <div className="text-center">
+                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" style={{ color: primaryColor }} />
+                   <p className="text-gray-400 text-sm">Preparing next panel...</p>
+                 </div>
+               </div>
              ) : (
                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-black relative">
                  <div className="text-center">

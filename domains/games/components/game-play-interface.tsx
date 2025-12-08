@@ -378,14 +378,16 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
   const handleOptionClick = (option: GameplayOption) => {
     setPendingOptionId(option.id)
     setResponseReady({ text: false, images: false })
-    
+
     // Track user choice for NFT metadata
     setUserChoices(prev => [...prev, {
       panelIndex: assistantMessageCount, // Current panel index
       choice: option.text,
       timestamp: new Date().toISOString()
     }])
-    
+
+    // Start loading next panel in background
+    // User stays on current panel while content loads
     sendMessage(option.text)
   }
 
@@ -688,7 +690,7 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
                </div>
              </div>
 
-            {/* Current Comic Panel - Only show when BOTH text and images are ready */}
+            {/* Current Comic Panel - Show current panel while next loads in background */}
              <div className="w-full space-y-8">
                {messages.map((message, idx) => {
                  // Only render assistant messages that have options (completed/ready to interact)
@@ -699,26 +701,14 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
                  // Only show the LATEST panel with options
                  const remainingMessages = messages.slice(idx + 1)
                  const hasLaterCompletedPanel = remainingMessages.some(m => m.role === 'assistant' && m.options && m.options.length > 0)
-                 
+
                  if (hasLaterCompletedPanel) return null
 
-                 // GATE: Only show panel if image is ready (text always ready at this point)
+                 // NEW LOGIC: Show current panel immediately, even if image isn't ready yet
+                 // This allows user to stay on current panel while next one loads in background
                  const imageReady = message.narrativeImage !== undefined
-                 if (!imageReady) {
-                   return (
-                     <div key={message.id} className="h-64 flex items-center justify-center">
-                       <div className="text-center space-y-3">
-                         <Loader2
-                           className="w-8 h-8 animate-spin mx-auto"
-                           style={{ color: game.primaryColor || '#8b5cf6' }}
-                         />
-                         <p className="text-sm text-gray-400">Preparing your panel...</p>
-                       </div>
-                     </div>
-                   )
-                 }
 
-                 // Show this panel only when image is ready
+                 // Show this panel regardless of image readiness
                  return (
                    <div key={message.id} className="animate-in fade-in duration-700 ease-out">
                      <ComicPanelCard
@@ -737,6 +727,7 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
                        narrativeImage={message.narrativeImage || undefined}
                        imageModel={message.imageModel}
                        shouldRevealContent={true}
+                       showLoadingState={!imageReady && isWaitingForResponse}
                      />
                    </div>
                  )
