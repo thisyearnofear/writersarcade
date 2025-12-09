@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { GameAIService } from '@/domains/games/services/game-ai.service'
 import { GameDatabaseService } from '@/domains/games/services/game-database.service'
 import { ContentProcessorService } from '@/domains/content/services/content-processor.service'
+import { WordleService } from '@/domains/games/services/wordle.service'
+import type { GameGenerationResponse } from '@/domains/games/types'
 import { optionalAuth } from '@/lib/auth'
 import { z } from 'zod'
 
@@ -9,6 +11,8 @@ import { z } from 'zod'
 const generateGameSchema = z.object({
   promptText: z.string().optional(),
   url: z.string().url().optional(),
+  // Optional game mode: "story" (default) or "wordle" (article-derived word puzzle)
+  mode: z.enum(['story', 'wordle']).optional(),
   customization: z.object({
     genre: z.enum(['horror', 'comedy', 'mystery']).optional(),
     difficulty: z.enum(['easy', 'hard']).optional(),
@@ -28,24 +32,16 @@ export async function POST(request: NextRequest) {
   try {
     console.log('Game generation request received')
     
-    // Check environment variables
-    if (!process.env.OPENAI_API_KEY && !process.env.ANTHROPIC_API_KEY) {
-      console.error('No AI API keys configured')
-      return NextResponse.json(
-        { success: false, error: 'AI service not configured' },
-        { status: 503 }
-      )
-    }
-    
     const body = await request.json()
-    console.log('Request body received:', { hasUrl: !!body.url, hasPromptText: !!body.promptText })
-    
-    // Get current user (optional)
-    const user = await optionalAuth()
-    console.log('User auth result:', { userId: user?.id, userWallet: user?.walletAddress })
+    console.log('Request body received:', { hasUrl: !!body.url, hasPromptText: !!body.promptText, mode: body.mode })
     
     // Validate request
     const validatedData = generateGameSchema.parse(body)
+    const mode = validatedData.mode ?? 'story'
+
+    //     // Get current user (optional)
+    const user = await optionalAuth()
+    console.log('User auth result:', { userId: user?.id, userWallet: user?.walletAddress })
     
     let processedPrompt = validatedData.promptText || ''
     let processedContent
@@ -82,27 +78,79 @@ Your game MUST authentically interpret this article's core themes. Players shoul
       }
     }
     
-    // Build game generation request with optional customization
-    const gameRequest = {
-      promptText: processedPrompt,
-      url: validatedData.url,
-      customization: validatedData.customization,
-      model: validatedData.model,
-      promptName: validatedData.promptName,
-      private: validatedData.private,
-      payment: validatedData.payment,
+    // In Wordle mode we require a URL so we can derive the puzzle from the article
+    if (mode === 'wordle' && !validatedData.url) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Wordle mode requires an article URL.',
+        },
+        { status: 400 }
+      )
     }
 
-    // Generate game using consolidated AI service
-    console.log('Calling GameAIService.generateGame with prompt length:', gameRequest.promptText?.length)
-    const gameData = await GameAIService.generateGame(gameRequest)
-    console.log('AI generation successful:', { title: gameData.title, genre: gameData.genre })
+    let gameData: GameGenerationResponse
+    let wordleAnswer: string | undefined
+
+    if (mode === 'wordle') {
+      if (!processedContent) {
+        throw new Error('Failed to process article content for Wordle mode')
+      }
+
+      const answer = WordleService.deriveAnswerFromText(processedContent.text)
+      wordleAnswer = answer
+
+      gameData = {
+        title: processedContent.title
+          ? `Wordle: ${processedContent.title}`
+          : 'Article Wordle',
+        description:
+          'A Wordle-style puzzle derived from the core language of this article. Guess the key word inspired by the source material.',
+        tagline: processedContent.title
+          ? `Guess a key word inspired by "${processedContent.title}"`
+          : 'Guess a key word inspired by this article.',
+        genre: 'Wordle',
+        subgenre: 'Puzzle',
+        primaryColor: '#fbbf24', // Amber, distinct from core horror/comedy/mystery palette
+        promptModel: 'wordle-engine',
+        promptName: 'Wordle-Article-v1',
+        promptText: `Article-derived Wordle answer of length ${answer.length}.`,
+        mode: 'wordle',
+      }
+
+      console.log('Wordle game generated from article:', {
+        title: gameData.title,
+        answerLength: answer.length,
+      })
+    } else {
+      // Build game generation request with optional customization
+      const gameRequest = {
+        promptText: processedPrompt,
+        url: validatedData.url,
+        customization: validatedData.customization,
+        model: validatedData.model,
+        promptName: validatedData.promptName,
+        private: validatedData.private,
+        payment: validatedData.payment,
+      }
+
+      // Generate game using consolidated AI service
+      console.log('Calling GameAIService.generateGame with prompt length:', gameRequest.promptText?.length)
+      const aiGameData = await GameAIService.generateGame(gameRequest)
+      console.log('AI generation successful:', { title: aiGameData.title, genre: aiGameData.genre })
+
+      gameData = {
+        ...aiGameData,
+        mode: 'story' as const,
+      }
+    }
     
     // Save to database using enhanced database service  
     const miniAppData = processedContent ? {
       articleUrl: validatedData.url,
       difficulty: validatedData.customization?.difficulty,
       writerCoinId: validatedData.payment?.writerCoinId,
+      wordleAnswer,
       authorWallet: processedContent.authorWallet,
       authorParagraphUsername: processedContent.author, // Extract from URL parsing
       publicationName: processedContent.publicationName,

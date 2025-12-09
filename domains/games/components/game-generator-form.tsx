@@ -23,6 +23,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
   const { isConnected } = useAccount()
   const [isGenerating, setIsGenerating] = useState(false)
   const [url, setUrl] = useState('')
+  const [mode, setMode] = useState<'story' | 'wordle'>('story')
   const [genre, setGenre] = useState<GameGenre>('horror')
   const [difficulty, setDifficulty] = useState<GameDifficulty>('easy')
   const [showCustomization, setShowCustomization] = useState(true)
@@ -46,6 +47,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
   })
 
   const writerCoin = getWriterCoinById('avc') // Default to AVC for web app
+  const isStoryMode = mode === 'story'
   if (!writerCoin) {
     return <div className="text-red-500">Error: Writer coin not configured</div>
   }
@@ -90,13 +92,14 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
             },
              body: JSON.stringify({
                url: url.trim(),
-               ...(showCustomization && paymentApproved && {
+               mode,
+               ...(isStoryMode && showCustomization && paymentApproved && {
                  customization: {
                    genre,
                    difficulty,
                  },
                }),
-               ...(paymentApproved && {
+               ...(isStoryMode && paymentApproved && {
                  payment: {
                    writerCoinId: writerCoin.id,
                  },
@@ -179,15 +182,15 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
       return
     }
 
-    // If customization requested, require payment
-    if (showCustomization && !isConnected) {
+    // If customization requested in story mode, require payment
+    if (isStoryMode && showCustomization && !isConnected) {
       setError('Please connect your wallet to use customization')
       setShowPayment(true)
       return
     }
 
-    // If customization but not approved payment yet, show payment
-    if (showCustomization && !paymentApproved) {
+    // If customization but not approved payment yet, show payment (story mode only)
+    if (isStoryMode && showCustomization && !paymentApproved) {
       setShowPayment(true)
       return
     }
@@ -200,6 +203,44 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
     <div className="w-full max-w-2xl mx-auto">
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
+          {/* Game Type Toggle */}
+          <div className="flex flex-col gap-2">
+            <Label className="text-sm font-medium">Game Type</Label>
+            <div className="inline-flex rounded-md bg-gray-900/60 border border-gray-700 p-1 w-fit">
+              <button
+                type="button"
+                onClick={() => setMode('story')}
+                className={`px-3 py-1.5 text-xs md:text-sm rounded-md font-medium transition-colors ${
+                  mode === 'story'
+                    ? 'bg-purple-600 text-white'
+                    : 'text-gray-300 hover:text-white'
+                }`}
+              >
+                Story (5-panel)
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('wordle')
+                  // Wordle is free and does not use genre/difficulty customization yet
+                  setShowCustomization(false)
+                  setShowPayment(false)
+                  setPaymentApproved(false)
+                }}
+                className={`ml-1 px-3 py-1.5 text-xs md:text-sm rounded-md font-medium transition-colors ${
+                  mode === 'wordle'
+                    ? 'bg-purple-600 text-white'
+                    : 'text-gray-300 hover:text-white'
+                }`}
+              >
+                Wordle (beta)
+              </button>
+            </div>
+            <p className="text-xs text-gray-400">
+              Story creates a 5-panel narrative game. Wordle creates a free article-derived word puzzle.
+            </p>
+          </div>
+
           {/* URL Input */}
           <div>
             <Label htmlFor="url" className="text-sm font-medium">
@@ -295,8 +336,8 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
             </div>
           )}
 
-          {/* Customization Toggle */}
-          {!isGenerating && (
+          {/* Customization Toggle (story mode only) */}
+          {!isGenerating && isStoryMode && (
             <div className="pt-4 border-t border-gray-700">
               <button
                 type="button"
@@ -331,8 +372,8 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
           />
         )}
 
-        {/* Payment Section (shown when customization requested) */}
-        {showPayment && (
+        {/* Payment Section (shown when customization requested in story mode) */}
+        {isStoryMode && showPayment && (
           <div className="space-y-4 p-4 bg-purple-900/20 rounded-lg border border-purple-600/30">
             <h3 className="font-semibold text-purple-200">Enable Customization</h3>
             <p className="text-sm text-purple-300">
@@ -369,7 +410,11 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
             ) : (
               <>
                 <Sparkles className="w-4 h-4 mr-2" />
-                {paymentApproved ? 'Generate Custom Game' : 'Create Game'}
+                {isStoryMode
+                  ? paymentApproved
+                    ? 'Generate Custom Story Game'
+                    : 'Create Story Game'
+                  : 'Create Wordle Game'}
               </>
             )}
           </Button>

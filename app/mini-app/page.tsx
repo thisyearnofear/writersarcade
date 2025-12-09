@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { readyMiniApp, getFarcasterContext, isInFarcasterContext } from '@/lib/farcaster'
+import { readyMiniApp, getFarcasterContext, isInFarcasterContext, openUrl } from '@/lib/farcaster'
 import { WriterCoinSelector } from './components/WriterCoinSelector'
 import { ArticleInput } from './components/ArticleInput'
 import { GameCustomizer } from './components/GameCustomizer'
@@ -52,6 +52,17 @@ export default function MiniAppPage() {
     }
 
     const handleGameGenerated = (game: any) => {
+        // Wordle games are rendered in the main web app; launch them directly
+        if (game?.mode === 'wordle') {
+            const slug = game.slug
+            if (slug) {
+                // Use current origin so it works in dev and prod
+                const origin = typeof window !== 'undefined' ? window.location.origin : ''
+                openUrl(`${origin}/games/${slug}`).catch(console.error)
+            }
+            return
+        }
+
         setGeneratedGame(game)
         setStep('play-game')
     }

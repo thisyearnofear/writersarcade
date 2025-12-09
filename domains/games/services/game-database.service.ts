@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/database'
 import { createSlug } from '@/lib/utils'
-import type { Game, GameGenerationResponse } from '../types'
+import type { Game, GameGenerationResponse, GameMode } from '../types'
 import { Prisma } from '@prisma/client'
 
 /**
@@ -20,6 +20,7 @@ export class GameDatabaseService {
       writerCoinId?: string
       difficulty?: string
       articleContext?: string
+      wordleAnswer?: string
       // Source material attribution
       authorParagraphUsername?: string
       authorWallet?: string
@@ -50,10 +51,13 @@ export class GameDatabaseService {
         genre: gameData.genre,
         subgenre: gameData.subgenre,
         primaryColor: gameData.primaryColor,
+        // Default to "story" to preserve behavior for existing games
+        mode: (gameData.mode as GameMode | undefined) || 'story',
         promptName: gameData.promptName,
         promptText: gameData.promptText,
         promptModel: gameData.promptModel,
         articleUrl: miniAppData?.articleUrl,
+        wordleAnswer: miniAppData?.wordleAnswer,
         articleContext: miniAppData?.articleContext,
         writerCoinId: miniAppData?.writerCoinId,
         difficulty: miniAppData?.difficulty,
@@ -324,16 +328,18 @@ export class GameDatabaseService {
    * Map Prisma game model to our Game type
    */
   private static mapPrismaGameToGame(prismaGame: any): Game {
-    return {
-      id: prismaGame.id,
-      title: prismaGame.title,
-      slug: prismaGame.slug,
-      description: prismaGame.description,
-      tagline: prismaGame.tagline,
-      genre: prismaGame.genre,
-      subgenre: prismaGame.subgenre,
+      return {
+        id: prismaGame.id,
+        title: prismaGame.title,
+        slug: prismaGame.slug,
+        description: prismaGame.description,
+        tagline: prismaGame.tagline,
+        genre: prismaGame.genre,
+        subgenre: prismaGame.subgenre,
       primaryColor: prismaGame.primaryColor,
+      mode: (prismaGame.mode as GameMode | undefined) || 'story',
       promptName: prismaGame.promptName,
+      wordleAnswer: prismaGame.wordleAnswer,
       promptText: prismaGame.promptText,
       promptModel: prismaGame.promptModel,
       imageUrl: prismaGame.imageUrl,

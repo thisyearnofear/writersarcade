@@ -18,9 +18,12 @@ interface GameCustomizerProps {
 export function GameCustomizer({ writerCoin, articleUrl, onBack, onGameGenerated }: GameCustomizerProps) {
   const [genre, setGenre] = useState<GameGenre>('horror')
   const [difficulty, setDifficulty] = useState<GameDifficulty>('easy')
+  const [mode, setMode] = useState<'story' | 'wordle'>('story')
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [paymentApproved, setPaymentApproved] = useState(false)
+
+  const isStoryMode = mode === 'story'
 
   const cost = useMemo(() => {
     return PaymentCostService.calculateCost(writerCoin.id, 'generate-game')
@@ -38,19 +41,27 @@ export function GameCustomizer({ writerCoin, articleUrl, onBack, onGameGenerated
     setIsGenerating(true)
     setError(null)
     try {
+      const body =
+        mode === 'wordle'
+          ? {
+              url: articleUrl,
+              mode: 'wordle' as const,
+            }
+          : {
+              url: articleUrl,
+              customization: {
+                genre,
+                difficulty,
+              },
+              payment: {
+                writerCoinId: writerCoin.id,
+              },
+            }
+
       const response = await fetch('/api/games/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          url: articleUrl,
-          customization: {
-            genre,
-            difficulty,
-          },
-          payment: {
-            writerCoinId: writerCoin.id,
-          },
-        }),
+        body: JSON.stringify(body),
       })
 
       if (!response.ok) {
@@ -83,17 +94,51 @@ export function GameCustomizer({ writerCoin, articleUrl, onBack, onGameGenerated
       </button>
 
       <h2 className="mb-2 text-2xl font-bold text-white">Customize Your Game</h2>
-      <p className="mb-6 text-purple-200">Choose genre and difficulty for your game</p>
+      <p className="mb-6 text-purple-200">Choose game type, then (optionally) genre and difficulty.</p>
 
       <div className="space-y-6">
-        {/* Genre Selection */}
-        <GenreSelector value={genre} onChange={setGenre} disabled={isGenerating} />
+        {/* Game Type Toggle */}
+        <div className="flex flex-col gap-2">
+          <div className="inline-flex rounded-md bg-purple-950/60 border border-purple-700 p-1 w-fit">
+            <button
+              type="button"
+              onClick={() => setMode('story')}
+              className={`px-3 py-1.5 text-xs rounded-md font-medium transition-colors ${
+                mode === 'story' ? 'bg-purple-600 text-white' : 'text-purple-200 hover:text-white'
+              }`}
+            >
+              Story (5-panel)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMode('wordle')
+                setPaymentApproved(false)
+              }}
+              className={`ml-1 px-3 py-1.5 text-xs rounded-md font-medium transition-colors ${
+                mode === 'wordle' ? 'bg-purple-600 text-white' : 'text-purple-200 hover:text-white'
+              }`}
+            >
+              Wordle (beta, free)
+            </button>
+          </div>
+          <p className="text-xs text-purple-200">
+            Story uses writer coins for customization. Wordle is a free article-derived word puzzle during beta.
+          </p>
+        </div>
 
-        {/* Difficulty Selection */}
-        <DifficultySelector value={difficulty} onChange={setDifficulty} disabled={isGenerating} />
+        {/* Genre & Difficulty Selection (story mode only) */}
+        {isStoryMode && (
+          <>
+            <GenreSelector value={genre} onChange={setGenre} disabled={isGenerating} />
 
-        {/* Cost Preview */}
-        <CostPreview writerCoin={writerCoin} action="generate-game" showBreakdown />
+            {/* Difficulty Selection */}
+            <DifficultySelector value={difficulty} onChange={setDifficulty} disabled={isGenerating} />
+
+            {/* Cost Preview */}
+            <CostPreview writerCoin={writerCoin} action="generate-game" showBreakdown />
+          </>
+        )}
 
         {/* Error Message */}
         {error && (
@@ -102,20 +147,34 @@ export function GameCustomizer({ writerCoin, articleUrl, onBack, onGameGenerated
           </div>
         )}
 
-        {/* Payment & Generation */}
-        {!paymentApproved ? (
-          <PaymentFlow
-            writerCoin={writerCoin}
-            action="generate-game"
-            costFormatted={cost.amountFormatted}
-            onPaymentSuccess={handlePaymentSuccess}
-            onPaymentError={(err) => setError(err)}
+        {/* Payment & Generation (story mode) */}
+        {isStoryMode && (
+          !paymentApproved ? (
+            <PaymentFlow
+              writerCoin={writerCoin}
+              action="generate-game"
+              costFormatted={cost.amountFormatted}
+              onPaymentSuccess={handlePaymentSuccess}
+              onPaymentError={(err) => setError(err)}
+              disabled={isGenerating}
+            />
+          ) : (
+            <div className="rounded-lg border border-green-500/50 bg-green-500/20 p-4">
+              <p className="text-sm text-green-200">✅ Payment confirmed! Generating your game...</p>
+            </div>
+          )
+        )}
+
+        {/* Wordle generation (free) */}
+        {!isStoryMode && (
+          <button
+            type="button"
+            onClick={generateGame}
             disabled={isGenerating}
-          />
-        ) : (
-          <div className="rounded-lg border border-green-500/50 bg-green-500/20 p-4">
-            <p className="text-sm text-green-200">✅ Payment confirmed! Generating your game...</p>
-          </div>
+            className="w-full rounded-lg bg-purple-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-purple-500 disabled:opacity-50"
+          >
+            {isGenerating ? 'Creating Wordle…' : 'Create Wordle Game'}
+          </button>
         )}
 
         {/* Info */}

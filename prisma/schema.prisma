@@ -40,6 +40,9 @@ model Game {
   genre       String
   subgenre    String
 
+  // Game mode: "story" (default) or "wordle" (article-derived word puzzle)
+  mode        String @default("story")
+
   // Visual customization
   primaryColor String?
 
@@ -64,6 +67,9 @@ model Game {
   articleContext     String?  @db.Text  // Article summary used for game start narrative continuity
   writerCoinId       String?  // Which writer coin was used (e.g., "avc")
   difficulty         String?  // Game difficulty: "easy" or "hard"
+
+  // Wordle-specific metadata (for article-derived word puzzles)
+  wordleAnswer       String?
   
   // Source material attribution (preserves original author for Story Protocol & NFT metadata)
   authorParagraphUsername String?  // Original author's Paragraph username (e.g., "fred" from Fred Wilson)

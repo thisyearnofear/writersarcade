@@ -1,4 +1,6 @@
 // Core game types - consolidating from existing models
+export type GameMode = 'story' | 'wordle'
+
 export interface Game {
   id: string
   title: string
@@ -8,6 +10,7 @@ export interface Game {
   genre: string
   subgenre: string
   primaryColor?: string
+  mode?: GameMode
   
   // AI Generation metadata
   promptName: string
@@ -30,6 +33,9 @@ export interface Game {
   articleContext?: string
   writerCoinId?: string
   difficulty?: string
+
+  // Wordle-specific metadata
+  wordleAnswer?: string
   
   // Attribution data - preserves source material author
   creatorWallet?: string
@@ -89,6 +95,8 @@ export interface GameGenerationRequest {
   model?: string
   promptName?: string
   private?: boolean
+  // Optional: different game modes (default is "story")
+  mode?: GameMode
 }
 
 export interface GameGenerationResponse {
@@ -101,6 +109,8 @@ export interface GameGenerationResponse {
   promptModel: string
   promptName: string
   promptText?: string
+  // Optional game mode metadata ("story" | "wordle")
+  mode?: GameMode
   creatorWallet?: string  // Game creator's wallet (for attribution in NFT)
 }
 

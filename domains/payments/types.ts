@@ -4,7 +4,7 @@
  * Unified payment structures for both web app + mini app
  */
 
-export type PaymentAction = 'generate-game' | 'mint-nft'
+export type PaymentAction = 'generate-game' | 'mint-nft' | 'play-wordle'
 
 export interface PaymentCost {
   action: PaymentAction

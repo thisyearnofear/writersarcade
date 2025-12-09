@@ -1,7 +1,10 @@
 import { notFound } from 'next/navigation'
 import { GameDatabaseService } from '@/domains/games/services/game-database.service'
 import { GamePlayInterface } from '@/domains/games/components/game-play-interface'
+import { WordleGameInterface } from '@/domains/games/components/wordle-game-interface'
 import { ImageGenerationService } from '@/domains/games/services/image-generation.service'
+import { ContentProcessorService } from '@/domains/content/services/content-processor.service'
+import { WordleService } from '@/domains/games/services/wordle.service'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,8 +22,8 @@ export default async function GamePage({ params }: GamePageProps) {
     notFound()
   }
 
-  // Generate image if not exists (async, non-blocking)
-  if (!game.imageUrl) {
+  // For story games, generate image if not exists (async, non-blocking)
+  if (game.mode !== 'wordle' && !game.imageUrl) {
     ImageGenerationService.generateGameImage(game).then(result => {
       if (result.imageUrl) {
         GameDatabaseService.updateGameImage(game.id, result.imageUrl).catch(console.error)
@@ -28,6 +31,30 @@ export default async function GamePage({ params }: GamePageProps) {
     }).catch(console.error)
   }
   
+  // Wordle-mode games render a Wordle interface instead of the comic-story interface
+  if (game.mode === 'wordle') {
+    let answer = game.wordleAnswer
+
+    // Fallback: derive from article if answer wasn't persisted (backwards compatibility)
+    if (!answer) {
+      if (!game.articleUrl) {
+        notFound()
+      }
+      const processed = await ContentProcessorService.processUrl(game.articleUrl)
+      answer = WordleService.deriveAnswerFromText(processed.text)
+    }
+
+    if (!answer) {
+      notFound()
+    }
+
+    return (
+      <div className="min-h-screen bg-black">
+        <WordleGameInterface game={game} answer={answer} maxAttempts={WordleService.DEFAULT_MAX_ATTEMPTS} />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-black">
       <GamePlayInterface game={game} />

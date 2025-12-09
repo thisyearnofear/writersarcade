@@ -18,7 +18,10 @@ export class PaymentCostService {
       throw new Error(`Writer coin "${writerCoinId}" not found`)
     }
 
-    const amount = action === 'generate-game' ? coin.gameGenerationCost : coin.mintCost
+    const amount =
+      action === 'generate-game' || action === 'play-wordle'
+        ? coin.gameGenerationCost
+        : coin.mintCost
 
     return {
       action,
@@ -42,9 +45,12 @@ export class PaymentCostService {
       throw new Error(`Writer coin "${writerCoinId}" not found`)
     }
 
-    const amount = action === 'generate-game' ? coin.gameGenerationCost : coin.mintCost
+    const amount =
+      action === 'generate-game' || action === 'play-wordle'
+        ? coin.gameGenerationCost
+        : coin.mintCost
 
-    if (action === 'generate-game') {
+    if (action === 'generate-game' || action === 'play-wordle') {
       // Game generation: 35% writer, 35% creator, 20% burn, 10% platform
       return {
         writerShare: (amount * BigInt(coin.revenueDistribution.writer)) / BigInt(100),
