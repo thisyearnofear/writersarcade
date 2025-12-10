@@ -31,10 +31,10 @@ const generateGameSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     console.log('Game generation request received')
-    
+
     const body = await request.json()
     console.log('Request body received:', { hasUrl: !!body.url, hasPromptText: !!body.promptText, mode: body.mode })
-    
+
     // Validate request
     const validatedData = generateGameSchema.parse(body)
     const mode = validatedData.mode ?? 'story'
@@ -42,22 +42,25 @@ export async function POST(request: NextRequest) {
     //     // Get current user (optional)
     const user = await optionalAuth()
     console.log('User auth result:', { userId: user?.id, userWallet: user?.walletAddress })
-    
+
     let processedPrompt = validatedData.promptText || ''
     let processedContent
-    
+
     // If URL provided, extract and process content
     if (validatedData.url && ContentProcessorService.isValidUrl(validatedData.url)) {
       try {
         processedContent = await ContentProcessorService.processUrl(validatedData.url)
-        
-        // Extract article themes for thematic game design
-        const articleThemes = ContentProcessorService.extractArticleThemes(
-          processedContent.text,
-          processedContent.title
-        )
-        
-        processedPrompt = `Create a game based on this article: "${processedContent.title || 'Untitled'}"
+
+        // Only generate prompt from article if promptText wasn't explicitly provided
+        // This allows the Workshop to pass a custom "Compiled Asset Context" while still linking the URL for attribution
+        if (!validatedData.promptText) {
+          // Extract article themes for thematic game design
+          const articleThemes = ContentProcessorService.extractArticleThemes(
+            processedContent.text,
+            processedContent.title
+          )
+
+          processedPrompt = `Create a game based on this article: "${processedContent.title || 'Untitled'}"
 
 ARTICLE SOURCE MATERIAL:
 Author: ${processedContent.author || 'Unknown'} | Publication: ${processedContent.publicationName || 'Unknown'} | ${processedContent.wordCount} words
@@ -70,6 +73,7 @@ ${processedContent.text}
 
 DESIGN IMPERATIVE:
 Your game MUST authentically interpret this article's core themes. Players should play this game and think differently about the concepts ${processedContent.author || 'the author'} presents. This game is a derivative work that honors the original author's ideas while offering a unique, interactive interpretation.`
+        }
       } catch (error) {
         console.error('Content processing failed:', error)
         // Re-throw with better message
@@ -77,7 +81,7 @@ Your game MUST authentically interpret this article's core themes. Players shoul
         throw new Error(`URL processing failed: ${message}`)
       }
     }
-    
+
     // In Wordle mode we require a URL so we can derive the puzzle from the article
     if (mode === 'wordle' && !validatedData.url) {
       return NextResponse.json(
@@ -144,7 +148,7 @@ Your game MUST authentically interpret this article's core themes. Players shoul
         mode: 'story' as const,
       }
     }
-    
+
     // Save to database using enhanced database service  
     const miniAppData = processedContent ? {
       articleUrl: validatedData.url,
@@ -160,13 +164,13 @@ Your game MUST authentically interpret this article's core themes. Players shoul
       // Include comprehensive article context for authentic game narrative continuity
       articleContext: `Article: "${processedContent.title}"\nAuthor: ${processedContent.author || 'Unknown'}\nPublication: ${processedContent.publicationName || 'Unknown'}\n\nCore Themes:\n${ContentProcessorService.extractArticleThemes(processedContent.text, processedContent.title)}\n\nKey excerpt:\n${processedContent.text.substring(0, 800)}...`,
     } : undefined
-    
+
     // Enhance game data with attribution
     const enhancedGameData = {
       ...gameData,
       creatorWallet: user?.walletAddress,
     }
-    
+
     console.log('About to save game to database:', {
       title: enhancedGameData.title,
       hasUserId: !!user?.id,
@@ -175,7 +179,7 @@ Your game MUST authentically interpret this article's core themes. Players shoul
     })
     const savedGame = await GameDatabaseService.createGame(enhancedGameData, user?.id, miniAppData)
     console.log('Game saved successfully:', { id: savedGame.id, slug: savedGame.slug })
-    
+
     return NextResponse.json({
       success: true,
       data: {
@@ -185,7 +189,7 @@ Your game MUST authentically interpret this article's core themes. Players shoul
         createdAt: savedGame.createdAt,
       },
     })
-    
+
   } catch (error) {
     console.error('Game generation error:', error)
     console.error('Error details:', {
@@ -193,22 +197,22 @@ Your game MUST authentically interpret this article's core themes. Players shoul
       stack: error instanceof Error ? error.stack : 'No stack trace',
       name: error instanceof Error ? error.name : 'Unknown'
     })
-    
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'Invalid request data',
-          details: error.errors 
+          details: error.errors
         },
         { status: 400 }
       )
     }
-    
+
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to generate game. Please try again.' 
+      {
+        success: false,
+        error: 'Failed to generate game. Please try again.'
       },
       { status: 500 }
     )
@@ -223,7 +227,7 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0')
     const search = searchParams.get('search') || undefined
     const genre = searchParams.get('genre') || undefined
-    
+
     // Fetch games from database
     const result = await GameDatabaseService.getGames({
       limit,
@@ -232,12 +236,12 @@ export async function GET(request: NextRequest) {
       genre,
       includePrivate: false, // Public API endpoint
     })
-    
+
     return NextResponse.json({
       success: true,
       data: result,
     })
-    
+
   } catch (error) {
     console.error('Get games error:', error)
     return NextResponse.json(

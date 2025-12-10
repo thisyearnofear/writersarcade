@@ -8,7 +8,7 @@ import { Prisma, Game as PrismaGameModel } from '@prisma/client'
  * Handles all game-related database operations
  */
 export class GameDatabaseService {
-  
+
   /**
     * Create a new game from AI generation response
     */
@@ -33,16 +33,16 @@ export class GameDatabaseService {
     try {
       // Generate unique slug
       let slug = createSlug(gameData.title)
-      
+
       // Check if slug exists and make unique if needed
       const existingGame = await prisma.game.findUnique({
         where: { slug }
       })
-      
+
       if (existingGame) {
         slug = `${slug}-${Date.now()}`
       }
-      
+
       const gameCreateData = {
         title: gameData.title,
         slug,
@@ -73,7 +73,7 @@ export class GameDatabaseService {
         private: false, // Default to public for now
         userId: userId || null,
       }
-      
+
       console.log('Creating game with data:', {
         title: gameCreateData.title,
         slug: gameCreateData.slug,
@@ -81,12 +81,12 @@ export class GameDatabaseService {
         hasCreatorWallet: !!gameCreateData.creatorWallet,
         hasUserId: !!gameCreateData.userId,
       })
-      
+
       const game = await prisma.game.create({ data: gameCreateData })
-      
+
       console.log('Game created successfully:', { id: game.id, slug: game.slug })
       return this.mapPrismaGameToGame(game)
-      
+
     } catch (error) {
       console.error('Failed to create game:', error)
       console.error('Game creation error details:', {
@@ -98,7 +98,7 @@ export class GameDatabaseService {
       throw new Error('Failed to save game to database')
     }
   }
-  
+
   /**
    * Get game by slug
    */
@@ -115,15 +115,15 @@ export class GameDatabaseService {
           }
         }
       })
-      
+
       return game ? this.mapPrismaGameToGame(game) : null
-      
+
     } catch (error) {
       console.error('Failed to get game by slug:', error)
       return null
     }
   }
-  
+
   /**
    * Get games with pagination and filtering
    */
@@ -143,7 +143,7 @@ export class GameDatabaseService {
       userId,
       includePrivate = false
     } = options
-    
+
     try {
       // Build where clause
       const where: Prisma.GameWhereInput = {
@@ -165,7 +165,7 @@ export class GameDatabaseService {
           genre ? { genre: { equals: genre, mode: 'insensitive' } } : {},
         ]
       }
-      
+
       const [games, total] = await Promise.all([
         prisma.game.findMany({
           where,
@@ -183,7 +183,7 @@ export class GameDatabaseService {
         }),
         prisma.game.count({ where })
       ])
-      
+
       return {
         games: games.map(this.mapPrismaGameToGame),
         total,
@@ -191,7 +191,7 @@ export class GameDatabaseService {
         offset,
         hasMore: offset + limit < total,
       }
-      
+
     } catch (error) {
       console.error('Failed to get games:', error)
       // Return empty result instead of throwing on database errors
@@ -204,21 +204,21 @@ export class GameDatabaseService {
       }
     }
   }
-  
+
   /**
    * Get games by genre
    */
   static async getGamesByGenre(genre: string, limit: number = 25) {
     return this.getGames({ genre, limit, includePrivate: false })
   }
-  
+
   /**
    * Get user's games
    */
   static async getUserGames(userId: string, limit: number = 25) {
     return this.getGames({ userId, limit, includePrivate: true })
   }
-  
+
   /**
    * Update game
    */
@@ -231,9 +231,9 @@ export class GameDatabaseService {
         where: { id },
         data: updates,
       })
-      
+
       return this.mapPrismaGameToGame(game)
-      
+
     } catch (error) {
       console.error('Failed to update game:', error)
       return null
@@ -249,15 +249,15 @@ export class GameDatabaseService {
         where: { id },
         data: { imageUrl },
       })
-      
+
       return this.mapPrismaGameToGame(game)
-      
+
     } catch (error) {
       console.error('Failed to update game image:', error)
       return null
     }
   }
-  
+
   /**
    * Delete game
    */
@@ -269,15 +269,15 @@ export class GameDatabaseService {
           userId, // Ensure user owns the game
         }
       })
-      
+
       return true
-      
+
     } catch (error) {
       console.error('Failed to delete game:', error)
       return false
     }
   }
-  
+
   /**
    * Get game statistics
    */
@@ -305,14 +305,14 @@ export class GameDatabaseService {
           }
         })
       ])
-      
+
       return {
         totalGames,
         publicGames,
         topGenres: genres.map(g => ({ genre: g.genre, count: g._count.genre })),
         recentGames,
       }
-      
+
     } catch (error) {
       console.error('Failed to get game stats:', error)
       return {
@@ -323,51 +323,211 @@ export class GameDatabaseService {
       }
     }
   }
-  
+
   /**
    * Map Prisma game model to our Game type
    */
   private static mapPrismaGameToGame(prismaGame: any): Game {
-      return {
-        id: prismaGame.id,
-        title: prismaGame.title,
-        slug: prismaGame.slug,
-        description: prismaGame.description,
-        tagline: prismaGame.tagline,
-        genre: prismaGame.genre,
-        subgenre: prismaGame.subgenre,
-        primaryColor: prismaGame.primaryColor || undefined,
-        mode: (prismaGame.mode as GameMode | undefined) || 'story',
-        promptName: prismaGame.promptName,
-        wordleAnswer: prismaGame.wordleAnswer || undefined,
-        promptText: prismaGame.promptText || undefined,
-        promptModel: prismaGame.promptModel,
-        imageUrl: prismaGame.imageUrl || undefined,
-        imagePromptModel: prismaGame.imagePromptModel || undefined,
-        imagePromptName: prismaGame.imagePromptName || undefined,
-        imagePromptText: prismaGame.imagePromptText || undefined,
-        imageData: prismaGame.imageData || undefined,
-        musicPromptText: prismaGame.musicPromptText || undefined,
-        musicPromptSeedImage: prismaGame.musicPromptSeedImage || undefined,
-        articleUrl: prismaGame.articleUrl || undefined,
-        articleContext: prismaGame.articleContext || undefined,
-        writerCoinId: prismaGame.writerCoinId || undefined,
-        difficulty: prismaGame.difficulty || undefined,
-        // Attribution data - preserves source material author for NFT & Story Protocol
-        creatorWallet: prismaGame.creatorWallet || undefined,
-        authorWallet: prismaGame.authorWallet || undefined,
-        authorParagraphUsername: prismaGame.authorParagraphUsername || undefined,
-        publicationName: prismaGame.publicationName || undefined,
-        publicationSummary: prismaGame.publicationSummary || undefined,
-        subscriberCount: prismaGame.subscriberCount || undefined,
-        articlePublishedAt: prismaGame.articlePublishedAt || undefined,
-        nftTokenId: prismaGame.nftTokenId || undefined,
-        nftTransactionHash: prismaGame.nftTransactionHash || undefined,
-        nftMintedAt: prismaGame.nftMintedAt || undefined,
-        private: prismaGame.private,
-        userId: prismaGame.userId || undefined,
-        createdAt: prismaGame.createdAt,
-        updatedAt: prismaGame.updatedAt,
+    return {
+      id: prismaGame.id,
+      title: prismaGame.title,
+      slug: prismaGame.slug,
+      description: prismaGame.description,
+      tagline: prismaGame.tagline,
+      genre: prismaGame.genre,
+      subgenre: prismaGame.subgenre,
+      primaryColor: prismaGame.primaryColor || undefined,
+      mode: (prismaGame.mode as GameMode | undefined) || 'story',
+      promptName: prismaGame.promptName,
+      wordleAnswer: prismaGame.wordleAnswer || undefined,
+      promptText: prismaGame.promptText || undefined,
+      promptModel: prismaGame.promptModel,
+      imageUrl: prismaGame.imageUrl || undefined,
+      imagePromptModel: prismaGame.imagePromptModel || undefined,
+      imagePromptName: prismaGame.imagePromptName || undefined,
+      imagePromptText: prismaGame.imagePromptText || undefined,
+      imageData: prismaGame.imageData || undefined,
+      musicPromptText: prismaGame.musicPromptText || undefined,
+      musicPromptSeedImage: prismaGame.musicPromptSeedImage || undefined,
+      articleUrl: prismaGame.articleUrl || undefined,
+      articleContext: prismaGame.articleContext || undefined,
+      writerCoinId: prismaGame.writerCoinId || undefined,
+      difficulty: prismaGame.difficulty || undefined,
+      // Attribution data - preserves source material author for NFT & Story Protocol
+      creatorWallet: prismaGame.creatorWallet || undefined,
+      authorWallet: prismaGame.authorWallet || undefined,
+      authorParagraphUsername: prismaGame.authorParagraphUsername || undefined,
+      publicationName: prismaGame.publicationName || undefined,
+      publicationSummary: prismaGame.publicationSummary || undefined,
+      subscriberCount: prismaGame.subscriberCount || undefined,
+      articlePublishedAt: prismaGame.articlePublishedAt || undefined,
+      nftTokenId: prismaGame.nftTokenId || undefined,
+      nftTransactionHash: prismaGame.nftTransactionHash || undefined,
+      nftMintedAt: prismaGame.nftMintedAt || undefined,
+      private: prismaGame.private,
+      userId: prismaGame.userId || undefined,
+      createdAt: prismaGame.createdAt,
+      updatedAt: prismaGame.updatedAt,
+    }
+  }
+
+  // ============================================================================
+  // Asset Management (Workshop / Marketplace)
+  // Reuses existing 'Asset' model with type='pack' for consolidation
+  // ============================================================================
+
+  /**
+   * Save an asset pack (from Workshop)
+   */
+  static async saveAssetPack(data: {
+    title: string
+    description: string
+    content: any // AssetGenerationResponse
+    creatorId?: string
+    articleUrl?: string
+    genre?: string
+  }) {
+    try {
+      const asset = await prisma.asset.create({
+        data: {
+          title: data.title,
+          description: data.description,
+          type: 'pack', // Consolidating: Pack is just a type of Asset
+          content: JSON.stringify(data.content),
+          genre: data.genre || 'General',
+          articleUrl: data.articleUrl,
+          creatorId: data.creatorId,
+        }
+      })
+      return asset
+    } catch (error) {
+      console.error('Failed to save asset pack:', error)
+      throw new Error('Failed to save asset pack')
+    }
+  }
+
+  /**
+   * Get asset packs
+   */
+  static async getAssetPacks(options: {
+    limit?: number
+    offset?: number
+    creatorId?: string
+    search?: string
+  } = {}) {
+    const { limit = 20, offset = 0, creatorId, search } = options
+
+    try {
+      const where: Prisma.AssetWhereInput = {
+        type: 'pack',
+        ...(creatorId ? { creatorId } : {}),
+        ...(search ? {
+          OR: [
+            { title: { contains: search, mode: 'insensitive' } },
+            { description: { contains: search, mode: 'insensitive' } },
+          ]
+        } : {})
       }
+
+      const [packs, total] = await Promise.all([
+        prisma.asset.findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+          take: limit,
+          skip: offset,
+        }),
+        prisma.asset.count({ where })
+      ])
+
+      return {
+        packs: packs.map(p => ({
+          ...p,
+          content: JSON.parse(p.content) // Hydrate JSON
+        })),
+        total,
+        limit,
+        offset,
+        hasMore: offset + limit < total
+      }
+    } catch (error) {
+      console.error('Failed to get asset packs:', error)
+      return { packs: [], total: 0, hasMore: false }
+    }
+  }
+
+  /**
+   * Get single asset pack
+   */
+  static async getAssetPack(id: string) {
+    try {
+      const asset = await prisma.asset.findUnique({ where: { id } })
+      if (!asset) return null
+
+      return {
+        ...asset,
+        content: JSON.parse(asset.content)
+      }
+    } catch (error) {
+      console.error('Failed to get asset pack:', error)
+      return null
+    }
+  }
+
+  /**
+   * Get marketplace assets (individual components)
+   */
+  static async getMarketplaceAssets(options: {
+    limit?: number
+    offset?: number
+    type?: string
+    search?: string
+  } = {}) {
+    const { limit = 20, offset = 0, type, search } = options
+
+    try {
+      const where: Prisma.AssetWhereInput = {
+        // Filter out packs, only show individual components
+        type: type ? { equals: type } : { not: 'pack' },
+        ...(search ? {
+          OR: [
+            { title: { contains: search, mode: 'insensitive' } },
+            { description: { contains: search, mode: 'insensitive' } },
+          ]
+        } : {})
+      }
+
+      const [assets, total] = await Promise.all([
+        prisma.asset.findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+          take: limit,
+          skip: offset,
+        }),
+        prisma.asset.count({ where })
+      ])
+
+      return {
+        assets: assets.map(a => ({
+          ...a,
+          // Try to parse content if it's JSON, otherwise keep as string
+          content: this.safeJsonParse(a.content)
+        })),
+        total,
+        limit,
+        offset,
+        hasMore: offset + limit < total
+      }
+    } catch (error) {
+      console.error('Failed to get marketplace assets:', error)
+      return { assets: [], total: 0, hasMore: false }
+    }
+  }
+
+  private static safeJsonParse(text: string) {
+    try {
+      return JSON.parse(text)
+    } catch (e) {
+      return text
+    }
   }
 }

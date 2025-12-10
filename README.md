@@ -58,28 +58,30 @@ npm run dev
 
 Our documentation is consolidated into 4 comprehensive guides:
 
-### 📋 [Architecture & System Design](./docs/ARCHITECTURE.md)
+### 📋 [Architecture & System Design](./docs/architecture.md)
 - Unified architecture for web app + mini-app
 - Database schema and payment tracking
 - Smart contracts and writer coin economics
 - Wallet abstraction layer and shared components
+- Dual-chain integration (Base + Story Protocol)
 
-### 🛠️ [Development Guide](./docs/DEVELOPMENT.md)
+### 🛠️ [Development Guide](./docs/development.md)
 - Local setup and configuration
 - Mini App SDK integration and wallet setup
 - Payment flow implementation and testing
 - Common issues and troubleshooting
+- API endpoints and smart contract deployment
 
-### 🗺️ [Roadmap & Status](./docs/ROADMAP.md)
+### 🗺️ [Roadmap & Status](./docs/roadmap.md)
 - Complete implementation phases and timeline
 - Current status and achievements
 - Go-to-market strategy and success metrics
 - Future vision and competitive advantages
 
-### 📖 [Documentation Index](./docs/INDEX.md)
-- Navigation guide for all documentation
-- Quick reference for key concepts
-- Development workflow guidance
+### 🏆 [Hackathon Participation](./docs/hackathon.md)
+- Story Protocol hackathon implementation
+- IP licensing integration details
+- SDK usage examples and best practices
 
 ## Tech Stack
 

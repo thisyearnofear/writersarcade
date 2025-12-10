@@ -11,23 +11,23 @@ export interface Game {
   subgenre: string
   primaryColor?: string
   mode?: GameMode
-  
+
   // AI Generation metadata
   promptName: string
   promptText?: string
   promptModel: string
-  
+
   // Visual assets
   imageUrl?: string
   imagePromptModel?: string
   imagePromptName?: string
   imagePromptText?: string
   imageData?: Buffer
-  
+
   // Audio assets
   musicPromptText?: string
   musicPromptSeedImage?: string
-  
+
   // Mini App specific
   articleUrl?: string
   articleContext?: string
@@ -36,7 +36,7 @@ export interface Game {
 
   // Wordle-specific metadata
   wordleAnswer?: string
-  
+
   // Attribution data - preserves source material author
   creatorWallet?: string
   authorWallet?: string
@@ -45,16 +45,16 @@ export interface Game {
   publicationSummary?: string
   subscriberCount?: number
   articlePublishedAt?: Date
-  
+
   // NFT minting
   nftTokenId?: string
   nftTransactionHash?: string
   nftMintedAt?: Date
-  
+
   // Access control
   private: boolean
   userId?: string
-  
+
   // Timestamps
   createdAt: Date
   updatedAt: Date
@@ -163,7 +163,7 @@ export interface VisualGuideline {
 export interface AssetGenerationRequest {
   url?: string
   promptText?: string
-  genre?: 'horror' | 'comedy' | 'mystery'
+  genre?: string
   model?: string
 }
 
