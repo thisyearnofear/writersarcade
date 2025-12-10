@@ -214,7 +214,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
               >
                 <Info className="w-4 h-4 text-gray-400 cursor-help" />
                 <motion.div
-                  className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-gray-800 border border-gray-700 rounded-lg text-xs text-gray-300 z-50 pointer-events-none"
+                  className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-gray-800 border border-gray-700 rounded-lg text-xs text-gray-100 z-50 pointer-events-none"
                   initial={{ opacity: 0, y: 5 }}
                   whileHover={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2 }}
@@ -268,7 +268,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
               >
                 <Info className="w-4 h-4 text-gray-400 cursor-help" />
                 <motion.div
-                  className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-2 bg-gray-800 border border-gray-700 rounded-lg text-xs text-gray-300 z-50 pointer-events-none"
+                  className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-2 bg-gray-800 border border-gray-700 rounded-lg text-xs text-gray-100 z-50 pointer-events-none"
                   initial={{ opacity: 0, y: 5 }}
                   whileHover={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2 }}
@@ -397,7 +397,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                 >
                   <Info className="w-3 h-3 text-purple-300 cursor-help" />
                   <motion.div
-                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-gray-800 border border-gray-700 rounded-lg text-xs text-gray-300 z-50 pointer-events-none"
+                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-gray-800 border border-gray-700 rounded-lg text-xs text-gray-100 z-50 pointer-events-none"
                     initial={{ opacity: 0, y: 5 }}
                     whileHover={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2 }}
@@ -472,7 +472,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
         {isStoryMode && showPayment && (
           <div className="space-y-4 p-4 bg-purple-900/20 rounded-lg border border-purple-600/30">
             <h3 className="font-semibold text-purple-200">Enable Customization</h3>
-            <p className="text-sm text-purple-300">
+            <p className="text-sm text-purple-100">
               Connect your wallet and approve payment to unlock genre/difficulty customization. You can generate games for free without payment.
             </p>
             <PaymentOption
@@ -542,7 +542,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
       {/* Tips with Comic Book Styling */}
       <div className="mt-8 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
         <h3 className="font-medium mb-2">💡 Tips for better games:</h3>
-        <ul className="comic-bubble text-sm text-gray-300 space-y-1">
+        <ul className="comic-bubble text-sm text-gray-100 space-y-1">
           <li>• Paste URLs from Paragraph.xyz articles by supported authors</li>
           <li>• Choose genre and difficulty settings that match the article's tone</li>
           <li>• The AI will create unique game interpretations based on the article content</li>

@@ -37,7 +37,7 @@ export function DifficultySelector({
             className={`rounded-lg border-2 px-4 py-3 font-medium capitalize transition-all disabled:cursor-not-allowed ${
               selected === difficulty
                 ? 'border-purple-400 bg-purple-600/50 text-white'
-                : 'border-purple-500/30 bg-white/5 text-purple-300 hover:border-purple-400 hover:bg-white/10 disabled:hover:border-purple-500/30 disabled:hover:bg-white/5'
+                : 'border-purple-500/30 bg-white/5 text-purple-100 hover:border-purple-400 hover:bg-white/10 disabled:hover:border-purple-500/30 disabled:hover:bg-white/5'
             }`}
           >
             {difficulty}
