@@ -119,8 +119,8 @@ export default function HomePage() {
           </div>
 
           <div className="max-w-4xl mx-auto text-center relative z-10">
-            {/* Kinetic title - staggered word animation */}
-            <h1 className="text-5xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+            {/* Kinetic title - staggered word animation with responsive sizing */}
+            <h1 className="text-4xl sm:text-5xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
               {['WritArcade'].map((word) => (
                 <motion.span
                   key={word}
@@ -139,9 +139,9 @@ export default function HomePage() {
               ))}
             </h1>
 
-            {/* Staggered description */}
+            {/* Staggered description with responsive sizing */}
             <motion.p
-              className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto"
+              className="text-lg sm:text-xl text-gray-300 mb-8 max-w-2xl mx-auto"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.6 }}

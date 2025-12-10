@@ -13,6 +13,12 @@ export const metadata: Metadata = {
   title: 'WritArcade - Turn Articles into Mintable Games',
   description: 'Transform Paragraph.xyz articles into interactive, mintable games using AI',
   keywords: ['AI', 'games', 'articles', 'NFT', 'memecoin', 'paragraph'],
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 }
 
 export default function RootLayout({

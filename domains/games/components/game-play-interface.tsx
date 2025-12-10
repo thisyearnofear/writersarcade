@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useRef, useEffect, ReactNode } from 'react'
+import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { Loader2, Play, Send, BookOpen } from 'lucide-react'
+import { Loader2, Play, Send, BookOpen, Lightbulb } from 'lucide-react'
 import { Game, ChatMessage, GameplayOption } from '../types'
 import { ImageGenerationService, type ImageGenerationResult } from '../services/image-generation.service'
 import { ComicPanelCard } from './comic-panel-card'
@@ -524,35 +525,35 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
               {game.genre} • {game.subgenre}
             </div>
 
-            {/* Title */}
+            {/* Title with responsive sizing */}
             <h1
-              className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight drop-shadow-lg"
+              className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold leading-tight drop-shadow-lg"
               style={{ color: game.primaryColor || '#8b5cf6' }}
             >
               {game.title}
             </h1>
 
-            {/* Tagline */}
+            {/* Tagline with responsive sizing */}
             <blockquote
-              className="text-lg md:text-2xl italic opacity-90 drop-shadow-md max-w-xl"
+              className="text-base sm:text-lg md:text-2xl italic opacity-90 drop-shadow-md max-w-xl"
               style={{ color: game.primaryColor || '#8b5cf6' }}
             >
               "{game.tagline}"
             </blockquote>
 
-            {/* Description */}
-            <p className="text-gray-200 text-sm md:text-base lg:text-lg max-w-xl drop-shadow-md leading-relaxed">
+            {/* Description with responsive sizing */}
+            <p className="text-gray-200 text-sm sm:text-base md:text-lg max-w-xl drop-shadow-md leading-relaxed">
               {game.description}
             </p>
 
-            {/* CTA Button */}
-             <div className="mt-6 md:mt-8 pt-4">
+            {/* CTA Button with responsive sizing */}
+             <div className="mt-6 sm:mt-8 pt-4">
                <div className="relative">
                  <Button
                    onClick={startGame}
                    disabled={isStarting}
                    size="lg"
-                   className="w-full text-base md:text-lg px-6 md:px-8 py-5 md:py-6 rounded-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-50 relative z-10"
+                   className="w-full text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 rounded-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-50 relative z-10"
                    style={{
                      backgroundColor: game.primaryColor || '#8b5cf6',
                      color: 'white',
@@ -621,10 +622,18 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
                )}
              </div>
 
-            {/* Optional: Tips section on mobile */}
-            <div className="md:hidden mt-8 pt-4 border-t border-white/20 text-xs text-gray-300 max-w-xs">
-              <p>💡 Make choices carefully - every decision shapes your story</p>
-            </div>
+            {/* Enhanced Tips section with micro-interactions */}
+            <motion.div
+              className="md:hidden mt-8 pt-4 border-t border-white/20 text-xs text-gray-300 max-w-xs"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1, duration: 0.5 }}
+            >
+              <div className="flex items-start gap-2">
+                <Lightbulb className="w-4 h-4 mt-0.5 text-yellow-400 flex-shrink-0" />
+                <p>💡 <span className="text-white font-medium">Pro Tip:</span> Make choices carefully - every decision shapes your story</p>
+              </div>
+            </motion.div>
           </div>
         </div>
       </div>

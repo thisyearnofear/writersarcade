@@ -1,6 +1,8 @@
 'use client'
 
 import { Loader2 } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { useState } from 'react'
 
 interface AnimatedOptionButtonProps {
   option: string
@@ -22,60 +24,61 @@ export function AnimatedOptionButton({
   onClick,
 }: AnimatedOptionButtonProps) {
   const isLoading = isSelected && isWaiting
+  const [isHovered, setIsHovered] = useState(false)
 
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className="group relative p-4 rounded-lg border-2 text-left transition-all duration-200 hover:shadow-lg hover:shadow-current disabled:opacity-50 disabled:cursor-not-allowed"
+      className="group relative p-4 sm:p-4 rounded-lg border-2 text-left transition-all duration-200 hover:shadow-lg hover:shadow-current disabled:opacity-50 disabled:cursor-not-allowed"
       style={{
         borderColor: isSelected ? primaryColor : `${primaryColor}50`,
         backgroundColor: isSelected ? `${primaryColor}20` : `${primaryColor}08`,
         color: 'white',
       }}
-      onMouseEnter={(e) => {
-        if (!isSelected) {
-          e.currentTarget.style.borderColor = `${primaryColor}80`
-          e.currentTarget.style.backgroundColor = `${primaryColor}15`
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!isSelected) {
-          e.currentTarget.style.borderColor = `${primaryColor}50`
-          e.currentTarget.style.backgroundColor = `${primaryColor}08`
-        }
-      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      whileTap={{ scale: 0.98 }}
     >
-      {/* Top animated bar indicator */}
-      <div
-        className={`absolute top-0 left-0 right-0 transition-all duration-300 ${
-          isSelected ? 'h-1' : 'h-0 group-hover:h-1'
-        }`}
+      {/* Top animated bar indicator with enhanced micro-interaction */}
+      <motion.div
+        className="absolute top-0 left-0 right-0 h-1"
         style={{ backgroundColor: primaryColor }}
+        initial={{ scaleX: isSelected ? 1 : 0 }}
+        animate={{ scaleX: isSelected ? 1 : (isHovered ? 1 : 0) }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
       />
 
-      {/* Loading glow effect when waiting */}
+      {/* Loading glow effect with enhanced animation */}
       {isLoading && (
-        <div
-          className="absolute inset-0 rounded-lg opacity-50 animate-pulse"
+        <motion.div
+          className="absolute inset-0 rounded-lg opacity-0"
           style={{
             backgroundColor: `${primaryColor}20`,
             boxShadow: `0 0 20px ${primaryColor}40`,
+          }}
+          animate={{
+            opacity: [0.3, 0.5, 0.3],
+            scale: [1, 1.02, 1],
+          }}
+          transition={{
+            opacity: { duration: 1.5, repeat: Infinity },
+            scale: { duration: 1.5, repeat: Infinity },
           }}
         />
       )}
 
       <div className="flex gap-3 items-center relative z-10">
         <span
-          className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 transition-all duration-200"
+          className="w-8 h-8 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-sm sm:text-xs font-bold flex-shrink-0 transition-all duration-200"
           style={{
             backgroundColor: isLoading ? primaryColor : `${primaryColor}70`,
             boxShadow: isLoading ? `0 0 12px ${primaryColor}60` : 'none',
           }}
         >
-          {isLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : optionId}
+          {isLoading ? <Loader2 className="w-4 h-4 sm:w-3 sm:h-3 animate-spin" /> : optionId}
         </span>
-        <span className="leading-snug font-medium text-sm flex-1">{option}</span>
+        <span className="leading-snug font-medium text-base sm:text-sm flex-1">{option}</span>
       </div>
     </button>
   )

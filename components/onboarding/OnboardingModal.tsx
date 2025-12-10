@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, ChevronRight } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { X, ChevronRight, Lightbulb, ArrowRight, Check, Sparkles, Gamepad2, Mint, BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 
@@ -17,32 +18,44 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
     {
       title: "Welcome to WritArcade",
       description: "Turn any article into an interactive, mintable game powered by AI",
-      visual: "🎮",
-      content: "Your creative playground for game creation"
+      visual: <Sparkles className="w-12 h-12 text-purple-400" />,
+      content: "Your creative playground for game creation",
+      tip: "Pro Tip: Start with short articles for best results"
     },
     {
       title: "Step 1: Choose Your Content",
       description: "Paste a Paragraph.xyz article URL or describe your game idea",
-      visual: "📝",
-      content: "Works exclusively with Paragraph.xyz articles from supported authors"
+      visual: <BookOpen className="w-12 h-12 text-blue-400" />,
+      content: "Works exclusively with Paragraph.xyz articles from supported authors",
+      tip: "Check the supported authors list in the FAQ"
     },
     {
       title: "Step 2: Customize (Optional)",
       description: "Pick your game style: Horror? Comedy? Mystery?",
-      visual: "⚙️",
-      content: "Customize difficulty and genre using Writer Coins for advanced features"
+      visual: <Gamepad2 className="w-12 h-12 text-green-400" />,
+      content: "Customize difficulty and genre using Writer Coins for advanced features",
+      tip: "Higher difficulty = more complex gameplay"
     },
     {
       title: "Step 3: Play Your Game",
       description: "Experience your unique AI-generated game interpretation",
-      visual: "🎯",
-      content: "Every game is unique based on your input and customization"
+      visual: <Lightbulb className="w-12 h-12 text-yellow-400" />,
+      content: "Every game is unique based on your input and customization",
+      tip: "Your choices shape the story - play multiple times!"
     },
     {
       title: "Step 4: Mint as NFT",
       description: "Own your creation and earn from future plays",
-      visual: "✨",
-      content: "Mint your game as an NFT and share it with the world"
+      visual: <Mint className="w-12 h-12 text-purple-400" />,
+      content: "Mint your game as an NFT and share it with the world",
+      tip: "NFTs include full attribution to original authors"
+    },
+    {
+      title: "You're Ready!",
+      description: "Start creating your first game now",
+      visual: <Check className="w-12 h-12 text-green-400" />,
+      content: "Click 'Create Game' to begin your journey",
+      tip: "Need help? Click the ? icon anytime"
     }
   ]
 
@@ -90,8 +103,21 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
           </div>
 
           {/* Content Details */}
-          <div className="bg-purple-900/20 border border-purple-600/30 rounded-lg p-4">
+          <div className="bg-purple-900/20 border border-purple-600/30 rounded-lg p-4 space-y-3">
             <p className="text-gray-200 text-sm">{step.content}</p>
+            
+            {/* Pro Tip with micro-interaction */}
+            {step.tip && (
+              <motion.div
+                className="p-3 rounded-lg bg-purple-900/30 border border-purple-500/30 text-sm text-purple-200 flex items-start gap-2"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+              >
+                <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0 text-yellow-400" />
+                <span>{step.tip}</span>
+              </motion.div>
+            )}
           </div>
 
           {/* Progress Bar */}

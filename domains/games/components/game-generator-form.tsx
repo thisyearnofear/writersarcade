@@ -1,12 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAccount } from 'wagmi'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ProgressBar } from '@/components/ui/ProgressBar'
-import { Loader2, Sparkles } from 'lucide-react'
+import { Loader2, Sparkles, Info, ChevronDown, ChevronUp } from 'lucide-react'
 import { GenreSelector, type GameGenre } from '@/components/game/GenreSelector'
 import { DifficultySelector, type GameDifficulty } from '@/components/game/DifficultySelector'
 import { PaymentOption } from '@/components/game/PaymentOption'
@@ -205,9 +206,25 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
         <div className="space-y-4">
           {/* Game Type Toggle */}
           <div className="flex flex-col gap-2">
-            <Label className="text-sm font-medium">Game Type</Label>
+            <div className="flex items-center gap-2">
+              <Label className="text-sm font-medium">Game Type</Label>
+              <motion.div
+                className="relative group"
+                whileHover={{ scale: 1.1 }}
+              >
+                <Info className="w-4 h-4 text-gray-400 cursor-help" />
+                <motion.div
+                  className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-gray-800 border border-gray-700 rounded-lg text-xs text-gray-300 z-50 pointer-events-none"
+                  initial={{ opacity: 0, y: 5 }}
+                  whileHover={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  Choose between Story (narrative adventure) or Wordle (word puzzle) game types
+                </motion.div>
+              </motion.div>
+            </div>
             <div className="inline-flex rounded-md bg-gray-900/60 border border-gray-700 p-1 w-fit">
-              <button
+              <motion.button
                 type="button"
                 onClick={() => setMode('story')}
                 className={`px-3 py-1.5 text-xs md:text-sm rounded-md font-medium transition-colors ${
@@ -215,10 +232,13 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                     ? 'bg-purple-600 text-white'
                     : 'text-gray-300 hover:text-white'
                 }`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
                 Story (5-panel)
-              </button>
-              <button
+              </motion.button>
+              <motion.button
                 type="button"
                 onClick={() => {
                   setMode('wordle')
@@ -232,9 +252,12 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                     ? 'bg-purple-600 text-white'
                     : 'text-gray-300 hover:text-white'
                 }`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
                 Wordle (beta)
-              </button>
+              </motion.button>
             </div>
             <p className="text-xs text-gray-400">
               Story creates a 5-panel narrative game. Wordle creates a free article-derived word puzzle.
@@ -243,9 +266,25 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
 
           {/* URL Input */}
           <div>
-            <Label htmlFor="url" className="text-sm font-medium">
-              Paragraph.xyz Article URL
-            </Label>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="url" className="text-sm font-medium">
+                Paragraph.xyz Article URL
+              </Label>
+              <motion.div
+                className="relative group"
+                whileHover={{ scale: 1.1 }}
+              >
+                <Info className="w-4 h-4 text-gray-400 cursor-help" />
+                <motion.div
+                  className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-2 bg-gray-800 border border-gray-700 rounded-lg text-xs text-gray-300 z-50 pointer-events-none"
+                  initial={{ opacity: 0, y: 5 }}
+                  whileHover={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  Only Paragraph.xyz articles from supported authors are accepted. Check FAQ for full list.
+                </motion.div>
+              </motion.div>
+            </div>
             <Input
               id="url"
               type="url"
@@ -336,25 +375,81 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
             </div>
           )}
 
-          {/* Customization Toggle (story mode only) */}
+          {/* Enhanced Customization Toggle with Progressive Disclosure */}
           {!isGenerating && isStoryMode && (
-            <div className="pt-4 border-t border-gray-700">
-              <button
+            <motion.div
+              className="pt-4 border-t border-gray-700"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+            >
+              <motion.button
                 type="button"
                 onClick={() => setShowCustomization(!showCustomization)}
                 className="text-sm font-medium text-purple-400 hover:text-purple-300 flex items-center gap-2"
+                whileHover={{ x: 5 }}
+                whileTap={{ scale: 0.98 }}
               >
-                <span>{showCustomization ? '▼' : '▶'}</span>
+                <motion.span
+                  initial={{ rotate: 0 }}
+                  animate={{ rotate: showCustomization ? 180 : 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {showCustomization ? '▼' : '▶'}
+                </motion.span>
                 Customize Game Style (Genre & Difficulty)
-              </button>
+                <motion.div
+                  className="relative group ml-2"
+                  whileHover={{ scale: 1.1 }}
+                >
+                  <Info className="w-3 h-3 text-purple-300 cursor-help" />
+                  <motion.div
+                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-gray-800 border border-gray-700 rounded-lg text-xs text-gray-300 z-50 pointer-events-none"
+                    initial={{ opacity: 0, y: 5 }}
+                    whileHover={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    Customize genre and difficulty for a unique experience (uses Writer Coins)
+                  </motion.div>
+                </motion.div>
+              </motion.button>
 
-              {showCustomization && (
-                <div className="mt-4 space-y-4 p-4 bg-purple-900/20 rounded-lg border border-purple-700/50">
-                  <GenreSelector value={genre} onChange={setGenre} disabled={isGenerating} />
-                  <DifficultySelector value={difficulty} onChange={setDifficulty} disabled={isGenerating} />
-                </div>
-              )}
-            </div>
+              <AnimatePresence>
+                {showCustomization && (
+                  <motion.div
+                    className="mt-4 space-y-4 p-4 bg-purple-900/20 rounded-lg border border-purple-700/50"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    style={{ overflow: 'hidden' }}
+                  >
+                    <motion.div
+                      className="space-y-4"
+                      initial={{ y: -10, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.1, duration: 0.3 }}
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <Sparkles className="w-4 h-4 text-yellow-400" />
+                        <span className="text-sm font-semibold text-purple-200">Enhanced Customization</span>
+                      </div>
+                      <GenreSelector value={genre} onChange={setGenre} disabled={isGenerating} />
+                      <DifficultySelector value={difficulty} onChange={setDifficulty} disabled={isGenerating} />
+                      <motion.div
+                        className="p-3 rounded-lg bg-purple-900/30 border border-purple-500/30 text-sm text-purple-200 flex items-start gap-2"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2, duration: 0.3 }}
+                      >
+                        <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0 text-yellow-400" />
+                        <span>Higher difficulty creates more complex narratives. Genre affects story tone and visual style.</span>
+                      </motion.div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
           )}
         </div>
 
@@ -396,28 +491,49 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
         )}
 
         {!showPayment && (
-          <Button
-            type="submit"
-            disabled={isGenerating}
-            className="w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-50"
-            size="lg"
+          <motion.div
+            whileTap={{ scale: 0.98 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
-            {isGenerating ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Generating Game...
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-4 h-4 mr-2" />
-                {isStoryMode
-                  ? paymentApproved
-                    ? 'Generate Custom Story Game'
-                    : 'Create Story Game'
-                  : 'Create Wordle Game'}
-              </>
-            )}
-          </Button>
+            <Button
+              type="submit"
+              disabled={isGenerating}
+              className="w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-50 relative overflow-hidden"
+              size="lg"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Generating Game...
+                  {/* Loading glow effect */}
+                  <motion.div
+                    className="absolute inset-0 rounded-lg opacity-0"
+                    style={{
+                      background: 'radial-gradient(circle, rgba(168, 85, 247, 0.3) 0%, rgba(168, 85, 247, 0) 70%)',
+                      filter: 'blur(10px)',
+                    }}
+                    animate={{
+                      opacity: [0.3, 0.6, 0.3],
+                      scale: [1, 1.1, 1],
+                    }}
+                    transition={{
+                      opacity: { duration: 2, repeat: Infinity },
+                      scale: { duration: 2, repeat: Infinity },
+                    }}
+                  />
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  {isStoryMode
+                    ? paymentApproved
+                      ? 'Generate Custom Story Game'
+                      : 'Create Story Game'
+                    : 'Create Wordle Game'}
+                </>
+              )}
+            </Button>
+          </motion.div>
         )}
         </form>
 

@@ -42,13 +42,14 @@ export function GameCardEnhanced({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Blend layer 1: Multiply blend for depth */}
+      {/* Blend layer 1: Multiply blend for depth with enhanced animation */}
       <motion.div
         className="absolute inset-0 rounded-lg"
         animate={{
-          opacity: isHovered ? 0.1 : 0,
+          opacity: isHovered ? 0.15 : 0,
+          scale: isHovered ? 1.02 : 1,
         }}
-        transition={{ duration: 0.3 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
         style={{
           background: `linear-gradient(135deg, ${game.primaryColor || '#8b5cf6'}40, ${game.primaryColor || '#8b5cf6'}10)`,
           mixBlendMode: 'multiply',
@@ -56,15 +57,19 @@ export function GameCardEnhanced({
         }}
       />
 
-      {/* Blend layer 2: Lighten for shimmer */}
+      {/* Blend layer 2: Lighten for shimmer with enhanced animation */}
       <motion.div
         className="absolute inset-0 rounded-lg"
         animate={{
-          opacity: isHovered ? 0.05 : 0,
+          opacity: isHovered ? 0.1 : 0,
+          x: isHovered ? [0, 50, 0] : 0,
         }}
-        transition={{ duration: 0.3 }}
+        transition={{
+          opacity: { duration: 0.4 },
+          x: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+        }}
         style={{
-          background: `linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)`,
+          background: `linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)`,
           mixBlendMode: 'lighten',
           pointerEvents: 'none',
         }}
@@ -104,18 +109,18 @@ export function GameCardEnhanced({
           )}
         </div>
 
-        {/* Title & Tagline */}
+        {/* Title & Tagline with responsive sizing */}
         <div>
-          <h3 className="text-lg font-bold text-white mb-1 group-hover:text-purple-400 transition-colors line-clamp-2">
+          <h3 className="text-base sm:text-lg font-bold text-white mb-1 group-hover:text-purple-400 transition-colors line-clamp-2">
             {game.title}
           </h3>
-          <p className="text-sm text-gray-400 line-clamp-2 italic">
+          <p className="text-xs sm:text-sm text-gray-400 line-clamp-2 italic">
             {game.tagline}
           </p>
         </div>
 
-        {/* Description */}
-        <p className="text-sm text-gray-400 line-clamp-2">
+        {/* Description with responsive sizing */}
+        <p className="text-xs sm:text-sm text-gray-400 line-clamp-2">
           {game.description}
         </p>
 

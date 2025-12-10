@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { motion } from 'framer-motion'
 import { ZoomIn, Loader2 } from 'lucide-react'
 import { GameplayOption } from '../types'
 import { parsePanel } from '../utils/text-parser'
@@ -106,8 +107,8 @@ export function ComicPanelCard({
             }}
           />
            
-          {/* Image container - responsive height */}
-          <div className="w-full h-64 md:h-80 lg:h-96 overflow-hidden cursor-pointer relative" onClick={handleImageExpand}>
+          {/* Image container - responsive height with better mobile scaling */}
+          <div className="w-full h-48 sm:h-64 md:h-80 lg:h-96 overflow-hidden cursor-pointer relative" onClick={handleImageExpand}>
             {narrativeImage ? (
               <>
                 <img
@@ -118,19 +119,26 @@ export function ComicPanelCard({
                 {/* Subtle vignette overlay */}
                 <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/20 pointer-events-none" />
                 
-                {/* Expand button overlay */}
-                <button
+                {/* Expand button overlay with enhanced micro-interaction */}
+                <motion.button
                   onClick={(e) => {
                     e.stopPropagation()
                     handleImageExpand()
                   }}
                   className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-all duration-200 opacity-0 group-hover:opacity-100"
                   aria-label="Expand image"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
                 >
-                  <div className="p-3 rounded-lg bg-black/60 backdrop-blur-sm hover:bg-black/80 transition-colors">
+                  <motion.div
+                    className="p-3 rounded-lg bg-black/60 backdrop-blur-sm hover:bg-black/80 transition-colors"
+                    whileHover={{ rotate: 5 }}
+                    whileTap={{ rotate: 0, scale: 0.9 }}
+                  >
                     <ZoomIn className="w-5 h-5" style={{ color: primaryColor }} />
-                  </div>
-                </button>
+                  </motion.div>
+                </motion.button>
                 
                 {/* Info badges */}
                 <div className="absolute top-4 left-4 flex items-center gap-2">
@@ -140,7 +148,7 @@ export function ComicPanelCard({
                    </span>
                  </div>
                  
-                 {/* Rating stars - right side */}
+                 {/* Rating stars - right side with better mobile touch targets */}
                  <div className="absolute top-4 right-4 flex gap-1 bg-black/70 px-3 py-1.5 rounded-md backdrop-blur-sm border border-white/10">
                    {!imageRating ? (
                      <>
@@ -148,7 +156,7 @@ export function ComicPanelCard({
                          <button
                            key={star}
                            onClick={() => handleRating(star)}
-                           className="text-base hover:scale-125 transition-all duration-200 cursor-pointer text-white/50 hover:text-white"
+                           className="text-lg sm:text-base hover:scale-125 transition-all duration-200 cursor-pointer text-white/50 hover:text-white p-1"
                            aria-label={`Rate ${star} stars`}
                          >
                            ☆
@@ -160,7 +168,7 @@ export function ComicPanelCard({
                        {[1, 2, 3, 4, 5].map((star) => (
                          <span
                            key={star}
-                           className="text-base transition-colors duration-300"
+                           className="text-lg sm:text-base transition-colors duration-300"
                            style={{ color: star <= imageRating ? primaryColor : 'rgba(64,64,64,0.5)' }}
                          >
                            ★
