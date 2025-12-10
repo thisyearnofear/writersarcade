@@ -423,7 +423,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ delay: 0.1, duration: 0.3 }}
                     >
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center justify-center gap-2 mb-2">
                         <Sparkles className="w-4 h-4 text-yellow-300" />
                         <span className="text-sm font-semibold text-purple-100">Enhanced Customization</span>
                       </div>
