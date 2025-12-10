@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createPublicClient, http } from 'viem'
 import { base } from 'viem/chains'
+import { prisma } from '@/lib/database'
 
 /**
  * Verify payment transaction (Mini App)
@@ -15,6 +16,8 @@ const verifyPaymentSchema = z.object({
   transactionHash: z.string().regex(/^0x[a-fA-F0-9]{64}$/, 'Invalid transaction hash'),
   writerCoinId: z.string().min(1, 'Writer coin ID is required'),
   action: z.enum(['generate-game', 'mint-nft']),
+  gameId: z.string().optional(),
+  userAddress: z.string().optional(),
 })
 
 // Create a public client for Base mainnet

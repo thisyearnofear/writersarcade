@@ -3,6 +3,7 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 /**
@@ -16,8 +17,10 @@ import "@openzeppelin/contracts/utils/Counters.sol";
  * - Genre and difficulty
  * - Creation timestamp
  */
-contract GameNFT is ERC721URIStorage, Ownable {
+contract GameNFT is ERC721URIStorage, Ownable, AccessControl {
     using Counters for Counters.Counter;
+    
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     
     Counters.Counter private _tokenIdCounter;
     
@@ -48,7 +51,10 @@ contract GameNFT is ERC721URIStorage, Ownable {
         string articleUrl
     );
     
-    constructor(address initialOwner) ERC721("WritArcade Games", "GAME") Ownable(initialOwner) {}
+    constructor(address initialOwner) ERC721("WritArcade Games", "GAME") Ownable(initialOwner) {
+        _grantRole(DEFAULT_ADMIN_ROLE, initialOwner);
+        _grantRole(MINTER_ROLE, initialOwner);
+    }
     
     /**
      * @dev Mint a new game NFT
@@ -61,7 +67,7 @@ contract GameNFT is ERC721URIStorage, Ownable {
         address to,
         string memory tokenURI,
         GameMetadata memory metadata
-    ) external onlyOwner returns (uint256) {
+    ) external onlyRole(MINTER_ROLE) returns (uint256) {
         require(to != address(0), "Cannot mint to zero address");
         require(metadata.creator != address(0), "Creator cannot be zero address");
         require(metadata.writerCoin != address(0), "Writer coin cannot be zero address");
@@ -125,5 +131,17 @@ contract GameNFT is ERC721URIStorage, Ownable {
      */
     function tokenExists(uint256 tokenId) external view returns (bool) {
         return _ownerOf(tokenId) != address(0);
+    }
+    /**
+     * @dev See {IERC165-supportsInterface}.
+     */
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(ERC721URIStorage, AccessControl)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
     }
 }

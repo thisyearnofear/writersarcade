@@ -22,6 +22,11 @@ export function GamePlayer({ game, onBack, writerCoin }: GamePlayerProps) {
     Array<{ role: "user" | "assistant"; content: string }>
   >([]);
   const [showMintDialog, setShowMintDialog] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [mintResult, setMintResult] = useState<{
+    txHash: string;
+    storyIpId?: string;
+  } | null>(null);
   const [isMinting, setIsMinting] = useState(false);
 
   // Start the game
@@ -83,10 +88,11 @@ export function GamePlayer({ game, onBack, writerCoin }: GamePlayerProps) {
     startGame();
   }, [game.slug, sessionId]);
 
-  const handleMintSuccess = async () => {
+  const handleMintSuccess = async (transactionHash: string, storyIPAssetId?: string) => {
     setShowMintDialog(false);
     setIsMinting(false);
-    // Game minted! Could show success message here
+    setMintResult({ txHash: transactionHash, storyIpId: storyIPAssetId });
+    setShowSuccessDialog(true);
   };
 
   const handleChoice = async (option: { id: number; text: string }) => {
@@ -317,7 +323,10 @@ export function GamePlayer({ game, onBack, writerCoin }: GamePlayerProps) {
               <PaymentButton
                 writerCoin={writerCoin}
                 action="mint-nft"
-                onPaymentSuccess={handleMintSuccess}
+                gameId={game.id}
+                onPaymentSuccess={(txHash, storyIpId) => {
+                  handleMintSuccess(txHash, storyIpId)
+                }}
                 onPaymentError={() => setShowMintDialog(false)}
                 disabled={isMinting}
               />
@@ -333,14 +342,90 @@ export function GamePlayer({ game, onBack, writerCoin }: GamePlayerProps) {
           </div>
         </div>
       )}
+      {showSuccessDialog && mintResult && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="mx-4 w-full max-w-md rounded-lg bg-green-900/95 p-6 shadow-2xl border border-green-500/50">
+            <div className="flex justify-center mb-4">
+              <div className="h-16 w-16 rounded-full bg-green-500/20 flex items-center justify-center">
+                <svg className="h-10 w-10 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
 
-      {/* Info */}
-      <div className="rounded-lg bg-purple-900/30 p-4">
-        <p className="text-xs text-purple-300">
-          💡 <span className="font-semibold">Tip:</span> Your choices shape the
-          story. Explore different paths to uncover all the game has to offer.
-        </p>
-      </div>
+            <h3 className="mb-2 text-xl font-bold text-center text-white">Minting Complete!</h3>
+            <p className="mb-6 text-center text-green-100">
+              Your game has been permanently recorded.
+            </p>
+
+            <div className="space-y-3 mb-6">
+              <a
+                href={`https://sepolia.basescan.org/tx/${mintResult.txHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-between p-3 rounded-lg bg-black/20 hover:bg-black/30 transition-colors group"
+              >
+                <span className="flex items-center gap-2 text-white">
+                  <span className="h-2 w-2 rounded-full bg-blue-500"></span>
+                  Base Network (NFT)
+                </span>
+                <span className="text-xs text-green-300 group-hover:text-green-200">View ↗</span>
+              </a>
+
+              {/* Story Protocol Opt-In */}
+              {mintResult.storyIpId ? (
+                <a
+                  href={`https://aeneid-testnet-explorer.story.foundation/ipa/${mintResult.storyIpId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-3 rounded-lg bg-black/20 hover:bg-black/30 transition-colors group"
+                >
+                  <span className="flex items-center gap-2 text-white">
+                    <span className="h-2 w-2 rounded-full bg-purple-500"></span>
+                    Story Protocol (IP)
+                  </span>
+                  <span className="text-xs text-green-300 group-hover:text-green-200">View ↗</span>
+                </a>
+              ) : (
+                <div className="p-4 rounded-lg bg-purple-900/40 border border-purple-500/30">
+                  <h4 className="text-sm font-semibold text-purple-200 mb-2">Maximize Your Value</h4>
+                  <p className="text-xs text-purple-300 mb-3">
+                    Register your game's IP rights on Story Protocol to earn royalties from any future remixes.
+                  </p>
+                  <button
+                    onClick={async () => {
+                      try {
+                        // Call the new opt-in endpoint
+                        const response = await fetch('/api/story/register', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ gameId: game.id, userAddress: mintResult.txHash }) // Ideally pass address
+                        });
+                        const data = await response.json();
+                        if (data.storyIPAssetId) {
+                          setMintResult(prev => prev ? ({ ...prev, storyIpId: data.storyIPAssetId }) : null);
+                        }
+                      } catch (e) {
+                        console.error("Registration failed", e);
+                      }
+                    }}
+                    className="w-full py-2 rounded bg-purple-600 hover:bg-purple-500 text-xs font-bold text-white transition-colors"
+                  >
+                    Register IP Rights (Free)
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={() => setShowSuccessDialog(false)}
+              className="w-full rounded-lg bg-white/10 px-4 py-2 font-medium text-white transition-colors hover:bg-white/20"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -80,7 +80,8 @@ model Game {
   articlePublishedAt      DateTime?  // Original article publication date
   
   // Creator attribution (user who generated the game)
-  creatorWallet           String?  // Game creator's wallet address
+  creatorWallet           String?  // Game creator's wallet address (legacy/alternate)
+  userWallet              String?  // Connected wallet for IP registration purposes
 
   // NFT minting fields
   nftTokenId       String?  // ERC-721 token ID
@@ -99,6 +100,7 @@ model Game {
   user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   chats Chat[]
+  gamesFromArticles GameFromArticle[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -286,7 +288,8 @@ model GameFromArticle {
   
   // Relations
   gameId    String
-  // Note: We'll handle game relation through application logic for now
+  // Relation back to Game model
+  game      Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
   
   articleId String
   article   ProcessedArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)

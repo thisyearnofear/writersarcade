@@ -1,3 +1,5 @@
+import type { GameMetadata } from '@/lib/contracts'
+
 /**
  * Payment Domain Types
  * 
@@ -39,17 +41,23 @@ export interface PaymentInfo {
   }
   contractAddress: `0x${string}` | undefined
   chainId: number
+  metadata?: GameMetadata
+  tokenURI?: string
 }
 
 export interface PaymentInitiateRequest {
   writerCoinId: string
   action: PaymentAction
+  gameId?: string
+  userAddress?: string
 }
 
 export interface PaymentVerifyRequest {
   transactionHash: `0x${string}`
   writerCoinId: string
   action: PaymentAction
+  gameId?: string
+  userAddress?: string
 }
 
 export interface PaymentVerifyResult {

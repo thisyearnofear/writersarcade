@@ -78,7 +78,7 @@ npx prisma migrate reset
 npm run migrate:data
 
 # Misc. project-specific scripts live in scripts/
-# (e.g., approve-author.ts, deploy-story-ip-author.ts, phase-5b-verify.ts)
+# (e.g., phase-5b-verify.ts)
 ```
 
 ### Testing

@@ -18,6 +18,7 @@
   - `removeCoin(coinAddress)` - Remove a writer coin
   - `payForGameGeneration(writerCoin, user)` - Process game generation payment
   - `payForMinting(writerCoin, user)` - Process NFT minting payment
+  - `payAndMintGame(writerCoin, tokenURI, metadata)` - Process payment and mint NFT atomically
 
 ## Deployment Steps
 
@@ -36,20 +37,22 @@
    # - creatorPool: Community pool address
    ```
 
-3. **Whitelist AVC Coin**
+3. **Link Contracts**
+   ```bash
+   # 1. Get MINTER_ROLE from GameNFT
+   # 2. Grant MINTER_ROLE to WriterCoinPayment address on GameNFT
+   # 3. Call setGameNFT(GameNFT_Address) on WriterCoinPayment
+   ```
+
+4. **Whitelist AVC Coin**
    ```bash
    # Call whitelistCoin with:
    # - coinAddress: 0x06FC3D5D2369561e28F261148576520F5e49D6ea (Base Sepolia)
    # - gameGenerationCost: 100 * 10^18 (100 AVC)
    # - mintCost: 50 * 10^18 (50 AVC)
    # - treasury: Fred Wilson's address
-   # - Shares: 6000, 2000, 2000 (game) / 3000, 1500, 500 (mint)
-   ```
-
-4. **Update GameNFT Owner**
-   ```bash
-   # Make WriterCoinPayment contract owner of GameNFT
-   # (or create separate minting permission)
+   # - Shares (Game): 6000 (Writer), 2000 (Platform), 2000 (Pool)
+   # - Shares (Mint): 1500 (Writer), 500 (Platform), 3000 (Creator) [Balance -> User]
    ```
 
 ### Phase 2: Base Mainnet

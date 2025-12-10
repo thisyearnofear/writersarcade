@@ -63,6 +63,12 @@ WritArcade Codebase
 │     ├─ Story Protocol IP registration
 │     └─ Revenue sharing (per derivative)
 │
+│  └─ Creator Dashboard (/creators) (Phase 7 🆕)
+│     ├─ IP Asset Management
+│     ├─ License Terms Configurator (Story Protocol)
+│     ├─ Dynamic Revenue Split Config (Smart Contract)
+│     └─ Analytics & Treasury
+│
 └─ Shared Infrastructure (Both Products)
    ├─ Authentication & user management
    ├─ Article processing (ContentProcessorService)
@@ -798,6 +804,15 @@ User pays 100 $AVC
 ```
 
 **NFT Minting** (50 tokens):
+```
+User pays 50 $AVC
+├─ 30 $AVC → Game Creator (Creator Share)
+├─ 15 $AVC → Writer's Treasury
+├─ 5 $AVC → WritArcade Platform
+└─ (Remaining 25% implicit via token burn or stay with user)
+```
+
+**Note:** Writers can customize these splits via the **Creator Dashboard**, which dynamically updates the `WriterCoinPayment` contract and Story Protocol License Terms. This empowers writers to control their own business models.
 ```
 User pays 50 $AVC
 ├─ 30 $AVC → Game Creator

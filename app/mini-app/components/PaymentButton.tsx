@@ -5,13 +5,15 @@ import { type WriterCoin } from '@/lib/writerCoins'
 import {
   encodePayForGameGeneration,
   encodePayForMinting,
+  encodePayAndMintGame,
 } from '@/lib/contracts'
 import { detectWalletProvider, type WalletProvider } from '@/lib/wallet'
 
 interface PaymentButtonProps {
   writerCoin: WriterCoin
   action: 'generate-game' | 'mint-nft'
-  onPaymentSuccess?: (transactionHash: string) => void
+  gameId?: string
+  onPaymentSuccess?: (transactionHash: string, storyIPAssetId?: string) => void
   onPaymentError?: (error: string) => void
   disabled?: boolean
 }
@@ -19,6 +21,7 @@ interface PaymentButtonProps {
 export function PaymentButton({
   writerCoin,
   action,
+  gameId,
   onPaymentSuccess,
   onPaymentError,
   disabled = false,
@@ -40,7 +43,7 @@ export function PaymentButton({
     : writerCoin.mintCost
 
   const costFormatted = (Number(cost) / 10 ** writerCoin.decimals).toFixed(0)
-  
+
   const actionLabel = action === 'generate-game'
     ? `Generate Game (${costFormatted} ${writerCoin.symbol})`
     : `Mint as NFT (${costFormatted} ${writerCoin.symbol})`
@@ -68,6 +71,8 @@ export function PaymentButton({
         body: JSON.stringify({
           writerCoinId: writerCoin.id,
           action,
+          gameId,
+          userAddress,
         }),
       })
 
@@ -88,10 +93,15 @@ export function PaymentButton({
           userAddress
         )
       } else {
-        transactionData = encodePayForMinting(
-          contractAddress,
+        // Minting flow: requires metadata
+        if (!paymentInfo.tokenURI || !paymentInfo.metadata) {
+          throw new Error('Missing minting metadata from backend')
+        }
+
+        transactionData = encodePayAndMintGame(
           writerCoin.address,
-          userAddress
+          paymentInfo.tokenURI,
+          paymentInfo.metadata
         )
       }
 
@@ -113,6 +123,8 @@ export function PaymentButton({
           transactionHash: txResult.transactionHash,
           writerCoinId: writerCoin.id,
           action,
+          gameId,
+          userAddress,
         }),
       })
 
@@ -121,7 +133,8 @@ export function PaymentButton({
         throw new Error(errorData.error || 'Failed to verify payment')
       }
 
-      onPaymentSuccess?.(txResult.transactionHash)
+      const verifyResult = await verifyResponse.json()
+      onPaymentSuccess?.(txResult.transactionHash, verifyResult.storyIPAssetId)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An error occurred'
       setError(message)

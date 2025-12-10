@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getWriterCoinById } from '@/lib/writerCoins'
 import { PaymentCostService } from '@/domains/payments/services/payment-cost.service'
 import type { PaymentInitiateRequest, PaymentInfo } from '@/domains/payments/types'
+import { prisma } from '@/lib/database'
+import { gameToMetadata } from '@/lib/contracts'
+import { uploadToIPFS } from '@/lib/ipfs-utils'
 import { z } from 'zod'
 
 /**
@@ -17,6 +20,8 @@ const initiatePaymentSchema = z.object({
   action: z.enum(['generate-game', 'mint-nft'], {
     errorMap: () => ({ message: 'Action must be generate-game or mint-nft' })
   }),
+  gameId: z.string().optional(),
+  userAddress: z.string().optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -56,6 +61,64 @@ export async function POST(request: NextRequest) {
       },
       contractAddress: (process.env.NEXT_PUBLIC_WRITER_COIN_PAYMENT_ADDRESS as `0x${string}`) || undefined,
       chainId: 8453, // Base mainnet
+    }
+
+    // Special handling for NFT minting: prepare metadata
+    if (validatedData.action === 'mint-nft') {
+      if (!validatedData.gameId) {
+        return NextResponse.json(
+          { error: 'Game ID is required for minting' },
+          { status: 400 }
+        )
+      }
+
+      if (!validatedData.userAddress) {
+        return NextResponse.json(
+          { error: 'User address is required for minting' },
+          { status: 400 }
+        )
+      }
+
+      const game = await prisma.game.findUnique({
+        where: { id: validatedData.gameId },
+      })
+
+      if (!game) {
+        return NextResponse.json(
+          { error: 'Game not found' },
+          { status: 404 }
+        )
+      }
+
+      // Generate metadata
+      const gameMetadata = gameToMetadata({
+        articleUrl: game.articleUrl || '',
+        creator: validatedData.userAddress,
+        writerCoinId: writerCoin.id,
+        genre: game.genre || 'mystery',
+        difficulty: game.difficulty || 'easy',
+        createdAt: game.createdAt || new Date(),
+        gameTitle: game.title,
+      })
+
+      // Upload to IPFS
+      const ipfsMetadata = {
+        name: game.title,
+        description: game.description || `A ${game.genre} game generated from an article`,
+        image: game.imageUrl || '', // Should be IPFS URL ideally
+        attributes: [
+          { trait_type: 'genre', value: game.genre || 'mystery' },
+          { trait_type: 'difficulty', value: game.difficulty || 'easy' },
+          { trait_type: 'creator', value: validatedData.userAddress },
+          { trait_type: 'created_at', value: game.createdAt ? new Date(game.createdAt).toISOString() : new Date().toISOString() },
+        ],
+        external_url: game.articleUrl,
+      }
+
+      const tokenURI = await uploadToIPFS(ipfsMetadata)
+
+      paymentInfo.metadata = gameMetadata
+      paymentInfo.tokenURI = tokenURI
     }
 
     return NextResponse.json(paymentInfo)

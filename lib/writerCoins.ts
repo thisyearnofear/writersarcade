@@ -56,26 +56,6 @@ export const WRITER_COINS: WriterCoin[] = [
             platform: 10, // 10% to WritArcade
         },
     },
-    // TODO: Add Writer Coin #2
-    // {
-    //   id: "coin2",
-    //   name: "Writer Coin #2",
-    //   symbol: "$COIN2",
-    //   address: "0x...",
-    //   writer: "TBD",
-    //   paragraphAuthor: "TBD",
-    //   paragraphUrl: "https://...",
-    //   gameGenerationCost: BigInt(100 * 10 ** 18),
-    //   mintCost: BigInt(50 * 10 ** 18),
-    //   decimals: 18,
-    //   revenueDistribution: {
-    //     writer: 40,
-    //     creator: 30,
-    //     platform: 20,
-    //     burn: 10,
-    //   },
-    // },
-    // TODO: Add Writer Coin #3
 ]
 
 /**

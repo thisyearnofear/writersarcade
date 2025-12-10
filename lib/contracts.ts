@@ -5,6 +5,7 @@
  * with WriterCoinPayment and GameNFT contracts on Base network.
  */
 
+import { encodeFunctionData } from 'viem'
 import { getWriterCoinById } from './writerCoins'
 
 // Contract ABIs (simplified, use full ABI from contract compilation)
@@ -12,6 +13,7 @@ export const CONTRACT_ABIS = {
   WriterCoinPayment: [
     'function payForGameGeneration(address writerCoin, address user) external',
     'function payForMinting(address writerCoin, address user) external',
+    'function payAndMintGame(address writerCoin, string memory tokenURI, tuple(string, address, address, string, string, uint256, string) memory metadata) external',
     'function isCoinWhitelisted(address coinAddress) external view returns (bool)',
     'function getCoinConfig(address coinAddress) external view returns (tuple(uint256, uint256, bool))',
     'function whitelistCoin(address coinAddress, uint256 gameGenerationCost, uint256 mintCost, address treasury, uint256 writerShare, uint256 platformShare, uint256 creatorPoolShare) external',
@@ -263,4 +265,54 @@ export function encodePayForMinting(
   const encodedUser = userAddress.slice(2).padStart(64, '0')
 
   return selector + encodedCoin + encodedUser
+}
+
+/**
+ * Prepare transaction data for atomic payment and minting
+ */
+export function encodePayAndMintGame(
+  writerCoinAddress: string,
+  tokenURI: string,
+  metadata: GameMetadata
+): string {
+  const abi = [{
+    name: 'payAndMintGame',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'writerCoin', type: 'address' },
+      { name: 'tokenURI', type: 'string' },
+      {
+        name: 'metadata',
+        type: 'tuple',
+        components: [
+          { name: 'articleUrl', type: 'string' },
+          { name: 'creator', type: 'address' },
+          { name: 'writerCoin', type: 'address' },
+          { name: 'genre', type: 'string' },
+          { name: 'difficulty', type: 'string' },
+          { name: 'createdAt', type: 'uint256' },
+          { name: 'gameTitle', type: 'string' }
+        ]
+      }
+    ]
+  }] as const
+
+  return encodeFunctionData({
+    abi,
+    functionName: 'payAndMintGame',
+    args: [
+      writerCoinAddress as `0x${string}`,
+      tokenURI,
+      {
+        articleUrl: metadata.articleUrl,
+        creator: metadata.creator as `0x${string}`,
+        writerCoin: metadata.writerCoin as `0x${string}`,
+        genre: metadata.genre,
+        difficulty: metadata.difficulty,
+        createdAt: BigInt(metadata.createdAt),
+        gameTitle: metadata.gameTitle
+      }
+    ]
+  })
 }
