@@ -17,7 +17,11 @@ import { WalletConnect } from '@/components/ui/wallet-connect'
 import { getFarcasterProfile } from '@/lib/farcaster'
 import type { FarcasterProfile } from '@/lib/farcaster'
 
-export function UserMenu() {
+interface UserMenuProps {
+  mobileLayout?: boolean
+}
+
+export function UserMenu({ mobileLayout = false }: UserMenuProps) {
   const { address, isConnected } = useAccount()
   const { disconnect } = useDisconnect()
   const [isOpen, setIsOpen] = useState(false)
@@ -77,22 +81,30 @@ export function UserMenu() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-3 px-3 py-2 rounded-lg bg-purple-600/10 border border-purple-500/30 hover:bg-purple-600/20 hover:border-purple-500/50 transition-all"
+        className={`flex items-center space-x-3 rounded-lg bg-purple-600/10 border border-purple-500/30 hover:bg-purple-600/20 hover:border-purple-500/50 transition-all ${
+          mobileLayout ? 'px-4 py-3 space-x-4' : 'px-3 py-2'
+        }`}
       >
         {profile?.pfpUrl ? (
           <img
             src={avatarUrl}
             alt={displayName}
-            className="w-8 h-8 rounded-full"
+            className={mobileLayout ? 'w-10 h-10 rounded-full' : 'w-8 h-8 rounded-full'}
           />
         ) : (
-          <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-            <Wallet className="w-4 h-4 text-white" />
+          <div className={mobileLayout ? 'w-10 h-10' : 'w-8 h-8'}>
+            <div className={`bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center ${
+              mobileLayout ? 'w-10 h-10' : 'w-8 h-8'
+            }`}>
+              <Wallet className={`${mobileLayout ? 'w-5 h-5' : 'w-4 h-4'} text-white`} />
+            </div>
           </div>
         )}
-        <div className="hidden md:flex flex-col items-start min-w-0">
-          <span className="text-xs text-purple-300 font-medium">Connected</span>
-          <span className={`text-sm ${profile?.username ? 'text-white' : 'font-mono text-gray-300'} truncate`}>
+        <div className={mobileLayout ? 'flex flex-col items-start min-w-0' : 'hidden md:flex flex-col items-start min-w-0'}>
+          <span className={`text-xs font-medium ${mobileLayout ? 'text-purple-300' : 'text-purple-300'}`}>Connected</span>
+          <span className={`${
+            mobileLayout ? 'text-white text-base' : 'text-sm'
+          } ${profile?.username ? 'text-white' : 'font-mono text-gray-300'} truncate`}>
             {displayName}
           </span>
         </div>

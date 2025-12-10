@@ -27,7 +27,7 @@ export function AnimatedOptionButton({
   const [isHovered, setIsHovered] = useState(false)
 
   return (
-    <button
+    <motion.button
       onClick={onClick}
       disabled={disabled}
       className="group relative p-4 sm:p-4 rounded-lg border-2 text-left transition-all duration-200 hover:shadow-lg hover:shadow-current disabled:opacity-50 disabled:cursor-not-allowed"
@@ -39,6 +39,7 @@ export function AnimatedOptionButton({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       whileTap={{ scale: 0.98 }}
+      type="button"
     >
       {/* Top animated bar indicator with enhanced micro-interaction */}
       <motion.div
@@ -80,6 +81,6 @@ export function AnimatedOptionButton({
         </span>
         <span className="leading-snug font-medium text-base sm:text-sm flex-1">{option}</span>
       </div>
-    </button>
+    </motion.button>
   )
 }

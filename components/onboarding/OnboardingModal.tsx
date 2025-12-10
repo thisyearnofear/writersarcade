@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { X, ChevronRight, Lightbulb, ArrowRight, Check, Sparkles, Gamepad2, Mint, BookOpen } from 'lucide-react'
+import { X, ChevronRight, Lightbulb, ArrowRight, Check, Sparkles, Gamepad2, Gem, BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 
@@ -46,7 +46,7 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
     {
       title: "Step 4: Mint as NFT",
       description: "Own your creation and earn from future plays",
-      visual: <Mint className="w-12 h-12 text-purple-400" />,
+      visual: <Gem className="w-12 h-12 text-purple-400" />,
       content: "Mint your game as an NFT and share it with the world",
       tip: "NFTs include full attribution to original authors"
     },
