@@ -5,6 +5,7 @@ import { WordleGameInterface } from '@/domains/games/components/wordle-game-inte
 import { ImageGenerationService } from '@/domains/games/services/image-generation.service'
 import { ContentProcessorService } from '@/domains/content/services/content-processor.service'
 import { WordleService } from '@/domains/games/services/wordle.service'
+import { IPAttribution } from '@/domains/games/components/ip-attribution'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,7 +18,7 @@ interface GamePageProps {
 export default async function GamePage({ params }: GamePageProps) {
   const { slug } = await params
   const game = await GameDatabaseService.getGameBySlug(slug)
-  
+
   if (!game) {
     notFound()
   }
@@ -30,7 +31,7 @@ export default async function GamePage({ params }: GamePageProps) {
       }
     }).catch(console.error)
   }
-  
+
   // Wordle-mode games render a Wordle interface instead of the comic-story interface
   if (game.mode === 'wordle') {
     let answer = game.wordleAnswer
@@ -55,9 +56,19 @@ export default async function GamePage({ params }: GamePageProps) {
     )
   }
 
+  // Extract and flatten assets for the attribution component
+  // @ts-ignore - The service include typings are complex, but the data is there
+  const linkedAssets = game.gamesFromAssets?.map((relation: any) => relation.asset) || []
+
   return (
     <div className="min-h-screen bg-black">
       <GamePlayInterface game={game} />
+
+      {linkedAssets.length > 0 && (
+        <div className="max-w-4xl mx-auto px-4 pb-24">
+          <IPAttribution assets={linkedAssets} />
+        </div>
+      )}
     </div>
   )
 }
@@ -72,13 +83,13 @@ export async function generateMetadata({ params }: GamePageProps) {
 
   const { slug } = await params
   const game = await GameDatabaseService.getGameBySlug(slug)
-  
+
   if (!game) {
     return {
       title: 'Game Not Found',
     }
   }
-  
+
   return {
     title: `${game.title} - WritArcade`,
     description: game.description,

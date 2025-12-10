@@ -42,14 +42,6 @@ npm run dev
 - **API Keys**: OpenAI, Anthropic for game generation
 - **Wallet**: Farcaster Wallet (built into Mini App SDK)
 
-### 3. Current Status
-**Phase 6 (Week 12): Asset Marketplace & IP Minting** - 100% complete
-- ✅ Core Game Engine (Articles -> Games)
-- ✅ Smart Contracts ($AVC Payments + Revenue Splits)
-- ✅ Asset Workshop (Decompose Articles -> Characters/Mechanics)
-- ✅ Marketplace Sidebar (Inject Community Assets)
-- ✅ Story Protocol Integration (One-Click IP Minting)
-- ✅ Composability Layer (Derivatives & parent asset tracking)
 
 ## Documentation
 
@@ -118,27 +110,6 @@ Our documentation is consolidated into 4 comprehensive guides:
 | **Phase 6**: Asset Workshop & IP Minting | ✅ Complete | 100% |
 | **Phase 7**: Mainnet Launch | ⏳ Pending | 0% |
 
-### Week 5b Achievements (UI/UX Polish)
-- ✅ Compact success modal (75% size reduction)
-- ✅ Venice AI image generation for game cover art
-- ✅ Visual game pages with hero images
-- ✅ Embedded game display (no new tabs)
-- ✅ Improved customization accuracy (genre/difficulty)
-- ✅ Less verbose game interface
-- ✅ Color-coded UI elements per game
-
-### Week 5a Achievements (Browser Wallet Implementation)
-- ✅ WalletConnectButton component (RainbowKit integration)
-- ✅ PaymentOption wrapper for payment flows
-- ✅ Game generator enhanced with payment UI
-- ✅ Customization requires payment (optional)
-- ✅ Free + premium game flows both working
-- ✅ MetaMask, Coinbase Wallet, WalletConnect support
-- ✅ WalletSync enhanced for browser wallet tracking
-- ✅ Header updated with wallet connection button
-- ✅ Feature parity: 95% code sharing with mini-app
-- ✅ Unified endpoints: /api/games/generate, /api/payments/*
-- ✅ All 8 core principles implemented
 
 ## Deployment Status
 

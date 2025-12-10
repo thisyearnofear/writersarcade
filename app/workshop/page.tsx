@@ -69,8 +69,8 @@ export default function WorkshopPage() {
         }
     }
 
-    const handleSave = async () => {
-        if (!assets) return
+    const handleSave = async (silent = false): Promise<string | null> => {
+        if (!assets) return null
         try {
             const res = await fetch('/api/assets/save', {
                 method: 'POST',
@@ -82,13 +82,17 @@ export default function WorkshopPage() {
                     articleUrl: url
                 })
             })
-            if (res.ok) {
-                alert('Asset Pack Saved to Library!')
+            const data = await res.json()
+            if (res.ok && data.success) {
+                if (!silent) alert('Asset Pack Saved to Library!')
+                return data.data.id // Return the Asset ID
             } else {
                 throw new Error('Save failed')
             }
         } catch (e) {
-            alert('Error saving assets.')
+            console.error(e)
+            if (!silent) alert('Error saving assets.')
+            return null
         }
     }
 
@@ -117,13 +121,17 @@ export default function WorkshopPage() {
 
         // Call standard game generation with this specific context
         try {
+            // Implicitly save the asset pack first to get an ID for tracking
+            const assetId = await handleSave(true)
+
             const res = await fetch('/api/games/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     promptText: assetContext,
                     promptName: 'Workshop-Compiled-v1',
-                    url: url // We pass original URL for attribution, but prompt is custom
+                    url: url, // We pass original URL for attribution, but prompt is custom
+                    assetIds: assetId ? [assetId] : [] // Pass the Asset ID to link valid relationship
                 })
             })
 
@@ -227,7 +235,7 @@ export default function WorkshopPage() {
                             </div>
                             <div className="flex gap-3">
                                 <button
-                                    onClick={handleSave}
+                                    onClick={() => handleSave(false)}
                                     className="px-4 py-2 bg-blue-900/40 hover:bg-blue-800/60 text-blue-200 border border-blue-700/50 rounded-lg text-sm font-bold transition-all"
                                 >
                                     Save Draft

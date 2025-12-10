@@ -99,8 +99,9 @@ model Game {
   userId String?
   user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  chats Chat[]
+  carts Chat[]
   gamesFromArticles GameFromArticle[]
+  gamesFromAssets GameFromAsset[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -337,6 +338,7 @@ model GameFromAsset {
   
   // Relations
   gameId  String
+  game    Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
   
   assetId String
   asset   Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)

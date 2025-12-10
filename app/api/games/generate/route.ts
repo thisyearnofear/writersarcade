@@ -23,6 +23,7 @@ const generateGameSchema = z.object({
   model: z.string().optional(),
   promptName: z.string().optional(),
   private: z.boolean().optional(),
+  assetIds: z.array(z.string()).optional(), // New: Link to parent assets
 }).refine(
   (data) => data.promptText || data.url,
   "Either promptText or url must be provided"
@@ -177,7 +178,7 @@ Your game MUST authentically interpret this article's core themes. Players shoul
       hasMiniAppData: !!miniAppData,
       creatorWallet: enhancedGameData.creatorWallet,
     })
-    const savedGame = await GameDatabaseService.createGame(enhancedGameData, user?.id, miniAppData)
+    const savedGame = await GameDatabaseService.createGame(enhancedGameData, user?.id, miniAppData, validatedData.assetIds)
     console.log('Game saved successfully:', { id: savedGame.id, slug: savedGame.slug })
 
     return NextResponse.json({

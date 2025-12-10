@@ -21,14 +21,14 @@ export class GameDatabaseService {
       difficulty?: string
       articleContext?: string
       wordleAnswer?: string
-      // Source material attribution
       authorParagraphUsername?: string
       authorWallet?: string
       publicationName?: string
       publicationSummary?: string
       subscriberCount?: number
       articlePublishedAt?: Date
-    }
+    },
+    assetIds?: string[] // Links to parent assets (Workshop Packs)
   ): Promise<Game> {
     try {
       // Generate unique slug
@@ -43,7 +43,7 @@ export class GameDatabaseService {
         slug = `${slug}-${Date.now()}`
       }
 
-      const gameCreateData = {
+      const gameCreateData: any = {
         title: gameData.title,
         slug,
         description: gameData.description,
@@ -51,7 +51,6 @@ export class GameDatabaseService {
         genre: gameData.genre,
         subgenre: gameData.subgenre,
         primaryColor: gameData.primaryColor,
-        // Default to "story" to preserve behavior for existing games
         mode: (gameData.mode as GameMode | undefined) || 'story',
         promptName: gameData.promptName,
         promptText: gameData.promptText,
@@ -61,26 +60,28 @@ export class GameDatabaseService {
         articleContext: miniAppData?.articleContext,
         writerCoinId: miniAppData?.writerCoinId,
         difficulty: miniAppData?.difficulty,
-        // Source material attribution - preserves original author
         authorParagraphUsername: miniAppData?.authorParagraphUsername,
         authorWallet: miniAppData?.authorWallet,
         publicationName: miniAppData?.publicationName,
         publicationSummary: miniAppData?.publicationSummary,
         subscriberCount: miniAppData?.subscriberCount,
         articlePublishedAt: miniAppData?.articlePublishedAt,
-        // Creator attribution
         creatorWallet: gameData.creatorWallet,
-        private: false, // Default to public for now
+        private: false,
         userId: userId || null,
       }
 
-      console.log('Creating game with data:', {
-        title: gameCreateData.title,
-        slug: gameCreateData.slug,
-        genre: gameCreateData.genre,
-        hasCreatorWallet: !!gameCreateData.creatorWallet,
-        hasUserId: !!gameCreateData.userId,
-      })
+      // Add asset relations if provided
+      if (assetIds && assetIds.length > 0) {
+        gameCreateData.gamesFromAssets = {
+          create: assetIds.map(assetId => ({
+            asset: { connect: { id: assetId } },
+            userId: userId || 'anonymous',
+            compositionPrompt: 'Workshop Compilation',
+            tokensSpent: 0
+          }))
+        }
+      }
 
       const game = await prisma.game.create({ data: gameCreateData })
 
@@ -111,6 +112,15 @@ export class GameDatabaseService {
             select: {
               id: true,
               walletAddress: true,
+            }
+          },
+          gamesFromAssets: {
+            include: {
+              asset: {
+                include: {
+                  storyRegistration: true
+                }
+              }
             }
           }
         }
