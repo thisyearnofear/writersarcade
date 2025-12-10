@@ -43,16 +43,13 @@ npm run dev
 - **Wallet**: Farcaster Wallet (built into Mini App SDK)
 
 ### 3. Current Status
-**Phase 5 (Week 5): Browser Wallet & Web App Monetization** - 95% complete
-- ✅ Mini App SDK migration (Frames v2 → Mini Apps)
-- ✅ 4-step user flow (coin → article → customize → play)
-- ✅ Game generation API + unified endpoints
-- ✅ Smart contracts (WriterCoinPayment + GameNFT)
-- ✅ Wallet abstraction layer (Farcaster + browser wallets)
-- ✅ True feature parity: web app + mini app share 95% business logic
-- ✅ Browser wallet support (MetaMask, Coinbase, WalletConnect)
-- ✅ Web app payment UI + customization (same as mini-app)
-- ⏳ End-to-end testing & production launch
+**Phase 6 (Week 12): Asset Marketplace & IP Minting** - 100% complete
+- ✅ Core Game Engine (Articles -> Games)
+- ✅ Smart Contracts ($AVC Payments + Revenue Splits)
+- ✅ Asset Workshop (Decompose Articles -> Characters/Mechanics)
+- ✅ Marketplace Sidebar (Inject Community Assets)
+- ✅ Story Protocol Integration (One-Click IP Minting)
+- ✅ Composability Layer (Derivatives & parent asset tracking)
 
 ## Documentation
 
@@ -60,96 +57,66 @@ Our documentation is consolidated into 4 comprehensive guides:
 
 ### 📋 [Architecture & System Design](./docs/architecture.md)
 - Unified architecture for web app + mini-app
+- **New:** Dual-Loop Design (Attention vs. IP)
 - Database schema and payment tracking
-- Smart contracts and writer coin economics
-- Wallet abstraction layer and shared components
 - Dual-chain integration (Base + Story Protocol)
 
 ### 🛠️ [Development Guide](./docs/development.md)
 - Local setup and configuration
 - Mini App SDK integration and wallet setup
-- Payment flow implementation and testing
-- Common issues and troubleshooting
 - API endpoints and smart contract deployment
 
 ### 🗺️ [Roadmap & Status](./docs/roadmap.md)
 - Complete implementation phases and timeline
-- Current status and achievements
-- Go-to-market strategy and success metrics
-- Future vision and competitive advantages
+- **New:** Phase 6 Delivery (Workshop & Marketplace)
 
 ### 🏆 [Hackathon Participation](./docs/hackathon.md)
 - Story Protocol hackathon implementation
-- IP licensing integration details
+- **New:** "Surreal World" track features (Asset composability)
 - SDK usage examples and best practices
 
 ## Tech Stack
 
 ### Frontend
-- **Mini App**: `@farcaster/miniapp-sdk` (November 2025 standard)
-- **Framework**: Next.js 16 + TypeScript
-- **Styling**: TailwindCSS
+- **Mini App**: `@farcaster/miniapp-sdk`
+- **Web App**: Next.js 16 + TypeScript + TailwindCSS
+- **State**: Framer Motion + React Context
 
 ### Backend
-- **API**: Next.js API routes
+- **API**: Next.js API routes (Serverless)
 - **Database**: PostgreSQL + Prisma ORM
-- **Game Generation**: Infinity Arcade pipeline + OpenAI
+- **AI**: OpenAI / Anthropic (Content Decomposition)
 
 ### Blockchain
-- **Network**: Base mainnet
-- **Contracts**: WriterCoinPayment.sol + GameNFT.sol
-- **Wallet**: Farcaster Wallet (built-in)
+- **Base (L2)**: Payments ($AVC), Revenue Splits (0xSplits)
+- **Story Protocol (L1)**: IP Registration (SPG), Licensing, Royalties
 
 ## Architecture Principles
 
-- **Single Source of Truth**: Farcaster owns social identity
+- **Single Source of Truth**: Farcaster identity + Story IP Registry
 - **Privacy by Design**: No PII storage, users control their data
-- **Simplified Architecture**: Direct wallet → Farcaster API → Display
-- **Modular Design**: Composable, testable components
+- **Asset First**: Everything is a remixable primitive
 
 ## Writer Coins (MVP)
 
 ### $AVC (Fred Wilson) - Collaboration Model
 - **Address**: `0x06FC3D5D2369561e28F261148576520F5e49D6ea`  
 - **Paragraph Publication**: https://avc.xyz/ (Fred Wilson's newsletter)
-- **Game Generation**: 100 $AVC
-- **NFT Minting**: 50 $AVC
 - **Revenue Split** (via 0xSplits + Story Protocol):
-  - 35% → Fred Wilson (content collaboration revenue)
-  - 35% → Game creator (ongoing revenue when others play)
-  - 20% → Token burn (deflationary mechanism)
-  - 10% → Platform (sustainable development)
+  - 35% → Fred Wilson (Source Material)
+  - 35% → Game creator / Asset Remixers
+  - 20% → Token burn
+  - 10% → Platform
 - **IP Layer**: Story Protocol manages derivative rights and ongoing royalties
-
-### Additional Tokens
-- Writer Coin #2: TBD
-- Writer Coin #3: TBD
-
-## Success Metrics (MVP)
-
-### Week 5 Launch Goals
-- 50+ Farcaster users
-- 20+ games generated
-- 5+ games minted as NFTs
-- Zero critical bugs
-
-### Week 8 Post-Launch
-- 100+ users
-- 100+ games generated
-- 30+ minted NFTs
-- <5 minutes for complete flow
 
 ## Current Implementation Status
 
 | Phase | Status | Completion |
 |-------|--------|------------|
-| **Week 1-2**: Mini App Foundation | ✅ Complete | 100% |
-| **Week 3**: Game Generation | ✅ Complete | 100% |
-| **Week 4a**: Smart Contracts & Payments | ✅ Complete | 100% |
-| **Week 4b**: Feature Parity & Unification | ✅ Complete | 100% |
-| **Week 5a**: Browser Wallet & Web Monetization | ✅ Complete | 100% |
-| **Week 5b**: UI/UX Polish & Visual Identity | ✅ Complete | 100% |
-| **Week 5c**: Testing & Launch Prep | ⏳ In Progress | 30% |
+| **Phase 1-4**: Core Game Engine | ✅ Complete | 100% |
+| **Phase 5**: Wallet & Monetization | ✅ Complete | 100% |
+| **Phase 6**: Asset Workshop & IP Minting | ✅ Complete | 100% |
+| **Phase 7**: Mainnet Launch | ⏳ Pending | 0% |
 
 ### Week 5b Achievements (UI/UX Polish)
 - ✅ Compact success modal (75% size reduction)
