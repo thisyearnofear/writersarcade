@@ -38,7 +38,7 @@ export function PaymentOption({
   optional = false,
   onSkip,
 }: PaymentOptionProps) {
-  const { isConnected, address } = useAccount()
+  const { isConnected } = useAccount()
 
   const cost = useMemo(() => {
     return PaymentCostService.calculateCost(writerCoin.id, action)

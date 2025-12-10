@@ -43,8 +43,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setUser(null)
       }
-    } catch (error) {
-      console.error('Auth check failed:', error)
+    } catch {
+      console.error('Auth check failed')
       setUser(null)
     } finally {
       setLoading(false)
@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         return { success: false, error: data.error }
       }
-    } catch (error) {
+    } catch {
       return { success: false, error: 'Network error' }
     }
   }
@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         return { success: false, error: data.error }
       }
-    } catch (error) {
+    } catch {
       return { success: false, error: 'Network error' }
     }
   }

@@ -69,6 +69,13 @@ export async function GET(request: NextRequest) {
     const formattedBalance = (balanceBigInt / divisor).toString()
     const remainder = (balanceBigInt % divisor).toString().padStart(coin.decimals, '0')
 
+    // Format with maximum 6 decimal places for better readability
+    const maxDecimalPlaces = 6
+    const formattedRemainder = remainder.slice(0, maxDecimalPlaces).replace(/0+$/, '')
+    const formattedBalanceString = formattedRemainder === '' 
+      ? formattedBalance 
+      : `${formattedBalance}.${formattedRemainder}`
+
     return NextResponse.json({
       success: true,
       data: {
@@ -77,7 +84,7 @@ export async function GET(request: NextRequest) {
         balance: balanceBigInt.toString(),
         decimals: coin.decimals,
         symbol: coin.symbol,
-        formattedBalance: remainder === '0' ? formattedBalance : `${formattedBalance}.${remainder}`,
+        formattedBalance: formattedBalanceString,
       },
     })
   } catch (error) {

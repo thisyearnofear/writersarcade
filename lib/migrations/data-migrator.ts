@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client'
-import { createSlug } from '@/lib/utils'
 
 interface SequelizeUser {
   id: number
@@ -83,7 +82,7 @@ export class DataMigrator {
   /**
    * Main migration orchestrator
    */
-  async migrateAll(sequelizeConnection: any): Promise<void> {
+  async migrateAll(sequelizeConnection: unknown): Promise<void> {
     console.log('🚀 Starting data migration...')
     
     try {
@@ -104,7 +103,7 @@ export class DataMigrator {
   /**
    * Migrate users with enhanced fields
    */
-  async migrateUsers(sequelizeConnection: any): Promise<void> {
+  async migrateUsers(sequelizeConnection: unknown): Promise<void> {
     console.log('👥 Migrating users...')
     
     const [users] = await sequelizeConnection.query('SELECT * FROM users ORDER BY id')
@@ -137,7 +136,7 @@ export class DataMigrator {
   /**
    * Migrate games with enhanced metadata
    */
-  async migrateGames(sequelizeConnection: any): Promise<void> {
+  async migrateGames(sequelizeConnection: unknown): Promise<void> {
     console.log('🎮 Migrating games...')
     
     const [games] = await sequelizeConnection.query('SELECT * FROM games ORDER BY id')
@@ -182,7 +181,7 @@ export class DataMigrator {
   /**
    * Migrate sessions
    */
-  async migrateSessions(sequelizeConnection: any): Promise<void> {
+  async migrateSessions(sequelizeConnection: unknown): Promise<void> {
     console.log('🔗 Migrating sessions...')
     
     const [sessions] = await sequelizeConnection.query('SELECT * FROM sessions ORDER BY id')
@@ -211,7 +210,7 @@ export class DataMigrator {
   /**
    * Migrate chat messages with threading
    */
-  async migrateChats(sequelizeConnection: any): Promise<void> {
+  async migrateChats(sequelizeConnection: unknown): Promise<void> {
     console.log('💬 Migrating chats...')
     
     const [chats] = await sequelizeConnection.query('SELECT * FROM chats ORDER BY id')
@@ -255,7 +254,7 @@ export class DataMigrator {
   /**
    * Migrate articles
    */
-  async migrateArticles(sequelizeConnection: any): Promise<void> {
+  async migrateArticles(sequelizeConnection: unknown): Promise<void> {
     console.log('📄 Migrating articles...')
     
     const [articles] = await sequelizeConnection.query('SELECT * FROM articles ORDER BY id')

@@ -5,7 +5,7 @@ import { PaymentButton } from "./PaymentButton";
 import { type WriterCoin } from "@/lib/writerCoins";
 
 interface GamePlayerProps {
-  game: any;
+  game: unknown;
   onBack: () => void;
   writerCoin?: WriterCoin;
 }
@@ -63,7 +63,7 @@ export function GamePlayer({ game, onBack, writerCoin }: GamePlayerProps) {
                   currentOptions = data.options;
                   setOptions(currentOptions);
                 }
-              } catch (e) {
+              } catch {
                 // Ignore parse errors
               }
             }
@@ -141,7 +141,7 @@ export function GamePlayer({ game, onBack, writerCoin }: GamePlayerProps) {
                 currentOptions = data.options;
                 setOptions(currentOptions);
               }
-            } catch (e) {
+            } catch {
               // Ignore parse errors
             }
           }

@@ -9,7 +9,7 @@ import type { Asset } from '@/domains/assets/services/asset-database.service'
 interface AssetDetail {
   asset: Asset
   relatedAssets: Asset[]
-  stats: any
+  stats: { views: number; likes: number; downloads: number }
 }
 
 export default function AssetDetailPage() {

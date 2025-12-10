@@ -12,7 +12,7 @@ interface GameCustomizerProps {
   writerCoin: WriterCoin
   articleUrl: string
   onBack: () => void
-  onGameGenerated?: (game: any) => void
+  onGameGenerated?: (game: unknown) => void
 }
 
 export function GameCustomizer({ writerCoin, articleUrl, onBack, onGameGenerated }: GameCustomizerProps) {
@@ -29,7 +29,7 @@ export function GameCustomizer({ writerCoin, articleUrl, onBack, onGameGenerated
     return PaymentCostService.calculateCost(writerCoin.id, 'generate-game')
   }, [writerCoin.id])
 
-  const handlePaymentSuccess = async (transactionHash: string) => {
+  const handlePaymentSuccess = async (_transactionHash: string) => {
     setPaymentApproved(true)
     setError(null)
 
@@ -119,7 +119,7 @@ export function GameCustomizer({ writerCoin, articleUrl, onBack, onGameGenerated
                 mode === 'wordle' ? 'bg-purple-600 text-white' : 'text-purple-200 hover:text-white'
               }`}
             >
-              Wordle (beta, free)
+              <span className="font-semibold">Wordle (beta, free)</span>
             </button>
           </div>
           <p className="text-xs text-purple-200">

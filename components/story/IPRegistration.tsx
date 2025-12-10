@@ -25,7 +25,7 @@ interface IPRegistrationProps {
 }
 
 interface IPRegistrationResult {
-  storyIPAssetId: string;
+  _storyIPAssetId: string;
   txHash: string;
   registeredAt: number;
   royaltyConfig: {
@@ -274,7 +274,7 @@ export function IPRegistration({ game, onRegistrationComplete }: IPRegistrationP
 /**
  * Compact version for game cards/previews
  */
-export function IPRegistrationBadge({ isRegistered, storyIPAssetId }: { isRegistered: boolean; storyIPAssetId?: string }) {
+export function IPRegistrationBadge({ isRegistered, _storyIPAssetId }: { isRegistered: boolean; storyIPAssetId?: string }) {
   if (!isRegistered) {
     return (
       <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">

@@ -13,13 +13,13 @@ export default function MiniAppPage() {
     const [isInFrame, setIsInFrame] = useState(false)
     const [selectedCoin, setSelectedCoin] = useState<WriterCoin | null>(null)
     const [articleUrl, setArticleUrl] = useState('')
-    const [generatedGame, setGeneratedGame] = useState<any>(null)
+    const [generatedGame, setGeneratedGame] = useState<unknown>(null)
     const [step, setStep] = useState<'select-coin' | 'input-article' | 'customize-game' | 'play-game'>('select-coin')
 
     useEffect(() => {
         async function init() {
             // Get Farcaster context to verify we're in Mini App
-            const context = await getFarcasterContext()
+            await getFarcasterContext()
             setIsInitialized(true)
             setIsInFrame(isInFarcasterContext())
             
@@ -51,7 +51,7 @@ export default function MiniAppPage() {
         }
     }
 
-    const handleGameGenerated = (game: any) => {
+    const handleGameGenerated = (game: unknown) => {
         // Wordle games are rendered in the main web app; launch them directly
         if (game?.mode === 'wordle') {
             const slug = game.slug

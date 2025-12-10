@@ -76,7 +76,7 @@ export class StoryProtocolAssetService {
     }
 
     try {
-      const client = initStoryClient()
+      initStoryClient()
 
       // Build metadata for IP registration
       const metadata = buildAssetMetadata({
@@ -101,7 +101,16 @@ export class StoryProtocolAssetService {
       const spgContract = (process.env.NEXT_PUBLIC_STORY_SPG_CONTRACT ||
         '0xc32A8a0FF3beDDDa58393d022aF433e78739FAbc') as `0x${string}`
 
-      const response = await (client.ipAsset.registerIpAsset as any)({
+      const response = await (client.ipAsset.registerIpAsset as (params: {
+        spgNftContract: string;
+        ipMetadata: {
+          ipMetadataURI: string;
+          ipMetadataHash: string;
+          nftMetadataURI: string;
+          nftMetadataHash: string;
+        };
+        txOptions: { account: string };
+      }) => Promise<{ ipId: string; transactionHash: string }>)({
         spgNftContract: spgContract,
         ipMetadata: {
           ipMetadataURI: metadataUri,
@@ -149,7 +158,7 @@ export class StoryProtocolAssetService {
     }
 
     try {
-      const client = initStoryClient()
+      initStoryClient()
 
       // Determine PIL flavor based on terms
       // For WritArcade: Use COMMERCIAL_REMIX (allows commercial use + derivatives)
@@ -206,7 +215,7 @@ export class StoryProtocolAssetService {
     }
 
     try {
-      const client = initStoryClient()
+      initStoryClient()
 
       console.log(`🎮 Registering game as derivative of ${parentAssetIds.length} asset(s)`)
       console.log(`   Game ID: ${gameId}`)
@@ -277,7 +286,7 @@ export class StoryProtocolAssetService {
     }
 
     try {
-      const client = initStoryClient()
+      initStoryClient()
 
       console.log(`🔍 Fetching IP asset details for ${ipId}`)
 

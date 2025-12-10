@@ -249,7 +249,23 @@ export class AssetDatabaseService {
   /**
    * Map Prisma asset model to our Asset type
    */
-  private static mapPrismaAssetToAsset(prismaAsset: any): Asset {
+  private static mapPrismaAssetToAsset(prismaAsset: { 
+    id: string; 
+    title: string; 
+    description: string; 
+    imageUrl: string; 
+    createdAt: Date; 
+    updatedAt: Date; 
+    userId: string; 
+    slug: string; 
+    metadata: Record<string, unknown>;
+    type?: string;
+    content?: string;
+    genre?: string;
+    tags?: string[];
+    articleUrl?: string;
+    creatorId?: string;
+  }): Asset {
     return {
       id: prismaAsset.id,
       title: prismaAsset.title,

@@ -42,7 +42,7 @@ export function ArticleInput({ writerCoin, onSubmit, onBack }: ArticleInputProps
                 title: article.title,
                 excerpt: article.content.slice(0, 200) + '...',
             })
-        } catch (err) {
+        } catch {
             setError('Failed to validate article')
         } finally {
             setLoading(false)

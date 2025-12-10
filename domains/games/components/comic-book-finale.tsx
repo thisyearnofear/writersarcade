@@ -2,8 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, Download, Zap, Grid3X3, Eye, ChevronRight } from 'lucide-react'
-import type { ChatMessage, GameplayOption } from '../types'
+import { ChevronLeft, Download, Zap, Grid3X3, Eye } from 'lucide-react'
 import { ImageLightbox } from './image-lightbox'
 import { ShareDropdown } from '@/components/ui/share-dropdown'
 import { UserAttribution, AttributionPair } from '@/components/ui/user-attribution'
@@ -24,7 +23,7 @@ interface ComicBookFinaleProps {
   primaryColor: string
   panels: ComicBookFinalePanelData[]
   onBack: () => void
-  onMint: (panelData: ComicBookFinalePanelData[], metadata?: any) => void
+  onMint: (panelData: ComicBookFinalePanelData[], metadata?: { title: string; description: string; creator: string }) => void
   isMinting?: boolean
   // Attribution data
   creatorWallet: string
@@ -207,7 +206,7 @@ export function ComicBookFinale({
           const maxWidth = 700;
           const lineHeight = 20;
           const textX = (canvasWidth - maxWidth) / 2;
-          let textY = yPosition + imageHeight + 20;
+          const textY = yPosition + imageHeight + 20;
 
           const wrapText = (text: string, x: number, y: number, maxWidth: number, lineHeight: number) => {
             const words = text.split(' ');
@@ -263,7 +262,7 @@ export function ComicBookFinale({
         const maxWidth = 700;
         const lineHeight = 20;
         const textX = (canvasWidth - maxWidth) / 2;
-        let textY = yPosition + 20;
+        const textY = yPosition + 20;
 
         const wrapText = (text: string, x: number, y: number, maxWidth: number, lineHeight: number) => {
           const words = text.split(' ');

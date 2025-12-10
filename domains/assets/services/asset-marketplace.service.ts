@@ -1,5 +1,4 @@
 import { AssetDatabaseService, type Asset } from './asset-database.service'
-import { GameDatabaseService } from '@/domains/games/services/game-database.service'
 import type { Game } from '@/domains/games/types'
 
 interface CacheEntry<T> {
@@ -12,7 +11,7 @@ interface CacheEntry<T> {
  * Handles discovery, caching, and composition logic for asset marketplace
  */
 export class AssetMarketplaceService {
-  private static cache = new Map<string, CacheEntry<any>>()
+  private static cache = new Map<string, CacheEntry<Asset[] | Game | Asset>>()
   private static readonly CACHE_TTL = 5 * 60 * 1000 // 5 minutes
   
   /**

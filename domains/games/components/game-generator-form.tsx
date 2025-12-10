@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ProgressBar } from '@/components/ui/ProgressBar'
-import { Loader2, Sparkles, Info, ChevronDown, ChevronUp, Lightbulb } from 'lucide-react'
+import { Loader2, Sparkles, Info, Lightbulb } from 'lucide-react'
 import { GenreSelector, type GameGenre } from '@/components/game/GenreSelector'
 import { DifficultySelector, type GameDifficulty } from '@/components/game/DifficultySelector'
 import { PaymentOption } from '@/components/game/PaymentOption'
@@ -17,7 +17,7 @@ import { getWriterCoinById } from '@/lib/writerCoins'
 import { retryWithBackoff } from '@/lib/error-handler'
 
 interface GameGeneratorFormProps {
-  onGameGenerated?: (game: any) => void
+  onGameGenerated?: (game: { id: string; title: string; slug: string; genre: string }) => void
 }
 
 export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
@@ -53,7 +53,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
     return <div className="text-red-500">Error: Writer coin not configured</div>
   }
 
-  const handlePaymentSuccess = async (transactionHash: string) => {
+  const handlePaymentSuccess = async (_transactionHash: string) => {
     setPaymentApproved(true)
     setError(null)
     await generateGame()
@@ -248,7 +248,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
-                Wordle (beta)
+                <span className="text-black font-semibold">Wordle (beta)</span>
               </motion.button>
             </div>
             <p className="text-xs text-gray-400">

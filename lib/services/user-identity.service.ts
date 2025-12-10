@@ -4,7 +4,7 @@
  * Consolidates ENS, Farcaster, and wallet address resolution
  */
 
-import { getFarcasterProfile, getDisplayName, getAvatarUrl } from '@/lib/farcaster'
+import { getFarcasterProfile } from '@/lib/farcaster'
 import { GameCreator, GameAuthor } from './ipfs-metadata.service'
 
 interface ENSProfile {
@@ -15,7 +15,7 @@ interface ENSProfile {
 export class UserIdentityService {
   private static instance: UserIdentityService
   private readonly ensCache = new Map<string, ENSProfile>()
-  private readonly farcasterCache = new Map<string, any>()
+  private readonly farcasterCache = new Map<string, { username: string; displayName: string; pfpUrl?: string }>()
 
   public static getInstance(): UserIdentityService {
     if (!UserIdentityService.instance) {

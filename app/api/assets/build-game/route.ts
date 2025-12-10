@@ -131,7 +131,7 @@ export async function GET(request: NextRequest) {
     const userId = searchParams.get('userId')
     const limit = parseInt(searchParams.get('limit') || '25')
 
-    const where: any = {}
+    const where: Record<string, string | number | boolean> = {}
     if (userId) {
       where.userId = userId
     }

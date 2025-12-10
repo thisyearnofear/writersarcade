@@ -1,6 +1,5 @@
-import axios from 'axios'
 import { marked } from 'marked'
-import { processArticleFromUrl, fetchPublicationBySlug, parseParagraphUrl } from '@/lib/paragraph-sdk'
+import { processArticleFromUrl } from '@/lib/paragraph-sdk'
 
 
 export interface ContentSource {
@@ -47,11 +46,10 @@ export class ContentProcessorService {
       const contentType = this.detectContentType(url)
 
       // Extract content from Paragraph
-      let extractedData: { text: string; metadata: Partial<ProcessedContent> }
-      extractedData = await this.scrapeGenericUrl(normalizedUrl)
+      const extractedData: { text: string; metadata: Partial<ProcessedContent> } = await this.scrapeGenericUrl(normalizedUrl)
       
       const extractedText = extractedData.text
-      const metadata = extractedData.metadata || {}
+      const _metadata = extractedData.metadata || {}
       
       // Process and clean the text
       const cleanText = this.cleanAndProcessText(extractedText)

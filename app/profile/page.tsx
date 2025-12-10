@@ -3,7 +3,6 @@ import { getCurrentUser } from '@/lib/auth'
 import { getDisplayName, getAvatarUrl } from '@/lib/farcaster'
 import { GameDatabaseService } from '@/domains/games/services/game-database.service'
 import { UserPreferencesForm } from '@/domains/users/components/user-profile-form'
-import { GameGrid } from '@/domains/games/components/game-grid'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 

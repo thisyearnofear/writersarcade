@@ -59,7 +59,14 @@ export async function GET(request: NextRequest) {
     const data = await response.json()
 
     // Extract first user from response
-    const users = Object.values(data) as any[]
+    const users = Object.values(data) as Array<Array<{
+      fid: number;
+      username: string;
+      display_name?: string;
+      profile?: { bio?: { text?: string } };
+      pfp_url?: string;
+      verified_addresses?: { eth_addresses?: string[] };
+    }>>
     const user = users[0]?.[0]
 
     if (!user) {

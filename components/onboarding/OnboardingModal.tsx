@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { X, ChevronRight, Lightbulb, ArrowRight, Check, Sparkles, Gamepad2, Gem, BookOpen } from 'lucide-react'
+import { X, ChevronRight, Lightbulb, Check, Sparkles, Gamepad2, Gem, BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 

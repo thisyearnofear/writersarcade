@@ -35,7 +35,7 @@ export function GameGrid({ limit = 25, search, genre }: GameGridProps) {
         } else {
           setError(result.error || 'Failed to load games')
         }
-      } catch (err) {
+      } catch {
         setError('Failed to load games')
       } finally {
         setLoading(false)

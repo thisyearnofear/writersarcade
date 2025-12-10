@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useRef, useEffect, ReactNode } from 'react'
+import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { Loader2, Play, Send, BookOpen, Lightbulb } from 'lucide-react'
+
+import { Loader2, Play, BookOpen, Lightbulb } from 'lucide-react'
 import { Game, ChatMessage, GameplayOption } from '../types'
 import { ImageGenerationService, type ImageGenerationResult } from '../services/image-generation.service'
 import { ComicPanelCard } from './comic-panel-card'
@@ -395,7 +395,7 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
   const buildComicPanels = (): ComicBookFinalePanelData[] => {
     const assistantMessages = messages.filter(m => m.role === 'assistant').slice(0, MAX_COMIC_PANELS)
     
-    return assistantMessages.map((message, idx) => {
+    return assistantMessages.map((message, _idx) => {
       // Find the user's choice that comes after this assistant message
       const messageIndex = messages.indexOf(message)
       const nextUserMessage = messages
@@ -412,7 +412,7 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
     })
   }
 
-  const handleMintComic = async (panelData: ComicBookFinalePanelData[], metadata?: any) => {
+  const handleMintComic = async (panelData: ComicBookFinalePanelData[], _metadata?: { title: string; description: string; creator: string }) => {
     setIsMinting(true)
     try {
       // Build NFT metadata with full attribution to original author
@@ -485,7 +485,7 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
     }
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const _handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       sendMessage(userInput)

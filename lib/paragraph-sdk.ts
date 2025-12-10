@@ -81,7 +81,7 @@ async function extractContentFromSchema(url: string): Promise<{
         
         // Handle both single object and @graph array
         const articles = Array.isArray(jsonLd['@graph']) 
-          ? jsonLd['@graph'].filter((item: any) => item['@type'] === 'Article')
+          ? jsonLd['@graph'].filter((item: { '@type'?: string }) => item['@type'] === 'Article')
           : [jsonLd]
         
         const article = articles[0]
@@ -92,7 +92,7 @@ async function extractContentFromSchema(url: string): Promise<{
             description: article.description
           }
         }
-      } catch (e) {
+      } catch {
         // JSON parsing failed
       }
     }
@@ -142,11 +142,11 @@ export async function fetchPostBySlug(
           ...post,
           content: schemaContent.content,
           wordCount: schemaContent.wordCount,
-        } as any
+        } as { title: string, text: string, wordCount: number }
       }
     }
     
-    return post as any
+    return post as { title: string; content: string; url: string; author: string; publishedAt: string; wordCount?: number; description?: string }
   } catch (error) {
     console.error(
       `Failed to fetch post ${publicationSlug}/${postSlug}:`,
@@ -269,7 +269,7 @@ export async function processArticleFromUrl(url: string): Promise<ProcessedArtic
         estimatedReadTime,
         hasCoin: !!post.coinId,
       },
-      publicationSummary: (publication as any).summary,
+      publicationSummary: (publication as { summary?: string }).summary,
       subscriberCount: subscriberCount || undefined,
     }
   } catch (error) {

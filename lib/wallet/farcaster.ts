@@ -9,7 +9,11 @@ import type { WalletProvider, TransactionRequest, TransactionResult } from './ty
 import { createWalletClient, custom, WalletClient } from 'viem'
 import { base } from 'viem/chains'
 
-let sdk: any = null
+let sdk: { 
+  wallet: { 
+    getEthereumProvider: () => Promise<unknown> 
+  } 
+} | null = null
 
 // Lazy-load SDK only in browser and Farcaster context
 try {

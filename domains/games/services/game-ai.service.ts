@@ -367,7 +367,7 @@ export class GameAIService {
    * Provide pacing guidance based on story position
    * Helps AI understand narrative structure and when to escalate/resolve
    */
-  private static getPacingGuidance(currentPanel: number, maxPanels: number): string {
+  private static getPacingGuidance(currentPanel: number, _maxPanels: number): string {
     if (currentPanel === 1) {
       return `PANEL 1/5: OPENING & HOOK
 Establish the setting and main character quickly. Introduce the central conflict or mystery. Hook the reader immediately with an engaging situation.`
@@ -621,7 +621,7 @@ CONCLUSION REQUIRED: This is the FINAL panel. You MUST bring the story to a sati
     * so players engage with the source material's ideas, not a generic adventure
     * Enforces 2-3 sentences for opening panel
     */
-  private static buildStartGamePrompt(game: any, articleContext?: string): string {
+  private static buildStartGamePrompt(game: { title: string, description: string, genre: string, difficulty: string, articleContext?: string }, articleContext?: string): string {
     const basePrompt = `You are an interactive text game engine designed for visual comic-style gameplay.
   The game's opening must ground players in the world and themes they're about to explore.
 

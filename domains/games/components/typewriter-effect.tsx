@@ -27,7 +27,7 @@ export function TypewriterEffect({
 
     const charCount = text.length
     const frameCount = Math.max(10, Math.floor(charCount / (duration / 16)))
-    const charsPerFrame = charCount / frameCount
+    const _charsPerFrame = charCount / frameCount
     let currentFrame = 0
 
     const interval = setInterval(() => {

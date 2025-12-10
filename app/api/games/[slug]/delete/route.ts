@@ -64,7 +64,7 @@ export async function DELETE(
     }
 
     // Delete game
-    const deleted = await prisma.game.delete({
+    await prisma.game.delete({
       where: { slug },
     })
 

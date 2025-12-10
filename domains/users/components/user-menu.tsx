@@ -3,13 +3,10 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 import {
-  User,
   LogOut,
   Settings,
   GamepadIcon,
-  Crown,
   Wallet
 } from 'lucide-react'
 import { useAccount, useDisconnect } from 'wagmi'
@@ -26,7 +23,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
   const { disconnect } = useDisconnect()
   const [isOpen, setIsOpen] = useState(false)
   const [profile, setProfile] = useState<FarcasterProfile | null>(null)
-  const [isLoadingProfile, setIsLoadingProfile] = useState(false)
+  const [_isLoadingProfile, setIsLoadingProfile] = useState(false)
   const router = useRouter()
 
   // Fetch Farcaster profile when wallet connects

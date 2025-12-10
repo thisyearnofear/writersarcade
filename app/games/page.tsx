@@ -46,7 +46,13 @@ export default function GamesPage() {
         setStats(gameStats)
 
         // Fetch games with filters
-        const options: any = {
+        const options: {
+          limit: number;
+          offset: number;
+          includePrivate: boolean;
+          genre?: string;
+          search?: string;
+        } = {
           limit: itemsPerPage,
           offset: (currentPage - 1) * itemsPerPage,
           includePrivate: false, // Only show public games

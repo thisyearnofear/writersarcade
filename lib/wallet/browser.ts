@@ -16,7 +16,7 @@ export class BrowserWalletProvider implements WalletProvider {
   async isAvailable(): Promise<boolean> {
     try {
       if (typeof window === 'undefined') return false
-      const ethereum = (window as any).ethereum
+      const ethereum = (window as { ethereum?: { isMetaMask?: boolean } }).ethereum
       return !!ethereum && !!ethereum.isMetaMask
     } catch {
       return false
@@ -26,7 +26,7 @@ export class BrowserWalletProvider implements WalletProvider {
   async getAddress(): Promise<`0x${string}` | null> {
     try {
       if (typeof window === 'undefined') return null
-      const ethereum = (window as any).ethereum
+      const ethereum = (window as { ethereum?: { request: (params: { method: string; params?: unknown[] }) => Promise<string[]> } }).ethereum
       if (!ethereum) return null
 
       const accounts = await ethereum.request({ method: 'eth_accounts' })
@@ -50,7 +50,7 @@ export class BrowserWalletProvider implements WalletProvider {
         }
       }
 
-      const ethereum = (window as any).ethereum
+      const ethereum = (window as { ethereum?: { request: (params: { method: string; params?: unknown[] }) => Promise<string> } }).ethereum
       if (!ethereum) {
         return {
           transactionHash: '0x',
@@ -105,7 +105,7 @@ export class BrowserWalletProvider implements WalletProvider {
   async getChainId(): Promise<number> {
     try {
       if (typeof window === 'undefined') return 8453
-      const ethereum = (window as any).ethereum
+      const ethereum = (window as { ethereum?: { request: (params: { method: string }) => Promise<string> } }).ethereum
       if (!ethereum) return 8453
 
       const chainIdHex = await ethereum.request({ method: 'eth_chainId' })
@@ -119,7 +119,7 @@ export class BrowserWalletProvider implements WalletProvider {
   async switchChain(chainId: number): Promise<boolean> {
     try {
       if (typeof window === 'undefined') return false
-      const ethereum = (window as any).ethereum
+      const ethereum = (window as { ethereum?: { request: (params: { method: string; params?: { chainId: string }[] }) => Promise<void> } }).ethereum
       if (!ethereum) return false
 
       const chainIdHex = '0x' + chainId.toString(16)
@@ -139,7 +139,7 @@ export class BrowserWalletProvider implements WalletProvider {
   onAccountChange(callback: (address: string | null) => void): void {
     try {
       if (typeof window === 'undefined') return
-      const ethereum = (window as any).ethereum
+      const ethereum = (window as { ethereum?: { on: (event: string, callback: (accounts: string[]) => void) => void } }).ethereum
       if (!ethereum) return
 
       this.accountChangeListeners.push(callback)

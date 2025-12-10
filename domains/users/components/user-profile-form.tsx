@@ -46,7 +46,7 @@ export function UserPreferencesForm({ user }: { user: User }) {
             })
 
             router.refresh()
-        } catch (error) {
+        } catch {
             toast({
                 title: 'Error',
                 description: 'Failed to update preferences. Please try again.',

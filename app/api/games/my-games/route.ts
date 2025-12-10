@@ -67,9 +67,20 @@ export async function GET(request: NextRequest) {
     ])
 
     // Calculate stats
-    const mintedGames = games.filter((g: any) => g.nftTokenId).length
+    const mintedGames = games.filter((g: { nftTokenId?: string | null }) => g.nftTokenId).length
 
-    const formattedGames = games.map((game: any) => ({
+    const formattedGames = games.map((game: { 
+      id: string; 
+      slug: string; 
+      title: string; 
+      genre?: string;
+      difficulty?: string;
+      imageUrl?: string;
+      private?: boolean;
+      createdAt: Date; 
+      nftTokenId?: string | null;
+      nftMintedAt?: Date | null;
+    }) => ({
       id: game.id,
       slug: game.slug,
       title: game.title,

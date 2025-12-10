@@ -65,7 +65,7 @@ export async function POST(
     )
 
     // Attach default license terms (commercial use allowed, derivatives allowed with 10% royalty)
-    const licenseAttached = await StoryProtocolAssetService.attachLicenseTerms(
+    const _licenseAttached = await StoryProtocolAssetService.attachLicenseTerms(
       ipResponse.ipId,
       {
         commercialUse: true,

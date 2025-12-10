@@ -41,13 +41,11 @@ export async function POST(request: NextRequest) {
 
     // Fetch and process article content
     let processedContent = null
-    let articleTitle = 'Article'
     let articleThemes = ''
 
     try {
       if (ContentProcessorService.isValidUrl(validatedData.articleUrl)) {
         processedContent = await ContentProcessorService.processUrl(validatedData.articleUrl)
-        articleTitle = processedContent.title || 'Article'
         articleThemes = ContentProcessorService.extractArticleThemes(
           processedContent.text,
           processedContent.title

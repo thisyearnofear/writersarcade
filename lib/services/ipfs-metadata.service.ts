@@ -158,7 +158,7 @@ export class IPFSMetadataService {
   /**
    * Upload JSON metadata to IPFS via Pinata
    */
-  public async uploadToIPFS(data: any, filename: string): Promise<string> {
+  public async uploadToIPFS(data: Record<string, unknown>, filename: string): Promise<string> {
     try {
       if (!this.pinataApiKey || !this.pinataSecretKey) {
         throw new Error('Pinata credentials not configured')

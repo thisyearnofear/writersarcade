@@ -22,7 +22,7 @@ export interface FarcasterProfile {
  * Get Farcaster context for current user
  * Returns user info, client data, etc.
  */
-export async function getFarcasterContext(): Promise<any> {
+export async function getFarcasterContext(): Promise<unknown> {
     try {
         const context = await sdk.context
         console.log('Farcaster context loaded:', context)

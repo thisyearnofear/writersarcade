@@ -66,7 +66,7 @@ export function initializeStoryClient() {
  * Example: https://github.com/storyprotocol/typescript-tutorial/blob/main/scripts/registration/register.ts
  */
 export async function registerGameAsIP(
-  input: IPRegistrationInput
+  _input: IPRegistrationInput
 ): Promise<IPRegistrationResult> {
   try {
     // Validate configuration
@@ -139,8 +139,8 @@ export async function getIPAssetDetails(ipId: string) {
  * See: https://docs.story.foundation/sdk-reference/license
  */
 export async function attachLicenseTermsToIP(
-  ipId: string,
-  licenseTermsId: number | bigint
+  _ipId: string,
+  _licenseTermsId: number | bigint
 ): Promise<{ txHash: string; attachedAt: number }> {
   try {
     initializeStoryClient();
@@ -166,10 +166,10 @@ export async function attachLicenseTermsToIP(
  * See: https://docs.story.foundation/sdk-reference/license
  */
 export async function mintLicenseTokens(
-  licensorIpId: string,
-  licenseTermsId: number | bigint,
-  receiver: Address,
-  amount: number = 1
+  _licensorIpId: string,
+  _licenseTermsId: number | bigint,
+  _receiver: Address,
+  _amount: number = 1
 ): Promise<{ txHash: string; licenseTokenIds: bigint[] }> {
   try {
     initializeStoryClient();
@@ -198,10 +198,10 @@ export async function mintLicenseTokens(
  * - Same royalty policy as parent
  */
 export async function registerDerivativeIP(
-  parentIpId: string,
-  licenseTokenId: number | bigint,
-  derivativeTitle: string,
-  derivativeDescription: string
+  _parentIpId: string,
+  _licenseTokenId: number | bigint,
+  _derivativeTitle: string,
+  _derivativeDescription: string
 ): Promise<IPRegistrationResult> {
   try {
     initializeStoryClient();
@@ -235,11 +235,11 @@ export async function registerDerivativeIP(
  * See: https://docs.story.foundation/sdk-reference/royalty
  */
 export async function claimRoyalties(
-  ancestorIpId: string,
-  claimer: Address,
-  childIpIds: string[],
-  royaltyPolicies: Address[],
-  currencyTokens: Address[]
+  _ancestorIpId: string,
+  _claimer: Address,
+  _childIpIds: string[],
+  _royaltyPolicies: Address[],
+  _currencyTokens: Address[]
 ): Promise<{ txHash: string; claimedAt: number }> {
   try {
     initializeStoryClient();
@@ -262,9 +262,9 @@ export async function claimRoyalties(
  * Get claimable royalty revenue for an IP
  */
 export async function getClaimableRevenue(
-  royaltyVaultIpId: string,
-  claimer: Address,
-  token: Address
+  _royaltyVaultIpId: string,
+  _claimer: Address,
+  _token: Address
 ): Promise<bigint> {
   try {
     initializeStoryClient();

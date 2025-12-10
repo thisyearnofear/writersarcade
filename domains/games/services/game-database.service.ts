@@ -91,8 +91,8 @@ export class GameDatabaseService {
       console.error('Failed to create game:', error)
       console.error('Game creation error details:', {
         message: error instanceof Error ? error.message : 'Unknown error',
-        code: (error as any).code,
-        meta: (error as any).meta,
+        code: (error as { code?: string }).code,
+        meta: (error as { meta?: Record<string, unknown> }).meta,
         stack: error instanceof Error ? error.stack : undefined,
       })
       throw new Error('Failed to save game to database')
@@ -327,7 +327,51 @@ export class GameDatabaseService {
   /**
    * Map Prisma game model to our Game type
    */
-  private static mapPrismaGameToGame(prismaGame: any): Game {
+  private static mapPrismaGameToGame(prismaGame: { 
+    id: string; 
+    title: string; 
+    description: string; 
+    slug: string; 
+    genre: string; 
+    difficulty: string; 
+    createdAt: Date; 
+    updatedAt: Date; 
+    userId: string; 
+    articleUrl: string; 
+    articleTitle: string; 
+    articleAuthor: string; 
+    articleThemes: string[]; 
+    metadata: Record<string, unknown>; 
+    nftTokenId?: string; 
+    nftContractAddress?: string; 
+    nftTransactionHash?: string; 
+    isPrivate: boolean;
+    tagline?: string;
+    subgenre?: string;
+    primaryColor?: string;
+    mode?: string;
+    promptName?: string;
+    wordleAnswer?: string;
+    promptText?: string;
+    promptModel?: string;
+    imageUrl?: string;
+    imagePromptModel?: string;
+    imagePromptName?: string;
+    imagePromptText?: string;
+    imageData?: string;
+    musicPromptText?: string;
+    musicPromptSeedImage?: string;
+    articleContext?: string;
+    writerCoinId?: string;
+    creatorWallet?: string;
+    authorWallet?: string;
+    authorParagraphUsername?: string;
+    publicationName?: string;
+    publicationSummary?: string;
+    subscriberCount?: number;
+    articlePublishedAt?: Date;
+    private?: boolean;
+  }): Game {
       return {
         id: prismaGame.id,
         title: prismaGame.title,

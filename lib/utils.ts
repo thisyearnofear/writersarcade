@@ -18,7 +18,7 @@ export function isValidUrl(string: string): boolean {
   try {
     new URL(string)
     return string.startsWith('http://') || string.startsWith('https://')
-  } catch (_) {
+  } catch {
     return false
   }
 }
