@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/database'
 import { createSlug } from '@/lib/utils'
 import type { Game, GameGenerationResponse, GameMode } from '../types'
-import { Prisma } from '@prisma/client'
+import { Prisma, Game as PrismaGameModel } from '@prisma/client'
 
 /**
  * Game Database Service
@@ -327,51 +327,7 @@ export class GameDatabaseService {
   /**
    * Map Prisma game model to our Game type
    */
-  private static mapPrismaGameToGame(prismaGame: { 
-    id: string; 
-    title: string; 
-    description: string; 
-    slug: string; 
-    genre: string; 
-    difficulty: string; 
-    createdAt: Date; 
-    updatedAt: Date; 
-    userId: string; 
-    articleUrl: string; 
-    articleTitle: string; 
-    articleAuthor: string; 
-    articleThemes: string[]; 
-    metadata: Record<string, unknown>; 
-    nftTokenId?: string; 
-    nftContractAddress?: string; 
-    nftTransactionHash?: string; 
-    isPrivate: boolean;
-    tagline?: string;
-    subgenre?: string;
-    primaryColor?: string;
-    mode?: string;
-    promptName?: string;
-    wordleAnswer?: string;
-    promptText?: string;
-    promptModel?: string;
-    imageUrl?: string;
-    imagePromptModel?: string;
-    imagePromptName?: string;
-    imagePromptText?: string;
-    imageData?: string;
-    musicPromptText?: string;
-    musicPromptSeedImage?: string;
-    articleContext?: string;
-    writerCoinId?: string;
-    creatorWallet?: string;
-    authorWallet?: string;
-    authorParagraphUsername?: string;
-    publicationName?: string;
-    publicationSummary?: string;
-    subscriberCount?: number;
-    articlePublishedAt?: Date;
-    private?: boolean;
-  }): Game {
+  private static mapPrismaGameToGame(prismaGame: any): Game {
       return {
         id: prismaGame.id,
         title: prismaGame.title,
@@ -380,35 +336,38 @@ export class GameDatabaseService {
         tagline: prismaGame.tagline,
         genre: prismaGame.genre,
         subgenre: prismaGame.subgenre,
-      primaryColor: prismaGame.primaryColor,
-      mode: (prismaGame.mode as GameMode | undefined) || 'story',
-      promptName: prismaGame.promptName,
-      wordleAnswer: prismaGame.wordleAnswer,
-      promptText: prismaGame.promptText,
-      promptModel: prismaGame.promptModel,
-      imageUrl: prismaGame.imageUrl,
-      imagePromptModel: prismaGame.imagePromptModel,
-      imagePromptName: prismaGame.imagePromptName,
-      imagePromptText: prismaGame.imagePromptText,
-      imageData: prismaGame.imageData,
-      musicPromptText: prismaGame.musicPromptText,
-      musicPromptSeedImage: prismaGame.musicPromptSeedImage,
-      articleUrl: prismaGame.articleUrl,
-      articleContext: prismaGame.articleContext,
-      writerCoinId: prismaGame.writerCoinId,
-      difficulty: prismaGame.difficulty,
-      // Attribution data - preserves source material author for NFT & Story Protocol
-      creatorWallet: prismaGame.creatorWallet,
-      authorWallet: prismaGame.authorWallet,
-      authorParagraphUsername: prismaGame.authorParagraphUsername,
-      publicationName: prismaGame.publicationName,
-      publicationSummary: prismaGame.publicationSummary,
-      subscriberCount: prismaGame.subscriberCount,
-      articlePublishedAt: prismaGame.articlePublishedAt,
-      private: prismaGame.private,
-      userId: prismaGame.userId,
-      createdAt: prismaGame.createdAt,
-      updatedAt: prismaGame.updatedAt,
-    }
+        primaryColor: prismaGame.primaryColor || undefined,
+        mode: (prismaGame.mode as GameMode | undefined) || 'story',
+        promptName: prismaGame.promptName,
+        wordleAnswer: prismaGame.wordleAnswer || undefined,
+        promptText: prismaGame.promptText || undefined,
+        promptModel: prismaGame.promptModel,
+        imageUrl: prismaGame.imageUrl || undefined,
+        imagePromptModel: prismaGame.imagePromptModel || undefined,
+        imagePromptName: prismaGame.imagePromptName || undefined,
+        imagePromptText: prismaGame.imagePromptText || undefined,
+        imageData: prismaGame.imageData || undefined,
+        musicPromptText: prismaGame.musicPromptText || undefined,
+        musicPromptSeedImage: prismaGame.musicPromptSeedImage || undefined,
+        articleUrl: prismaGame.articleUrl || undefined,
+        articleContext: prismaGame.articleContext || undefined,
+        writerCoinId: prismaGame.writerCoinId || undefined,
+        difficulty: prismaGame.difficulty || undefined,
+        // Attribution data - preserves source material author for NFT & Story Protocol
+        creatorWallet: prismaGame.creatorWallet || undefined,
+        authorWallet: prismaGame.authorWallet || undefined,
+        authorParagraphUsername: prismaGame.authorParagraphUsername || undefined,
+        publicationName: prismaGame.publicationName || undefined,
+        publicationSummary: prismaGame.publicationSummary || undefined,
+        subscriberCount: prismaGame.subscriberCount || undefined,
+        articlePublishedAt: prismaGame.articlePublishedAt || undefined,
+        nftTokenId: prismaGame.nftTokenId || undefined,
+        nftTransactionHash: prismaGame.nftTransactionHash || undefined,
+        nftMintedAt: prismaGame.nftMintedAt || undefined,
+        private: prismaGame.private,
+        userId: prismaGame.userId || undefined,
+        createdAt: prismaGame.createdAt,
+        updatedAt: prismaGame.updatedAt,
+      }
   }
 }

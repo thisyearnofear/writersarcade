@@ -621,7 +621,7 @@ CONCLUSION REQUIRED: This is the FINAL panel. You MUST bring the story to a sati
     * so players engage with the source material's ideas, not a generic adventure
     * Enforces 2-3 sentences for opening panel
     */
-  private static buildStartGamePrompt(game: { title: string, description: string, genre: string, difficulty: string, articleContext?: string }, articleContext?: string): string {
+  private static buildStartGamePrompt(game: { title: string, description: string, genre: string, subgenre: string, tagline: string, articleContext?: string }, articleContext?: string): string {
     const basePrompt = `You are an interactive text game engine designed for visual comic-style gameplay.
   The game's opening must ground players in the world and themes they're about to explore.
 

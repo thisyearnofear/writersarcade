@@ -225,8 +225,8 @@ export class IPFSMetadataService {
     
     // 2. Upload both to IPFS
     const [nftMetadataUri, gameMetadataUri] = await Promise.all([
-      this.uploadToIPFS(nftMetadata, `${this.slugify(gameData.title)}-nft-metadata.json`),
-      this.uploadToIPFS(gameMetadata, `${this.slugify(gameData.title)}-game-metadata.json`)
+      this.uploadToIPFS(nftMetadata as unknown as Record<string, unknown>, `${this.slugify(gameData.title)}-nft-metadata.json`),
+      this.uploadToIPFS(gameMetadata as unknown as Record<string, unknown>, `${this.slugify(gameData.title)}-game-metadata.json`)
     ])
     
     return {

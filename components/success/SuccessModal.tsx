@@ -21,9 +21,9 @@ export function SuccessModal({
   isOpen,
   onClose,
   title,
-  _description,
+  description,
   gameSlug,
-  _transactionHash,
+  transactionHash,
   action,
   genre = 'Adventure',
 }: SuccessModalProps) {

@@ -9,7 +9,12 @@ import type { Asset } from '@/domains/assets/services/asset-database.service'
 interface AssetDetail {
   asset: Asset
   relatedAssets: Asset[]
-  stats: { views: number; likes: number; downloads: number }
+  stats: {
+    totalAssets: number;
+    assetsByType: { type: string; count: number }[];
+    assetsByGenre: { genre: string; count: number }[];
+    topTags: { tag: string; count: number }[];
+  }
 }
 
 export default function AssetDetailPage() {
@@ -186,6 +191,35 @@ export default function AssetDetailPage() {
             </div>
           </div>
         )}
+
+        {/* Stats Section */}
+        <div className="bg-slate-700 rounded-lg p-8 mb-8">
+          <h2 className="text-xl font-bold text-white mb-4">Asset Statistics</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <p className="text-xs text-slate-400 uppercase">Total Assets</p>
+              <p className="text-white font-semibold">{detail.stats.totalAssets}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400 uppercase">Top Type</p>
+              <p className="text-white font-semibold">
+                {detail.stats.assetsByType[0]?.type || 'N/A'}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400 uppercase">Top Genre</p>
+              <p className="text-white font-semibold">
+                {detail.stats.assetsByGenre[0]?.genre || 'N/A'}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400 uppercase">Top Tag</p>
+              <p className="text-white font-semibold">
+                {detail.stats.topTags[0]?.tag || 'N/A'}
+              </p>
+            </div>
+          </div>
+        </div>
 
         {/* CTA */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-8 text-center">

@@ -61,7 +61,7 @@ export class ContentProcessorService {
         wordCount,
         estimatedReadTime,
         source: { url, type: contentType },
-        ...metadata,
+        ..._metadata,
       }
     } catch (error) {
       console.error('Content processing error:', error)

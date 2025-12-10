@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 
 import { Loader2, Play, BookOpen, Lightbulb } from 'lucide-react'
 import { Game, ChatMessage, GameplayOption } from '../types'
+import { type GameCreator, type GameAuthor } from '@/lib/services/ipfs-metadata.service'
 import { ImageGenerationService, type ImageGenerationResult } from '../services/image-generation.service'
 import { ComicPanelCard } from './comic-panel-card'
 import { ComicBookFinale, type ComicBookFinalePanelData } from './comic-book-finale'
@@ -412,7 +413,7 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
     })
   }
 
-  const handleMintComic = async (panelData: ComicBookFinalePanelData[], _metadata?: { title: string; description: string; creator: string }) => {
+  const handleMintComic = async (panelData: ComicBookFinalePanelData[], metadata?: { nftMetadataUri: string; gameMetadataUri: string; creator: GameCreator; author: GameAuthor }) => {
     setIsMinting(true)
     try {
       // Build NFT metadata with full attribution to original author
@@ -447,36 +448,79 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
         },
       }
 
-      console.log('Minting comic with full author attribution:', {
-        nftMetadata,
-        panels: panelData.length,
-        sourceAuthor: game.authorParagraphUsername,
-        sourceAuthorWallet: game.authorWallet,
-        gameCreator: game.creatorWallet,
-      })
-
-      // Call backend API to initiate NFT minting
-      const mintResponse = await fetch('/api/games/mint', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          gameId: game.id,
-          gameSlug: game.slug,
-          metadata: nftMetadata,
+      // Use provided metadata URIs if available, otherwise fall back to custom logic
+      if (metadata) {
+        console.log('Minting comic with enhanced metadata:', {
+          nftMetadataUri: metadata.nftMetadataUri,
+          gameMetadataUri: metadata.gameMetadataUri,
+          creator: metadata.creator,
+          author: metadata.author,
           panels: panelData.length,
-        }),
-      })
+          sourceAuthor: game.authorParagraphUsername,
+          sourceAuthorWallet: game.authorWallet,
+          gameCreator: game.creatorWallet,
+        })
 
-      if (!mintResponse.ok) {
-        const errorData = await mintResponse.json().catch(() => ({}))
-        throw new Error(errorData.error || 'Failed to mint NFT')
+        // Call backend API to initiate NFT minting with enhanced metadata
+        const mintResponse = await fetch('/api/games/mint', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            gameId: game.id,
+            gameSlug: game.slug,
+            metadata: nftMetadata,
+            panels: panelData.length,
+            // Enhanced metadata with proper attribution
+            nftMetadataUri: metadata.nftMetadataUri,
+            gameMetadataUri: metadata.gameMetadataUri,
+            creator: metadata.creator,
+            author: metadata.author,
+          }),
+        })
+
+        if (!mintResponse.ok) {
+          const errorData = await mintResponse.json().catch(() => ({}))
+          throw new Error(errorData.error || 'Failed to mint NFT')
+        }
+
+        const mintData = await mintResponse.json()
+        console.log('NFT minting initiated:', mintData)
+
+        // Show success - NFT minting is in progress
+        alert(`🎉 NFT minting started! Transaction: ${mintData.transactionHash}`)
+      } else {
+        // Fallback to original minting logic
+        console.log('Minting comic with basic metadata:', {
+          nftMetadata,
+          panels: panelData.length,
+          sourceAuthor: game.authorParagraphUsername,
+          sourceAuthorWallet: game.authorWallet,
+          gameCreator: game.creatorWallet,
+        })
+
+        // Call backend API to initiate NFT minting
+        const mintResponse = await fetch('/api/games/mint', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            gameId: game.id,
+            gameSlug: game.slug,
+            metadata: nftMetadata,
+            panels: panelData.length,
+          }),
+        })
+
+        if (!mintResponse.ok) {
+          const errorData = await mintResponse.json().catch(() => ({}))
+          throw new Error(errorData.error || 'Failed to mint NFT')
+        }
+
+        const mintData = await mintResponse.json()
+        console.log('NFT minting initiated:', mintData)
+
+        // Show success - NFT minting is in progress
+        alert(`🎉 NFT minting started! Transaction: ${mintData.transactionHash}`)
       }
-
-      const mintData = await mintResponse.json()
-      console.log('NFT minting initiated:', mintData)
-      
-      // Show success - NFT minting is in progress
-      alert(`🎉 NFT minting started! Transaction: ${mintData.transactionHash}`)
     } catch (error) {
       console.error('Mint failed:', error)
       alert('Failed to mint comic')
@@ -728,7 +772,6 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
                        options={message.options || []}
                        onOptionSelect={handleOptionClick}
                        isWaiting={isWaitingForResponse}
-                       onImageGenerated={(result) => handleImageGenerated(message.id, result)}
                        onImageRating={(rating) => handleImageRating(message.id, rating)}
                        onImagesReady={handleImagesReady}
                        pendingOptionId={pendingOptionId}

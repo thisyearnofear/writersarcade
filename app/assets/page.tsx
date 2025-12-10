@@ -27,28 +27,51 @@ export default function AssetsPage() {
   const loadAssets = async () => {
     setLoading(true)
     try {
-      let result
+      let result:
+        | { // getFeaturedAssets return type
+          assets: Asset[];
+          total: number;
+          lastUpdated: Date;
+        }
+        | { // other methods return type
+          assets: Asset[];
+          total: number;
+          limit: number;
+          offset: number;
+          hasMore: boolean;
+          lastUpdated: Date;
+          type?: string;
+          genre?: string;
+          searchTerm?: string;
+        }
 
       if (searchTerm) {
         result = await AssetMarketplaceService.searchAssets(
           searchTerm,
           ITEMS_PER_PAGE,
           currentPage * ITEMS_PER_PAGE
-        )
+        ) as
+          | { assets: Asset[]; total: number; lastUpdated: Date }
+          | { assets: Asset[]; total: number; limit: number; offset: number; hasMore: boolean; lastUpdated: Date; searchTerm?: string };
       } else if (selectedType) {
-        result = await AssetMarketplaceService.getAssetsByType(selectedType, ITEMS_PER_PAGE)
+        result = await AssetMarketplaceService.getAssetsByType(selectedType, ITEMS_PER_PAGE) as
+          | { assets: Asset[]; total: number; lastUpdated: Date }
+          | { assets: Asset[]; total: number; limit: number; offset: number; hasMore: boolean; lastUpdated: Date; type?: string };
       } else if (selectedGenre) {
         result = await AssetMarketplaceService.getAssetsByGenre(
           selectedGenre.toLowerCase(),
           ITEMS_PER_PAGE
-        )
+        ) as
+          | { assets: Asset[]; total: number; lastUpdated: Date }
+          | { assets: Asset[]; total: number; limit: number; offset: number; hasMore: boolean; lastUpdated: Date; genre?: string };
       } else {
-        result = await AssetMarketplaceService.getFeaturedAssets(ITEMS_PER_PAGE)
+        result = await AssetMarketplaceService.getFeaturedAssets(ITEMS_PER_PAGE) as
+          { assets: Asset[]; total: number; lastUpdated: Date };
       }
 
       setAssets(result.assets || [])
       setTotalAssets(result.total || 0)
-      setHasMore(result.hasMore || false)
+      setHasMore('hasMore' in result ? result.hasMore : false)
     } catch (error) {
       console.error('Failed to load assets:', error)
       setAssets([])

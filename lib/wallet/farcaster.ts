@@ -30,12 +30,13 @@ try {
 
 async function getViemClient(): Promise<WalletClient | null> {
   try {
+    if (!sdk) return null
     const provider = await sdk.wallet.getEthereumProvider()
     if (!provider) return null
 
     const client = createWalletClient({
       chain: base,
-      transport: custom(provider),
+      transport: custom(provider as any),
     })
     return client
   } catch (error) {

@@ -82,7 +82,7 @@ export class DataMigrator {
   /**
    * Main migration orchestrator
    */
-  async migrateAll(sequelizeConnection: unknown): Promise<void> {
+  async migrateAll(sequelizeConnection: { query: (sql: string) => Promise<[any[], any]> }): Promise<void> {
     console.log('🚀 Starting data migration...')
     
     try {
@@ -103,7 +103,7 @@ export class DataMigrator {
   /**
    * Migrate users with enhanced fields
    */
-  async migrateUsers(sequelizeConnection: unknown): Promise<void> {
+  async migrateUsers(sequelizeConnection: { query: (sql: string) => Promise<[any[], any]> }): Promise<void> {
     console.log('👥 Migrating users...')
     
     const [users] = await sequelizeConnection.query('SELECT * FROM users ORDER BY id')
@@ -136,7 +136,7 @@ export class DataMigrator {
   /**
    * Migrate games with enhanced metadata
    */
-  async migrateGames(sequelizeConnection: unknown): Promise<void> {
+  async migrateGames(sequelizeConnection: { query: (sql: string) => Promise<[any[], any]> }): Promise<void> {
     console.log('🎮 Migrating games...')
     
     const [games] = await sequelizeConnection.query('SELECT * FROM games ORDER BY id')
@@ -181,7 +181,7 @@ export class DataMigrator {
   /**
    * Migrate sessions
    */
-  async migrateSessions(sequelizeConnection: unknown): Promise<void> {
+  async migrateSessions(sequelizeConnection: { query: (sql: string) => Promise<[any[], any]> }): Promise<void> {
     console.log('🔗 Migrating sessions...')
     
     const [sessions] = await sequelizeConnection.query('SELECT * FROM sessions ORDER BY id')
@@ -210,7 +210,7 @@ export class DataMigrator {
   /**
    * Migrate chat messages with threading
    */
-  async migrateChats(sequelizeConnection: unknown): Promise<void> {
+  async migrateChats(sequelizeConnection: { query: (sql: string) => Promise<[any[], any]> }): Promise<void> {
     console.log('💬 Migrating chats...')
     
     const [chats] = await sequelizeConnection.query('SELECT * FROM chats ORDER BY id')
@@ -254,7 +254,7 @@ export class DataMigrator {
   /**
    * Migrate articles
    */
-  async migrateArticles(sequelizeConnection: unknown): Promise<void> {
+  async migrateArticles(sequelizeConnection: { query: (sql: string) => Promise<[any[], any]> }): Promise<void> {
     console.log('📄 Migrating articles...')
     
     const [articles] = await sequelizeConnection.query('SELECT * FROM articles ORDER BY id')

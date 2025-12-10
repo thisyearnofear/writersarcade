@@ -1,5 +1,5 @@
 import { WRITARCADE_STORY_CONFIG } from '@/lib/story-config'
-import { initStoryClient } from '@/lib/story-sdk-client'
+import { initStoryClient, getStoryClient } from '@/lib/story-sdk-client'
 import { uploadToIPFS, computeMetadataHash, buildAssetMetadata } from '@/lib/ipfs-utils'
 import type { Asset } from './asset-database.service'
 import { Address } from 'viem'
@@ -76,7 +76,7 @@ export class StoryProtocolAssetService {
     }
 
     try {
-      initStoryClient()
+      const client = getStoryClient()
 
       // Build metadata for IP registration
       const metadata = buildAssetMetadata({
@@ -118,14 +118,17 @@ export class StoryProtocolAssetService {
           nftMetadataURI: metadataUri,
           nftMetadataHash: metadataHash,
         },
+        txOptions: {
+          account: creatorWallet
+        },
       })
 
       console.log(`✓ Asset registered as IP: ${response.ipId}`)
-      console.log(`📝 Transaction: ${response.txHash}`)
+      console.log(`📝 Transaction: ${response.transactionHash}`)
 
       return {
         ipId: response.ipId,
-        transactionHash: response.txHash || '0x',
+        transactionHash: response.transactionHash || '0x',
         blockNumber: 0, // Story SDK may not return blockNumber immediately
         registeredAt: new Date().toISOString(),
         metadataUri,
@@ -158,7 +161,7 @@ export class StoryProtocolAssetService {
     }
 
     try {
-      initStoryClient()
+      const client = getStoryClient()
 
       // Determine PIL flavor based on terms
       // For WritArcade: Use COMMERCIAL_REMIX (allows commercial use + derivatives)
@@ -215,7 +218,7 @@ export class StoryProtocolAssetService {
     }
 
     try {
-      initStoryClient()
+      const client = getStoryClient()
 
       console.log(`🎮 Registering game as derivative of ${parentAssetIds.length} asset(s)`)
       console.log(`   Game ID: ${gameId}`)
@@ -286,14 +289,14 @@ export class StoryProtocolAssetService {
     }
 
     try {
-      initStoryClient()
+      const client = getStoryClient()
 
       console.log(`🔍 Fetching IP asset details for ${ipId}`)
 
       // Call Story Protocol to fetch IP asset metadata
       // Using client.ipAsset.getIpAssetMetadata() or similar from SDK v1.4.2
       // This depends on the exact SDK API available
-      
+
       // For now, return null to indicate not found
       // In production, this would fetch from Story Protocol API
       console.log(`ℹ️  IP asset lookup prepared for ${ipId}`)

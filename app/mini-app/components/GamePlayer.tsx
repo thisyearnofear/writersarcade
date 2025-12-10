@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import { PaymentButton } from "./PaymentButton";
 import { type WriterCoin } from "@/lib/writerCoins";
+import type { Game } from "@/domains/games/types";
 
 interface GamePlayerProps {
-  game: unknown;
+  game: Game;
   onBack: () => void;
   writerCoin?: WriterCoin;
 }
@@ -223,7 +224,7 @@ export function GamePlayer({ game, onBack, writerCoin }: GamePlayerProps) {
             </li>
             <li>
               <span className="font-medium text-purple-100">Author:</span>{" "}
-              {game.author || "Unknown"} (Wallet: {game.authorWallet || "N/A"})
+              {game.authorParagraphUsername || "Unknown"} (Wallet: {game.authorWallet || "N/A"})
             </li>
             <li>
               <span className="font-medium text-purple-100">Published:</span>{" "}

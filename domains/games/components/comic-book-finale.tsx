@@ -6,7 +6,7 @@ import { ChevronLeft, Download, Zap, Grid3X3, Eye } from 'lucide-react'
 import { ImageLightbox } from './image-lightbox'
 import { ShareDropdown } from '@/components/ui/share-dropdown'
 import { UserAttribution, AttributionPair } from '@/components/ui/user-attribution'
-import { ipfsMetadataService } from '@/lib/services/ipfs-metadata.service'
+import { ipfsMetadataService, type GameCreator, type GameAuthor } from '@/lib/services/ipfs-metadata.service'
 import { userIdentityService } from '@/lib/services/user-identity.service'
 
 export interface ComicBookFinalePanelData {
@@ -23,7 +23,7 @@ interface ComicBookFinaleProps {
   primaryColor: string
   panels: ComicBookFinalePanelData[]
   onBack: () => void
-  onMint: (panelData: ComicBookFinalePanelData[], metadata?: { title: string; description: string; creator: string }) => void
+  onMint: (panelData: ComicBookFinalePanelData[], metadata?: { nftMetadataUri: string; gameMetadataUri: string; creator: GameCreator; author: GameAuthor }) => void
   isMinting?: boolean
   // Attribution data
   creatorWallet: string

@@ -177,10 +177,10 @@ export function IPRegistration({ game, onRegistrationComplete }: IPRegistrationP
               <label className="text-sm font-medium text-gray-700">Story IP Asset ID</label>
               <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg p-3">
                 <code className="text-sm font-mono text-gray-900 flex-1 break-all">
-                  {result.storyIPAssetId}
+                  {result._storyIPAssetId}
                 </code>
                 <button
-                  onClick={() => copyToClipboard(result.storyIPAssetId, "ipAssetId")}
+                  onClick={() => copyToClipboard(result._storyIPAssetId, "ipAssetId")}
                   className="p-1 hover:bg-gray-200 rounded transition-colors"
                   title="Copy to clipboard"
                 >
@@ -257,7 +257,7 @@ export function IPRegistration({ game, onRegistrationComplete }: IPRegistrationP
               asChild
             >
               <a
-                href={`https://story.foundation/ip/${result.storyIPAssetId}`}
+                href={`https://story.foundation/ip/${result._storyIPAssetId}`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -274,7 +274,7 @@ export function IPRegistration({ game, onRegistrationComplete }: IPRegistrationP
 /**
  * Compact version for game cards/previews
  */
-export function IPRegistrationBadge({ isRegistered, _storyIPAssetId }: { isRegistered: boolean; storyIPAssetId?: string }) {
+export function IPRegistrationBadge({ isRegistered, storyIPAssetId }: { isRegistered: boolean; storyIPAssetId?: string }) {
   if (!isRegistered) {
     return (
       <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">

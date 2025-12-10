@@ -7,13 +7,14 @@ import { ArticleInput } from './components/ArticleInput'
 import { GameCustomizer } from './components/GameCustomizer'
 import { GamePlayer } from './components/GamePlayer'
 import { type WriterCoin } from '@/lib/writerCoins'
+import type { Game } from '@/domains/games/types'
 
 export default function MiniAppPage() {
     const [isInitialized, setIsInitialized] = useState(false)
     const [isInFrame, setIsInFrame] = useState(false)
     const [selectedCoin, setSelectedCoin] = useState<WriterCoin | null>(null)
     const [articleUrl, setArticleUrl] = useState('')
-    const [generatedGame, setGeneratedGame] = useState<unknown>(null)
+    const [generatedGame, setGeneratedGame] = useState<Game | null>(null)
     const [step, setStep] = useState<'select-coin' | 'input-article' | 'customize-game' | 'play-game'>('select-coin')
 
     useEffect(() => {
@@ -53,8 +54,8 @@ export default function MiniAppPage() {
 
     const handleGameGenerated = (game: unknown) => {
         // Wordle games are rendered in the main web app; launch them directly
-        if (game?.mode === 'wordle') {
-            const slug = game.slug
+        if ((game as { mode?: string }).mode === 'wordle') {
+            const slug = (game as { slug?: string }).slug
             if (slug) {
                 // Use current origin so it works in dev and prod
                 const origin = typeof window !== 'undefined' ? window.location.origin : ''
@@ -63,7 +64,8 @@ export default function MiniAppPage() {
             return
         }
 
-        setGeneratedGame(game)
+        // Cast to Game type, but only after we know it's not a wordle game
+        setGeneratedGame(game as Game)
         setStep('play-game')
     }
 

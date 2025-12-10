@@ -142,11 +142,11 @@ export async function fetchPostBySlug(
           ...post,
           content: schemaContent.content,
           wordCount: schemaContent.wordCount,
-        } as { title: string, text: string, wordCount: number }
+        }
       }
     }
-    
-    return post as { title: string; content: string; url: string; author: string; publishedAt: string; wordCount?: number; description?: string }
+
+    return post
   } catch (error) {
     console.error(
       `Failed to fetch post ${publicationSlug}/${postSlug}:`,

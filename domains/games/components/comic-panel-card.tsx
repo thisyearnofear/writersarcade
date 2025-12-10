@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { ZoomIn, Loader2 } from 'lucide-react'
 import { GameplayOption } from '../types'
 import { parsePanel } from '../utils/text-parser'
+import { ImageGenerationResult } from '../services/image-generation.service'
 import { ImageLightbox } from './image-lightbox'
 import { TypewriterEffect } from './typewriter-effect'
 import { AnimatedOptionButton } from './animated-option-button'
@@ -17,7 +18,7 @@ interface ComicPanelCardProps {
   options: GameplayOption[]
   onOptionSelect: (option: GameplayOption) => void
   isWaiting: boolean
-  onImageGenerated?: (result: { imageUrl: string; prompt: string }) => void
+  onImageGenerated?: (result: ImageGenerationResult) => void
   onImageRating?: (rating: number) => void
   onImagesReady?: () => void
   pendingOptionId?: number | null
@@ -31,13 +32,13 @@ interface ComicPanelCardProps {
 export function ComicPanelCard({
   messageId,
   narrativeText,
-  _genre,
+  genre,
   primaryColor,
   options,
   onOptionSelect,
   isWaiting,
   onImageRating,
-  _onImagesReady,
+  onImagesReady,
   pendingOptionId,
   narrativeImage,
   imageModel,

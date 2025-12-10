@@ -249,33 +249,33 @@ export class AssetDatabaseService {
   /**
    * Map Prisma asset model to our Asset type
    */
-  private static mapPrismaAssetToAsset(prismaAsset: { 
-    id: string; 
-    title: string; 
-    description: string; 
-    imageUrl: string; 
-    createdAt: Date; 
-    updatedAt: Date; 
-    userId: string; 
-    slug: string; 
-    metadata: Record<string, unknown>;
-    type?: string;
-    content?: string;
-    genre?: string;
-    tags?: string[];
-    articleUrl?: string;
-    creatorId?: string;
+  private static mapPrismaAssetToAsset(prismaAsset: {
+    id: string;
+    title: string;
+    description: string;
+    type: string;
+    content: string;
+    genre: string;
+    tags: string[];
+    articleUrl: string | null;
+    creatorId: string | null;
+    createdAt: Date;
+    updatedAt: Date;
   }): Asset {
     return {
       id: prismaAsset.id,
       title: prismaAsset.title,
       description: prismaAsset.description,
-      type: prismaAsset.type,
+      type: (prismaAsset.type === 'character' || prismaAsset.type === 'mechanic' ||
+             prismaAsset.type === 'plot' || prismaAsset.type === 'world' ||
+             prismaAsset.type === 'dialog') ?
+             prismaAsset.type as 'character' | 'mechanic' | 'plot' | 'world' | 'dialog' :
+             'mechanic',
       content: prismaAsset.content,
       genre: prismaAsset.genre,
       tags: prismaAsset.tags || [],
-      articleUrl: prismaAsset.articleUrl,
-      creatorId: prismaAsset.creatorId,
+      articleUrl: prismaAsset.articleUrl || undefined,
+      creatorId: prismaAsset.creatorId || undefined,
       createdAt: prismaAsset.createdAt,
       updatedAt: prismaAsset.updatedAt,
     }
