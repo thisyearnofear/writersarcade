@@ -410,7 +410,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
               <AnimatePresence>
                 {showCustomization && (
                   <motion.div
-                    className="mt-4 space-y-4 p-4 bg-purple-900/20 rounded-lg border border-purple-700/50"
+                    className="mt-4 space-y-4 p-4 bg-purple-900/30 rounded-lg border border-purple-600"
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
@@ -424,18 +424,26 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                       transition={{ delay: 0.1, duration: 0.3 }}
                     >
                       <div className="flex items-center gap-2 mb-2">
-                        <Sparkles className="w-4 h-4 text-yellow-400" />
-                        <span className="text-sm font-semibold text-purple-200">Enhanced Customization</span>
+                        <Sparkles className="w-4 h-4 text-yellow-300" />
+                        <span className="text-sm font-semibold text-purple-100">Enhanced Customization</span>
                       </div>
-                      <GenreSelector value={genre} onChange={setGenre} disabled={isGenerating} />
-                      <DifficultySelector value={difficulty} onChange={setDifficulty} disabled={isGenerating} />
+
+                      {/* Center the genre selector */}
+                      <div className="flex justify-center">
+                        <GenreSelector value={genre} onChange={setGenre} disabled={isGenerating} />
+                      </div>
+
+                      <div className="flex justify-center">
+                        <DifficultySelector value={difficulty} onChange={setDifficulty} disabled={isGenerating} />
+                      </div>
+
                       <motion.div
-                        className="p-3 rounded-lg bg-purple-900/30 border border-purple-500/30 text-sm text-purple-200 flex items-start gap-2"
+                        className="p-3 rounded-lg bg-purple-800/50 border border-purple-500 text-sm text-purple-100 flex items-start gap-2"
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2, duration: 0.3 }}
                       >
-                        <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0 text-yellow-400" />
+                        <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0 text-yellow-300" />
                         <span>Higher difficulty creates more complex narratives. Genre affects story tone and visual style.</span>
                       </motion.div>
                     </motion.div>
