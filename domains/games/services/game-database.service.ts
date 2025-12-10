@@ -114,6 +114,7 @@ export class GameDatabaseService {
               walletAddress: true,
             }
           },
+          // @ts-ignore - Prisma types lag behind schema updates sometimes
           gamesFromAssets: {
             include: {
               asset: {

@@ -99,7 +99,7 @@ model Game {
   userId String?
   user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  carts Chat[]
+  chats Chat[]
   gamesFromArticles GameFromArticle[]
   gamesFromAssets GameFromAsset[]
 
