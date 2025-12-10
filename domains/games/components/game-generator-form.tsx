@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ProgressBar } from '@/components/ui/ProgressBar'
-import { Loader2, Sparkles, Info, ChevronDown, ChevronUp } from 'lucide-react'
+import { Loader2, Sparkles, Info, ChevronDown, ChevronUp, Lightbulb } from 'lucide-react'
 import { GenreSelector, type GameGenre } from '@/components/game/GenreSelector'
 import { DifficultySelector, type GameDifficulty } from '@/components/game/DifficultySelector'
 import { PaymentOption } from '@/components/game/PaymentOption'
@@ -204,7 +204,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
     <div className="w-full max-w-2xl mx-auto">
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
-          {/* Game Type Toggle */}
+          {/* Game Type Toggle with Arcade Styling */}
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <Label className="text-sm font-medium">Game Type</Label>
@@ -223,15 +223,11 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                 </motion.div>
               </motion.div>
             </div>
-            <div className="inline-flex rounded-md bg-gray-900/60 border border-gray-700 p-1 w-fit">
+            <div className="game-type-selector">
               <motion.button
                 type="button"
                 onClick={() => setMode('story')}
-                className={`px-3 py-1.5 text-xs md:text-sm rounded-md font-medium transition-colors ${
-                  mode === 'story'
-                    ? 'bg-purple-600 text-white'
-                    : 'text-gray-300 hover:text-white'
-                }`}
+                className={`game-type-option ${mode === 'story' ? 'active' : ''}`}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
@@ -247,11 +243,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                   setShowPayment(false)
                   setPaymentApproved(false)
                 }}
-                className={`ml-1 px-3 py-1.5 text-xs md:text-sm rounded-md font-medium transition-colors ${
-                  mode === 'wordle'
-                    ? 'bg-purple-600 text-white'
-                    : 'text-gray-300 hover:text-white'
-                }`}
+                className={`game-type-option ${mode === 'wordle' ? 'active' : ''}`}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
@@ -264,7 +256,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
             </p>
           </div>
 
-          {/* URL Input */}
+          {/* URL Input with Typewriter Styling */}
           <div>
             <div className="flex items-center gap-2">
               <Label htmlFor="url" className="text-sm font-medium">
@@ -291,7 +283,8 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
               placeholder="https://paragraph.xyz/@author/article-title"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              className="mt-1"
+              className="mt-1 typewriter-input"
+              typewriter
             />
           </div>
 
@@ -500,6 +493,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
               disabled={isGenerating}
               className="w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-50 relative overflow-hidden"
               size="lg"
+              arcade
             >
               {isGenerating ? (
                 <>
@@ -537,10 +531,10 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
         )}
         </form>
 
-      {/* Tips */}
+      {/* Tips with Comic Book Styling */}
       <div className="mt-8 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
         <h3 className="font-medium mb-2">💡 Tips for better games:</h3>
-        <ul className="text-sm text-gray-300 space-y-1">
+        <ul className="comic-bubble text-sm text-gray-300 space-y-1">
           <li>• Paste URLs from Paragraph.xyz articles by supported authors</li>
           <li>• Choose genre and difficulty settings that match the article's tone</li>
           <li>• The AI will create unique game interpretations based on the article content</li>

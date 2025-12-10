@@ -6,6 +6,7 @@ import { GameGrid } from '@/domains/games/components/game-grid'
 import { GameGeneratorForm } from '@/domains/games/components/game-generator-form'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
+import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
 import { OnboardingModal } from '@/components/onboarding/OnboardingModal'
 import { useOnboarding } from '@/hooks/useOnboarding'
 import { useScrollReveal } from '@/hooks/useScrollReveal'
@@ -97,12 +98,13 @@ export default function HomePage() {
   const { showOnboarding, dismissOnboarding } = useOnboarding()
   
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      
-      <main className="flex-1">
-        {/* Hero Section with animated background */}
-        <section className="relative py-20 px-4 overflow-hidden">
+    <ThemeWrapper theme="arcade">
+      <div className="flex flex-col min-h-screen">
+        <Header />
+        
+        <main className="flex-1">
+        {/* Hero Section with Thematic Styling */}
+        <section className="relative py-20 px-4 overflow-hidden writarcade-theme">
           {/* Animated background gradient layers */}
           <div className="absolute inset-0 -z-10">
             <motion.div
@@ -118,9 +120,9 @@ export default function HomePage() {
             />
           </div>
 
-          <div className="max-w-4xl mx-auto text-center relative z-10">
-            {/* Kinetic title - staggered word animation with responsive sizing */}
-            <h1 className="text-4xl sm:text-5xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+          <div className="max-w-4xl mx-auto text-center relative z-10 writarcade-paper">
+            {/* Kinetic title with typewriter font - staggered word animation with responsive sizing */}
+            <h1 className="text-4xl sm:text-5xl font-bold mb-6 typewriter-font">
               {['WritArcade'].map((word) => (
                 <motion.span
                   key={word}
@@ -141,7 +143,7 @@ export default function HomePage() {
 
             {/* Staggered description with responsive sizing */}
             <motion.p
-              className="text-lg sm:text-xl text-gray-300 mb-8 max-w-2xl mx-auto"
+              className="text-lg sm:text-xl text-gray-700 mb-8 max-w-2xl mx-auto"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.6 }}
@@ -183,5 +185,6 @@ export default function HomePage() {
       
       <OnboardingModal isOpen={showOnboarding} onClose={dismissOnboarding} />
     </div>
+    </ThemeWrapper>
   )
 }

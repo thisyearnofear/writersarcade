@@ -2,11 +2,11 @@ import * as React from "react"
 
 const Card = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & { typewriter?: boolean }
+>(({ className, typewriter = false, ...props }, ref) => (
   <div
     ref={ref}
-    className={`rounded-lg border border-gray-700 bg-gray-900/50 text-white shadow-sm ${className || ""}`}
+    className={`rounded-lg border ${typewriter ? 'border-gray-700 bg-gray-900/50 text-white shadow-sm' : 'border-gray-700 bg-gray-900/50 text-white shadow-sm'} ${typewriter ? 'writarcade-paper' : ''} ${className || ""}`}
     {...props}
   />
 ))
