@@ -1,7 +1,48 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { WriterCoin } from '@/lib/writerCoins';
+
+function formatBP(bp: number) { return `${(bp/100).toFixed(2)}%` }
+
+function OnChainSplits({ coinAddress }: { coinAddress: `0x${string}` }) {
+    const [gen, setGen] = useState<{ writerBP: number; platformBP: number; creatorBP: number } | null>(null)
+    const [mint, setMint] = useState<{ writerBP: number; platformBP: number; creatorBP: number } | null>(null)
+    const [error, setError] = useState<string | null>(null)
+
+    useEffect(() => {
+        let cancelled = false
+        ;(async () => {
+            try {
+                const { fetchGenerationDistributionOnChain, fetchMintDistributionOnChain } = await import('@/lib/contracts')
+                const genRes = await fetchGenerationDistributionOnChain(coinAddress)
+                const mintResRaw = await fetchMintDistributionOnChain(coinAddress)
+                const mintRes = { writerBP: mintResRaw.writerBP, platformBP: mintResRaw.platformBP, creatorBP: mintResRaw.creatorBP }
+                if (!cancelled) { setGen(genRes); setMint(mintRes) }
+            } catch (e) {
+                if (!cancelled) setError('On-chain split unavailable')
+            }
+        })()
+        return () => { cancelled = true }
+    }, [coinAddress])
+
+    if (error) {
+        return <p className="text-xs text-gray-400">On-chain revenue splits are not available right now.</p>
+    }
+
+    return (
+        <div className="space-y-2">
+            <div className="flex justify-between"><span>Generation — Writer</span><span>{gen ? formatBP(gen.writerBP) : 'Loading...'}</span></div>
+            <div className="flex justify-between"><span>Generation — Platform</span><span>{gen ? formatBP(gen.platformBP) : 'Loading...'}</span></div>
+            <div className="flex justify-between"><span>Generation — Creator Pool</span><span>{gen ? formatBP(gen.creatorBP) : 'Loading...'}</span></div>
+            <div className="h-px bg-gray-800 my-2" />
+            <div className="flex justify-between"><span>Mint — Creator</span><span>{mint ? formatBP(mint.creatorBP) : 'Loading...'}</span></div>
+            <div className="flex justify-between"><span>Mint — Writer</span><span>{mint ? formatBP(mint.writerBP) : 'Loading...'}</span></div>
+            <div className="flex justify-between"><span>Mint — Platform</span><span>{mint ? formatBP(mint.platformBP) : 'Loading...'}</span></div>
+            <p className="text-xs text-gray-500">Remainder of mint cost is returned to payer (as per on-chain configuration).</p>
+        </div>
+    )
+}
 
 export function LicenseConfigurator({ writerCoin }: { writerCoin: WriterCoin }) {
     const [royalty, setRoyalty] = useState(writerCoin.revenueDistribution.writer);
@@ -54,19 +95,8 @@ export function LicenseConfigurator({ writerCoin }: { writerCoin: WriterCoin }) 
                     </p>
                 </div>
 
-                <div className="bg-gray-800/50 rounded p-4 text-sm text-gray-300 space-y-2">
-                    <div className="flex justify-between">
-                        <span>Platform Fee</span>
-                        <span>{writerCoin.revenueDistribution.platform}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span>Creator Pool</span>
-                        <span>{writerCoin.revenueDistribution.creator}%</span>
-                    </div>
-                    <div className="flex justify-between">
-                        <span>Token Burn (Deflation)</span>
-                        <span>{writerCoin.revenueDistribution.burn}%</span>
-                    </div>
+                <div className="bg-gray-800/50 rounded p-4 text-sm text-gray-300">
+                    <p className="text-xs text-gray-400">Note: Actual revenue splits are configured on-chain per writer coin (generation and minting) and may change without redeploys. No on-chain burn is performed by the payment contract.</p>
                 </div>
 
                 <div className="pt-4 border-t border-gray-800 flex justify-end">

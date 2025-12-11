@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { type WriterCoin } from '@/lib/writerCoins'
 import { PaymentCostService } from '@/domains/payments/services/payment-cost.service'
 import type { PaymentAction } from '@/domains/payments/types'
@@ -16,8 +16,18 @@ export function CostPreview({ writerCoin, action, showBreakdown = true }: CostPr
     return PaymentCostService.calculateCost(writerCoin.id, action)
   }, [writerCoin.id, action])
 
-  const distribution = useMemo(() => {
-    return PaymentCostService.calculateDistribution(writerCoin.id, action)
+  const [distribution, setDistribution] = useState({ writerShare: BigInt(0), platformShare: BigInt(0), creatorShare: BigInt(0) })
+  useEffect(() => {
+    let canceled = false
+    ;(async () => {
+      try {
+        const dist = await PaymentCostService.calculateDistribution(writerCoin.id, action)
+        if (!canceled) setDistribution(dist)
+      } catch {
+        if (!canceled) setDistribution({ writerShare: BigInt(0), platformShare: BigInt(0), creatorShare: BigInt(0) })
+      }
+    })()
+    return () => { canceled = true }
   }, [writerCoin.id, action])
 
   const actionLabel = action === 'generate-game' ? 'Generation Cost' : 'Minting Cost'
@@ -36,19 +46,19 @@ export function CostPreview({ writerCoin, action, showBreakdown = true }: CostPr
               {action === 'generate-game' ? (
                 <>
                   <div className="flex items-center justify-between">
-                    <span className="text-purple-300">Writer Revenue (60%):</span>
+                    <span className=\"text-purple-300\">Writer:</span>
                     <span className="font-semibold text-green-400">
                       {(Number(distribution.writerShare) / 10 ** writerCoin.decimals).toFixed(0)} {writerCoin.symbol}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-purple-300">Platform (20%):</span>
+                    <span className=\"text-purple-300\">Platform:</span>
                     <span className="font-semibold text-blue-400">
                       {(Number(distribution.platformShare) / 10 ** writerCoin.decimals).toFixed(0)} {writerCoin.symbol}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-purple-300">Creator Pool (20%):</span>
+                    <span className=\"text-purple-300\">Creator Pool:</span>
                     <span className="font-semibold text-purple-400">
                       {(Number(distribution.creatorShare) / 10 ** writerCoin.decimals).toFixed(0)} {writerCoin.symbol}
                     </span>
@@ -57,19 +67,19 @@ export function CostPreview({ writerCoin, action, showBreakdown = true }: CostPr
               ) : (
                 <>
                   <div className="flex items-center justify-between">
-                    <span className="text-purple-300">Creator (30%):</span>
+                    <span className=\"text-purple-300\">Creator:</span>
                     <span className="font-semibold text-blue-400">
                       {(Number(distribution.creatorShare) / 10 ** writerCoin.decimals).toFixed(0)} {writerCoin.symbol}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-purple-300">Writer (15%):</span>
+                    <span className=\"text-purple-300\">Writer:</span>
                     <span className="font-semibold text-green-400">
                       {(Number(distribution.writerShare) / 10 ** writerCoin.decimals).toFixed(0)} {writerCoin.symbol}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-purple-300">Platform (5%):</span>
+                    <span className=\"text-purple-300\">Platform:</span>
                     <span className="font-semibold text-orange-400">
                       {(Number(distribution.platformShare) / 10 ** writerCoin.decimals).toFixed(0)} {writerCoin.symbol}
                     </span>

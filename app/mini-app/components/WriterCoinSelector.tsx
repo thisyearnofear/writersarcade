@@ -1,9 +1,68 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+
 import { WRITER_COINS, type WriterCoin } from '@/lib/writerCoins'
 
 interface WriterCoinSelectorProps {
     onSelect: (coin: WriterCoin) => void
+}
+
+function formatBP(bp: number) { return `${(bp/100).toFixed(2)}%` }
+
+function OnChainSplit({ coinAddress }: { coinAddress: `0x${string}` }) {
+    const [gen, setGen] = useState<{ writerBP: number; platformBP: number; creatorBP: number } | null>(null)
+    const [mint, setMint] = useState<{ writerBP: number; platformBP: number; creatorBP: number } | null>(null)
+    const [error, setError] = useState<string | null>(null)
+
+    useEffect(() => {
+        let cancelled = false
+        ;(async () => {
+            try {
+                const { fetchGenerationDistributionOnChain, fetchMintDistributionOnChain } = await import('@/lib/contracts')
+                const genRes = await fetchGenerationDistributionOnChain(coinAddress)
+                const mintResRaw = await fetchMintDistributionOnChain(coinAddress)
+                const mintRes = { writerBP: mintResRaw.writerBP, platformBP: mintResRaw.platformBP, creatorBP: mintResRaw.creatorBP }
+                if (!cancelled) { setGen(genRes); setMint(mintRes) }
+            } catch (e) {
+                if (!cancelled) setError('On-chain split unavailable')
+            }
+        })()
+        return () => { cancelled = true }
+    }, [coinAddress])
+
+    if (error) {
+        return (
+            <p className="text-xs text-purple-200">
+                <span className="font-semibold">Revenue:</span> On-chain configurable per coin (unavailable to load).
+            </p>
+        )
+    }
+
+    return (
+        <div className="text-xs text-purple-200 space-y-1">
+            <div>
+                <span className="font-semibold">Generation:</span>{' '}
+                {gen ? (
+                    <>
+                        Writer {formatBP(gen.writerBP)} • Platform {formatBP(gen.platformBP)} • Creator Pool {formatBP(gen.creatorBP)}
+                    </>
+                ) : (
+                    'Loading...'
+                )}
+            </div>
+            <div>
+                <span className="font-semibold">Minting:</span>{' '}
+                {mint ? (
+                    <>
+                        Creator {formatBP(mint.creatorBP)} • Writer {formatBP(mint.writerBP)} • Platform {formatBP(mint.platformBP)} • Remainder to payer
+                    </>
+                ) : (
+                    'Loading...'
+                )}
+            </div>
+        </div>
+    )
 }
 
 export function WriterCoinSelector({ onSelect }: WriterCoinSelectorProps) {
@@ -71,8 +130,8 @@ export function WriterCoinSelector({ onSelect }: WriterCoinSelectorProps) {
 
                         <div className="mt-4 rounded-md bg-purple-900/30 p-3">
                             <p className="text-xs text-purple-200">
-                                <span className="font-semibold">Revenue Split:</span>{' '}
-                                {coin.revenueDistribution.writer}% Writer • {coin.revenueDistribution.creator}% Creator • {coin.revenueDistribution.platform}% Platform • {coin.revenueDistribution.burn}% Burn
+                                <span className="font-semibold">Revenue:</span> On-chain, configurable per coin for generation and minting.{' '}
+                               
                             </p>
                         </div>
                     </button>

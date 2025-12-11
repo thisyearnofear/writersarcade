@@ -36,10 +36,10 @@ export class PaymentCostService {
   /**
    * Calculate revenue distribution for a payment
    */
-  static calculateDistribution(
+  static async calculateDistribution(
     writerCoinId: string,
     action: PaymentAction
-  ): RevenueDistribution {
+  ): Promise<RevenueDistribution> {
     const coin = getWriterCoinById(writerCoinId)
     if (!coin) {
       throw new Error(`Writer coin "${writerCoinId}" not found`)
@@ -51,18 +51,40 @@ export class PaymentCostService {
         : coin.mintCost
 
     if (action === 'generate-game' || action === 'play-wordle') {
-      // Game generation: 35% writer, 35% creator, 20% burn, 10% platform
-      return {
-        writerShare: (amount * BigInt(coin.revenueDistribution.writer)) / BigInt(100),
-        platformShare: (amount * BigInt(coin.revenueDistribution.platform)) / BigInt(100),
-        creatorShare: (amount * BigInt(coin.revenueDistribution.creator)) / BigInt(100),
+      // Prefer on-chain configuration for generation splits
+      try {
+        const { fetchGenerationDistributionOnChain } = await import('@/lib/contracts')
+        const { writerBP, platformBP, creatorBP } = await fetchGenerationDistributionOnChain(coin.address)
+        return {
+          writerShare: (amount * BigInt(writerBP)) / BigInt(10000),
+          platformShare: (amount * BigInt(platformBP)) / BigInt(10000),
+          creatorShare: (amount * BigInt(creatorBP)) / BigInt(10000),
+        }
+      } catch {
+        // Fallback to local config if on-chain read fails
+        return {
+          writerShare: (amount * BigInt(coin.revenueDistribution.writer)) / BigInt(100),
+          platformShare: (amount * BigInt(coin.revenueDistribution.platform)) / BigInt(100),
+          creatorShare: (amount * BigInt(coin.revenueDistribution.creator)) / BigInt(100),
+        }
       }
     } else {
-      // NFT minting: 30% creator, 15% writer, 5% platform, 50% user
-      return {
-        writerShare: (amount * BigInt(15)) / BigInt(100),
-        platformShare: (amount * BigInt(5)) / BigInt(100),
-        creatorShare: (amount * BigInt(30)) / BigInt(100),
+      // Prefer on-chain configuration for mint splits
+      try {
+        const { fetchMintDistributionOnChain } = await import('@/lib/contracts')
+        const { creatorBP, writerBP, platformBP } = await fetchMintDistributionOnChain(coin.address)
+        return {
+          writerShare: (amount * BigInt(writerBP)) / BigInt(10000),
+          platformShare: (amount * BigInt(platformBP)) / BigInt(10000),
+          creatorShare: (amount * BigInt(creatorBP)) / BigInt(10000),
+        }
+      } catch {
+        // Fallback to 30/15/5 with remainder to user
+        return {
+          writerShare: (amount * BigInt(15)) / BigInt(100),
+          platformShare: (amount * BigInt(5)) / BigInt(100),
+          creatorShare: (amount * BigInt(30)) / BigInt(100),
+        }
       }
     }
   }

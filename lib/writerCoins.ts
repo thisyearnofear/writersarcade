@@ -52,10 +52,10 @@ export const WRITER_COINS: WriterCoin[] = [
         gameNftAddress: "0x778C87dAA2b284982765688AE22832AADae7dccC", // Base mainnet - GameNFT
         paymentContractAddress: "0xf4d556E6E739B4Aa065Fae41f353a9f296371a35", // Base mainnet - WriterCoinPayment
         revenueDistribution: {
-            writer: 35, // 35% to Fred Wilson's treasury
-            creator: 35, // 35% to game creator
-            burn: 20, // 20% token burn (deflationary)
-            platform: 10, // 10% to WritArcade
+            writer: 60, // 60% to writer treasury (on-chain configurable)
+            creator: 20, // 20% to creator pool (on-chain configurable)
+            burn: 0, // 0% burn (no on-chain burn in WriterCoinPayment)
+            platform: 20, // 20% to WritArcade (on-chain configurable)
         },
     },
 ]

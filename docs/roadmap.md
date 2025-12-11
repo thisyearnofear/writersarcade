@@ -9,11 +9,10 @@
 
 WritArcade creates the first platform where newsletter readers collaborate with writers to generate new value from existing content. Starting with Fred Wilson's AVC newsletter on Paragraph.xyz, users spend $AVC tokens to transform articles into unique, playable games—creating sustainable revenue streams for writers, game creators, and the platform through automated 0xSplits and Story Protocol IP management.
 
-**The Collaboration Model:**
-- **Writers** (Fred Wilson): 35% of all revenue from games based on their content
-- **Game Creators**: 35% ongoing revenue when others play their generated games
-- **Token Burn**: 20% of all transactions burned for deflationary economics
-- **Platform**: 10% for sustainable development and ecosystem growth
+**The Collaboration Model (current AVC defaults, on-chain configurable):**
+- Generation: 60% Writer, 20% Platform, 20% Creator Pool
+- Minting: 30% Creator, 15% Writer, 5% Platform (remaining 50% returned to payer)
+- Note: No on-chain burn in the payment contract; any burn would need to be token-level or policy-driven.
 
 ## Go-to-Market Strategy
 

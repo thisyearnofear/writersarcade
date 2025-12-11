@@ -99,7 +99,7 @@ Game Compilation
 WritArcade's existing system handles:
 - **Writer Coins** ($AVC, etc.) - ERC-20 tokens on Base
 - **GameNFT Contract** - Minting games as NFTs on Base
-- **Revenue Distribution** - Immediate payments: 35% writer, 35% creator, 10% platform, 20% burn
+- **Revenue Distribution** - On-chain configurable per coin. Current AVC default: Generation 60% writer, 20% platform, 20% creator pool; Minting 30% creator, 15% writer, 5% platform (remainder returned to payer). No on-chain burn.
 - **Wallet**: Farcaster (Base chain native)
 
 ### Proposed Enhancement (Story Chain)
@@ -202,9 +202,9 @@ Asset
 4. AI generates game with 4 unique options
 5. User can play immediately or mint as NFT for 50 $AVC
 6. Revenue distributed via 0xSplits:
-   - 35% → Writer (content collaboration)
-   - 35% → Game creator (ongoing revenue)
-   - 20% → Token burn (deflationary)
+   - 60% → Writer (content collaboration)
+   - 20% → Creator pool (ongoing revenue for creators)
+   - 20% → Platform (operations)
    - 10% → Platform (development)
 
 ## Security Considerations

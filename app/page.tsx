@@ -157,7 +157,7 @@ export default function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.35, duration: 0.6 }}
             >
-              Earn from plays. Browse assets. Own tradeable IP with royalty splits: 60% authors, 30% creators, 10% platform.
+              Earn from plays. Browse assets. Own tradeable IP with on-chain, configurable revenue splits for generation and minting.
             </motion.p>
             
             {/* Game Generator */}

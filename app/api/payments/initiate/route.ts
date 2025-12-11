@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     // Calculate cost and distribution using shared service
     const cost = PaymentCostService.calculateCost(validatedData.writerCoinId, validatedData.action)
-    const distribution = PaymentCostService.calculateDistribution(validatedData.writerCoinId, validatedData.action)
+    const distribution = await PaymentCostService.calculateDistribution(validatedData.writerCoinId, validatedData.action)
 
     // Build response
     const paymentInfo: PaymentInfo = {

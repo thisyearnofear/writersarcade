@@ -5,18 +5,42 @@
  * with WriterCoinPayment and GameNFT contracts on Base network.
  */
 
-import { encodeFunctionData } from 'viem'
+import { encodeFunctionData, createPublicClient, http } from 'viem'
 import { getWriterCoinById } from './writerCoins'
 
 // Contract ABIs (simplified, use full ABI from contract compilation)
 export const CONTRACT_ABIS = {
+  // Minimal ABI objects for viem reads
+  __WriterCoinPaymentRead: [{
+    name: 'getRevenueDistribution',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ name: 'coinAddress', type: 'address' }],
+    outputs: [
+      { name: 'writerShare', type: 'uint256' },
+      { name: 'platformShare', type: 'uint256' },
+      { name: 'creatorPoolShare', type: 'uint256' }
+    ]
+  },{
+    name: 'mintDistributions',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ name: 'coinAddress', type: 'address' }],
+    outputs: [
+      { name: 'creatorShare', type: 'uint256' },
+      { name: 'writerShare', type: 'uint256' },
+      { name: 'platformShare', type: 'uint256' }
+    ]
+  }] as const,
   WriterCoinPayment: [
+    'function getRevenueDistribution(address coinAddress) external view returns (uint256 writerShare, uint256 platformShare, uint256 creatorPoolShare)',
+    'function mintDistributions(address coinAddress) external view returns (uint256 creatorShare, uint256 writerShare, uint256 platformShare)',
     'function payForGameGeneration(address writerCoin, address user) external',
     'function payForMinting(address writerCoin, address user) external',
     'function payAndMintGame(address writerCoin, string memory tokenURI, tuple(string, address, address, string, string, uint256, string) memory metadata) external',
     'function isCoinWhitelisted(address coinAddress) external view returns (bool)',
     'function getCoinConfig(address coinAddress) external view returns (tuple(uint256, uint256, bool))',
-    'function whitelistCoin(address coinAddress, uint256 gameGenerationCost, uint256 mintCost, address treasury, uint256 writerShare, uint256 platformShare, uint256 creatorPoolShare) external',
+    'function whitelistCoin(address coinAddress, uint256 gameGenerationCost, uint256 mintCost, address treasury, uint256 writerShare, uint256 platformShare, uint256 creatorPoolShare, uint256 mintWriterShare, uint256 mintPlatformShare, uint256 mintCreatorShare) external',
   ],
   GameNFT: [
     'function mintGame(address to, string memory tokenURI, tuple(string, address, address, string, string, uint256, string) memory metadata) external returns (uint256)',
@@ -111,6 +135,49 @@ export function parseTokenAmount(amount: string, decimals: number = 18): bigint 
     .slice(0, decimals)
 
   return BigInt(wholePart + fractional)
+}
+
+/** Create a viem public client for the given chain */
+export function getPublicClient(chainId: number = 8453) {
+  const net = getNetwork(chainId)
+  return createPublicClient({ chain: { id: net.id, name: net.name, nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }, rpcUrls: { default: { http: [net.rpcUrl] } } } as any, transport: http(net.rpcUrl) })
+}
+
+export function getWriterCoinPaymentAddress(chainId: number = 8453): `0x${string}` {
+  const network = chainId === 8453 ? 'baseMainnet' : 'baseSepolia'
+  return CONTRACT_ADDRESSES[network].WriterCoinPayment as `0x${string}`
+}
+
+export async function fetchGenerationDistributionOnChain(coinAddress: `0x${string}`, chainId: number = 8453) {
+  const client = getPublicClient(chainId)
+  const contractAddress = getWriterCoinPaymentAddress(chainId)
+  const [writerShare, platformShare, creatorPoolShare] = await client.readContract({
+    address: contractAddress,
+    abi: CONTRACT_ABIS.__WriterCoinPaymentRead,
+    functionName: 'getRevenueDistribution',
+    args: [coinAddress],
+  }) as unknown as [bigint, bigint, bigint]
+  return {
+    writerBP: Number(writerShare),
+    platformBP: Number(platformShare),
+    creatorBP: Number(creatorPoolShare),
+  }
+}
+
+export async function fetchMintDistributionOnChain(coinAddress: `0x${string}`, chainId: number = 8453) {
+  const client = getPublicClient(chainId)
+  const contractAddress = getWriterCoinPaymentAddress(chainId)
+  const [creatorShare, writerShare, platformShare] = await client.readContract({
+    address: contractAddress,
+    abi: CONTRACT_ABIS.__WriterCoinPaymentRead,
+    functionName: 'mintDistributions',
+    args: [coinAddress],
+  }) as unknown as [bigint, bigint, bigint]
+  return {
+    creatorBP: Number(creatorShare),
+    writerBP: Number(writerShare),
+    platformBP: Number(platformShare),
+  }
 }
 
 /**
