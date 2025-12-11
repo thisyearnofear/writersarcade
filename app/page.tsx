@@ -143,13 +143,21 @@ export default function HomePage() {
 
             {/* Staggered description with responsive sizing */}
             <motion.p
-              className="text-lg sm:text-xl text-gray-700 mb-8 max-w-2xl mx-auto"
+              className="text-base sm:text-lg text-gray-700 mb-6 max-w-2xl mx-auto"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.6 }}
             >
               Turn any article into an interactive, mintable game. 
               Pay with writer coins to create your unique interpretation.
+            </motion.p>
+            <motion.p
+              className="text-sm sm:text-base text-gray-600 mb-8 max-w-xl mx-auto leading-relaxed"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35, duration: 0.6 }}
+            >
+              Earn from plays. Browse assets. Own tradeable IP with royalty splits: 60% authors, 30% creators, 10% platform.
             </motion.p>
             
             {/* Game Generator */}

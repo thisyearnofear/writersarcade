@@ -200,6 +200,27 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
     await generateGame()
   }
 
+  // Wallet requirement gate
+  if (!isConnected) {
+    return (
+      <div className="w-full max-w-2xl mx-auto px-4">
+        <div className="p-6 md:p-8 bg-gradient-to-br from-purple-900/30 to-pink-900/30 border border-purple-500/30 rounded-xl text-center space-y-4">
+          <h3 className="text-lg md:text-xl font-semibold text-white">Connect Wallet to Create</h3>
+          <p className="text-sm md:text-base text-gray-300">Get access to game generation, minting, and IP registration</p>
+          <div className="bg-purple-900/20 border border-purple-500/20 rounded-lg p-3 md:p-4 text-xs md:text-sm text-gray-300">
+            <div className="flex flex-col md:flex-row gap-2 justify-center">
+              <span>💰 Writer Coins</span>
+              <span className="hidden md:inline">•</span>
+              <span>🎮 NFT Mint</span>
+              <span className="hidden md:inline">•</span>
+              <span>📜 IP Rights</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="w-full max-w-2xl mx-auto">
       <form onSubmit={handleSubmit} className="space-y-6">

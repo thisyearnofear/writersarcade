@@ -6,6 +6,7 @@ import { ChevronLeft, Download, Zap, Grid3X3, Eye } from 'lucide-react'
 import { ImageLightbox } from './image-lightbox'
 import { ShareDropdown } from '@/components/ui/share-dropdown'
 import { UserAttribution, AttributionPair } from '@/components/ui/user-attribution'
+import { IPRegistration, type GameIPMetadata } from '@/components/story/IPRegistration'
 import { ipfsMetadataService, type GameCreator, type GameAuthor } from '@/lib/services/ipfs-metadata.service'
 import { userIdentityService } from '@/lib/services/user-identity.service'
 
@@ -52,6 +53,8 @@ export function ComicBookFinale({
   const [currentPanelIndex, setCurrentPanelIndex] = useState(0)
   const [isImageExpanded, setIsImageExpanded] = useState(false)
   const [viewMode, setViewMode] = useState<'single' | 'grid' | 'nft-preview'>('single')
+  const [showIPRegistration, setShowIPRegistration] = useState(false)
+  const [nftMintedMetadata, setNftMintedMetadata] = useState<{ nftMetadataUri: string; gameMetadataUri: string; creator: GameCreator; author: GameAuthor } | null>(null)
   const currentPanel = panels[currentPanelIndex]
   const totalPanels = panels.length
 
@@ -107,8 +110,14 @@ export function ComicBookFinale({
         userChoices
       )
 
+      // Store metadata for Story Protocol registration
+      setNftMintedMetadata({ nftMetadataUri, gameMetadataUri, creator, author })
+      
       // 3. Call the original mint function with enhanced data
       onMint(panels, { nftMetadataUri, gameMetadataUri, creator, author })
+      
+      // Show IP registration option after successful mint
+      setShowIPRegistration(true)
       
     } catch (error) {
       console.error('Error preparing NFT metadata:', error)
@@ -710,7 +719,7 @@ export function ComicBookFinale({
           </div>
 
           {/* Action buttons */}
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-wrap">
             <ShareDropdown 
               data={shareData}
               variant="outline" 
@@ -739,9 +748,41 @@ export function ComicBookFinale({
               {isMinting ? 'Preparing NFT...' : 'Mint as NFT'}
             </Button>
           </div>
-        </div>
-      </div>
-    </div>
-    </>
-  )
-}
+          </div>
+          </div>
+
+          {/* Story Protocol IP Registration */}
+          {showIPRegistration && nftMintedMetadata && (
+            <div className="border-t border-white/10 p-4 md:p-8 bg-gradient-to-b from-black/40 via-black to-black"
+              style={{
+                boxShadow: `inset 0 1px 0 ${primaryColor}15`,
+              }}
+            >
+              <div className="max-w-6xl mx-auto">
+                <div className="mb-4">
+                  <h3 className="text-sm md:text-base font-semibold text-white flex items-center gap-2 mb-1">
+                    <span>📜</span> Register as IP Asset (Optional)
+                  </h3>
+                  <p className="text-xs md:text-sm text-gray-400">Track ownership & set royalty terms on Story Protocol</p>
+                </div>
+                <IPRegistration
+                  game={{
+                    gameId: gameTitle,
+                    title: gameTitle,
+                    description: `Interactive ${genre.toLowerCase()} comic with ${totalPanels} panels`,
+                    articleUrl: articleUrl,
+                    gameCreatorAddress: creatorWallet,
+                    authorParagraphUsername: authorParagraphUsername,
+                    authorWalletAddress: authorWallet || '',
+                    genre: genre.toLowerCase() as 'horror' | 'comedy' | 'mystery',
+                    difficulty: difficulty.toLowerCase() as 'easy' | 'hard',
+                    gameMetadataUri: nftMintedMetadata.gameMetadataUri,
+                  }}
+                />
+              </div>
+            </div>
+          )}
+          </div>
+          </>
+          )
+          }
