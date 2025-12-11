@@ -15,6 +15,7 @@ interface SuccessModalProps {
   transactionHash?: string
   action: 'mint' | 'generate'
   genre?: string
+  authorName?: string
 }
 
 export function SuccessModal({
@@ -26,8 +27,10 @@ export function SuccessModal({
   transactionHash,
   action,
   genre = 'Adventure',
+  authorName,
 }: SuccessModalProps) {
   const [copied, setCopied] = useState(false)
+  const [twist, setTwist] = useState('')
   const router = useRouter()
 
   const gameUrl = gameSlug ? `${window.location.origin}/games/${gameSlug}` : null
@@ -39,6 +42,8 @@ export function SuccessModal({
     title,
     text: `Just ${action === 'mint' ? 'minted' : 'created'} "${title}" on WritArcade!`,
     url: gameUrl || window.location.href,
+    twist: twist.trim() || undefined,
+    author: authorName,
   } : null
 
   const handleCopy = (text: string) => {
@@ -68,6 +73,16 @@ export function SuccessModal({
             </div>
           </div>
 
+          <div className="space-y-2">
+            <label className="text-xs text-gray-400 font-medium">Add your twist (optional)</label>
+            <textarea
+              className="w-full bg-gray-800/50 border border-gray-700 rounded p-2 text-sm text-gray-300 placeholder-gray-600 focus:outline-none focus:border-green-500/50 resize-none h-20"
+              placeholder='e.g. "turned the villain into my ex-VC"'
+              value={twist}
+              onChange={(e) => setTwist(e.target.value)}
+            />
+          </div>
+
           {gameUrl && (
             <div className="flex items-center gap-2 bg-gray-800/50 rounded p-2 border border-gray-700">
               <code className="text-xs text-gray-300 flex-1 truncate">{gameUrl}</code>
@@ -81,7 +96,7 @@ export function SuccessModal({
             </div>
           )}
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 pt-2">
             <Button
               variant="outline"
               onClick={onClose}
@@ -101,7 +116,7 @@ export function SuccessModal({
                 </Button>
 
                 {shareData && (
-                  <ShareDropdown 
+                  <ShareDropdown
                     data={shareData}
                     variant="default"
                     className="flex-1 hover:shadow-[0_0_0_1px_rgba(34,197,94,0.35)]"

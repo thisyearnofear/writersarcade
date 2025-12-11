@@ -14,11 +14,13 @@ export interface ComicShareData extends ShareData {
   genre: string
   panelCount: number
   gameTitle: string
+  twist?: string // User's IRL insight or creative twist
+  author?: string // Original article author
 }
 
 export class SocialShareService {
   private static instance: SocialShareService
-  
+
   public static getInstance(): SocialShareService {
     if (!SocialShareService.instance) {
       SocialShareService.instance = new SocialShareService()
@@ -30,15 +32,15 @@ export class SocialShareService {
    * Share to Twitter with optimized formatting
    */
   public shareToTwitter(data: ComicShareData): void {
-    const tweetText = `Just created "${data.gameTitle}" - an epic ${data.genre} comic with @WritArcade! 🎮📚
+    let tweetText = ''
 
-✨ ${data.panelCount} panels of AI-powered interactive storytelling
-🎨 Generated unique visuals
-🎯 Your choices shape the story
-
-The future of comics is here! 🚀
-
-#WritArcade #AIComics #InteractiveStory #Web3 #NFT #Gaming`
+    if (data.twist && data.author) {
+      // Viral flow format
+      tweetText = `I read ${data.author}'s article, turned it into a ${data.genre} comic about ${data.twist}, and minted it on @StoryProtocol using @WritArcade! 🎮📚\n\nCheck out "${data.gameTitle}" 👇`
+    } else {
+      // Standard format
+      tweetText = `Just created "${data.gameTitle}" - an epic ${data.genre} comic with @WritArcade! 🎮📚\n\n✨ ${data.panelCount} panels of interactive storytelling\n🎨 Unique AI-generated visuals\n🎯 My choices shaped the story\n\nThe future of IP is here! 🚀\n\n#WritArcade #StoryProtocol #AIComics`
+    }
 
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(data.url || window.location.href)}`
     this.openSocialWindow(twitterUrl, { width: 550, height: 420 })
@@ -48,16 +50,28 @@ The future of comics is here! 🚀
    * Share to Farcaster via Warpcast
    */
   public shareToFarcaster(data: ComicShareData): void {
-    const castText = `Just dropped my new comic "${data.gameTitle}" on WritArcade! 🎮📚
+    let castText = ''
 
-${data.genre} story • ${data.panelCount} interactive panels • AI-generated art
-
-Every choice I made shaped the narrative. This is the future of storytelling! 🚀
-
-Try it yourself 👇`
+    if (data.twist && data.author) {
+      // Viral flow format
+      castText = `I read ${data.author}'s article, turned it into a ${data.genre} comic about ${data.twist}, and minted it!\n\nCheck out "${data.gameTitle}" on WritArcade 👇`
+    } else {
+      castText = `Just dropped my new comic "${data.gameTitle}" on WritArcade! 🎮📚\n\n${data.genre} story • ${data.panelCount} interactive panels • AI-generated art\n\nEvery choice I made shaped the narrative. Minted on @StoryProtocol 🚀`
+    }
 
     const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(castText)}&embeds[]=${encodeURIComponent(data.url || window.location.href)}`
     this.openSocialWindow(farcasterUrl, { width: 600, height: 500 })
+  }
+
+  /**
+   * Share to LinkedIn
+   */
+  public shareToLinkedIn(data: ComicShareData): void {
+    // LinkedIn only supports URL sharing via intent, text is pre-filled but not fully customizable via URL param in the same way
+    // But we can try the 'summary' or just rely on OG tags. 
+    // Best effort: just open the share dialog for the URL.
+    const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(data.url || window.location.href)}`
+    this.openSocialWindow(linkedinUrl, { width: 600, height: 600 })
   }
 
   /**
@@ -97,10 +111,10 @@ Try it yourself 👇`
   private openSocialWindow(url: string, options: { width: number; height: number }): void {
     const left = (window.screen.width - options.width) / 2
     const top = (window.screen.height - options.height) / 2
-    
+
     window.open(
-      url, 
-      '_blank', 
+      url,
+      '_blank',
       `width=${options.width},height=${options.height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes,resizable=yes`
     )
   }

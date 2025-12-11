@@ -70,7 +70,8 @@ export function ComicBookFinale({
     panelCount: totalPanels,
     title: gameTitle,
     text: `Check out my ${genre} comic "${gameTitle}" created with WritArcade! ${totalPanels} panels of interactive storytelling.`,
-    url: window.location.href,
+    url: typeof window !== 'undefined' ? window.location.href : '',
+    author: authorParagraphUsername,
   }
 
   const handleNext = () => {

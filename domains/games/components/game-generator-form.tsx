@@ -81,6 +81,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
   const [successData, setSuccessData] = useState<{
     gameSlug: string
     title: string
+    author?: string
   } | null>(null)
 
   // Loading step states
@@ -197,6 +198,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
       setSuccessData({
         gameSlug: result.data.slug,
         title: result.data.title || 'Your Game',
+        author: result.data.authorParagraphUsername,
       })
 
       onGameGenerated?.(result.data)
@@ -383,12 +385,12 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                     <div key={step} className="flex items-center gap-3">
                       <div
                         className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${status === 'error'
-                            ? 'bg-red-900/50 border border-red-500'
-                            : status === 'completed'
-                              ? 'bg-purple-900/50 border border-purple-500'
-                              : status === 'in-progress'
-                                ? 'bg-purple-600 border border-purple-400'
-                                : 'bg-gray-700 border border-gray-600'
+                          ? 'bg-red-900/50 border border-red-500'
+                          : status === 'completed'
+                            ? 'bg-purple-900/50 border border-purple-500'
+                            : status === 'in-progress'
+                              ? 'bg-purple-600 border border-purple-400'
+                              : 'bg-gray-700 border border-gray-600'
                           }`}
                       >
                         {status === 'error' ? (
@@ -403,12 +405,12 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                       </div>
                       <span
                         className={`text-sm transition-colors ${status === 'in-progress'
-                            ? 'text-purple-300 font-medium'
-                            : status === 'completed'
-                              ? 'text-gray-300'
-                              : status === 'error'
-                                ? 'text-red-400'
-                                : 'text-gray-500'
+                          ? 'text-purple-300 font-medium'
+                          : status === 'completed'
+                            ? 'text-gray-300'
+                            : status === 'error'
+                              ? 'text-red-400'
+                              : 'text-gray-500'
                           }`}
                       >
                         {stepLabel}
@@ -645,6 +647,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
         description="Your AI-generated game is ready to play. Share it with your community and mint it as an NFT."
         gameSlug={successData?.gameSlug}
         action="generate"
+        authorName={successData?.author}
       />
     </div>
   )

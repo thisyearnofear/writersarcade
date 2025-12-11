@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
-import { Share2, Twitter, MessageCircle } from 'lucide-react'
+import { Share2, Twitter, MessageCircle, Linkedin } from 'lucide-react'
 import { socialShareService, type ComicShareData } from '@/lib/services/social-share.service'
 
 interface ShareDropdownProps {
@@ -49,6 +49,11 @@ export function ShareDropdown({
     setShowMenu(false)
   }
 
+  const handleLinkedInShare = () => {
+    socialShareService.shareToLinkedIn(data)
+    setShowMenu(false)
+  }
+
   const handleGenericShare = async () => {
     const success = await socialShareService.shareGeneric(data)
     if (success) {
@@ -73,11 +78,11 @@ export function ShareDropdown({
       {showMenu && (
         <>
           {/* Backdrop */}
-          <div 
-            className="fixed inset-0 z-10" 
+          <div
+            className="fixed inset-0 z-10"
             onClick={() => setShowMenu(false)}
           />
-          
+
           {/* Menu */}
           <div className="absolute bottom-full left-0 mb-2 bg-black/90 backdrop-blur-md border border-white/20 rounded-lg shadow-2xl z-20 min-w-[200px]">
             <div className="p-2 space-y-1">
@@ -88,7 +93,7 @@ export function ShareDropdown({
                 <Twitter className="w-4 h-4 text-blue-400" />
                 <span>Share on Twitter</span>
               </button>
-              
+
               <button
                 onClick={handleFarcasterShare}
                 className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-white/10 rounded-md transition-colors text-left"
@@ -96,7 +101,15 @@ export function ShareDropdown({
                 <MessageCircle className="w-4 h-4 text-purple-400" />
                 <span>Cast on Farcaster</span>
               </button>
-              
+
+              <button
+                onClick={handleLinkedInShare}
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-white/10 rounded-md transition-colors text-left"
+              >
+                <Linkedin className="w-4 h-4 text-blue-600" />
+                <span>Share on LinkedIn</span>
+              </button>
+
               <button
                 onClick={handleGenericShare}
                 className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-white/10 rounded-md transition-colors text-left"

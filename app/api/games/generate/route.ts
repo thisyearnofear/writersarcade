@@ -188,6 +188,7 @@ Your game MUST authentically interpret this article's core themes. Players shoul
         id: savedGame.id,
         slug: savedGame.slug,
         createdAt: savedGame.createdAt,
+        authorParagraphUsername: savedGame.authorParagraphUsername,
       },
     })
 
