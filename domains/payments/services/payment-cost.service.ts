@@ -8,6 +8,8 @@
 import { getWriterCoinById } from '@/lib/writerCoins'
 import type { PaymentAction, PaymentCost, RevenueDistribution } from '../types'
 
+import { cacheGet, cacheSet } from './tmp_rovodev_cache'
+
 export class PaymentCostService {
   /**
    * Calculate cost for a payment action
@@ -50,16 +52,22 @@ export class PaymentCostService {
         ? coin.gameGenerationCost
         : coin.mintCost
 
+    const cacheKey = `dist:${coin.address}:${action}`
+    const cached = cacheGet<RevenueDistribution>(cacheKey, 60_000)
+    if (cached) return cached
+
     if (action === 'generate-game' || action === 'play-wordle') {
       // Prefer on-chain configuration for generation splits
       try {
         const { fetchGenerationDistributionOnChain } = await import('@/lib/contracts')
         const { writerBP, platformBP, creatorBP } = await fetchGenerationDistributionOnChain(coin.address)
-        return {
+        const res = {
           writerShare: (amount * BigInt(writerBP)) / BigInt(10000),
           platformShare: (amount * BigInt(platformBP)) / BigInt(10000),
           creatorShare: (amount * BigInt(creatorBP)) / BigInt(10000),
         }
+        cacheSet(cacheKey, res)
+        return res
       } catch {
         // Fallback to local config if on-chain read fails
         return {
@@ -73,11 +81,13 @@ export class PaymentCostService {
       try {
         const { fetchMintDistributionOnChain } = await import('@/lib/contracts')
         const { creatorBP, writerBP, platformBP } = await fetchMintDistributionOnChain(coin.address)
-        return {
+        const res = {
           writerShare: (amount * BigInt(writerBP)) / BigInt(10000),
           platformShare: (amount * BigInt(platformBP)) / BigInt(10000),
           creatorShare: (amount * BigInt(creatorBP)) / BigInt(10000),
         }
+        cacheSet(cacheKey, res)
+        return res
       } catch {
         // Fallback to 30/15/5 with remainder to user
         return {
