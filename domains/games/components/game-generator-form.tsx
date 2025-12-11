@@ -20,6 +20,53 @@ interface GameGeneratorFormProps {
   onGameGenerated?: (game: { id: string; title: string; slug: string; genre: string }) => void
 }
 
+function previewStyleFor(genre: GameGenre, difficulty: GameDifficulty) {
+  const genreMap: Record<GameGenre, { gradient: string; blurb: string }> = {
+    horror: { gradient: 'from-purple-900 via-red-900 to-black', blurb: 'Dark, tense pacing with dramatic contrasts.' },
+    comedy: { gradient: 'from-pink-600 via-purple-600 to-indigo-700', blurb: 'Light, playful tone with punchy beats.' },
+    mystery: { gradient: 'from-indigo-900 via-purple-900 to-black', blurb: 'Moody, investigative with slow reveals.' },
+  }
+  const diffMap: Record<GameDifficulty, string> = {
+    easy: 'Simpler choices, faster progression',
+    hard: 'Deeper branches, more complex narratives',
+  }
+  const g = genreMap[genre]
+  return { ...g, diff: diffMap[difficulty] }
+}
+
+function StylePreview({ genre, difficulty }: { genre: GameGenre; difficulty: GameDifficulty }) {
+  const s = previewStyleFor(genre, difficulty)
+  return (
+    <div className="mx-auto max-w-md w-full">
+      <motion.div
+        className={`rounded-lg border border-purple-500/50 p-3 bg-gradient-to-br ${s.gradient} text-purple-100 shadow-md flex items-start gap-2`}
+        initial={{ opacity: 0.9 }}
+        animate={{ opacity: [0.9, 1, 0.95, 1] }}
+        transition={{ duration: 6, repeat: Infinity }}
+      >
+        {/* Genre icon for quick recognition */}
+        <div className="mt-0.5">
+          {/* Reuse small inline icons for genre */}
+          {genre === 'horror' && (
+            <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-400 shadow" />
+          )}
+          {genre === 'comedy' && (
+            <span className="inline-block w-2.5 h-2.5 rounded-full bg-yellow-300 shadow" />
+          )}
+        {genre === 'mystery' && (
+            <span className="inline-block w-2.5 h-2.5 rounded-full bg-indigo-300 shadow" />
+          )}
+        </div>
+        <div className="text-xs">
+          <div className="font-semibold mb-1">Preview — {genre} • {difficulty}</div>
+          <div className="opacity-90">{s.blurb}</div>
+          <div className="opacity-75">{s.diff}</div>
+        </div>
+      </motion.div>
+    </div>
+  )
+}
+
 export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
   const { isConnected } = useAccount()
   const [isGenerating, setIsGenerating] = useState(false)
@@ -411,19 +458,20 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                 >
                   {showCustomization ? '▼' : '▶'}
                 </motion.span>
-                Customize Game Style (Genre & Difficulty)
+                Customize Your Game
+                <span className="ml-2 text-xs text-purple-300/80 hidden sm:inline">Genre, difficulty, and tone</span>
                 <motion.div
                   className="relative group ml-2"
                   whileHover={{ scale: 1.1 }}
                 >
                   <Info className="w-3 h-3 text-purple-300 cursor-help" />
                   <motion.div
-                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-gray-800 border border-gray-700 rounded-lg text-xs text-gray-100 z-50 pointer-events-none"
+                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-2 bg-black/80 border border-purple-700/60 rounded-lg text-xs text-purple-100 z-50 pointer-events-none shadow-lg"
                     initial={{ opacity: 0, y: 5 }}
                     whileHover={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    Customize genre and difficulty for a unique experience (uses Writer Coins)
+                    Dial in mood and challenge. Customization uses Writer Coins and enhances narrative detail, pacing, and visuals.
                   </motion.div>
                 </motion.div>
               </motion.button>
@@ -431,7 +479,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
               <AnimatePresence>
                 {showCustomization && (
                   <motion.div
-                    className="mt-4 space-y-4 p-4 bg-purple-900/30 rounded-lg border border-purple-600"
+                    className="mt-4 space-y-5 p-5 bg-black/50 rounded-xl border border-purple-500 shadow-[0_0_0_1px_rgba(168,85,247,0.3)]"
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
@@ -444,10 +492,29 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ delay: 0.1, duration: 0.3 }}
                     >
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <Sparkles className="w-4 h-4 text-yellow-300" />
-                        <span className="text-sm font-semibold text-purple-100">Enhanced Customization</span>
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-yellow-300" />
+                          <span className="text-sm font-semibold text-purple-100">Enhanced Customization</span>
+                        </div>
+                        <button
+                          type="button"
+                          className="text-xs text-purple-300 hover:text-purple-200 underline decoration-dotted"
+                          onClick={() => { setGenre('horror'); setDifficulty('easy') }}
+                          disabled={isGenerating}
+                        >
+                          Reset to defaults
+                        </button>
                       </div>
+
+                      {/* Current selection pills */}
+                      <div className="flex justify-center gap-2 mb-2">
+                        <span className="inline-flex items-center rounded-full bg-purple-700/40 border border-purple-400/50 px-2 py-0.5 text-xs text-purple-100">Genre: {genre}</span>
+                        <span className="inline-flex items-center rounded-full bg-purple-700/40 border border-purple-400/50 px-2 py-0.5 text-xs text-purple-100">Difficulty: {difficulty}</span>
+                      </div>
+
+                      {/* Live style preview */}
+                      <StylePreview genre={genre} difficulty={difficulty} />
 
                       {/* Center the genre selector */}
                       <div className="flex justify-center">
@@ -459,7 +526,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                       </div>
 
                       <motion.div
-                        className="p-3 rounded-lg bg-purple-800/50 border border-purple-500 text-sm text-purple-100 flex items-start gap-2"
+                        className="p-3 rounded-lg bg-purple-900/70 border border-purple-400 text-sm text-purple-100 flex items-start gap-2 shadow-inner"
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2, duration: 0.3 }}

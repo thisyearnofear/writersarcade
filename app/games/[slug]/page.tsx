@@ -57,8 +57,8 @@ export default async function GamePage({ params }: GamePageProps) {
   }
 
   // Extract and flatten assets for the attribution component
-  // @ts-ignore - The service include typings are complex, but the data is there
-  const linkedAssets = game.gamesFromAssets?.map((relation: any) => relation.asset) || []
+  // @ts-expect-error - The service include typings are complex, but the data is there
+  const linkedAssets = game.gamesFromAssets?.map((relation: { asset: unknown }) => relation.asset) || []
 
   return (
     <div className="min-h-screen bg-black">

@@ -26,7 +26,7 @@ export function GameCustomizer({ writerCoin, articleUrl, onBack, onGameGenerated
   const isStoryMode = mode === 'story'
 
   const cost = useMemo(() => {
-    return PaymentCostService.calculateCost(writerCoin.id, 'generate-game')
+    return PaymentCostService.calculateCostSync(writerCoin.id, 'generate-game')
   }, [writerCoin.id])
 
   const handlePaymentSuccess = async (_transactionHash: string) => {

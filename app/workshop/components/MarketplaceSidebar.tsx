@@ -7,7 +7,7 @@ interface Asset {
     title: string
     description: string
     type: string
-    content: any
+    content: unknown
 }
 
 interface MarketplaceSidebarProps {

@@ -43,7 +43,7 @@ export class GameDatabaseService {
         slug = `${slug}-${Date.now()}`
       }
 
-      const gameCreateData: any = {
+      const gameCreateData: Prisma.GameUncheckedCreateInput = {
         title: gameData.title,
         slug,
         description: gameData.description,
@@ -114,7 +114,7 @@ export class GameDatabaseService {
               walletAddress: true,
             }
           },
-          // @ts-ignore - Prisma types lag behind schema updates sometimes
+          // @ts-expect-error - Prisma types lag behind schema updates sometimes
           gamesFromAssets: {
             include: {
               asset: {
@@ -338,7 +338,7 @@ export class GameDatabaseService {
   /**
    * Map Prisma game model to our Game type
    */
-  private static mapPrismaGameToGame(prismaGame: any): Game {
+  private static mapPrismaGameToGame(prismaGame: PrismaGameModel): Game {
     return {
       id: prismaGame.id,
       title: prismaGame.title,
@@ -393,7 +393,7 @@ export class GameDatabaseService {
   static async saveAssetPack(data: {
     title: string
     description: string
-    content: any // AssetGenerationResponse
+    content: import('../types').AssetGenerationResponse
     creatorId?: string
     articleUrl?: string
     genre?: string

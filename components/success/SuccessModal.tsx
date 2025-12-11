@@ -58,7 +58,7 @@ export function SuccessModal({
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gradient-to-br from-gray-900 to-black border border-green-500/30 rounded-xl max-w-md w-full shadow-2xl">
+      <div className="bg-gradient-to-br from-gray-900 to-black border border-green-500/50 rounded-xl max-w-md w-full shadow-[0_0_0_1px_rgba(34,197,94,0.35)]">
         <div className="p-6 space-y-4">
           <div className="flex items-center gap-3">
             <CheckCircle className="w-8 h-8 text-green-500 flex-shrink-0" />
@@ -104,7 +104,7 @@ export function SuccessModal({
                   <ShareDropdown 
                     data={shareData}
                     variant="default"
-                    className="flex-1"
+                    className="flex-1 hover:shadow-[0_0_0_1px_rgba(34,197,94,0.35)]"
                   />
                 )}
               </>

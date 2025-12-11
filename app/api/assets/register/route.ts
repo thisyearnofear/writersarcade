@@ -2,13 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { registerAssetAsIP, AssetRegistrationInput } from '@/lib/story-protocol.service'
 import { uploadToIPFS, computeMetadataHash } from '@/lib/ipfs-utils'
 import { GameDatabaseService } from '@/domains/games/services/game-database.service'
-import { optionalAuth } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
     try {
-        const user = await optionalAuth()
-
-        // In strict hackathon mode, we might not always have full auth, 
+        // In strict hackathon mode, we might not always have full auth,
         // but ideally we need a creator address.
         // Ensure you have a wallet address either from user session or passed in body (for dev)
         const body = await request.json()

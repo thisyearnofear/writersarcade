@@ -21,7 +21,7 @@ export const CONTRACT_ABIS = {
       { name: 'platformShare', type: 'uint256' },
       { name: 'creatorPoolShare', type: 'uint256' }
     ]
-  },{
+  }, {
     name: 'mintDistributions',
     type: 'function',
     stateMutability: 'view',
@@ -147,7 +147,7 @@ export function getPublicClient(chainId: number = getDefaultChainId()) {
   const net = getNetwork(chainId)
   const rpcUrlOverride = process.env.BASE_RPC_URL && chainId === 8453 ? process.env.BASE_RPC_URL : undefined
   const rpc = rpcUrlOverride || net.rpcUrl
-  return createPublicClient({ chain: { id: net.id, name: net.name, nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }, rpcUrls: { default: { http: [rpc] } } } as any, transport: http(rpc) })
+  return createPublicClient({ chain: { id: net.id, name: net.name, nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }, rpcUrls: { default: { http: [rpc] } } } as import('viem').Chain, transport: http(rpc) })
 }
 
 export function getWriterCoinPaymentAddress(chainId: number = getDefaultChainId()): `0x${string}` {
@@ -155,7 +155,7 @@ export function getWriterCoinPaymentAddress(chainId: number = getDefaultChainId(
   return CONTRACT_ADDRESSES[network].WriterCoinPayment as `0x${string}`
 }
 
-const __splitCache = new Map<string, { at: number; data: any }>()
+const __splitCache = new Map<string, { at: number; data: unknown }>()
 const __SPLIT_TTL_MS = 60_000
 
 function __getCache(key: string) {
@@ -164,7 +164,7 @@ function __getCache(key: string) {
   if (Date.now() - hit.at > __SPLIT_TTL_MS) { __splitCache.delete(key); return null }
   return hit.data
 }
-function __setCache(key: string, data: any) { __splitCache.set(key, { at: Date.now(), data }) }
+function __setCache<T>(key: string, data: T) { __splitCache.set(key, { at: Date.now(), data }) }
 
 async function readWithRetry<T>(fn: () => Promise<T>, retries = 2, delayMs = 250): Promise<T> {
   try { return await fn() } catch (e) {
@@ -180,19 +180,20 @@ export async function fetchGenerationDistributionOnChain(coinAddress: `0x${strin
   if (cached) return cached
   const client = getPublicClient(chainId)
   const contractAddress = getWriterCoinPaymentAddress(chainId)
-  const [writerShare, platformShare, creatorPoolShare] = await readWithRetry(() => client.readContract({
+  const tuple = await readWithRetry(() => client.readContract({
     address: contractAddress,
     abi: CONTRACT_ABIS.__WriterCoinPaymentRead,
     functionName: 'getRevenueDistribution',
     args: [coinAddress],
-  }) as unknown as [bigint, bigint, bigint]
+  })) as unknown as [bigint, bigint, bigint];
+  const [writerShare, platformShare, creatorPoolShare] = tuple;
   const res = {
     writerBP: Number(writerShare),
     platformBP: Number(platformShare),
     creatorBP: Number(creatorPoolShare),
-  }
-  __setCache(cacheKey, res)
-  return res
+  };
+  __setCache(cacheKey, res);
+  return res;
 }
 
 export async function fetchMintDistributionOnChain(coinAddress: `0x${string}`, chainId: number = getDefaultChainId()) {
@@ -201,12 +202,13 @@ export async function fetchMintDistributionOnChain(coinAddress: `0x${string}`, c
   if (cached) return cached
   const client = getPublicClient(chainId)
   const contractAddress = getWriterCoinPaymentAddress(chainId)
-  const [creatorShare, writerShare, platformShare] = await readWithRetry(() => client.readContract({
+  const tuple = await readWithRetry(() => client.readContract({
     address: contractAddress,
     abi: CONTRACT_ABIS.__WriterCoinPaymentRead,
     functionName: 'mintDistributions',
     args: [coinAddress],
-  }) as unknown as [bigint, bigint, bigint]
+  })) as unknown as [bigint, bigint, bigint]
+  const [creatorShare, writerShare, platformShare] = tuple
   const res = {
     creatorBP: Number(creatorShare),
     writerBP: Number(writerShare),

@@ -98,19 +98,20 @@ export default function AssetsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 py-12 px-4">
+    <div className="min-h-screen py-12 px-4 bg-gradient-to-br from-purple-900/30 to-pink-900/20">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-12 flex items-start justify-between">
           <div>
-            <h1 className="text-4xl font-bold text-white mb-4">Asset Marketplace</h1>
+            <h1 className="text-4xl font-bold text-white mb-2 typewriter-font">Asset Marketplace</h1>
+            <p className="text-sm text-purple-200">Remixable primitives for your games</p>
             <p className="text-slate-300">
               Browse reusable game components. Mix and match to create unique games.
             </p>
           </div>
           <Link
             href="/assets/create"
-            className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition whitespace-nowrap"
+            className="px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition whitespace-nowrap shadow-[0_0_0_1px_rgba(168,85,247,0.35)]"
           >
             + Create Game
           </Link>
@@ -123,7 +124,7 @@ export default function AssetsPage() {
             placeholder="Search assets by name, description..."
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full px-4 py-3 rounded-lg bg-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 rounded-lg bg-black/40 border border-purple-700/50 text-white placeholder-purple-300/60 focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
         </div>
 
@@ -206,22 +207,22 @@ export default function AssetsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {assets.map((asset) => (
               <Link href={`/assets/${asset.id}`} key={asset.id}>
-                <div className="bg-slate-700 rounded-lg overflow-hidden hover:bg-slate-600 transition cursor-pointer h-full">
+                <div className="bg-black/50 border border-purple-700/40 rounded-xl overflow-hidden hover:bg-black/60 hover:border-purple-500/60 transition cursor-pointer h-full shadow-[0_0_0_1px_rgba(168,85,247,0.25)]">
                   <div className="p-4">
                     <div className="flex items-start justify-between mb-2">
                       <h3 className="text-lg font-bold text-white flex-1">{asset.title}</h3>
-                      <span className="text-xs bg-blue-600 text-white px-2 py-1 rounded capitalize">
+                      <span className="text-xs bg-purple-700 text-white px-2 py-1 rounded capitalize">
                         {asset.type}
                       </span>
                     </div>
-                    <p className="text-slate-300 text-sm mb-3 line-clamp-2">
+                    <p className="text-purple-100/90 text-sm mb-3 line-clamp-2">
                       {asset.description}
                     </p>
-                    <div className="flex items-center justify-between text-xs text-slate-400">
+                    <div className="flex items-center justify-between text-xs text-purple-200/80">
                       <span className="capitalize">{asset.genre}</span>
                       <div className="flex gap-1">
                         {asset.tags.slice(0, 2).map((tag) => (
-                          <span key={tag} className="bg-slate-600 px-2 py-0.5 rounded">
+                          <span key={tag} className="bg-purple-800/50 border border-purple-600/50 px-2 py-0.5 rounded">
                             {tag}
                           </span>
                         ))}
@@ -234,7 +235,7 @@ export default function AssetsPage() {
           </div>
         ) : (
           <div className="text-center py-12">
-            <p className="text-slate-400">No assets found. Try adjusting your filters.</p>
+            <p className="text-purple-200/80">No assets found. Try adjusting your filters.</p>
           </div>
         )}
 

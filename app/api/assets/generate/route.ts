@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { GameAIService } from '@/domains/games/services/game-ai.service'
 import { ContentProcessorService } from '@/domains/content/services/content-processor.service'
-import { prisma } from '@/lib/database'
-import { optionalAuth } from '@/lib/auth'
 import { z } from 'zod'
 
 const generateAssetsSchema = z.object({
@@ -13,7 +11,6 @@ const generateAssetsSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await optionalAuth()
     const { url, genre, model } = generateAssetsSchema.parse(await request.json())
 
     // 1. Process Content (Reuse existing service)

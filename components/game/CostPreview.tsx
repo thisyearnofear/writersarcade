@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { type WriterCoin } from '@/lib/writerCoins'
 import { PaymentCostService } from '@/domains/payments/services/payment-cost.service'
 import type { PaymentAction } from '@/domains/payments/types'
@@ -17,7 +17,8 @@ export function CostPreview({ writerCoin, action, showBreakdown = true }: CostPr
     let canceled = false
     ;(async () => {
       try {
-        const c = await PaymentCostService.calculateCost(writerCoin.id, action)
+        // Using sync version since no async version exists
+        const c = PaymentCostService.calculateCostSync(writerCoin.id, action)
         if (!canceled) setCost(c)
       } catch {
         if (!canceled) setCost(PaymentCostService.calculateCostSync(writerCoin.id, action))
@@ -56,19 +57,19 @@ export function CostPreview({ writerCoin, action, showBreakdown = true }: CostPr
               {action === 'generate-game' ? (
                 <>
                   <div className="flex items-center justify-between">
-                    <span className=\"text-purple-300\">Writer:</span>
+                    <span className="text-purple-300">Writer:</span>
                     <span className="font-semibold text-green-400">
                       {(Number(distribution.writerShare) / 10 ** writerCoin.decimals).toFixed(0)} {writerCoin.symbol}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className=\"text-purple-300\">Platform:</span>
+                    <span className="text-purple-300">Platform:</span>
                     <span className="font-semibold text-blue-400">
                       {(Number(distribution.platformShare) / 10 ** writerCoin.decimals).toFixed(0)} {writerCoin.symbol}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className=\"text-purple-300\">Creator Pool:</span>
+                    <span className="text-purple-300">Creator Pool:</span>
                     <span className="font-semibold text-purple-400">
                       {(Number(distribution.creatorShare) / 10 ** writerCoin.decimals).toFixed(0)} {writerCoin.symbol}
                     </span>
@@ -77,19 +78,19 @@ export function CostPreview({ writerCoin, action, showBreakdown = true }: CostPr
               ) : (
                 <>
                   <div className="flex items-center justify-between">
-                    <span className=\"text-purple-300\">Creator:</span>
+                    <span className="text-purple-300">Creator:</span>
                     <span className="font-semibold text-blue-400">
                       {(Number(distribution.creatorShare) / 10 ** writerCoin.decimals).toFixed(0)} {writerCoin.symbol}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className=\"text-purple-300\">Writer:</span>
+                    <span className="text-purple-300">Writer:</span>
                     <span className="font-semibold text-green-400">
                       {(Number(distribution.writerShare) / 10 ** writerCoin.decimals).toFixed(0)} {writerCoin.symbol}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className=\"text-purple-300\">Platform:</span>
+                    <span className="text-purple-300">Platform:</span>
                     <span className="font-semibold text-orange-400">
                       {(Number(distribution.platformShare) / 10 ** writerCoin.decimals).toFixed(0)} {writerCoin.symbol}
                     </span>

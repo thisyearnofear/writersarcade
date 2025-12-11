@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
         const ownerAddress = validatedData.userAddress && validatedData.userAddress.startsWith('0x')
             ? validatedData.userAddress
-            : (game as any).userWallet || game.creatorWallet // fallback to creator if no specific address passed
+            : game.creatorWallet // fallback to creator if no specific address passed
 
         const registrationResult = await registerGameAsIP({
             title: game.title,
@@ -51,9 +51,9 @@ export async function POST(request: NextRequest) {
             articleUrl: game.articleUrl || '',
             gameCreatorAddress: ownerAddress as `0x${string}`,
             authorParagraphUsername: game.authorParagraphUsername || 'Unknown',
-            authorWalletAddress: game.authorWallet ? (game.authorWallet as `0x${string}`) : '0x0000000000000000000000000000000000000000' as `0x${string}`,
-            genre: (game.genre as any) || 'mystery',
-            difficulty: (game.difficulty as any) || 'easy',
+            authorWalletAddress: game.creatorWallet ? (game.creatorWallet as `0x${string}`) : '0x0000000000000000000000000000000000000000' as `0x${string}`,
+            genre: game.genre || 'mystery',
+            difficulty: game.difficulty || 'easy',
             gameMetadataUri: nftMetadataUri,
             nftMetadataUri: nftMetadataUri,
         })

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createPublicClient, http } from 'viem'
 import { base } from 'viem/chains'
-import { prisma } from '@/lib/database'
 
 /**
  * Verify payment transaction (Mini App)

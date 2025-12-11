@@ -5,6 +5,11 @@ import { useState } from 'react'
 export type GameGenre = 'horror' | 'comedy' | 'mystery'
 
 const GENRES = ['horror', 'comedy', 'mystery'] as const
+const GENRE_COPY: Record<GameGenre, string> = {
+  horror: 'Dark, high stakes',
+  comedy: 'Light, witty beats',
+  mystery: 'Clues and reveals',
+}
 
 interface GenreSelectorProps {
   value?: GameGenre
@@ -64,14 +69,15 @@ export function GenreSelector({ value = 'horror', onChange, disabled = false }: 
             key={genre}
             onClick={() => handleSelect(genre)}
             disabled={disabled}
-            className={`game-type-option rounded-lg border-2 px-4 py-3 font-medium capitalize transition-all disabled:cursor-not-allowed flex flex-col items-center justify-center gap-2 ${
+            className={`game-type-option rounded-xl border-2 px-4 py-4 sm:px-5 sm:py-5 font-medium capitalize transition-all disabled:cursor-not-allowed flex flex-col items-center justify-center gap-1.5 ${
               selected === genre
-                ? 'border-purple-400 bg-purple-600/50 text-white'
-                : 'border-purple-500/50 bg-purple-900/20 text-purple-200 hover:border-purple-400 hover:bg-purple-900/40 disabled:hover:border-purple-500/50 disabled:hover:bg-purple-900/20'
-            }`}
-          >
+                ? 'border-purple-400 bg-purple-600 text-white shadow-lg ring-2 ring-purple-300'
+                : 'border-purple-700 bg-black/30 text-purple-200 hover:border-purple-400 hover:bg-purple-900/40 disabled:hover:border-purple-700 disabled:hover:bg-black/30'
+            } hover:translate-y-[-1px] active:translate-y-[0px]`}
+>
             <GenreIcon genre={genre} />
-            <span>{genre}</span>
+            <span className="text-sm capitalize">{genre}</span>
+            <span className="text-[11px] text-purple-300/80">{GENRE_COPY[genre]}</span>
           </button>
         ))}
       </div>

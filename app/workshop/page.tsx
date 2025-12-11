@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AssetCard } from './components/AssetCard'
 import { MarketplaceSidebar } from './components/MarketplaceSidebar'
-import { AssetGenerationResponse, CharacterProfile, GameMechanic, StoryBeat } from '@/domains/games/types'
+import { AssetGenerationResponse } from '@/domains/games/types'
 import { useRouter } from 'next/navigation'
 
 type WorkshopState = 'input' | 'processing' | 'workshop' | 'compiling' | 'minting'
@@ -149,26 +149,26 @@ export default function WorkshopPage() {
     const removeAsset = (type: 'characters' | 'gameMechanics' | 'storyBeats', index: number) => {
         if (!assets) return
         const newAssets = { ...assets }
-        // @ts-ignore - dynamic key access
-        newAssets[type] = newAssets[type].filter((_, i) => i !== index)
+    // @ts-expect-error - dynamic key access
+    newAssets[type] = newAssets[type].filter((_, i) => i !== index)
         setAssets(newAssets)
     }
 
-    const handleInject = (asset: any) => {
+    const handleInject = (asset: { id: string, title: string, description: string, type: string, content: unknown }) => {
         if (!assets) return
         const newAssets = { ...assets }
         const type = asset.type.toLowerCase()
 
         if (type === 'mechanic') {
-            newAssets.gameMechanics.push(asset.content)
+            newAssets.gameMechanics.push(asset.content as import('@/domains/games/types').GameMechanic)
         } else if (type === 'character') {
-            newAssets.characters.push(asset.content)
+            newAssets.characters.push(asset.content as import('@/domains/games/types').CharacterProfile)
         } else if (type === 'visual' || type === 'world') {
             // Merge visual guidelines or replace
             if (confirm(`Replace visual style with "${asset.title}"?`)) {
                 newAssets.visualGuidelines = {
                     ...newAssets.visualGuidelines,
-                    ...asset.content
+                    ...(asset.content as import('@/domains/games/types').VisualGuideline)
                 }
             }
         } else {

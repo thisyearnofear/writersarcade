@@ -41,7 +41,7 @@ export function PaymentOption({
   const { isConnected } = useAccount()
 
   const cost = useMemo(() => {
-    return PaymentCostService.calculateCost(writerCoin.id, action)
+    return PaymentCostService.calculateCostSync(writerCoin.id, action)
   }, [writerCoin.id, action])
 
   if (!isConnected) {
@@ -79,7 +79,9 @@ export function PaymentOption({
       <CostPreview writerCoin={writerCoin} action={action} showBreakdown={true} />
 
       {/* Payment Flow */}
-      <PaymentFlow
+      {/* Elevated CTA visuals for stronger contrast */}
+      <div className="rounded-xl border border-purple-600/40 bg-black/40 p-3 shadow-[0_0_0_1px_rgba(168,85,247,0.25)]">
+        <PaymentFlow
         writerCoin={writerCoin}
         action={action}
         costFormatted={cost.amountFormatted}
@@ -87,6 +89,7 @@ export function PaymentOption({
         onPaymentError={onPaymentError}
         disabled={disabled}
       />
+     </div>
 
       {/* Optional Skip */}
       {optional && onSkip && (

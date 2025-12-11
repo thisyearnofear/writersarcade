@@ -36,7 +36,7 @@ async function getViemClient(): Promise<WalletClient | null> {
 
     const client = createWalletClient({
       chain: base,
-      transport: custom(provider as any),
+      transport: custom(provider as import('viem').EIP1193Provider),
     })
     return client
   } catch (error) {

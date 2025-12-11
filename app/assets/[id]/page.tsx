@@ -80,7 +80,7 @@ export default function AssetDetailPage() {
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 py-12 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Back Link */}
-        <Link href="/assets" className="text-blue-400 hover:text-blue-300 mb-8 inline-block">
+        <Link href="/assets" className="text-purple-300 hover:text-purple-200 mb-8 inline-block">
           ← Back to Assets
         </Link>
 
@@ -91,7 +91,7 @@ export default function AssetDetailPage() {
               <h1 className="text-4xl font-bold text-white mb-2">{asset.title}</h1>
               <p className="text-slate-300 mb-4">{asset.description}</p>
             </div>
-            <span className="text-sm bg-blue-600 text-white px-4 py-2 rounded capitalize">
+            <span className="text-sm bg-purple-700 text-white px-4 py-2 rounded capitalize">
               {asset.type}
             </span>
           </div>
@@ -121,7 +121,7 @@ export default function AssetDetailPage() {
         {/* Asset Content */}
         <div className="bg-slate-700 rounded-lg p-8 mb-8">
           <h2 className="text-xl font-bold text-white mb-4">Content</h2>
-          <div className="bg-slate-800 rounded p-4">
+          <div className="bg-black/40 border border-purple-700/40 rounded p-4">
             <p className="text-slate-200 whitespace-pre-wrap break-words">{asset.content}</p>
           </div>
         </div>
@@ -132,7 +132,7 @@ export default function AssetDetailPage() {
             <h2 className="text-xl font-bold text-white mb-4">Tags</h2>
             <div className="flex flex-wrap gap-2">
               {asset.tags.map((tag) => (
-                <span key={tag} className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm">
+                <span key={tag} className="bg-purple-700 text-white px-3 py-1 rounded-full text-sm">
                   {tag}
                 </span>
               ))}
@@ -148,7 +148,7 @@ export default function AssetDetailPage() {
               href={asset.articleUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-400 hover:text-blue-300 break-all"
+              className="text-purple-300 hover:text-purple-200 break-all"
             >
               {asset.articleUrl}
             </a>
@@ -222,14 +222,14 @@ export default function AssetDetailPage() {
         </div>
 
         {/* CTA */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-8 text-center">
+        <div className="bg-gradient-to-r from-purple-700 to-purple-800 rounded-lg p-8 text-center shadow-[0_0_0_1px_rgba(168,85,247,0.35)]">
           <h2 className="text-2xl font-bold text-white mb-4">Use This Asset</h2>
           <p className="text-blue-100 mb-6">
             Combine this asset with others to create a unique game experience.
           </p>
           <Link
             href="/assets"
-            className="inline-block px-6 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition"
+            className="inline-block px-6 py-3 bg-white text-purple-700 font-semibold rounded-lg hover:bg-purple-50 transition"
           >
             Browse More Assets
           </Link>
