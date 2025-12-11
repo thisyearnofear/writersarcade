@@ -166,13 +166,21 @@ function __getCache(key: string) {
 }
 function __setCache(key: string, data: any) { __splitCache.set(key, { at: Date.now(), data }) }
 
+async function readWithRetry<T>(fn: () => Promise<T>, retries = 2, delayMs = 250): Promise<T> {
+  try { return await fn() } catch (e) {
+    if (retries <= 0) throw e
+    await new Promise(r => setTimeout(r, delayMs))
+    return readWithRetry(fn, retries - 1, delayMs * 2)
+  }
+}
+
 export async function fetchGenerationDistributionOnChain(coinAddress: `0x${string}`, chainId: number = getDefaultChainId()) {
   const cacheKey = `gen:${chainId}:${coinAddress}`
   const cached = __getCache(cacheKey)
   if (cached) return cached
   const client = getPublicClient(chainId)
   const contractAddress = getWriterCoinPaymentAddress(chainId)
-  const [writerShare, platformShare, creatorPoolShare] = await client.readContract({
+  const [writerShare, platformShare, creatorPoolShare] = await readWithRetry(() => client.readContract({
     address: contractAddress,
     abi: CONTRACT_ABIS.__WriterCoinPaymentRead,
     functionName: 'getRevenueDistribution',
@@ -193,7 +201,7 @@ export async function fetchMintDistributionOnChain(coinAddress: `0x${string}`, c
   if (cached) return cached
   const client = getPublicClient(chainId)
   const contractAddress = getWriterCoinPaymentAddress(chainId)
-  const [creatorShare, writerShare, platformShare] = await client.readContract({
+  const [creatorShare, writerShare, platformShare] = await readWithRetry(() => client.readContract({
     address: contractAddress,
     abi: CONTRACT_ABIS.__WriterCoinPaymentRead,
     functionName: 'mintDistributions',
@@ -222,6 +230,18 @@ export function getGameGenerationCost(writerCoinId: string): bigint {
 /**
  * Get NFT minting cost in tokens
  */
+export async function fetchCoinConfigOnChain(coinAddress: `0x${string}`, chainId: number = getDefaultChainId()) {
+  const client = getPublicClient(chainId)
+  const contractAddress = getWriterCoinPaymentAddress(chainId)
+  const [genCost, mintCost, enabled] = await readWithRetry(() => client.readContract({
+    address: contractAddress,
+    abi: CONTRACT_ABIS.WriterCoinPayment,
+    functionName: 'getCoinConfig',
+    args: [coinAddress],
+  })) as unknown as [bigint, bigint, boolean]
+  return { generationCost: genCost as bigint, mintCost: mintCost as bigint, enabled: Boolean(enabled) }
+}
+
 export function getMintingCost(writerCoinId: string): bigint {
   const coin = getWriterCoinById(writerCoinId)
   if (!coin) {

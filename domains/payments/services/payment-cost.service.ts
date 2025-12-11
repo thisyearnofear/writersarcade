@@ -8,13 +8,13 @@
 import { getWriterCoinById } from '@/lib/writerCoins'
 import type { PaymentAction, PaymentCost, RevenueDistribution } from '../types'
 
-import { cacheGet, cacheSet } from './tmp_rovodev_cache'
+import { cacheGet, cacheSet } from '@/lib/cache'
 
 export class PaymentCostService {
   /**
    * Calculate cost for a payment action
    */
-  static calculateCost(writerCoinId: string, action: PaymentAction): PaymentCost {
+  static calculateCostSync(writerCoinId: string, action: PaymentAction): PaymentCost {
     const coin = getWriterCoinById(writerCoinId)
     if (!coin) {
       throw new Error(`Writer coin "${writerCoinId}" not found`)

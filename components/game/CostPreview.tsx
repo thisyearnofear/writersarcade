@@ -12,8 +12,18 @@ interface CostPreviewProps {
 }
 
 export function CostPreview({ writerCoin, action, showBreakdown = true }: CostPreviewProps) {
-  const cost = useMemo(() => {
-    return PaymentCostService.calculateCost(writerCoin.id, action)
+  const [cost, setCost] = useState(() => PaymentCostService.calculateCostSync(writerCoin.id, action))
+  useEffect(() => {
+    let canceled = false
+    ;(async () => {
+      try {
+        const c = await PaymentCostService.calculateCost(writerCoin.id, action)
+        if (!canceled) setCost(c)
+      } catch {
+        if (!canceled) setCost(PaymentCostService.calculateCostSync(writerCoin.id, action))
+      }
+    })()
+    return () => { canceled = true }
   }, [writerCoin.id, action])
 
   const [distribution, setDistribution] = useState({ writerShare: BigInt(0), platformShare: BigInt(0), creatorShare: BigInt(0) })
