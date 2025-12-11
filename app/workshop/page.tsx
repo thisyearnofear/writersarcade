@@ -116,7 +116,7 @@ export default function WorkshopPage() {
       ${assets.storyBeats.map(b => `- ${b.title}: ${b.description}`).join('\n')}
       
       VISUAL STYLE:
-      ${assets.visualGuidelines.artStyle}, ${assets.visualGuidelines.atmosphere}
+      ${(assets.visualGuidelines?.artStyle || '')}, ${(assets.visualGuidelines?.atmosphere || '')}
     `
 
         // Call standard game generation with this specific context

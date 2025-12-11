@@ -11,8 +11,8 @@ interface WriterCoinSelectorProps {
 function formatBP(bp: number) { return `${(bp/100).toFixed(2)}%` }
 
 function OnChainSplit({ coinAddress }: { coinAddress: `0x${string}` }) {
-    const [gen, setGen] = useState<{ writerBP: number; platformBP: number; creatorBP: number } | null>(null)
-    const [mint, setMint] = useState<{ writerBP: number; platformBP: number; creatorBP: number } | null>(null)
+    const [gen, setGen] = useState<any>(null)
+    const [mint, setMint] = useState<any>(null)
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
@@ -22,7 +22,7 @@ function OnChainSplit({ coinAddress }: { coinAddress: `0x${string}` }) {
                 const { fetchGenerationDistributionOnChain, fetchMintDistributionOnChain } = await import('@/lib/contracts')
                 const genRes = await fetchGenerationDistributionOnChain(coinAddress)
                 const mintResRaw = await fetchMintDistributionOnChain(coinAddress)
-                const mintRes = { writerBP: mintResRaw.writerBP, platformBP: mintResRaw.platformBP, creatorBP: mintResRaw.creatorBP }
+                const mintRes = { writerBP: (mintResRaw as any).writerBP || 0, platformBP: (mintResRaw as any).platformBP || 0, creatorBP: (mintResRaw as any).creatorBP || 0 }
                 if (!cancelled) { setGen(genRes); setMint(mintRes) }
             } catch (e) {
                 if (!cancelled) setError('On-chain split unavailable')

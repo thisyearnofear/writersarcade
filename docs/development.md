@@ -8,10 +8,13 @@
 ### 1. Local Setup
 ```bash
 # Install dependencies
-npm install
+pnpm install
+
+# If you encounter lockfile issues, use:
+# pnpm install --no-frozen-lockfile
 
 # Start dev server (uses turbopack)
-npm run dev
+pnpm dev
 
 # Opens:
 # Web app: http://localhost:3000/
@@ -91,31 +94,48 @@ writarcade/
 ### 2. Code Quality
 ```bash
 # Type checking
-npm run type-check
+pnpm type-check
 
 # Linting
-npm run lint
+pnpm lint
 
 # Format code
-npm run format
+pnpm format
 
 # Run tests
-npm run test
+pnpm test
 ```
 
 ### 3. Database Management
 ```bash
 # Generate Prisma client
-npm run db:generate
+pnpm db:generate
 
 # Push schema changes to database
-npm run db:push
+pnpm db:push
 
 # Run migrations
-npm run db:migrate
+pnpm db:migrate
 
 # Seed database
-npm run db:seed
+pnpm db:seed
+```
+
+### 4. Building the Project
+```bash
+# Build the project for production
+pnpm build
+
+# The build process will:
+# 1. Push any pending database schema changes
+# 2. Compile the Next.js application
+# 3. Generate TypeScript definitions
+# 4. Create optimized static pages where possible
+
+# If you encounter TypeScript errors during build:
+# - Check for property access on potentially undefined objects
+# - Ensure proper typing of contract return values
+# - Verify that all required fields in interfaces are properly implemented
 ```
 
 ## API Endpoints
@@ -217,10 +237,10 @@ npm run test:e2e
 ### Smart Contract Deployment
 ```bash
 # Deploy contracts
-npm run deploy:contracts
+pnpm deploy:contracts
 
 # Verify contracts
-npm run verify:contracts
+pnpm verify:contracts
 ```
 
 ## Troubleshooting
@@ -228,8 +248,13 @@ npm run verify:contracts
 ### Common Issues
 
 **"Module not found" errors**
-- Run `npm install` to ensure all dependencies are installed
+- Run `pnpm install` to ensure all dependencies are installed
+- If you encounter lockfile issues, use `pnpm install --no-frozen-lockfile`
 - Check that all imports use correct paths
+
+**Build Errors Related to Type Mismatches**
+- If you encounter TypeScript errors related to property access on potentially undefined objects, ensure proper optional chaining is used
+- When working with contract return values, make sure to properly type the return data before destructuring
 
 **Database connection errors**
 - Verify `DATABASE_URL` in `.env.local`
@@ -250,7 +275,7 @@ npm run verify:contracts
 
 1. Check browser console for frontend errors
 2. Check terminal output for backend errors
-3. Use Prisma Studio to inspect database: `npm run db:studio`
+3. Use Prisma Studio to inspect database: `pnpm db:studio`
 4. Enable debug logging with `DEBUG=*` environment variable
 5. Use Postman or curl to test API endpoints directly
 

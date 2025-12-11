@@ -173,5 +173,5 @@ export interface AssetGenerationResponse {
   characters: CharacterProfile[]
   storyBeats: StoryBeat[]
   gameMechanics: GameMechanic[]
-  visualGuidelines: VisualGuideline
+  visualGuidelines?: VisualGuideline
 }

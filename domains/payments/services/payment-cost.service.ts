@@ -60,7 +60,8 @@ export class PaymentCostService {
       // Prefer on-chain configuration for generation splits
       try {
         const { fetchGenerationDistributionOnChain } = await import('@/lib/contracts')
-        const { writerBP, platformBP, creatorBP } = await fetchGenerationDistributionOnChain(coin.address)
+        const distribution = await fetchGenerationDistributionOnChain(coin.address)
+        const { writerBP, platformBP, creatorBP } = distribution as { writerBP: number; platformBP: number; creatorBP: number }
         const res = {
           writerShare: (amount * BigInt(writerBP)) / BigInt(10000),
           platformShare: (amount * BigInt(platformBP)) / BigInt(10000),
@@ -80,7 +81,8 @@ export class PaymentCostService {
       // Prefer on-chain configuration for mint splits
       try {
         const { fetchMintDistributionOnChain } = await import('@/lib/contracts')
-        const { creatorBP, writerBP, platformBP } = await fetchMintDistributionOnChain(coin.address)
+        const distribution = await fetchMintDistributionOnChain(coin.address)
+        const { creatorBP, writerBP, platformBP } = distribution as { creatorBP: number; writerBP: number; platformBP: number }
         const res = {
           writerShare: (amount * BigInt(writerBP)) / BigInt(10000),
           platformShare: (amount * BigInt(platformBP)) / BigInt(10000),

@@ -52,8 +52,8 @@ export async function POST(request: NextRequest) {
             gameCreatorAddress: ownerAddress as `0x${string}`,
             authorParagraphUsername: game.authorParagraphUsername || 'Unknown',
             authorWalletAddress: game.creatorWallet ? (game.creatorWallet as `0x${string}`) : '0x0000000000000000000000000000000000000000' as `0x${string}`,
-            genre: game.genre || 'mystery',
-            difficulty: game.difficulty || 'easy',
+            genre: (game.genre || 'mystery') as 'horror' | 'comedy' | 'mystery',
+            difficulty: (game.difficulty || 'easy') as 'easy' | 'hard',
             gameMetadataUri: nftMetadataUri,
             nftMetadataUri: nftMetadataUri,
         })
