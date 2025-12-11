@@ -4,17 +4,20 @@ Turn Paragraph.xyz articles into interactive, mintable games. Players pay with w
 
 ## What it does (in 6 bullets)
 - Generate playable games from article URLs (mini-app and web)
-- Customize genre, difficulty, style, and images via AI providers
+- **Advanced Customization**: Edit extracted assets (characters, story beats) in the Workshop
+- **Creative Control**: Regenerate panel images and edit narrative text before minting
 - Mint games as NFTs on Base; browse and play recent games
 - Pay with writer coins (ERC-20 on Base) using RainbowKit/WC
 - Register IP and licensing via Story Protocol with IPFS metadata
 - Configurable, on-chain revenue splits for generation and minting
 
 ## Core flow
-1) Pick a writer coin → paste article URL → customize
-2) Pay to generate game (writer coin)
-3) Play → optionally mint as NFT
-4) Revenue split is executed by the WriterCoinPayment contract
+1) **Input**: Paste article URL → AI extracts assets
+2) **Customize (Optional)**: Edit characters & mechanics in Workshop
+3) **Generate**: Compile assets into 5-panel comic story
+4) **Refine**: Regenerate images with custom prompts + edit text
+5) **Register**: Mint NFT & register IP on Story Protocol
+6) **Revenue**: Splits executed on-chain (Writer/Platform/Creator)
 
 ## Why it matters
 - Writers earn from reader creativity; readers become collaborators

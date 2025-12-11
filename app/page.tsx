@@ -21,7 +21,7 @@ const steps = [
   {
     number: '2',
     title: 'Customize & Generate',
-    description: 'Choose your style, AI model, and creative parameters. Pay with writer coins.',
+    description: 'Edit characters, tweak prompts, and regenerate images. Pay with writer coins to create.',
   },
   {
     number: '3',
@@ -96,103 +96,103 @@ function HowItWorksSection() {
 
 export default function HomePage() {
   const { showOnboarding, dismissOnboarding } = useOnboarding()
-  
+
   return (
     <ThemeWrapper theme="arcade">
       <div className="flex flex-col min-h-screen">
         <Header />
-        
+
         <main className="flex-1">
-        {/* Hero Section with Thematic Styling */}
-        <section className="relative py-20 px-4 overflow-hidden writarcade-theme">
-          {/* Animated background gradient layers */}
-          <div className="absolute inset-0 -z-10">
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-br from-purple-900/30 to-pink-900/30"
-              animate={{
-                opacity: [0.5, 0.8, 0.5],
-              }}
-              transition={{
-                duration: 8,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            />
-          </div>
+          {/* Hero Section with Thematic Styling */}
+          <section className="relative py-20 px-4 overflow-hidden writarcade-theme">
+            {/* Animated background gradient layers */}
+            <div className="absolute inset-0 -z-10">
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-br from-purple-900/30 to-pink-900/30"
+                animate={{
+                  opacity: [0.5, 0.8, 0.5],
+                }}
+                transition={{
+                  duration: 8,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                }}
+              />
+            </div>
 
-          <div className="max-w-4xl mx-auto text-center relative z-10 writarcade-paper">
-            {/* Kinetic title with typewriter font - staggered word animation with responsive sizing */}
-            <h1 className="text-4xl sm:text-5xl font-bold mb-6 typewriter-font">
-              {['WritArcade'].map((word) => (
-                <motion.span
-                  key={word}
-                  className="inline-block"
-                  initial={{ opacity: 0, scale: 0.5, y: 10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  transition={{
-                    duration: 0.6,
-                    ease: 'easeOut',
-                    type: 'spring',
-                    stiffness: 100,
-                  }}
-                >
-                  {word}&nbsp;
-                </motion.span>
-              ))}
-            </h1>
+            <div className="max-w-4xl mx-auto text-center relative z-10 writarcade-paper">
+              {/* Kinetic title with typewriter font - staggered word animation with responsive sizing */}
+              <h1 className="text-4xl sm:text-5xl font-bold mb-6 typewriter-font">
+                {['WritArcade'].map((word) => (
+                  <motion.span
+                    key={word}
+                    className="inline-block"
+                    initial={{ opacity: 0, scale: 0.5, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{
+                      duration: 0.6,
+                      ease: 'easeOut',
+                      type: 'spring',
+                      stiffness: 100,
+                    }}
+                  >
+                    {word}&nbsp;
+                  </motion.span>
+                ))}
+              </h1>
 
-            {/* Staggered description with responsive sizing */}
-            <motion.p
-              className="text-base sm:text-lg text-gray-700 mb-6 max-w-2xl mx-auto"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-            >
-              Turn any article into an interactive, mintable game. 
-              Pay with writer coins to create your unique interpretation.
-            </motion.p>
-            <motion.p
-              className="text-sm sm:text-base text-gray-600 mb-8 max-w-xl mx-auto leading-relaxed"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35, duration: 0.6 }}
-            >
-              Earn from plays. Browse assets. Own tradeable IP with on-chain, configurable revenue splits for generation and minting.
-            </motion.p>
-            
-            {/* Game Generator */}
-            <motion.div
-              className="max-w-2xl mx-auto"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-            >
-              <GameGeneratorForm />
-            </motion.div>
-          </div>
-        </section>
-        
-        {/* Featured Games */}
-        <section className="py-16 px-4 bg-gray-900/50">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold mb-8 text-center">
-              Recently Generated Games
-            </h2>
-            <Suspense fallback={<div className="text-center">Loading games...</div>}>
-              <GameGrid limit={12} />
-            </Suspense>
-          </div>
-        </section>
-        
-        {/* How it Works - with scroll animations */}
-        <HowItWorksSection />
+              {/* Staggered description with responsive sizing */}
+              <motion.p
+                className="text-base sm:text-lg text-gray-700 mb-6 max-w-2xl mx-auto"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.6 }}
+              >
+                Turn any article into an interactive, mintable game.
+                Pay with writer coins to create your unique interpretation.
+              </motion.p>
+              <motion.p
+                className="text-sm sm:text-base text-gray-600 mb-8 max-w-xl mx-auto leading-relaxed"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35, duration: 0.6 }}
+              >
+                Earn from plays. Browse assets. Own tradeable IP with on-chain, configurable revenue splits for generation and minting.
+              </motion.p>
 
-      </main>
-      
-      <Footer />
-      
-      <OnboardingModal isOpen={showOnboarding} onClose={dismissOnboarding} />
-    </div>
+              {/* Game Generator */}
+              <motion.div
+                className="max-w-2xl mx-auto"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.4, duration: 0.6 }}
+              >
+                <GameGeneratorForm />
+              </motion.div>
+            </div>
+          </section>
+
+          {/* Featured Games */}
+          <section className="py-16 px-4 bg-gray-900/50">
+            <div className="max-w-6xl mx-auto">
+              <h2 className="text-3xl font-bold mb-8 text-center">
+                Recently Generated Games
+              </h2>
+              <Suspense fallback={<div className="text-center">Loading games...</div>}>
+                <GameGrid limit={12} />
+              </Suspense>
+            </div>
+          </section>
+
+          {/* How it Works - with scroll animations */}
+          <HowItWorksSection />
+
+        </main>
+
+        <Footer />
+
+        <OnboardingModal isOpen={showOnboarding} onClose={dismissOnboarding} />
+      </div>
     </ThemeWrapper>
   )
 }
