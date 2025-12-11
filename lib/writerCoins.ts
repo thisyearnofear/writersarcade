@@ -17,7 +17,8 @@ export interface WriterCoin {
     gameGenerationCost: bigint // Cost in tokens to generate a game
     mintCost: bigint // Cost in tokens to mint game as NFT
     decimals: number
-    gameNftAddress: `0x${string}` // GameNFT contract address for this writer coin
+    gameNftAddress: `0x${string}` // GameNFT contract address
+    paymentContractAddress: `0x${string}` // WriterCoinPayment contract address
 
     // Revenue distribution (percentages, should sum to 100)
     revenueDistribution: {
@@ -48,7 +49,8 @@ export const WRITER_COINS: WriterCoin[] = [
         gameGenerationCost: BigInt(100 * 10 ** 18), // 100 $AVC
         mintCost: BigInt(50 * 10 ** 18), // 50 $AVC
         decimals: 18,
-        gameNftAddress: "0x2b440Ee81A783E41eec5dEfFB2D1Daa6E35bCC34", // Base mainnet
+        gameNftAddress: "0x778C87dAA2b284982765688AE22832AADae7dccC", // Base mainnet - GameNFT
+        paymentContractAddress: "0xf4d556E6E739B4Aa065Fae41f353a9f296371a35", // Base mainnet - WriterCoinPayment
         revenueDistribution: {
             writer: 35, // 35% to Fred Wilson's treasury
             creator: 35, // 35% to game creator
