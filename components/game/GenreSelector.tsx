@@ -67,7 +67,7 @@ export function GenreSelector({ value = 'horror', onChange, disabled = false }: 
             className={`game-type-option rounded-lg border-2 px-4 py-3 font-medium capitalize transition-all disabled:cursor-not-allowed flex flex-col items-center justify-center gap-2 ${
               selected === genre
                 ? 'border-purple-400 bg-purple-600/50 text-white'
-                : 'border-purple-500/30 bg-white/5 text-purple-100 hover:border-purple-400 hover:bg-white/10 disabled:hover:border-purple-500/30 disabled:hover:bg-white/5'
+                : 'border-purple-500/50 bg-purple-900/20 text-purple-200 hover:border-purple-400 hover:bg-purple-900/40 disabled:hover:border-purple-500/50 disabled:hover:bg-purple-900/20'
             }`}
           >
             <GenreIcon genre={genre} />

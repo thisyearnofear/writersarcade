@@ -232,7 +232,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
-                Story (5-panel)
+                <span className="text-black font-semibold">Story (5-panel)</span>
               </motion.button>
               <motion.button
                 type="button"
@@ -540,9 +540,9 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
         </form>
 
       {/* Tips with Comic Book Styling */}
-      <div className="mt-8 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-        <h3 className="font-medium mb-2">💡 Tips for better games:</h3>
-        <ul className="comic-bubble text-sm text-gray-100 space-y-1">
+      <div className="mt-8 p-4 bg-white rounded-lg border border-gray-300">
+        <h3 className="font-medium mb-2 text-gray-900">💡 Tips for better games:</h3>
+        <ul className="comic-bubble text-sm space-y-1">
           <li>• Paste URLs from Paragraph.xyz articles by supported authors</li>
           <li>• Choose genre and difficulty settings that match the article's tone</li>
           <li>• The AI will create unique game interpretations based on the article content</li>

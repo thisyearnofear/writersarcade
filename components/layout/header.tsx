@@ -4,7 +4,27 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { UserMenu } from '@/domains/users/components/user-menu'
 import { BalanceDisplay } from '@/components/ui/balance-display'
-import { Sparkles, Menu, X } from 'lucide-react'
+import { Sparkles, Menu, X, Moon, Sun } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
+import { useDarkMode } from '@/components/providers/DarkModeProvider'
+
+function DarkModeToggle() {
+  const { isDarkMode, toggleDarkMode } = useDarkMode()
+
+  return (
+    <div className="flex items-center space-x-2">
+      <Switch
+        id="dark-mode-toggle"
+        checked={isDarkMode}
+        onCheckedChange={toggleDarkMode}
+        className="data-[state=checked]:bg-purple-600 data-[state=unchecked]:bg-zinc-700"
+      />
+      <label htmlFor="dark-mode-toggle" className="text-sm text-gray-300">
+        {isDarkMode ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+      </label>
+    </div>
+  )
+}
 
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -23,14 +43,15 @@ export function Header() {
           <Link href="/games" className="text-gray-300 hover:text-white transition-colors">
             Games
           </Link>
-          <Link 
-            href="/generate" 
+          <Link
+            href="/generate"
             className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/30 hover:border-purple-500/50 transition-all text-sm text-purple-300 hover:text-purple-200"
           >
             <Sparkles className="w-4 h-4" />
             <span>Create</span>
           </Link>
           <BalanceDisplay />
+          <DarkModeToggle />
           <UserMenu />
         </nav>
 
@@ -69,6 +90,9 @@ export function Header() {
             </Link>
             <div className="pt-2 border-t border-gray-800">
               <BalanceDisplay mobileLayout={true} />
+            </div>
+            <div className="pt-2">
+              <DarkModeToggle />
             </div>
             <div className="pt-2">
               <UserMenu mobileLayout={true} />

@@ -6,6 +6,7 @@ import { AuthProvider } from '@/domains/users/components/auth-provider'
 import { Web3Provider } from '@/components/providers/Web3Provider'
 import { WalletSync } from '@/components/providers/WalletSync'
 import { ToastProvider } from '@/components/ui/use-toast'
+import { DarkModeProvider } from '@/components/providers/DarkModeProvider'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -32,10 +33,12 @@ export default function RootLayout({
         <Web3Provider>
           <ToastProvider>
             <WalletSync />
-            <AuthProvider>
-              {children}
-              <Toaster />
-            </AuthProvider>
+            <DarkModeProvider>
+              <AuthProvider>
+                {children}
+                <Toaster />
+              </AuthProvider>
+            </DarkModeProvider>
           </ToastProvider>
         </Web3Provider>
       </body>

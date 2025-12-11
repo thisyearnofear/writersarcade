@@ -45,13 +45,13 @@ export function IPAttribution({ assets, explorerUrl = "https://aeneid-testnet-ex
                             className={`p-4 rounded-xl border ${isMinted ? 'border-amber-500/30 bg-amber-900/10' : 'border-gray-800 bg-gray-900/50'} flex items-center justify-between group hover:border-amber-500/50 transition-colors`}
                         >
                             <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-lg ${isMinted ? 'bg-amber-500/20 text-amber-400' : 'bg-gray-800 text-gray-500'}`}>
+                                <div className={`p-2 rounded-lg ${isMinted ? 'bg-amber-500/20 text-amber-400' : 'bg-gray-800 text-gray-200'}`}>
                                     <Box className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-gray-200">{asset.title}</h4>
+                                    <h4 className="font-bold text-gray-100">{asset.title}</h4>
                                     <div className="flex items-center gap-2 text-xs">
-                                        <span className="bg-gray-800 px-2 py-0.5 rounded text-gray-400 capitalize">{asset.type}</span>
+                                        <span className="bg-gray-800 px-2 py-0.5 rounded text-gray-200 capitalize">{asset.type}</span>
                                         {isMinted && (
                                             <span className="text-green-500 flex items-center gap-1">
                                                 ● On-Chain IP
@@ -78,7 +78,7 @@ export function IPAttribution({ assets, explorerUrl = "https://aeneid-testnet-ex
             </div>
 
             <div className="mt-6 flex justify-center">
-                <div className="text-xs text-center text-gray-600 font-mono border border-gray-900 bg-black/40 px-4 py-2 rounded-full">
+                <div className="text-xs text-center text-gray-300 font-mono border border-gray-700 bg-gray-800/50 px-4 py-2 rounded-full">
                     Story Protocol Network: Aeneid Testnet
                 </div>
             </div>
