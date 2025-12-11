@@ -11,6 +11,7 @@ import { ImageGenerationService, type ImageGenerationResult } from '../services/
 import { ComicPanelCard } from './comic-panel-card'
 import { ComicBookFinale, type ComicBookFinalePanelData } from './comic-book-finale'
 import { parsePanel } from '../utils/text-parser'
+import { useToast } from '@/components/ui/use-toast'
 
 interface GamePlayInterfaceProps {
   game: Game
@@ -26,6 +27,7 @@ interface ChatEntry extends ChatMessage {
 const MAX_COMIC_PANELS = 5
 
 export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
+  const { toast } = useToast()
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatEntry[]>([])
   const [isStarting, setIsStarting] = useState(false)
@@ -38,6 +40,8 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
   const [pendingOptionId, setPendingOptionId] = useState<number | null>(null) // Track which option is loading
   const [responseReady, setResponseReady] = useState({ text: false, images: false }) // Track when response is FULLY ready
   const [userChoices, setUserChoices] = useState<Array<{ panelIndex: number; choice: string; timestamp: string }>>([])
+  const [regeneratingMessageId, setRegeneratingMessageId] = useState<string | null>(null) // Track which panel is regenerating
+  const [editedPanels, setEditedPanels] = useState<Record<string, string>>({}) // Track edited panel text
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const assistantMessageCount = messages.filter(m => m.role === 'assistant').length
@@ -49,7 +53,7 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
     const timeoutId = setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }, 100)
-    
+
     return () => clearTimeout(timeoutId)
   }, [messages])
 
@@ -107,14 +111,14 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
               } else if (data.type === 'end') {
                 // Text generation complete
                 setLoadingProgress(prev => ({ ...prev, text: true }))
-                
+
                 // Now create the message for image generation
                 const content = currentMessage
                 const optionStartRegex = /[\n\r]+\s*1[.)]\s+/
                 const match = content.match(optionStartRegex)
-                
-                const cleanContent = match && match.index && currentOptions.length > 0 
-                  ? content.substring(0, match.index).trim() 
+
+                const cleanContent = match && match.index && currentOptions.length > 0
+                  ? content.substring(0, match.index).trim()
                   : content
 
                 const finalMessage: ChatEntry = {
@@ -129,12 +133,12 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
                 }
 
                 setMessages([finalMessage])
-                
+
                 // Generate initial image while on hero screen
                 setLoadingProgress(prev => ({ ...prev, text: true }))
-                
+
                 const { narrative: firstNarrative } = parsePanel(cleanContent)
-                
+
                 ImageGenerationService.generateImage({
                   prompt: firstNarrative,
                   genre: game.genre,
@@ -295,10 +299,10 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
                   }
                   return newMessages
                 })
-                
+
                 // Mark text as ready
                 setResponseReady(prev => ({ ...prev, text: true }))
-                
+
                 // Start image generation immediately after text is complete
                 if (currentMessage) {
                   const { narrative } = parsePanel(currentMessage)
@@ -326,10 +330,10 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
 
     } catch (error) {
       console.error('Failed to send message:', error)
-      
+
       // Check if this is a game completion error (expected behavior)
       if (error instanceof Error && (
-        error.message?.includes('complete') || 
+        error.message?.includes('complete') ||
         error.message?.includes('maximum panels') ||
         error.message?.includes('400')
       )) {
@@ -393,16 +397,94 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
     sendMessage(option.text)
   }
 
+  // Handle image regeneration for a specific panel
+  const handleImageRegenerate = async (messageId: string, narrativeText: string, customPrompt?: string) => {
+    if (regeneratingMessageId) return // Already regenerating
+
+    setRegeneratingMessageId(messageId)
+
+    try {
+      // Use custom prompt if provided, otherwise use the narrative text
+      const promptToUse = customPrompt || narrativeText
+
+      const result = await ImageGenerationService.generateImage({
+        prompt: promptToUse,
+        genre: game.genre,
+        style: 'comic_book',
+        aspectRatio: 'landscape'
+      })
+
+      // Update the message with the new image
+      setMessages(prev => {
+        const newMessages = [...prev]
+        const targetMessage = newMessages.find(m => m.id === messageId)
+        if (targetMessage) {
+          targetMessage.imageModel = result.model
+          targetMessage.narrativeImage = result.imageUrl || null
+          targetMessage.imageRating = undefined // Reset rating for new image
+        }
+        return newMessages
+      })
+
+      toast({
+        title: '✨ Image regenerated',
+        description: customPrompt ? 'New image created with your custom prompt' : 'New image generated successfully',
+      })
+
+      console.log(`Image regenerated for panel ${messageId}: ${result.model}${customPrompt ? ' (custom prompt)' : ''}`)
+    } catch (error) {
+      console.error('Image regeneration failed:', error)
+      toast({
+        title: 'Regeneration failed',
+        description: 'Could not generate new image. Please try again.',
+        variant: 'destructive',
+      })
+    } finally {
+      setRegeneratingMessageId(null)
+    }
+  }
+
+  // Handle panel text changes from ComicBookFinale
+  const handlePanelTextChange = (panelIndex: number, newText: string) => {
+    const assistantMessages = messages.filter(m => m.role === 'assistant')
+    const targetMessage = assistantMessages[panelIndex]
+
+    if (targetMessage) {
+      // Update the message content
+      setMessages(prev => {
+        const newMessages = [...prev]
+        const msgToUpdate = newMessages.find(m => m.id === targetMessage.id)
+        if (msgToUpdate) {
+          msgToUpdate.content = newText
+        }
+        return newMessages
+      })
+
+      // Track edit for potential future use
+      setEditedPanels(prev => ({
+        ...prev,
+        [targetMessage.id]: newText
+      }))
+
+      toast({
+        title: '📝 Text updated',
+        description: `Panel ${panelIndex + 1} narrative saved`,
+      })
+
+      console.log(`Panel ${panelIndex} text updated`)
+    }
+  }
+
   const buildComicPanels = (): ComicBookFinalePanelData[] => {
     const assistantMessages = messages.filter(m => m.role === 'assistant').slice(0, MAX_COMIC_PANELS)
-    
+
     return assistantMessages.map((message, _idx) => {
       // Find the user's choice that comes after this assistant message
       const messageIndex = messages.indexOf(message)
       const nextUserMessage = messages
         .slice(messageIndex + 1)
         .find(m => m.role === 'user')
-      
+
       return {
         id: message.id,
         narrativeText: message.content,
@@ -591,80 +673,78 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
             </p>
 
             {/* CTA Button with responsive sizing */}
-             <div className="mt-6 sm:mt-8 pt-4">
-               <div className="relative">
-                 <Button
-                   onClick={startGame}
-                   disabled={isStarting}
-                   size="lg"
-                   className="w-full text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 rounded-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-50 relative z-10"
-                   style={{
-                     backgroundColor: game.primaryColor || '#8b5cf6',
-                     color: 'white',
-                   }}
-                 >
-                   {isStarting ? (
-                     <>
-                       <Loader2 className="w-5 h-5 md:w-6 md:h-6 mr-2 animate-spin" />
-                       <span>
-                         {!loadingProgress.text ? 'Crafting your story...' : 
+            <div className="mt-6 sm:mt-8 pt-4">
+              <div className="relative">
+                <Button
+                  onClick={startGame}
+                  disabled={isStarting}
+                  size="lg"
+                  className="w-full text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 rounded-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-50 relative z-10"
+                  style={{
+                    backgroundColor: game.primaryColor || '#8b5cf6',
+                    color: 'white',
+                  }}
+                >
+                  {isStarting ? (
+                    <>
+                      <Loader2 className="w-5 h-5 md:w-6 md:h-6 mr-2 animate-spin" />
+                      <span>
+                        {!loadingProgress.text ? 'Crafting your story...' :
                           !loadingProgress.images ? 'Generating visuals...' :
-                          'Almost ready...'}
-                       </span>
-                     </>
-                   ) : (
-                     <>
-                       <Play className="w-5 h-5 md:w-6 md:h-6 mr-2 fill-current" />
-                       <span>Start Game</span>
-                     </>
-                   )}
-                 </Button>
-                 
-                 {/* Glow effect when starting */}
-                 {isStarting && (
-                   <div 
-                     className="absolute inset-0 rounded-lg animate-glow pointer-events-none"
-                     style={{
-                       backgroundColor: 'transparent',
-                       boxShadow: `0 0 20px ${game.primaryColor || '#8b5cf6'}60`,
-                     }}
-                   />
-                 )}
-               </div>
-               
-               {/* Loading Progress Indicators */}
-               {isStarting && (
-                 <div className="mt-6 flex items-center justify-center gap-3 animate-slide-up">
-                   <div className="space-y-2 w-full max-w-xs">
-                     {/* Story generation */}
-                     <div className="flex items-center gap-3">
-                       <div 
-                         className={`w-2 h-2 rounded-full transition-all duration-700 ${
-                           loadingProgress.text ? 'bg-green-500' : 'bg-yellow-500 animate-pulse'
-                         }`}
-                       />
-                       <span className="text-xs text-gray-300">Crafting narrative</span>
-                       {loadingProgress.text && (
-                         <span className="text-xs text-green-400 ml-auto">✓</span>
-                       )}
-                     </div>
-                     
-                     {/* Image generation */}
-                     <div className="flex items-center gap-3">
-                       <div 
-                         className={`w-2 h-2 rounded-full transition-all duration-700 ${
-                           loadingProgress.images ? 'bg-green-500' : 'bg-gray-600 animate-pulse'
-                         }`}
-                       />
-                       <span className="text-xs text-gray-300">Generating visuals</span>
-                       {loadingProgress.images && (
-                         <span className="text-xs text-green-400 ml-auto">✓</span>
-                       )}
-                     </div>
-                   </div>
-                 </div>
-               )}
-             </div>
+                            'Almost ready...'}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-5 h-5 md:w-6 md:h-6 mr-2 fill-current" />
+                      <span>Start Game</span>
+                    </>
+                  )}
+                </Button>
+
+                {/* Glow effect when starting */}
+                {isStarting && (
+                  <div
+                    className="absolute inset-0 rounded-lg animate-glow pointer-events-none"
+                    style={{
+                      backgroundColor: 'transparent',
+                      boxShadow: `0 0 20px ${game.primaryColor || '#8b5cf6'}60`,
+                    }}
+                  />
+                )}
+              </div>
+
+              {/* Loading Progress Indicators */}
+              {isStarting && (
+                <div className="mt-6 flex items-center justify-center gap-3 animate-slide-up">
+                  <div className="space-y-2 w-full max-w-xs">
+                    {/* Story generation */}
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-2 h-2 rounded-full transition-all duration-700 ${loadingProgress.text ? 'bg-green-500' : 'bg-yellow-500 animate-pulse'
+                          }`}
+                      />
+                      <span className="text-xs text-gray-300">Crafting narrative</span>
+                      {loadingProgress.text && (
+                        <span className="text-xs text-green-400 ml-auto">✓</span>
+                      )}
+                    </div>
+
+                    {/* Image generation */}
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-2 h-2 rounded-full transition-all duration-700 ${loadingProgress.images ? 'bg-green-500' : 'bg-gray-600 animate-pulse'
+                          }`}
+                      />
+                      <span className="text-xs text-gray-300">Generating visuals</span>
+                      {loadingProgress.images && (
+                        <span className="text-xs text-green-400 ml-auto">✓</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Enhanced Tips section with micro-interactions */}
             <motion.div
@@ -701,6 +781,7 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
         authorWallet={game.authorWallet}
         difficulty={game.difficulty || 'medium'}
         userChoices={userChoices}
+        onPanelTextChange={handlePanelTextChange}
       />
     )
   }
@@ -725,68 +806,70 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
           </div>
         ) : (
           // Comic Panel Display
-           <div className="w-full flex flex-col items-center justify-center min-h-full p-4 md:p-8 py-6 md:py-8">
-             {/* Story Progress Bar */}
-             <div className="w-full max-w-5xl mb-8 pb-6 border-b border-white/10">
-               <div className="flex items-center justify-between mb-3">
-                 <p className="text-xs text-gray-400 uppercase tracking-wider font-bold">Story Progress</p>
-                 <p className="text-sm text-gray-500">Panel {assistantMessageCount} of {MAX_COMIC_PANELS}</p>
-               </div>
-               <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-                 <div
-                   className="h-full transition-all duration-500 ease-out"
-                   style={{
-                     width: `${(assistantMessageCount / MAX_COMIC_PANELS) * 100}%`,
-                     backgroundColor: game.primaryColor || '#8b5cf6',
-                   }}
-                 />
-               </div>
-             </div>
+          <div className="w-full flex flex-col items-center justify-center min-h-full p-4 md:p-8 py-6 md:py-8">
+            {/* Story Progress Bar */}
+            <div className="w-full max-w-5xl mb-8 pb-6 border-b border-white/10">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs text-gray-400 uppercase tracking-wider font-bold">Story Progress</p>
+                <p className="text-sm text-gray-500">Panel {assistantMessageCount} of {MAX_COMIC_PANELS}</p>
+              </div>
+              <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div
+                  className="h-full transition-all duration-500 ease-out"
+                  style={{
+                    width: `${(assistantMessageCount / MAX_COMIC_PANELS) * 100}%`,
+                    backgroundColor: game.primaryColor || '#8b5cf6',
+                  }}
+                />
+              </div>
+            </div>
 
             {/* Current Comic Panel - Show current panel while next loads in background */}
-             <div className="w-full space-y-8">
-               {messages.map((message, idx) => {
-                 // Only render assistant messages that have options (completed/ready to interact)
-                 if (message.role !== 'assistant' || !message.options || message.options.length === 0) {
-                   return null
-                 }
+            <div className="w-full space-y-8">
+              {messages.map((message, idx) => {
+                // Only render assistant messages that have options (completed/ready to interact)
+                if (message.role !== 'assistant' || !message.options || message.options.length === 0) {
+                  return null
+                }
 
-                 // Only show the LATEST panel with options
-                 const remainingMessages = messages.slice(idx + 1)
-                 const hasLaterCompletedPanel = remainingMessages.some(m => m.role === 'assistant' && m.options && m.options.length > 0)
+                // Only show the LATEST panel with options
+                const remainingMessages = messages.slice(idx + 1)
+                const hasLaterCompletedPanel = remainingMessages.some(m => m.role === 'assistant' && m.options && m.options.length > 0)
 
-                 if (hasLaterCompletedPanel) return null
+                if (hasLaterCompletedPanel) return null
 
-                 // NEW LOGIC: Show current panel immediately, even if image isn't ready yet
-                 // This allows user to stay on current panel while next one loads in background
-                 const imageReady = message.narrativeImage !== undefined
+                // NEW LOGIC: Show current panel immediately, even if image isn't ready yet
+                // This allows user to stay on current panel while next one loads in background
+                const imageReady = message.narrativeImage !== undefined
 
-                 // Show this panel regardless of image readiness
-                 return (
-                   <div key={message.id} className="animate-in fade-in duration-700 ease-out">
-                     <ComicPanelCard
-                       messageId={message.id}
-                       narrativeText={message.content}
-                       genre={game.genre}
-                       primaryColor={game.primaryColor || '#8b5cf6'}
-                       options={message.options || []}
-                       onOptionSelect={handleOptionClick}
-                       isWaiting={isWaitingForResponse}
-                       onImageRating={(rating) => handleImageRating(message.id, rating)}
-                       onImagesReady={handleImagesReady}
-                       pendingOptionId={pendingOptionId}
-                       responseReady={responseReady}
-                       narrativeImage={message.narrativeImage || undefined}
-                       imageModel={message.imageModel}
-                       shouldRevealContent={true}
-                       showLoadingState={!imageReady && isWaitingForResponse}
-                     />
-                   </div>
-                 )
-               })}
-             </div>
+                // Show this panel regardless of image readiness
+                return (
+                  <div key={message.id} className="animate-in fade-in duration-700 ease-out">
+                    <ComicPanelCard
+                      messageId={message.id}
+                      narrativeText={message.content}
+                      genre={game.genre}
+                      primaryColor={game.primaryColor || '#8b5cf6'}
+                      options={message.options || []}
+                      onOptionSelect={handleOptionClick}
+                      isWaiting={isWaitingForResponse}
+                      onImageRating={(rating) => handleImageRating(message.id, rating)}
+                      onImagesReady={handleImagesReady}
+                      onImageRegenerate={(narrativeText, customPrompt) => handleImageRegenerate(message.id, narrativeText, customPrompt)}
+                      isRegenerating={regeneratingMessageId === message.id}
+                      pendingOptionId={pendingOptionId}
+                      responseReady={responseReady}
+                      narrativeImage={message.narrativeImage || undefined}
+                      imageModel={message.imageModel}
+                      shouldRevealContent={true}
+                      showLoadingState={!imageReady && isWaitingForResponse}
+                    />
+                  </div>
+                )
+              })}
+            </div>
 
-             <div ref={messagesEndRef} className="h-8" />
+            <div ref={messagesEndRef} className="h-8" />
           </div>
         )}
       </div>
@@ -799,33 +882,33 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
         }}
       >
         <div className="w-full max-w-5xl mx-auto">
-        {!canAddMorePanels && (
-          <div className="space-y-4">
-            <div
-              className="p-5 rounded-xl border-2 text-sm"
-              style={{
-                backgroundColor: `${game.primaryColor || '#8b5cf6'}10`,
-                borderColor: game.primaryColor || '#8b5cf6',
-              }}
-            >
-              <p className="font-semibold text-white">Story Complete</p>
-              <p className="text-sm text-gray-400 mt-2">
-                Your {MAX_COMIC_PANELS}-panel adventure has concluded. View and mint your comic as an NFT.
-              </p>
+          {!canAddMorePanels && (
+            <div className="space-y-4">
+              <div
+                className="p-5 rounded-xl border-2 text-sm"
+                style={{
+                  backgroundColor: `${game.primaryColor || '#8b5cf6'}10`,
+                  borderColor: game.primaryColor || '#8b5cf6',
+                }}
+              >
+                <p className="font-semibold text-white">Story Complete</p>
+                <p className="text-sm text-gray-400 mt-2">
+                  Your {MAX_COMIC_PANELS}-panel adventure has concluded. View and mint your comic as an NFT.
+                </p>
+              </div>
+              <Button
+                onClick={() => setShowComicFinale(true)}
+                className="w-full h-12 font-semibold transition-all duration-200 hover:shadow-lg"
+                style={{
+                  backgroundColor: game.primaryColor || '#8b5cf6',
+                  color: 'white',
+                }}
+              >
+                <BookOpen className="w-5 h-5 mr-2" />
+                View & Mint Comic
+              </Button>
             </div>
-            <Button
-              onClick={() => setShowComicFinale(true)}
-              className="w-full h-12 font-semibold transition-all duration-200 hover:shadow-lg"
-              style={{
-                backgroundColor: game.primaryColor || '#8b5cf6',
-                color: 'white',
-              }}
-            >
-              <BookOpen className="w-5 h-5 mr-2" />
-              View & Mint Comic
-            </Button>
-          </div>
-        )}
+          )}
         </div>
       </div>
     </div>

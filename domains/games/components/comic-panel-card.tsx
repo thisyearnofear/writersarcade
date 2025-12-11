@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
-import { ZoomIn, Loader2 } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ZoomIn, Loader2, RefreshCw, ChevronDown, ChevronUp, Sparkles } from 'lucide-react'
 import { GameplayOption } from '../types'
 import { parsePanel } from '../utils/text-parser'
 import { ImageGenerationResult } from '../services/image-generation.service'
@@ -21,12 +21,14 @@ interface ComicPanelCardProps {
   onImageGenerated?: (result: ImageGenerationResult) => void
   onImageRating?: (rating: number) => void
   onImagesReady?: () => void
+  onImageRegenerate?: (narrativeText: string, customPrompt?: string) => Promise<void>
   pendingOptionId?: number | null
   responseReady?: { text: boolean; images: boolean }
   narrativeImage?: string | null
   imageModel?: string
   shouldRevealContent?: boolean
   showLoadingState?: boolean
+  isRegenerating?: boolean
 }
 
 export function ComicPanelCard({
@@ -39,16 +41,21 @@ export function ComicPanelCard({
   isWaiting,
   onImageRating,
   onImagesReady,
+  onImageRegenerate,
   pendingOptionId,
   narrativeImage,
   imageModel,
   shouldRevealContent = true,
   showLoadingState = false,
+  isRegenerating = false,
 }: ComicPanelCardProps) {
   const { narrative, options: parsedOptions } = parsePanel(narrativeText)
   const [imageRating, setImageRating] = useState<number | null>(null)
   const [isImageExpanded, setIsImageExpanded] = useState(false)
   const [revealAnimation, setRevealAnimation] = useState(false)
+  const [showPrompt, setShowPrompt] = useState(false)
+  const [customPrompt, setCustomPrompt] = useState('')
+  const [isCustomPromptMode, setIsCustomPromptMode] = useState(false)
   const messageIdRef = useRef(messageId)
 
   // Reset rating and trigger reveal animation when messageId changes
@@ -78,6 +85,15 @@ export function ComicPanelCard({
     setIsImageExpanded(true)
   }
 
+  const handleRegenerateWithPrompt = () => {
+    if (onImageRegenerate) {
+      const promptToUse = isCustomPromptMode && customPrompt.trim() ? customPrompt.trim() : undefined
+      onImageRegenerate(narrative, promptToUse)
+      setShowPrompt(false)
+      setIsCustomPromptMode(false)
+    }
+  }
+
   return (
     <>
       <ImageLightbox
@@ -89,166 +105,260 @@ export function ComicPanelCard({
         onClose={() => setIsImageExpanded(false)}
       />
       <div className="w-full max-w-7xl mx-auto">
-      {/* Comic Panel Container - Stacked layout with full-width image */}
-      <div
-        className="rounded-lg shadow-2xl overflow-hidden transition-all duration-500 ease-out"
-        style={{
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          border: `3px solid ${primaryColor}`,
-          boxShadow: `0 20px 40px rgba(0,0,0,0.6), 0 0 20px ${primaryColor}20`,
-        }}
-      >
-        {/* Image Section - Full Width */}
-        <div className="w-full bg-black relative overflow-hidden group">
-          {/* Comic book frame effect */}
-          <div 
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: `linear-gradient(90deg, transparent 0%, ${primaryColor}08 50%, transparent 100%)`,
-            }}
-          />
-           
-          {/* Image container - responsive height with better mobile scaling */}
-          <div className="w-full h-48 sm:h-64 md:h-80 lg:h-96 overflow-hidden cursor-pointer relative" onClick={handleImageExpand}>
-            {narrativeImage ? (
-              <>
-                <img
-                  src={narrativeImage}
-                  alt="Story panel"
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-                {/* Subtle vignette overlay */}
-                <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/20 pointer-events-none" />
-                
-                {/* Expand button overlay with enhanced micro-interaction */}
-                <motion.button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleImageExpand()
-                  }}
-                  className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-all duration-200 opacity-0 group-hover:opacity-100"
-                  aria-label="Expand image"
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                >
-                  <motion.div
-                    className="p-3 rounded-lg bg-black/60 backdrop-blur-sm hover:bg-black/80 transition-colors"
-                    whileHover={{ rotate: 5 }}
-                    whileTap={{ rotate: 0, scale: 0.9 }}
-                  >
-                    <ZoomIn className="w-5 h-5" style={{ color: primaryColor }} />
-                  </motion.div>
-                </motion.button>
-                
-                {/* Info badges */}
-                <div className="absolute top-4 left-4 flex items-center gap-2">
-                   {/* Model badge */}
-                   <span className="text-xs font-mono px-3 py-1.5 rounded-md bg-black/85 text-white/80 backdrop-blur-sm border border-white/10">
-                     {imageModel || 'unknown'}
-                   </span>
-                 </div>
-                 
-                 {/* Rating stars - right side with better mobile touch targets */}
-                 <div className="absolute top-4 right-4 flex gap-1 bg-black/70 px-3 py-1.5 rounded-md backdrop-blur-sm border border-white/10">
-                   {!imageRating ? (
-                     <>
-                       {[1, 2, 3, 4, 5].map((star) => (
-                         <button
-                           key={star}
-                           onClick={() => handleRating(star)}
-                           className="text-lg sm:text-base hover:scale-125 transition-all duration-200 cursor-pointer text-white/50 hover:text-white p-1"
-                           aria-label={`Rate ${star} stars`}
-                         >
-                           ☆
-                         </button>
-                       ))}
-                     </>
-                   ) : (
-                     <>
-                       {[1, 2, 3, 4, 5].map((star) => (
-                         <span
-                           key={star}
-                           className="text-lg sm:text-base transition-colors duration-300"
-                           style={{ color: star <= imageRating ? primaryColor : 'rgba(64,64,64,0.5)' }}
-                         >
-                           ★
-                         </span>
-                       ))}
-                     </>
-                   )}
-                 </div>
-               </>
-             ) : showLoadingState ? (
-               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-black relative">
-                 <div className="text-center">
-                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" style={{ color: primaryColor }} />
-                   <p className="text-gray-400 text-sm">Preparing next panel...</p>
-                 </div>
-               </div>
-             ) : (
-               <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-black relative">
-                 <div className="text-center">
-                   <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" style={{ color: primaryColor }} />
-                   <p className="text-gray-400 text-sm">Generating visual...</p>
-                 </div>
-               </div>
-             )}
-           </div>
-         </div>
+        {/* Comic Panel Container - Stacked layout with full-width image */}
+        <div
+          className="rounded-lg shadow-2xl overflow-hidden transition-all duration-500 ease-out"
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            border: `3px solid ${primaryColor}`,
+            boxShadow: `0 20px 40px rgba(0,0,0,0.6), 0 0 20px ${primaryColor}20`,
+          }}
+        >
+          {/* Image Section - Full Width */}
+          <div className="w-full bg-black relative overflow-hidden group">
+            {/* Comic book frame effect */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: `linear-gradient(90deg, transparent 0%, ${primaryColor}08 50%, transparent 100%)`,
+              }}
+            />
 
-        {/* Content Section - Full Width Below Image */}
-        <div className="w-full p-6 lg:p-8 flex flex-col gap-6 bg-gradient-to-b from-black/30 to-black/10">
-          
-          {/* Narrative Text */}
-          <div className="flex flex-col min-h-24">
-            {/* Subtle label */}
-            <div className="mb-3 pb-3 border-b" style={{ borderColor: `${primaryColor}30` }}>
-              <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Scene</span>
+            {/* Image container - responsive height with better mobile scaling */}
+            <div className="w-full h-48 sm:h-64 md:h-80 lg:h-96 overflow-hidden cursor-pointer relative" onClick={handleImageExpand}>
+              {narrativeImage ? (
+                <>
+                  <img
+                    src={narrativeImage}
+                    alt="Story panel"
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  {/* Subtle vignette overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/20 pointer-events-none" />
+
+                  {/* Expand button overlay with enhanced micro-interaction */}
+                  <motion.button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleImageExpand()
+                    }}
+                    className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-all duration-200 opacity-0 group-hover:opacity-100"
+                    aria-label="Expand image"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                  >
+                    <motion.div
+                      className="p-3 rounded-lg bg-black/60 backdrop-blur-sm hover:bg-black/80 transition-colors"
+                      whileHover={{ rotate: 5 }}
+                      whileTap={{ rotate: 0, scale: 0.9 }}
+                    >
+                      <ZoomIn className="w-5 h-5" style={{ color: primaryColor }} />
+                    </motion.div>
+                  </motion.button>
+
+                  {/* Info badges */}
+                  <div className="absolute top-4 left-4 flex items-center gap-2">
+                    {/* Model badge */}
+                    <span className="text-xs font-mono px-3 py-1.5 rounded-md bg-black/85 text-white/80 backdrop-blur-sm border border-white/10">
+                      {imageModel || 'unknown'}
+                    </span>
+                    {/* Regenerate button */}
+                    {onImageRegenerate && (
+                      <motion.button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onImageRegenerate(narrative)
+                        }}
+                        disabled={isRegenerating || isWaiting}
+                        className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-md bg-purple-600/80 hover:bg-purple-500 text-white backdrop-blur-sm border border-purple-400/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        title="Regenerate image"
+                      >
+                        <RefreshCw className={`w-3 h-3 ${isRegenerating ? 'animate-spin' : ''}`} />
+                        {isRegenerating ? 'Regenerating...' : 'New Image'}
+                      </motion.button>
+                    )}
+                  </div>
+
+                  {/* Rating stars - right side with better mobile touch targets */}
+                  <div className="absolute top-4 right-4 flex gap-1 bg-black/70 px-3 py-1.5 rounded-md backdrop-blur-sm border border-white/10">
+                    {!imageRating ? (
+                      <>
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            onClick={() => handleRating(star)}
+                            className="text-lg sm:text-base hover:scale-125 transition-all duration-200 cursor-pointer text-white/50 hover:text-white p-1"
+                            aria-label={`Rate ${star} stars`}
+                          >
+                            ☆
+                          </button>
+                        ))}
+                      </>
+                    ) : (
+                      <>
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <span
+                            key={star}
+                            className="text-lg sm:text-base transition-colors duration-300"
+                            style={{ color: star <= imageRating ? primaryColor : 'rgba(64,64,64,0.5)' }}
+                          >
+                            ★
+                          </span>
+                        ))}
+                      </>
+                    )}
+                  </div>
+                </>
+              ) : showLoadingState ? (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-black relative">
+                  <div className="text-center">
+                    <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" style={{ color: primaryColor }} />
+                    <p className="text-gray-400 text-sm">Preparing next panel...</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-black relative">
+                  <div className="text-center">
+                    <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" style={{ color: primaryColor }} />
+                    <p className="text-gray-400 text-sm">Generating visual...</p>
+                  </div>
+                </div>
+              )}
             </div>
-            
-            {/* Main narrative - with typewriter reveal */}
-            <p className="text-base lg:text-lg leading-relaxed text-gray-100 font-medium">
-              <TypewriterEffect
-                text={narrative}
-                isVisible={revealAnimation}
-                duration={400}
-              />
-            </p>
           </div>
 
-          {/* Choice Options - Spanning Full Width Below */}
-          {choiceOptions.length > 0 && (
-            <div className="flex flex-col gap-4">
-              <div className="pt-2 border-t" style={{ borderColor: `${primaryColor}30` }}>
-                <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
-                  Your next move
-                </h4>
-                
-                {/* Grid layout - 1 col on mobile, 2 on tablet, 4 on desktop */}
-                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                   {choiceOptions.map((option, idx) => {
-                     const optionId = idx + 1
-                     return (
-                       <AnimatedOptionButton
-                         key={idx}
-                         option={option}
-                         optionId={optionId}
-                         isSelected={pendingOptionId === optionId}
-                         isWaiting={isWaiting}
-                         primaryColor={primaryColor}
-                         disabled={isWaiting}
-                         onClick={() => onOptionSelect({ id: optionId, text: option })}
-                       />
-                     )
-                   })}
-                 </div>
-              </div>
+          {/* Prompt Visibility Panel - Collapsible */}
+          {onImageRegenerate && narrativeImage && (
+            <div className="border-t border-white/10">
+              <button
+                onClick={() => setShowPrompt(!showPrompt)}
+                className="w-full px-4 py-2 flex items-center justify-between text-xs text-gray-400 hover:text-gray-300 hover:bg-white/5 transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  <Sparkles className="w-3 h-3" />
+                  {showPrompt ? 'Hide Prompt' : 'View/Edit Prompt'}
+                </span>
+                {showPrompt ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              </button>
+
+              <AnimatePresence>
+                {showPrompt && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 pb-4 space-y-3">
+                      <div className="text-xs text-gray-500 mb-2">
+                        This prompt was used to generate the image. You can modify it and regenerate.
+                      </div>
+
+                      {/* Toggle between viewing and editing */}
+                      <div className="flex items-center gap-2 mb-2">
+                        <button
+                          onClick={() => {
+                            setIsCustomPromptMode(false)
+                            setCustomPrompt('')
+                          }}
+                          className={`px-2 py-1 text-xs rounded ${!isCustomPromptMode ? 'bg-purple-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}
+                        >
+                          Original
+                        </button>
+                        <button
+                          onClick={() => {
+                            setIsCustomPromptMode(true)
+                            if (!customPrompt) setCustomPrompt(narrative)
+                          }}
+                          className={`px-2 py-1 text-xs rounded ${isCustomPromptMode ? 'bg-purple-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}
+                        >
+                          Custom
+                        </button>
+                      </div>
+
+                      {isCustomPromptMode ? (
+                        <textarea
+                          value={customPrompt}
+                          onChange={(e) => setCustomPrompt(e.target.value)}
+                          className="w-full bg-gray-900 border border-purple-500/50 rounded-lg p-3 text-sm text-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400 min-h-[100px] resize-y"
+                          placeholder="Enter your custom prompt..."
+                        />
+                      ) : (
+                        <div className="bg-gray-900/50 rounded-lg p-3 text-sm text-gray-400 border border-gray-700/50">
+                          {narrative}
+                        </div>
+                      )}
+
+                      <button
+                        onClick={handleRegenerateWithPrompt}
+                        disabled={isRegenerating || isWaiting}
+                        className="w-full py-2 px-4 bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium rounded-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        <RefreshCw className={`w-4 h-4 ${isRegenerating ? 'animate-spin' : ''}`} />
+                        {isRegenerating ? 'Regenerating...' : isCustomPromptMode ? 'Regenerate with Custom Prompt' : 'Regenerate Image'}
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           )}
+
+          {/* Content Section - Full Width Below Image */}
+          <div className="w-full p-6 lg:p-8 flex flex-col gap-6 bg-gradient-to-b from-black/30 to-black/10">
+
+            {/* Narrative Text */}
+            <div className="flex flex-col min-h-24">
+              {/* Subtle label */}
+              <div className="mb-3 pb-3 border-b" style={{ borderColor: `${primaryColor}30` }}>
+                <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Scene</span>
+              </div>
+
+              {/* Main narrative - with typewriter reveal */}
+              <p className="text-base lg:text-lg leading-relaxed text-gray-100 font-medium">
+                <TypewriterEffect
+                  text={narrative}
+                  isVisible={revealAnimation}
+                  duration={400}
+                />
+              </p>
+            </div>
+
+            {/* Choice Options - Spanning Full Width Below */}
+            {choiceOptions.length > 0 && (
+              <div className="flex flex-col gap-4">
+                <div className="pt-2 border-t" style={{ borderColor: `${primaryColor}30` }}>
+                  <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
+                    Your next move
+                  </h4>
+
+                  {/* Grid layout - 1 col on mobile, 2 on tablet, 4 on desktop */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                    {choiceOptions.map((option, idx) => {
+                      const optionId = idx + 1
+                      return (
+                        <AnimatedOptionButton
+                          key={idx}
+                          option={option}
+                          optionId={optionId}
+                          isSelected={pendingOptionId === optionId}
+                          isWaiting={isWaiting}
+                          primaryColor={primaryColor}
+                          disabled={isWaiting}
+                          onClick={() => onOptionSelect({ id: optionId, text: option })}
+                        />
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
     </>
   )
 }

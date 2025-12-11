@@ -149,8 +149,23 @@ export default function WorkshopPage() {
     const removeAsset = (type: 'characters' | 'gameMechanics' | 'storyBeats', index: number) => {
         if (!assets) return
         const newAssets = { ...assets }
-    // @ts-expect-error - dynamic key access
-    newAssets[type] = newAssets[type].filter((_, i) => i !== index)
+        // @ts-expect-error - dynamic key access
+        newAssets[type] = newAssets[type].filter((_: unknown, i: number) => i !== index)
+        setAssets(newAssets)
+    }
+
+    const updateAsset = <K extends 'characters' | 'gameMechanics' | 'storyBeats'>(
+        type: K,
+        index: number,
+        field: string,
+        value: string
+    ) => {
+        if (!assets) return
+        const newAssets = { ...assets }
+        // @ts-expect-error - dynamic key access
+        newAssets[type] = newAssets[type].map((item: Record<string, unknown>, i: number) =>
+            i === index ? { ...item, [field]: value } : item
+        )
         setAssets(newAssets)
     }
 
@@ -266,12 +281,18 @@ export default function WorkshopPage() {
 
                             <section>
                                 <h3 className="text-gray-400 text-sm font-bold tracking-wider uppercase mb-4 flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-blue-500"></span> Characters
+                                    <span className="w-2 h-2 rounded-full bg-blue-500"></span> Characters ({assets.characters.length})
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <AnimatePresence>
                                         {assets.characters.map((char, i) => (
-                                            <AssetCard key={i} title={char.name} type="Character" onDelete={() => removeAsset('characters', i)}>
+                                            <AssetCard
+                                                key={i}
+                                                title={char.name}
+                                                type="Character"
+                                                onDelete={() => removeAsset('characters', i)}
+                                                onTitleChange={(newName) => updateAsset('characters', i, 'name', newName)}
+                                            >
                                                 <p className="text-sm text-gray-300 italic mb-2">{char.role}</p>
                                                 <p className="text-xs text-gray-400">{char.personality}</p>
                                             </AssetCard>
@@ -282,12 +303,18 @@ export default function WorkshopPage() {
 
                             <section>
                                 <h3 className="text-gray-400 text-sm font-bold tracking-wider uppercase mb-4 flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-red-500"></span> Mechanics
+                                    <span className="w-2 h-2 rounded-full bg-red-500"></span> Mechanics ({assets.gameMechanics.length})
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <AnimatePresence>
                                         {assets.gameMechanics.map((mech, i) => (
-                                            <AssetCard key={i} title={mech.name} type="Mechanic" onDelete={() => removeAsset('gameMechanics', i)}>
+                                            <AssetCard
+                                                key={i}
+                                                title={mech.name}
+                                                type="Mechanic"
+                                                onDelete={() => removeAsset('gameMechanics', i)}
+                                                onTitleChange={(newName) => updateAsset('gameMechanics', i, 'name', newName)}
+                                            >
                                                 <p className="text-sm text-gray-300 mb-2">{mech.description}</p>
                                                 <p className="text-xs text-gray-500 font-mono bg-gray-900 p-2 rounded block">
                                                     {mech.consequence}
@@ -300,12 +327,18 @@ export default function WorkshopPage() {
 
                             <section>
                                 <h3 className="text-gray-400 text-sm font-bold tracking-wider uppercase mb-4 flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-yellow-500"></span> Story Beats
+                                    <span className="w-2 h-2 rounded-full bg-yellow-500"></span> Story Beats ({assets.storyBeats.length})
                                 </h3>
                                 <div className="grid grid-cols-1 gap-4">
                                     <AnimatePresence>
                                         {assets.storyBeats.map((beat, i) => (
-                                            <AssetCard key={i} title={beat.title} type="Story" onDelete={() => removeAsset('storyBeats', i)}>
+                                            <AssetCard
+                                                key={i}
+                                                title={beat.title}
+                                                type="Story"
+                                                onDelete={() => removeAsset('storyBeats', i)}
+                                                onTitleChange={(newTitle) => updateAsset('storyBeats', i, 'title', newTitle)}
+                                            >
                                                 <p className="text-sm text-gray-300">{beat.description}</p>
                                             </AssetCard>
                                         ))}

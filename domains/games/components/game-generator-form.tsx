@@ -53,7 +53,7 @@ function StylePreview({ genre, difficulty }: { genre: GameGenre; difficulty: Gam
           {genre === 'comedy' && (
             <span className="inline-block w-2.5 h-2.5 rounded-full bg-yellow-300 shadow" />
           )}
-        {genre === 'mystery' && (
+          {genre === 'mystery' && (
             <span className="inline-block w-2.5 h-2.5 rounded-full bg-indigo-300 shadow" />
           )}
         </div>
@@ -112,7 +112,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
 
     try {
       setLoadingStep('validate')
-      
+
       // Validate input
       if (!url.trim()) {
         throw new Error('Please provide a Paragraph.xyz article URL')
@@ -124,69 +124,69 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
       setStepStatuses((prev) => ({ ...prev, extract: 'completed' }))
 
       setLoadingStep('generate')
-       
-       let lastError: Error | null = null
-       let attempt = 0
-       const maxAttempts = 3
-       
-       const result = await retryWithBackoff(
-         async () => {
-           attempt++
-           
-           const response = await fetch('/api/games/generate', {
-             method: 'POST',
-             headers: {
-               'Content-Type': 'application/json',
+
+      let lastError: Error | null = null
+      let attempt = 0
+      const maxAttempts = 3
+
+      const result = await retryWithBackoff(
+        async () => {
+          attempt++
+
+          const response = await fetch('/api/games/generate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
             },
-             body: JSON.stringify({
-               url: url.trim(),
-               mode,
-               ...(isStoryMode && showCustomization && paymentApproved && {
-                 customization: {
-                   genre,
-                   difficulty,
-                 },
-               }),
-               ...(isStoryMode && paymentApproved && {
-                 payment: {
-                   writerCoinId: writerCoin.id,
-                 },
-               }),
-               // Add attempt metadata for server-side agentic retry
-               _attempt: attempt,
-               _maxAttempts: maxAttempts,
-             }),
-           })
+            body: JSON.stringify({
+              url: url.trim(),
+              mode,
+              ...(isStoryMode && showCustomization && paymentApproved && {
+                customization: {
+                  genre,
+                  difficulty,
+                },
+              }),
+              ...(isStoryMode && paymentApproved && {
+                payment: {
+                  writerCoinId: writerCoin.id,
+                },
+              }),
+              // Add attempt metadata for server-side agentic retry
+              _attempt: attempt,
+              _maxAttempts: maxAttempts,
+            }),
+          })
 
-           // Handle network errors
-           if (!response.ok) {
-             const errorData = await response.json().catch(() => ({}))
-             const errorMsg = 
-               errorData.error || 
-               `Generation failed (${response.status}): ${response.statusText}`
-             
-             lastError = new Error(errorMsg)
-             
-             // On validation or schema errors, log for retry insight
-             if (response.status === 400) {
-               console.warn(`Attempt ${attempt}/${maxAttempts} failed with validation error:`, errorMsg)
-             }
-             
-             throw lastError
-           }
+          // Handle network errors
+          if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}))
+            const errorMsg =
+              errorData.error ||
+              `Generation failed (${response.status}): ${response.statusText}`
 
-           const result = await response.json()
+            lastError = new Error(errorMsg)
 
-           if (!result.success) {
-             lastError = new Error(result.error || 'Failed to generate game')
-             throw lastError
-           }
+            // On validation or schema errors, log for retry insight
+            if (response.status === 400) {
+              console.warn(`Attempt ${attempt}/${maxAttempts} failed with validation error:`, errorMsg)
+            }
 
-           return result
-         },
-         2, // Max 2 retries for generation (plus initial attempt = 3 total)
-         2000 // 2 second base delay
-       )
+            throw lastError
+          }
+
+          const result = await response.json()
+
+          if (!result.success) {
+            lastError = new Error(result.error || 'Failed to generate game')
+            throw lastError
+          }
+
+          return result
+        },
+        2, // Max 2 retries for generation (plus initial attempt = 3 total)
+        2000 // 2 second base delay
+      )
       setStepStatuses((prev) => ({ ...prev, generate: 'completed' }))
 
       setLoadingStep('save')
@@ -209,12 +209,12 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
       const message = err instanceof Error ? err.message : 'An unexpected error occurred'
       setError(message)
       setPaymentApproved(false)
-      
+
       // Mark current step as failed
       if (loadingStep) {
         setStepStatuses((prev) => ({ ...prev, [loadingStep]: 'error' }))
       }
-      
+
       console.error('Error generating game:', err)
     } finally {
       setIsGenerating(false)
@@ -382,15 +382,14 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                   return (
                     <div key={step} className="flex items-center gap-3">
                       <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
-                          status === 'error'
+                        className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${status === 'error'
                             ? 'bg-red-900/50 border border-red-500'
                             : status === 'completed'
-                            ? 'bg-purple-900/50 border border-purple-500'
-                            : status === 'in-progress'
-                            ? 'bg-purple-600 border border-purple-400'
-                            : 'bg-gray-700 border border-gray-600'
-                        }`}
+                              ? 'bg-purple-900/50 border border-purple-500'
+                              : status === 'in-progress'
+                                ? 'bg-purple-600 border border-purple-400'
+                                : 'bg-gray-700 border border-gray-600'
+                          }`}
                       >
                         {status === 'error' ? (
                           <span className="text-xs text-red-400">✕</span>
@@ -403,15 +402,14 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                         )}
                       </div>
                       <span
-                        className={`text-sm transition-colors ${
-                          status === 'in-progress'
+                        className={`text-sm transition-colors ${status === 'in-progress'
                             ? 'text-purple-300 font-medium'
                             : status === 'completed'
-                            ? 'text-gray-300'
-                            : status === 'error'
-                            ? 'text-red-400'
-                            : 'text-gray-500'
-                        }`}
+                              ? 'text-gray-300'
+                              : status === 'error'
+                                ? 'text-red-400'
+                                : 'text-gray-500'
+                          }`}
                       >
                         {stepLabel}
                       </span>
@@ -625,7 +623,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
             </Button>
           </motion.div>
         )}
-        </form>
+      </form>
 
       {/* Tips with Comic Book Styling */}
       <div className="mt-8 p-4 bg-white rounded-lg border border-gray-300">
@@ -635,6 +633,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
           <li>• Choose genre and difficulty settings that match the article's tone</li>
           <li>• The AI will create unique game interpretations based on the article content</li>
           <li>• Different genres will influence how the story is gamified</li>
+          <li>• <a href="/workshop" className="text-purple-600 hover:text-purple-700 underline font-medium">Use the Workshop</a> for deeper personalization — edit characters, mechanics, and story beats before generating</li>
         </ul>
       </div>
 

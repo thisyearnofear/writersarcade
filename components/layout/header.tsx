@@ -43,9 +43,6 @@ export function Header() {
           <Link href="/games" className="text-gray-300 hover:text-white transition-colors">
             Games
           </Link>
-          <Link href="/assets" className="text-gray-300 hover:text-white transition-colors">
-            Assets
-          </Link>
           <Link
             href="/generate"
             className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/30 hover:border-purple-500/50 transition-all text-sm text-purple-300 hover:text-purple-200"
@@ -76,21 +73,14 @@ export function Header() {
       {isMobileMenuOpen && (
         <div className="md:hidden bg-black/90 backdrop-blur-lg border-t border-gray-800">
           <div className="px-4 py-4 space-y-4">
-            <Link 
+            <Link
               href="/games"
               className="block py-2 px-3 rounded-lg text-gray-300 hover:bg-gray-800 transition-colors text-base"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Games
             </Link>
-            <Link 
-              href="/assets"
-              className="block py-2 px-3 rounded-lg text-gray-300 hover:bg-gray-800 transition-colors text-base"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Assets
-            </Link>
-            <Link 
+            <Link
               href="/generate"
               className="flex items-center space-x-2 py-2 px-3 rounded-lg bg-purple-600/20 border border-purple-500/30 hover:bg-purple-600/30 transition-all text-purple-300 hover:text-purple-200"
               onClick={() => setIsMobileMenuOpen(false)}

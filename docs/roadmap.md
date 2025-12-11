@@ -1,162 +1,236 @@
 # WritArcade Roadmap & Status
 
-**Last Updated:** December 11, 2025
-**Status:** Phase 6 Complete - Asset Marketplace Live
+**Last Updated:** December 12, 2025
+**Status:** Phase 7 - Customization MVP for Surreal World Assets Buildathon
 
-## Vision
+---
 
-**Collaborative Content Monetization: Readers as Creative Partners with Newsletter Authors**
+## 🎯 Current Focus: Customization MVP
 
-WritArcade creates the first platform where newsletter readers collaborate with writers to generate new value from existing content. Starting with Fred Wilson's AVC newsletter on Paragraph.xyz, users spend $AVC tokens to transform articles into unique, playable games—creating sustainable revenue streams for writers, game creators, and the platform through automated 0xSplits and Story Protocol IP management.
+### Vision Statement
+> "Turn any article into a personalized visual comic story you own as IP."
 
-**The Collaboration Model (current AVC defaults, on-chain configurable):**
-- Generation: 60% Writer, 20% Platform, 20% Creator Pool
-- Minting: 30% Creator, 15% Writer, 5% Platform (remaining 50% returned to payer)
-- Note: No on-chain burn in the payment contract; any burn would need to be token-level or policy-driven.
+### The User Story
+> "I read Fred's article about AI, turned it into a horror comic about my startup, tweaked the villain to look like my ex-VC, and minted it as IP on Story Protocol."
 
-## Go-to-Market Strategy
+### Hackathon Alignment
+**Track**: Creative Front-End ($5,000 prize)
+> "Create intuitive, aesthetic, and user-friendly front-ends for popular IP x AI use cases—seamlessly integrated with the Story SDK and IP registration flows."
 
-### Target Users
-1. **Primary**: Fred Wilson's AVC newsletter readers (~50K active)
-2. **Secondary**: Other tech/web3 newsletter authors and readers
-3. **Tertiary**: Game creators and IP developers
+WritArcade delivers:
+- Web/mobile app optimized for easy IP Registration ✅
+- AI-powered content generation with Story Protocol integration ✅
+- User personalization at every step of the creative flow ⬅️ **BUILDING NOW**
 
-### Launch Plan
-1. **Soft Launch** (Week 1): Invite-only beta with top AVC readers
-2. **Public Launch** (Week 2): Open to all Farcaster users
-3. **Community Building** (Weeks 3-4): Engage creators, showcase best games
-4. **Expansion** (Month 2): Onboard additional writer coins
-5. **Ecosystem Growth** (Month 3+): Introduce asset marketplace features
+---
 
-### Success Metrics
+## MVP Feature Set (Phase 7)
 
-#### Week 1 Goals
-- 50+ Farcaster users
-- 20+ games generated
-- 5+ games minted as NFTs
-- Zero critical bugs
+### ✅ Complete (Existing)
+1. **Article-to-Comic Generation**: Paste URL → AI generates comic panels
+2. **Comic Panel Rendering**: Beautiful, styled comic book interface
+3. **Story Protocol Integration**: Register comics as IP assets
+4. **NFT Minting**: Mint completed comics on Base chain
+5. **Writer Attribution**: Source author earns royalties
 
-#### Month 1 Goals
-- 500+ users
-- 500+ games generated
-- 100+ minted NFTs
-- 50+ unique creators earning revenue
-- <3 minutes for complete flow
+### ✅ Complete (This Phase - MVP Enhancements)
+1. **Asset Preview & Edit**: Workshop page with inline title AND description editing for characters, mechanics, story beats
+2. **Image Regeneration**: "New Image" button on each panel with loading state
+3. **Prompt Visibility**: View/edit the prompt used for image generation, regenerate with custom prompts
+4. **Copy Editing**: Narrative text editable in finale before minting (hover to reveal pencil icon)
+5. **Navigation Cleanup**: Assets hidden from nav to focus on core flow
+6. **Flow Discovery**: Link to Workshop from generate page tips
+7. **Toast Notifications**: Success/error feedback for all editing and regeneration actions
+8. **Real-time Downloads**: Edited text correctly exported in PNG comic download
 
-#### Quarter 1 Goals
-- 2,500+ users
-- 5,000+ games generated
-- 1,000+ minted NFTs
-- 500+ unique creators earning revenue
-- $100K+ in total transaction volume
-- 10+ writer coins integrated
+### 🔒 Deferred (Future Phases)
+- Asset Marketplace discovery *(hidden from nav, exists at /assets)*
+- Asset derivation from completed comics
+- ElevenLabs audio/video integration
+- Multiplayer story contributions
+- Advanced game mechanics (stats, branching)
 
-## Competitive Advantages
+---
 
-### 1. First Mover in Newsletter-to-Game Space
-- No direct competitors in the newsletter-to-game transformation market
-- Early partnership with prominent writer (Fred Wilson)
+## Implementation Plan
 
-### 2. True Collaboration Model
-- Writers earn ongoing revenue from derivative works
-- Readers become creative partners, not just consumers
-- Sustainable economic model for all participants
+### Sprint 1: Creative Intervention Points (3-4 days)
 
-### 3. Dual-Chain Innovation
-- Base for payments and NFTs
-- Story Protocol for IP licensing and royalties
-- Best of both worlds: speed + permanence
+#### 1.1 Asset Preview Step
+**Location**: Enhance `/app/mini-app/page.tsx` or create new step in generation flow
+**Goal**: After article URL submitted, show extracted assets before generating comic
+**Changes**:
+- Add "preview" state between URL input and game generation
+- Reuse `GameAIService.generateAssets()` to extract characters, mechanics, story beats
+- Display editable cards for each asset
+- "Generate Comic" button compiles edited assets into final game
 
-### 4. Farcaster-Native Experience
-- Deep integration with Farcaster social graph
-- Seamless mini-app experience
-- Native wallet integration
+#### 1.2 Inline Asset Editing
+**Location**: New component or enhance existing flow
+**Goal**: Users can edit character names, personalities, story beats before generation
+**Changes**:
+- ContentEditable or input fields for each asset property
+- Real-time preview updates ✅
+- Preserve edits through generation ✅
 
-## Future Roadmap
+### Sprint 2: Image Regeneration ✅ COMPLETE
 
-### Q1 2026: Ecosystem Expansion
-- **Multi-Writer Support**: Integrate additional newsletters
-- **Advanced Game Types**: Beyond choice-based narratives
-- **Mobile App**: Native iOS/Android applications
-- **Creator Tools**: Enhanced customization options
+#### 2.1 Regenerate Button per Panel ✅
+**Location**: `domains/games/components/comic-panel-card.tsx`
+**Implemented**:
+- "New Image" button in image overlay
+- Spinning animation during regeneration
+- Toast notifications for success/failure
 
-### Q2 2026: Community Features
-- **Social Sharing**: Game highlights and leaderboards
-- **Collaborative Challenges**: Multi-player game creation
-- **Creator Marketplaces**: Direct fan support features
-- **Cross-Platform Integration**: Discord, Telegram bridges
+#### 2.2 Prompt Visibility ✅
+**Location**: `comic-panel-card.tsx`
+**Implemented**:
+- Collapsible "View/Edit Prompt" section
+- Toggle between Original and Custom prompt modes
+- Regenerate with custom prompt support
 
-### Q3 2026: Advanced IP Features
-- **Mainnet Deployment**: Story Protocol mainnet integration
-- **Complex Licensing**: Multi-tier licensing models
-- **IP Analytics**: Advanced royalty tracking and insights
-- **Legal Framework**: Standardized licensing agreements
+### Sprint 3: Copy Editing in Finale ✅ COMPLETE
 
-### Q4 2026: Global Expansion
-- **International Markets**: Localization for non-English content
-- **Traditional Media**: Integration with mainstream publications
-- **Enterprise Solutions**: White-label platform for publishers
-- **AI Advancement**: Next-gen game generation models
+#### 3.1 Editable Narrative ✅
+**Location**: `domains/games/components/comic-book-finale.tsx`
+**Implemented**:
+- Hover-to-reveal pencil icon on narrative text
+- Inline textarea editing with Save/Cancel
+- Toast notification on save
+- Changes persist to download/mint
 
-## Technical Debt & Known Issues
+#### 3.2 Polish & Flow
+**Location**: Various
+**Goal**: Smooth single-session experience
+**Changes**:
+- Progress indicator showing current step
+- Clear "Next" actions at each stage
+- Updated IPFS metadata includes all user customizations
 
-### Current Limitations
-- **Rate Limits**: AI generation subject to provider quotas
-- **Network Congestion**: Base network can affect transaction speeds
-- **Metadata Storage**: IPFS pinning requires ongoing maintenance
-- **Mobile UX**: Some mobile browsers have compatibility issues
+### Sprint 4: Navigation Cleanup (0.5 days)
 
-### Planned Improvements
-- **Caching Layer**: Reduce dependency on external APIs
-- **Batch Processing**: Optimize transaction batching
-- **Edge Computing**: Move compute closer to users
-- **Progressive Enhancement**: Better offline support
+#### 4.1 Hide Assets from Nav
+**Location**: Navigation components
+**Goal**: Focus user attention on core flow
+**Changes**:
+- Remove /assets from main navigation
+- Keep route accessible for direct URL access
+- Add "Asset Library (Coming Soon)" teaser if desired
+
+---
+
+## Technical Architecture
+
+### Current Flow
+```
+Article URL → AI Generate Game → Play (5 panels) → Finale → Mint
+```
+
+### New Flow (MVP)
+```
+Article URL 
+    → AI Extract Assets (preview) 
+    → [EDIT: Assets] 
+    → AI Compile Comic 
+    → Play (5 panels with regeneration) 
+    → [EDIT: Narrative text]
+    → Finale 
+    → Register IP on Story Protocol
+    → Mint NFT on Base
+```
+
+### Key Components
+
+| Component | Purpose | Status |
+|-----------|---------|--------|
+| `GameAIService.generateAssets()` | Extract assets from article | ✅ Live |
+| `GameAIService.generateGame()` | Compile assets into game | ✅ Live |
+| `ImageGenerationService` | Generate panel images | ✅ Live |
+| `StoryProtocolAssetService` | Register IP | ✅ Live |
+| `ComicPanelCard` | Render panels + regenerate | ✅ Enhanced |
+| `ComicBookFinale` | Final comic + text editing | ✅ Enhanced |
+| `AssetCard` | Asset display + inline edit | ✅ Enhanced |
+| `GamePlayInterface` | Wire regeneration + editing | ✅ Enhanced |
+| Asset Preview UI (Workshop) | Show/edit assets before compilation | ✅ Live |
+
+---
+
+## Success Criteria
+
+### Hackathon Demo
+- [x] User pastes article URL
+- [x] Assets extracted and shown for editing (Workshop: /workshop)
+- [x] User modifies a character name (inline editing)
+- [x] Comic generated with customization
+- [x] User regenerates one panel image ("New Image" button)
+- [x] User edits narrative text (pencil icon in finale)
+- [x] User mints as IP on Story Protocol
+- [x] Transaction confirmed, IP registered
+
+### Metrics
+- Complete flow in < 5 minutes
+- Zero crashes during demo
+- Story Protocol IP ID visible in UI
+- All customizations preserved in minted metadata
+
+---
+
+## Collaboration Model (Unchanged)
+
+**On-chain revenue distribution (configurable per writer coin):**
+- **Generation**: 60% Writer, 20% Platform, 20% Creator Pool
+- **Minting**: 30% Creator, 15% Writer, 5% Platform
+
+This ensures:
+- Writers earn from readers using their content creatively
+- Creators are rewarded for personalization work
+- Platform sustainability for ongoing development
+
+---
+
+## Future Roadmap (Post-Hackathon)
+
+### Phase 8: Asset Marketplace (Q1 2026)
+- Enable asset discovery at /assets
+- Derive assets from completed comics
+- Royalty chains via Story Protocol
+
+### Phase 9: Media Expansion (Q2 2026)
+- ElevenLabs audio narration
+- Video export of comics
+- Social sharing integrations
+
+### Phase 10: Advanced Gameplay (Q3 2026)
+- Branching narratives with consequences
+- Character stats that affect outcomes
+- Multiplayer story contributions
+
+---
 
 ## Risk Mitigation
 
-### Technical Risks
-- **Smart Contract Security**: Regular audits and bug bounties
-- **AI Reliability**: Multiple provider fallbacks
-- **Network Dependence**: Multi-chain strategy
-- **Scalability**: Horizontal scaling architecture
+| Risk | Mitigation |
+|------|------------|
+| AI generation failures | Retry logic, multiple model fallbacks |
+| Story Protocol testnet issues | Mock mode for demos, graceful degradation |
+| Image generation slow | Parallel generation, optimistic UI |
+| User confusion | Clear progress indicators, tooltips |
 
-### Business Risks
-- **Writer Adoption**: Direct relationship building
-- **User Retention**: Continuous feature development
-- **Market Competition**: Unique value proposition focus
-- **Regulatory Compliance**: Legal team engagement
+---
 
-## Resource Requirements
+## Resources
 
-### Engineering Team
-- 2 Full-stack developers
-- 1 Smart contract developer
-- 1 AI/ML specialist
-- 1 DevOps engineer
+### Story Protocol
+- Docs: https://docs.story.foundation/
+- SDK: Integrated via `@story-protocol/core-sdk`
+- Network: Aeneid testnet (Chain ID: 1516)
 
+### Tech Stack
+- Frontend: Next.js 16 + TypeScript + TailwindCSS
+- AI: OpenAI/Anthropic via ai-sdk, Venice AI for images
+- Blockchain: Base (payments/NFT), Story Protocol (IP)
+- Storage: IPFS via Pinata
 
-## Key Performance Indicators
+---
 
-### User Engagement
-- Daily Active Users (DAU)
-- Monthly Active Users (MAU)
-- Session duration
-- Feature adoption rates
-
-### Revenue Metrics
-- Total transaction volume
-- Revenue per user (ARPU)
-- Creator earnings
-- Platform fees collected
-
-### Technical Metrics
-- API response times
-- Uptime percentage
-- Error rates
-- Smart contract gas efficiency
-
-### Community Metrics
-- Number of active creators
-- User-generated content
-- Social media engagement
-- Community feedback sentiment
+*Last Updated: December 12, 2025 - Phase 7 MVP Focus*
