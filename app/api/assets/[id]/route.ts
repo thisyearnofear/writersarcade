@@ -3,10 +3,11 @@ import { GameDatabaseService } from '@/domains/games/services/game-database.serv
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const asset = await GameDatabaseService.getAssetPack(params.id)
+    const asset = await GameDatabaseService.getAssetPack(id)
 
     if (!asset) {
       return NextResponse.json({ success: false, error: 'Asset pack not found' }, { status: 404 })
