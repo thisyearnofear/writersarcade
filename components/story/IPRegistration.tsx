@@ -1,10 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { useAccount, useChainId, useSwitchChain, useWalletClient } from "wagmi";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, CheckCircle2, AlertCircle, Copy } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle, Copy, ExternalLink, Wallet, ArrowRightLeft } from "lucide-react";
+import {
+  createStoryClientFromWallet,
+  isOnStoryNetwork,
+  STORY_CHAIN_ID,
+  getIPAssetExplorerUrl
+} from "@/lib/story-sdk-client";
+import { registerGameAsIP, IPRegistrationResult } from "@/lib/story-protocol.service";
+import { uploadToIPFS } from "@/lib/ipfs-utils";
+import { Address } from "viem";
+
+// ============================================================================
+// Types
+// ============================================================================
 
 export interface GameIPMetadata {
   gameId: string;
@@ -16,7 +30,7 @@ export interface GameIPMetadata {
   authorWalletAddress: string;
   genre: "horror" | "comedy" | "mystery";
   difficulty: "easy" | "hard";
-  gameMetadataUri: string;
+  gameMetadataUri?: string; // Optional - will upload if not provided
 }
 
 interface IPRegistrationProps {
@@ -24,75 +38,128 @@ interface IPRegistrationProps {
   onRegistrationComplete?: (result: IPRegistrationResult) => void;
 }
 
-interface IPRegistrationResult {
-  _storyIPAssetId: string;
-  txHash: string;
-  registeredAt: number;
-  royaltyConfig: {
-    authorShare: number;
-    creatorShare: number;
-    platformShare: number;
-  };
-}
+// Royalty configuration (basis points - divide by 100 for percentage)
+const ROYALTY_CONFIG = {
+  authorShare: 6000,   // 60%
+  creatorShare: 3000,  // 30%
+  platformShare: 1000, // 10%
+};
+
+// ============================================================================
+// Main Component
+// ============================================================================
 
 /**
- * IP Registration Component
+ * IP Registration Component - Client-Side Wallet Signing
  * 
- * Allows users to register their generated games as IP assets on Story Protocol.
- * Shows:
- * - Registration status
- * - Story IP Asset ID
- * - Royalty configuration (60% author, 30% creator, 10% platform)
- * - Transaction hash
+ * Flow:
+ * 1. User views value proposition (visible by default)
+ * 2. If not on Story network → prompt chain switch
+ * 3. User clicks "Sign & Register" → wallet prompts for signature
+ * 4. Transaction sent from USER'S wallet → THEY own the IP
+ * 5. Success: show IP ID and explorer link
  */
 export function IPRegistration({ game, onRegistrationComplete }: IPRegistrationProps) {
+  // Wallet state from wagmi
+  const { address, isConnected } = useAccount();
+  const chainId = useChainId();
+  const { switchChain, isPending: isSwitching } = useSwitchChain();
+  const { data: walletClient } = useWalletClient();
+
+  // Component state
   const [isRegistering, setIsRegistering] = useState(false);
-  const [isRegistered, setIsRegistered] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isSwitchingChain, setIsSwitchingChain] = useState(false);
   const [result, setResult] = useState<IPRegistrationResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
-  const handleRegisterIP = async () => {
+  // Derived state
+  const onStoryNetwork = isOnStoryNetwork(chainId);
+  const isRegistered = result !== null;
+
+  // Switch to Story network
+  const handleSwitchChain = useCallback(async () => {
+    if (!switchChain) return;
+
+    setIsSwitchingChain(true);
+    setError(null);
+
+    try {
+      await switchChain({ chainId: STORY_CHAIN_ID });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to switch network");
+    } finally {
+      setIsSwitchingChain(false);
+    }
+  }, [switchChain]);
+
+  // Register IP - USER SIGNS THIS TRANSACTION
+  const handleRegisterIP = useCallback(async () => {
+    if (!walletClient || !address) {
+      setError("Please connect your wallet");
+      return;
+    }
+
+    if (!onStoryNetwork) {
+      setError("Please switch to Story network first");
+      return;
+    }
+
     setIsRegistering(true);
     setError(null);
 
     try {
-      const response = await fetch("/api/ip/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          gameId: game.gameId,
-          title: game.title,
-          description: game.description,
-          articleUrl: game.articleUrl,
-          gameCreatorAddress: game.gameCreatorAddress,
-          authorParagraphUsername: game.authorParagraphUsername,
-          authorWalletAddress: game.authorWalletAddress,
-          genre: game.genre,
-          difficulty: game.difficulty,
-          gameMetadataUri: game.gameMetadataUri,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to register IP");
+      // 1. Create Story client from user's wallet
+      const storyClient = createStoryClientFromWallet(walletClient);
+      if (!storyClient) {
+        throw new Error("Failed to initialize Story Protocol client");
       }
 
-      const data = await response.json();
-      setResult(data);
-      setIsRegistered(true);
-      onRegistrationComplete?.(data);
+      // 2. Upload metadata to IPFS if not provided
+      let metadataUri = game.gameMetadataUri;
+      if (!metadataUri) {
+        console.log("📤 Uploading game metadata to IPFS...");
+        metadataUri = await uploadToIPFS({
+          name: game.title,
+          description: game.description,
+          external_url: game.articleUrl,
+          attributes: [
+            { trait_type: "Genre", value: game.genre },
+            { trait_type: "Difficulty", value: game.difficulty },
+            { trait_type: "Author", value: game.authorParagraphUsername },
+          ],
+        });
+      }
+
+      // 3. Register IP - THIS PROMPTS WALLET SIGNATURE
+      console.log("🔏 Requesting wallet signature for IP registration...");
+      const registrationResult = await registerGameAsIP(storyClient, {
+        title: game.title,
+        description: game.description,
+        articleUrl: game.articleUrl,
+        gameCreatorAddress: address as Address,
+        authorParagraphUsername: game.authorParagraphUsername,
+        authorWalletAddress: game.authorWalletAddress as Address,
+        genre: game.genre,
+        difficulty: game.difficulty,
+        gameMetadataUri: metadataUri,
+        nftMetadataUri: metadataUri,
+      });
+
+      setResult(registrationResult);
+      onRegistrationComplete?.(registrationResult);
+
+      console.log("✅ IP Registration complete:", registrationResult.ipId);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "An error occurred";
+      console.error("IP Registration error:", err);
+      const message = err instanceof Error ? err.message : "Registration failed";
       setError(message);
     } finally {
       setIsRegistering(false);
     }
-  };
+  }, [walletClient, address, onStoryNetwork, game, onRegistrationComplete]);
 
+  // Copy to clipboard
   const copyToClipboard = async (text: string, field: string) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -104,90 +171,202 @@ export function IPRegistration({ game, onRegistrationComplete }: IPRegistrationP
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader>
+    <Card className="w-full border-2 border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30">
+      <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Register as Story Protocol IP</CardTitle>
-            <CardDescription>
-              Make your game a tradeable IP asset with built-in royalty distribution
-            </CardDescription>
+          <div className="flex items-center gap-3">
+            {/* Story Protocol branding */}
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
+              <span className="text-white font-bold text-lg">S</span>
+            </div>
+            <div>
+              <CardTitle className="text-lg">Register Your IP</CardTitle>
+              <CardDescription className="text-sm">
+                Own your creation on Story Protocol
+              </CardDescription>
+            </div>
           </div>
           {isRegistered && <CheckCircle2 className="h-6 w-6 text-green-500" />}
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-6">
-        {/* Status Section */}
-        {!isRegistered ? (
-          <div className="space-y-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="font-semibold text-blue-900 mb-2">What happens when you register?</h3>
-              <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
-                <li>Your game becomes a Story Protocol IP asset</li>
-                <li>Royalty tokens are minted for each recipient</li>
-                <li>Can be traded/licensed on secondary markets</li>
-                <li>Revenue automatically split: 60% author, 30% creator, 10% platform</li>
+      <CardContent className="space-y-5">
+        {/* Pre-Registration: Value Proposition */}
+        {!isRegistered && (
+          <>
+            {/* Ownership Explainer */}
+            <div className="bg-white/60 dark:bg-white/5 border border-purple-200 dark:border-purple-700 rounded-xl p-4">
+              <h3 className="font-semibold text-purple-900 dark:text-purple-100 mb-3 flex items-center gap-2">
+                <Wallet className="h-4 w-4" />
+                Your Signature = Your Ownership
+              </h3>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+                When you sign this transaction, <strong>YOU</strong> become the on-chain owner of this IP.
+                Not us. Your wallet. Your IP.
+              </p>
+              <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1.5">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Registered on Story Protocol blockchain</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Commercial remix license (others can build on your work)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>Automatic royalties from derivatives</span>
+                </li>
               </ul>
             </div>
 
+            {/* Royalty Distribution Visual */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Royalty Distribution
+              </label>
+              <div className="h-4 rounded-full overflow-hidden flex bg-gray-200 dark:bg-gray-700">
+                <div
+                  className="bg-blue-500 h-full flex items-center justify-center"
+                  style={{ width: `${ROYALTY_CONFIG.authorShare / 100}%` }}
+                  title={`Author: ${ROYALTY_CONFIG.authorShare / 100}%`}
+                />
+                <div
+                  className="bg-purple-500 h-full flex items-center justify-center"
+                  style={{ width: `${ROYALTY_CONFIG.creatorShare / 100}%` }}
+                  title={`Creator: ${ROYALTY_CONFIG.creatorShare / 100}%`}
+                />
+                <div
+                  className="bg-gray-400 h-full flex items-center justify-center"
+                  style={{ width: `${ROYALTY_CONFIG.platformShare / 100}%` }}
+                  title={`Platform: ${ROYALTY_CONFIG.platformShare / 100}%`}
+                />
+              </div>
+              <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+                <span className="flex items-center gap-1">
+                  <div className="w-2 h-2 rounded-full bg-blue-500" />
+                  Author 60%
+                </span>
+                <span className="flex items-center gap-1">
+                  <div className="w-2 h-2 rounded-full bg-purple-500" />
+                  You 30%
+                </span>
+                <span className="flex items-center gap-1">
+                  <div className="w-2 h-2 rounded-full bg-gray-400" />
+                  Platform 10%
+                </span>
+              </div>
+            </div>
+
+            {/* Network Status */}
+            <div className="flex items-center justify-between p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${onStoryNetwork ? 'bg-green-500' : 'bg-amber-500'}`} />
+                <span className="text-sm font-medium text-amber-900 dark:text-amber-100">
+                  {onStoryNetwork ? 'Connected to Story Network' : 'Switch to Story Network'}
+                </span>
+              </div>
+              <Badge variant="outline" className="text-xs">
+                Testnet
+              </Badge>
+            </div>
+
+            {/* Error Display */}
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex gap-2">
-                <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4 flex gap-3">
+                <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-red-900">Registration Failed</p>
-                  <p className="text-sm text-red-800">{error}</p>
+                  <p className="font-semibold text-red-900 dark:text-red-100">Registration Failed</p>
+                  <p className="text-sm text-red-800 dark:text-red-200">{error}</p>
                 </div>
               </div>
             )}
 
-            <Button
-              onClick={handleRegisterIP}
-              disabled={isRegistering}
-              className="w-full"
-              size="lg"
-            >
-              {isRegistering ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Registering IP...
-                </>
-              ) : (
-                "Register as Story Protocol IP"
-              )}
-            </Button>
-          </div>
-        ) : null}
+            {/* Action Buttons */}
+            {!isConnected ? (
+              <Button disabled className="w-full" size="lg">
+                <Wallet className="mr-2 h-4 w-4" />
+                Connect Wallet First
+              </Button>
+            ) : !onStoryNetwork ? (
+              <Button
+                onClick={handleSwitchChain}
+                disabled={isSwitching || isSwitchingChain}
+                className="w-full bg-amber-500 hover:bg-amber-600"
+                size="lg"
+              >
+                {(isSwitching || isSwitchingChain) ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Switching Network...
+                  </>
+                ) : (
+                  <>
+                    <ArrowRightLeft className="mr-2 h-4 w-4" />
+                    Switch to Story Network
+                  </>
+                )}
+              </Button>
+            ) : (
+              <Button
+                onClick={handleRegisterIP}
+                disabled={isRegistering}
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                size="lg"
+              >
+                {isRegistering ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Awaiting Signature...
+                  </>
+                ) : (
+                  <>
+                    🔏 Sign & Register IP
+                  </>
+                )}
+              </Button>
+            )}
 
-        {/* Success State */}
+            <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+              This is optional. You can skip and mint on Base without IP registration.
+            </p>
+          </>
+        )}
+
+        {/* Post-Registration: Success State */}
         {isRegistered && result && (
           <div className="space-y-4">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            {/* Success Banner */}
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4">
               <div className="flex gap-2 mb-2">
-                <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />
-                <h3 className="font-semibold text-green-900">IP Registration Complete!</h3>
+                <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+                <h3 className="font-semibold text-green-900 dark:text-green-100">
+                  IP Registration Complete!
+                </h3>
               </div>
-              <p className="text-sm text-green-800">
-                Your game is now registered as a Story Protocol IP asset
+              <p className="text-sm text-green-800 dark:text-green-200">
+                You now own this IP on Story Protocol. Others can license derivatives from you.
               </p>
             </div>
 
             {/* IP Asset ID */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Story IP Asset ID</label>
-              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg p-3">
-                <code className="text-sm font-mono text-gray-900 flex-1 break-all">
-                  {result._storyIPAssetId}
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Your IP Asset ID
+              </label>
+              <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                <code className="text-sm font-mono text-gray-900 dark:text-gray-100 flex-1 break-all">
+                  {result.ipId}
                 </code>
                 <button
-                  onClick={() => copyToClipboard(result._storyIPAssetId, "ipAssetId")}
-                  className="p-1 hover:bg-gray-200 rounded transition-colors"
+                  onClick={() => copyToClipboard(result.ipId, "ipId")}
+                  className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
                   title="Copy to clipboard"
                 >
-                  {copiedField === "ipAssetId" ? (
+                  {copiedField === "ipId" ? (
                     <CheckCircle2 className="h-4 w-4 text-green-500" />
                   ) : (
-                    <Copy className="h-4 w-4 text-gray-600" />
+                    <Copy className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                   )}
                 </button>
               </div>
@@ -195,73 +374,38 @@ export function IPRegistration({ game, onRegistrationComplete }: IPRegistrationP
 
             {/* Transaction Hash */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Transaction Hash</label>
-              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg p-3">
-                <code className="text-sm font-mono text-gray-900 flex-1 break-all">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Transaction
+              </label>
+              <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                <code className="text-xs font-mono text-gray-600 dark:text-gray-400 flex-1 truncate">
                   {result.txHash}
                 </code>
-                <button
-                  onClick={() => copyToClipboard(result.txHash, "txHash")}
-                  className="p-1 hover:bg-gray-200 rounded transition-colors"
-                  title="Copy to clipboard"
+                <a
+                  href={result.txExplorerUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+                  title="View on Explorer"
                 >
-                  {copiedField === "txHash" ? (
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <Copy className="h-4 w-4 text-gray-600" />
-                  )}
-                </button>
+                  <ExternalLink className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                </a>
               </div>
             </div>
 
-            {/* Royalty Configuration */}
-            <div className="space-y-3">
-              <label className="text-sm font-medium text-gray-700">Royalty Distribution</label>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <span className="text-sm font-medium text-gray-900">Article Author</span>
-                  <Badge variant="secondary">
-                    {(result.royaltyConfig.authorShare / 100).toFixed(0)}%
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-purple-50 border border-purple-200 rounded-lg">
-                  <span className="text-sm font-medium text-gray-900">Game Creator (You)</span>
-                  <Badge variant="secondary">
-                    {(result.royaltyConfig.creatorShare / 100).toFixed(0)}%
-                  </Badge>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                  <span className="text-sm font-medium text-gray-900">Platform</span>
-                  <Badge variant="secondary">
-                    {(result.royaltyConfig.platformShare / 100).toFixed(0)}%
-                  </Badge>
-                </div>
-              </div>
-            </div>
-
-            {/* Next Steps */}
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-              <h3 className="font-semibold text-amber-900 mb-2">Next Steps</h3>
-              <ol className="text-sm text-amber-800 space-y-1 list-decimal list-inside">
-                <li>View your IP asset on Story Protocol dashboard</li>
-                <li>Mint your game as an NFT on Base (optional)</li>
-                <li>Share your game with the community</li>
-                <li>Earn royalties from secondary sales</li>
-              </ol>
-            </div>
-
-            {/* Story Protocol Link */}
+            {/* View on Story Protocol */}
             <Button
               variant="outline"
               className="w-full"
               asChild
             >
               <a
-                href={`https://story.foundation/ip/${result._storyIPAssetId}`}
+                href={result.explorerUrl}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                View on Story Protocol →
+                <ExternalLink className="mr-2 h-4 w-4" />
+                View on Story Protocol
               </a>
             </Button>
           </div>
@@ -271,21 +415,38 @@ export function IPRegistration({ game, onRegistrationComplete }: IPRegistrationP
   );
 }
 
+// ============================================================================
+// Badge Component (for compact displays)
+// ============================================================================
+
 /**
- * Compact version for game cards/previews
+ * Compact IP registration status badge for game cards/previews
  */
-export function IPRegistrationBadge({ isRegistered, storyIPAssetId }: { isRegistered: boolean; storyIPAssetId?: string }) {
+export function IPRegistrationBadge({
+  isRegistered,
+  ipId
+}: {
+  isRegistered: boolean;
+  ipId?: string;
+}) {
   if (!isRegistered) {
     return (
-      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-        Not Registered
+      <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700">
+        Register IP
       </Badge>
     );
   }
 
   return (
-    <Badge className="bg-green-100 text-green-800 border-green-300">
-      ✓ Story IP Registered
-    </Badge>
+    <a
+      href={ipId ? getIPAssetExplorerUrl(ipId) : "#"}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex"
+    >
+      <Badge className="bg-green-100 text-green-800 border-green-300 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700">
+        ✓ IP Registered
+      </Badge>
+    </a>
   );
 }

@@ -1,8 +1,10 @@
 /**
  * Story Protocol Configuration
  * 
- * Defines network settings, contract addresses, and RPC endpoints for Story Protocol integration.
- * Supports both testnet and mainnet.
+ * Network settings and constants for Story Protocol integration.
+ * All registration uses client-side wallet signing (no server keys).
+ * 
+ * Single source of truth for Story Protocol configuration.
  */
 
 export type StoryNetwork = "testnet" | "mainnet";
@@ -12,172 +14,62 @@ export interface StoryNetworkConfig {
   rpcUrl: string;
   chainId: number;
   explorer: string;
-  storyContractRegistry: string;
-  storyTokenAddress: string;
+  spgContract: string; // Story Protocol Gateway for fast minting
 }
 
+/**
+ * Story Protocol Networks
+ * Currently using Aeneid testnet for development
+ */
 export const STORY_NETWORKS: Record<StoryNetwork, StoryNetworkConfig> = {
   testnet: {
-    name: "Story Protocol Aeneid Testnet",
+    name: "Story Aeneid",
     rpcUrl: "https://aeneid.storyrpc.io",
-    chainId: 1315, // Story Aeneid testnet
-    explorer: "https://aeneid-testnet-explorer.story.foundation",
-    storyContractRegistry: "0x1514000000000000000000000000000000000000",
-    storyTokenAddress: "0x1514000000000000000000000000000000000000",
+    chainId: 1315,
+    explorer: "https://aeneid.storyscan.xyz",
+    spgContract: "0xc32A8a0FF3beDDDa58393d022aF433e78739FAbc",
   },
   mainnet: {
-    name: "Story Protocol Mainnet",
+    name: "Story Mainnet",
     rpcUrl: "https://story-rpc.xyz",
-    chainId: 1513, // Story mainnet
-    explorer: "https://www.storyscan.io/",
-    storyContractRegistry: "0x...", // Set via env if needed
-    storyTokenAddress: "0x...", // Set via env if needed
+    chainId: 1513,
+    explorer: "https://www.storyscan.io",
+    spgContract: "0x...", // TBD when mainnet launches
   },
 };
 
 /**
  * Get the current Story network configuration
- * Determined by STORY_NETWORK environment variable (default: testnet)
  */
 export function getStoryNetwork(): StoryNetworkConfig {
-  const network = (process.env.STORY_NETWORK || "testnet") as StoryNetwork;
+  const network = (process.env.NEXT_PUBLIC_STORY_NETWORK || "testnet") as StoryNetwork;
   return STORY_NETWORKS[network];
 }
 
 /**
- * Story Protocol Core Contracts
- * These are deployed on Story Protocol and handle IP operations
- */
-export const STORY_CORE_CONTRACTS = {
-  IPAssetRegistry: {
-    description: "Registers and manages IP assets",
-    functions: ["registerNonFungibleIP", "getIPAsset", "transferIP"],
-  },
-  RoyaltyTokenContract: {
-    description: "Mints and manages royalty tokens for IP assets",
-    functions: ["mint", "burn", "transfer", "setRoyalties"],
-  },
-  LicenseRegistry: {
-    description: "Manages IP licenses and usage rights",
-    functions: ["grantLicense", "revokeLicense", "getLicenseTerms"],
-  },
-  DisputeResolver: {
-    description: "Handles IP infringement disputes",
-    functions: ["raiseDispute", "resolveDispute", "enforceResolution"],
-  },
-};
-
-/**
- * WritArcade Integration Settings for Story
+ * WritArcade Story Protocol Settings
  */
 export const WRITARCADE_STORY_CONFIG = {
-  // Default royalty splits (in basis points) — Story Protocol layer (independent from payments)
+  // Royalty splits (basis points: 10000 = 100%)
   royaltyShares: {
-    author: 6000, // 60% - Article author (Paragraph writer)
-    creator: 3000, // 30% - Game creator (WritArcade user)
-    platform: 1000, // 10% - WritArcade platform
-  }, // Note: Payment contract splits are configured on-chain per coin and may differ from these Story royalties.
+    author: 6000,   // 60% - Article author
+    creator: 3000,  // 30% - Game creator
+    platform: 1000, // 10% - Platform
+  },
 
-  // Game metadata included in IP registration
-  gameMetadataFields: [
-    "title",
-    "description",
-    "articleUrl",
-    "genre",
-    "difficulty",
-    "gameContent",
-    "authorParagraphUsername",
-    "generatedAt",
-    "generatedBy",
-  ],
+  // Supported content types
+  supportedGenres: ["horror", "comedy", "mystery"] as const,
+  supportedDifficulties: ["easy", "hard"] as const,
 
-  // Supported game genres (must match WritArcade's genre selector)
-  supportedGenres: ["horror", "comedy", "mystery"],
-
-  // Supported difficulty levels
-  supportedDifficulties: ["easy", "hard"],
-
-  // IPFS gateway for storing game metadata
+  // IPFS gateway
   ipfsGateway: process.env.IPFS_GATEWAY || "https://gateway.pinata.cloud",
 
-  // Story IP Asset registration timeout (ms)
-  registrationTimeout: 120000, // 2 minutes
-
-  // Enable IP registration (can be disabled for testing)
-  enabled: process.env.STORY_IP_REGISTRATION_ENABLED !== "false",
+  // Whether IP registration is enabled
+  // Set NEXT_PUBLIC_STORY_ENABLED=false to disable (e.g., for testing)
+  enabled: process.env.NEXT_PUBLIC_STORY_ENABLED !== "false",
 };
 
 /**
- * Get recommended gas settings for Story Protocol transactions
+ * Export chain ID for easy access
  */
-export function getGasSettings() {
-  return {
-    gasLimit: 300000n, // Typical for IP registration
-    maxFeePerGas: 100n, // gwei (adjust based on network)
-    maxPriorityFeePerGas: 2n, // gwei
-  };
-}
-
-/**
- * Validate Story Protocol configuration
- * Called at startup to ensure environment is properly configured
- */
-export function validateStoryConfig(): { isValid: boolean; errors: string[] } {
-  const errors: string[] = [];
-
-  // Check environment variables
-  if (!process.env.STORY_RPC_URL && !process.env.STORY_NETWORK) {
-    errors.push(
-      "Either STORY_RPC_URL or STORY_NETWORK must be configured"
-    );
-  }
-
-  if (!process.env.STORY_WALLET_KEY) {
-    errors.push(
-      "STORY_WALLET_KEY environment variable is required for IP registration"
-    );
-  }
-
-  // Check network is valid
-  const network = process.env.STORY_NETWORK as StoryNetwork;
-  if (network && !STORY_NETWORKS[network]) {
-    errors.push(
-      `Invalid STORY_NETWORK: ${network}. Must be 'testnet' or 'mainnet'`
-    );
-  }
-
-  // Check contract addresses
-  if (!process.env.NEXT_PUBLIC_GAME_NFT_ADDRESS) {
-    errors.push(
-      "NEXT_PUBLIC_GAME_NFT_ADDRESS (Base) is required for IP linking"
-    );
-  }
-
-  return {
-    isValid: errors.length === 0,
-    errors,
-  };
-}
-
-/**
- * Log Story Protocol configuration (for debugging)
- * Masks sensitive values
- */
-export function logStoryConfig() {
-  const config = getStoryNetwork();
-  const validation = validateStoryConfig();
-
-  console.log("🔷 Story Protocol Configuration:");
-  console.log(`  Network: ${config.name}`);
-  console.log(`  Chain ID: ${config.chainId}`);
-  console.log(`  RPC: ${config.rpcUrl.slice(0, 20)}...`);
-  console.log(`  Explorer: ${config.explorer}`);
-  console.log(`  IP Registration: ${WRITARCADE_STORY_CONFIG.enabled ? "✓ Enabled" : "✗ Disabled"}`);
-
-  if (validation.isValid) {
-    console.log("  ✓ Configuration valid");
-  } else {
-    console.log("  ✗ Configuration errors:");
-    validation.errors.forEach((err) => console.log(`    - ${err}`));
-  }
-}
+export const STORY_CHAIN_ID = getStoryNetwork().chainId;

@@ -69,6 +69,18 @@ WritArcade participated in the Story Protocol hackathon to integrate IP licensin
 
 **Status**: All 7 core functions production-ready with real SDK calls, dev mode fallbacks, and comprehensive error handling.
 
+### ✅ Client-Side IP Registration (Dec 12, 2025)
+
+**True User Ownership via Wallet Signing:**
+- ✅ Removed server-side platform key registration
+- ✅ User signs transactions with their own wallet
+- ✅ Chain switching UX (Base → Story Aeneid → Base)
+- ✅ Enhanced IPRegistration component with visual royalty breakdown
+- ✅ Prominent ownership messaging ("Your Signature = Your Ownership")
+- ✅ IP registration is optional (can mint NFT on Base without IP)
+
+**Architecture Change**: All Story Protocol registration now happens client-side. Users switch to Story Aeneid testnet (Chain ID 1315), sign the transaction, and become the on-chain IP owner. No server keys required.
+
 ### ✅ Smart Contracts Deployed to Base Mainnet (Dec 11, 2025)
 
 **Contracts Deployed & Verified**:
@@ -113,25 +125,24 @@ WritArcade Platform
 
 ### Key SDK Integrations
 
-#### 1. Client Initialization
+#### 1. Client Initialization (User Wallet)
 ```typescript
 import { StoryClient } from "@story-protocol/core-sdk";
-import { privateKeyToAccount } from "viem/accounts";
 import { http } from "viem";
+import type { WalletClient } from "viem";
 
-export function initializeStoryClient() {
-  const rpcUrl = process.env.STORY_RPC_URL || "https://aeneid.storyrpc.io";
-  const privateKey = process.env.STORY_WALLET_KEY;
-  
-  if (!privateKey) {
-    throw new Error("STORY_WALLET_KEY environment variable required");
+// Called from React component with user's connected wallet
+export function createStoryClientFromWallet(walletClient: WalletClient) {
+  // Verify user is on Story network (Chain ID 1315)
+  if (walletClient.chain?.id !== 1315) {
+    console.warn("Switch to Story Aeneid network");
+    return null;
   }
   
-  const account = privateKeyToAccount(`0x${privateKey.replace(/^0x/, "")}`);
-  
+  // User's wallet signs all transactions
   const client = StoryClient.newClient({
-    account,
-    transport: http(rpcUrl),
+    account: walletClient.account,
+    transport: http("https://aeneid.storyrpc.io"),
   });
   
   return client;
