@@ -113,12 +113,13 @@ Our documentation is consolidated into 4 comprehensive guides:
 
 ## Deployment Status
 
-| Environment | Status | Notes |
-|-------------|--------|-------|
+| Environment | Status | Details |
+|-------------|--------|---------|
 | Dev | ✅ Ready | Local testing working |
 | Vercel (staging) | ✅ Ready | Auto-deploy on main branch |
-| Base Sepolia | ⏳ Week 4 | Contract deployment |
-| Base Mainnet | ⏳ Week 5 | Production launch |
+| Base Mainnet | ✅ Live | Contracts deployed & verified |
+| - GameNFT | ✅ Verified | [0x778C87dAA2b284982765688AE22832AADae7dccC](https://repo.sourcify.dev/8453/0x778C87dAA2b284982765688AE22832AADae7dccC) |
+| - WriterCoinPayment | ✅ Verified | [0xf4d556E6E739B4Aa065Fae41f353a9f296371a35](https://repo.sourcify.dev/8453/0xf4d556E6E739B4Aa065Fae41f353a9f296371a35) |
 
 ---
 

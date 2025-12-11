@@ -69,6 +69,23 @@ WritArcade participated in the Story Protocol hackathon to integrate IP licensin
 
 **Status**: All 7 core functions production-ready with real SDK calls, dev mode fallbacks, and comprehensive error handling.
 
+### ✅ Smart Contracts Deployed to Base Mainnet (Dec 11, 2025)
+
+**Contracts Deployed & Verified**:
+- ✅ **GameNFT** - ERC-721 for game NFT minting
+  - Address: `0x778C87dAA2b284982765688AE22832AADae7dccC`
+  - Verified on Sourcify: https://repo.sourcify.dev/8453/0x778C87dAA2b284982765688AE22832AADae7dccC
+  
+- ✅ **WriterCoinPayment** - Payment processor & revenue distribution
+  - Address: `0xf4d556E6E739B4Aa065Fae41f353a9f296371a35`
+  - Verified on Sourcify: https://repo.sourcify.dev/8453/0xf4d556E6E739B4Aa065Fae41f353a9f296371a35
+
+**Features**:
+- Dynamic revenue splits (configurable per coin)
+- Multi-coin support ($AVC and future tokens)
+- Reentrancy guards & access control
+- On-chain game metadata storage (creator, article URL, genre, difficulty)
+
 ## Technical Implementation
 
 ### Architecture
