@@ -138,17 +138,38 @@ export function parseTokenAmount(amount: string, decimals: number = 18): bigint 
 }
 
 /** Create a viem public client for the given chain */
-export function getPublicClient(chainId: number = 8453) {
-  const net = getNetwork(chainId)
-  return createPublicClient({ chain: { id: net.id, name: net.name, nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }, rpcUrls: { default: { http: [net.rpcUrl] } } } as any, transport: http(net.rpcUrl) })
+export function getDefaultChainId(): number {
+  const envId = parseInt(process.env.NEXT_PUBLIC_GAME_NFT_CHAIN_ID || process.env.NEXT_PUBLIC_BASE_MAINNET_CHAIN_ID || process.env.NEXT_PUBLIC_BASE_SEPOLIA_CHAIN_ID || '8453', 10)
+  return Number.isFinite(envId) ? envId : 8453
 }
 
-export function getWriterCoinPaymentAddress(chainId: number = 8453): `0x${string}` {
+export function getPublicClient(chainId: number = getDefaultChainId()) {
+  const net = getNetwork(chainId)
+  const rpcUrlOverride = process.env.BASE_RPC_URL && chainId === 8453 ? process.env.BASE_RPC_URL : undefined
+  const rpc = rpcUrlOverride || net.rpcUrl
+  return createPublicClient({ chain: { id: net.id, name: net.name, nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }, rpcUrls: { default: { http: [rpc] } } } as any, transport: http(rpc) })
+}
+
+export function getWriterCoinPaymentAddress(chainId: number = getDefaultChainId()): `0x${string}` {
   const network = chainId === 8453 ? 'baseMainnet' : 'baseSepolia'
   return CONTRACT_ADDRESSES[network].WriterCoinPayment as `0x${string}`
 }
 
-export async function fetchGenerationDistributionOnChain(coinAddress: `0x${string}`, chainId: number = 8453) {
+const __splitCache = new Map<string, { at: number; data: any }>()
+const __SPLIT_TTL_MS = 60_000
+
+function __getCache(key: string) {
+  const hit = __splitCache.get(key)
+  if (!hit) return null
+  if (Date.now() - hit.at > __SPLIT_TTL_MS) { __splitCache.delete(key); return null }
+  return hit.data
+}
+function __setCache(key: string, data: any) { __splitCache.set(key, { at: Date.now(), data }) }
+
+export async function fetchGenerationDistributionOnChain(coinAddress: `0x${string}`, chainId: number = getDefaultChainId()) {
+  const cacheKey = `gen:${chainId}:${coinAddress}`
+  const cached = __getCache(cacheKey)
+  if (cached) return cached
   const client = getPublicClient(chainId)
   const contractAddress = getWriterCoinPaymentAddress(chainId)
   const [writerShare, platformShare, creatorPoolShare] = await client.readContract({
@@ -157,14 +178,19 @@ export async function fetchGenerationDistributionOnChain(coinAddress: `0x${strin
     functionName: 'getRevenueDistribution',
     args: [coinAddress],
   }) as unknown as [bigint, bigint, bigint]
-  return {
+  const res = {
     writerBP: Number(writerShare),
     platformBP: Number(platformShare),
     creatorBP: Number(creatorPoolShare),
   }
+  __setCache(cacheKey, res)
+  return res
 }
 
-export async function fetchMintDistributionOnChain(coinAddress: `0x${string}`, chainId: number = 8453) {
+export async function fetchMintDistributionOnChain(coinAddress: `0x${string}`, chainId: number = getDefaultChainId()) {
+  const cacheKey = `mint:${chainId}:${coinAddress}`
+  const cached = __getCache(cacheKey)
+  if (cached) return cached
   const client = getPublicClient(chainId)
   const contractAddress = getWriterCoinPaymentAddress(chainId)
   const [creatorShare, writerShare, platformShare] = await client.readContract({
@@ -173,11 +199,13 @@ export async function fetchMintDistributionOnChain(coinAddress: `0x${string}`, c
     functionName: 'mintDistributions',
     args: [coinAddress],
   }) as unknown as [bigint, bigint, bigint]
-  return {
+  const res = {
     creatorBP: Number(creatorShare),
     writerBP: Number(writerShare),
     platformBP: Number(platformShare),
   }
+  __setCache(cacheKey, res)
+  return res
 }
 
 /**

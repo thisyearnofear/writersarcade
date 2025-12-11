@@ -71,12 +71,12 @@ export const STORY_CORE_CONTRACTS = {
  * WritArcade Integration Settings for Story
  */
 export const WRITARCADE_STORY_CONFIG = {
-  // Default royalty splits (in basis points)
+  // Default royalty splits (in basis points) — Story Protocol layer (independent from payments)
   royaltyShares: {
     author: 6000, // 60% - Article author (Paragraph writer)
     creator: 3000, // 30% - Game creator (WritArcade user)
     platform: 1000, // 10% - WritArcade platform
-  },
+  }, // Note: Payment contract splits are configured on-chain per coin and may differ from these Story royalties.
 
   // Game metadata included in IP registration
   gameMetadataFields: [
