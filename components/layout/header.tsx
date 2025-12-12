@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { UserMenu } from '@/domains/users/components/user-menu'
 import { BalanceDisplay } from '@/components/ui/balance-display'
 import { Sparkles, Menu, X, Moon, Sun } from 'lucide-react'
@@ -10,6 +10,17 @@ import { useDarkMode } from '@/components/providers/DarkModeProvider'
 
 function DarkModeToggle() {
   const { isDarkMode, toggleDarkMode } = useDarkMode()
+  const [mounted, setMounted] = useState(false)
+
+  // Avoid hydration mismatch by only rendering the toggle on the client
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    // Render a placeholder to avoid layout shift (approximate width/height of toggle)
+    return <div className="w-[70px] h-[24px]" aria-hidden="true" />
+  }
 
   return (
     <div className="flex items-center space-x-2">

@@ -1,15 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import {
   LogOut,
   Settings,
   GamepadIcon,
-  Wallet
+  Wallet,
+  MoreVertical
 } from 'lucide-react'
 import { useAccount, useDisconnect } from 'wagmi'
+import { useAccountModal } from '@rainbow-me/rainbowkit'
 import { WalletConnect } from '@/components/ui/wallet-connect'
 import { getFarcasterProfile } from '@/lib/farcaster'
 import type { FarcasterProfile } from '@/lib/farcaster'
@@ -21,7 +23,10 @@ interface UserMenuProps {
 export function UserMenu({ mobileLayout = false }: UserMenuProps) {
   const { address, isConnected } = useAccount()
   const { disconnect } = useDisconnect()
+  const { openAccountModal } = useAccountModal()
   const [isOpen, setIsOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement | null>(null)
+  const kebabRef = useRef<HTMLButtonElement | null>(null)
   const [profile, setProfile] = useState<FarcasterProfile | null>(null)
   const [_isLoadingProfile, setIsLoadingProfile] = useState(false)
   const router = useRouter()
@@ -75,12 +80,15 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
 
   // When connected, show unified wallet + user menu
   return (
-    <div className="relative">
+    <div className="relative flex items-center gap-2">
+      {/* Wallet chip -> RainbowKit account modal */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center space-x-3 rounded-lg bg-purple-600/10 border border-purple-500/30 hover:bg-purple-600/20 hover:border-purple-500/50 transition-all ${
+        onClick={(e) => { e.preventDefault(); openAccountModal?.() }}
+        className={`group flex items-center space-x-3 rounded-lg bg-purple-600/10 border border-purple-500/30 hover:bg-purple-600/20 hover:border-purple-500/50 transition-all ${
           mobileLayout ? 'px-4 py-3 space-x-4' : 'px-3 py-2'
         }`}
+        aria-label="Manage wallet"
+        title="Manage wallet"
       >
         {profile?.pfpUrl ? (
           <img
@@ -99,12 +107,41 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
         )}
         <div className={mobileLayout ? 'flex flex-col items-start min-w-0' : 'hidden md:flex flex-col items-start min-w-0'}>
           <span className={`text-xs font-medium ${mobileLayout ? 'text-purple-300' : 'text-purple-300'}`}>Connected</span>
-          <span className={`${
+          <span className={`group-hover:underline group-focus:underline cursor-pointer ${
             mobileLayout ? 'text-white text-base' : 'text-sm'
-          } ${profile?.username ? 'text-white' : 'font-mono text-gray-300'} truncate`}>
+          } ${profile?.username ? 'text-white' : 'font-mono text-gray-300'} truncate`}
+            onClick={(e) => { e.preventDefault(); openAccountModal?.() }}
+          >
             {displayName}
           </span>
         </div>
+      </button>
+
+      {/* Kebab button -> open app menu */}
+      <button
+        ref={kebabRef}
+        onClick={() => setIsOpen(!isOpen)}
+        onBlur={(e) => {
+          // Close when focus leaves kebab and menu
+          setTimeout(() => {
+            const related = document.activeElement
+            if (
+              isOpen &&
+              related !== kebabRef.current &&
+              related !== menuRef.current &&
+              !menuRef.current?.contains(related as Node)
+            ) {
+              setIsOpen(false)
+            }
+          }, 0)
+        }}
+        className={`p-2 rounded-md border border-purple-500/30 hover:border-purple-500/50 hover:bg-purple-600/10 transition ${mobileLayout ? '' : ''}`}
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
+        aria-label="Open menu"
+        title="Open menu"
+      >
+        <MoreVertical className="w-4 h-4 text-purple-300" />
       </button>
 
       {isOpen && (
@@ -116,7 +153,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
           />
 
           {/* Menu */}
-          <div className="absolute right-0 mt-2 w-72 bg-gray-900 border border-purple-500/30 rounded-lg shadow-xl shadow-purple-500/10 z-20">
+          <div ref={menuRef} className="absolute right-0 mt-2 w-72 bg-gray-900 border border-purple-500/30 rounded-lg shadow-xl shadow-purple-500/10 z-20">
             <div className="p-4 border-b border-gray-700 bg-gradient-to-r from-purple-900/20 to-pink-900/20">
               <div className="flex items-center space-x-3">
                 {profile?.pfpUrl ? (
@@ -158,15 +195,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
                 <span className="text-gray-300 group-hover:text-white">My Games</span>
               </Link>
 
-              <hr className="my-2 border-gray-700" />
-
-              <button
-                onClick={handleLogout}
-                className="flex items-center space-x-3 w-full p-3 rounded-lg hover:bg-red-500/10 transition-colors group"
-              >
-                <LogOut className="w-4 h-4 text-red-400" />
-                <span className="text-red-400 group-hover:text-red-300">Disconnect Wallet</span>
-              </button>
+              {/* Disconnect removed to avoid redundancy: handled by RainbowKit account modal */}
             </div>
           </div>
         </>

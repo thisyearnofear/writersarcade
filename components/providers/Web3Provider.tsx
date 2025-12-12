@@ -48,29 +48,33 @@ export const storyAeneid = defineChain({
   testnet: true,
 });
 
+// WalletConnect guard: only include WC wallet if a valid projectId is provided
+const WALLET_CONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID;
+const HAS_WC = Boolean(WALLET_CONNECT_PROJECT_ID && WALLET_CONNECT_PROJECT_ID !== 'YOUR_PROJECT_ID');
+
+const recommendedWallets = [
+  rainbowWallet,
+  metaMaskWallet,
+  coinbaseWallet,
+  // Conditionally include WalletConnect
+  ...(HAS_WC ? [walletConnectWallet] : []),
+];
+
+const otherWallets = [phantomWallet, trustWallet, ledgerWallet, okxWallet];
+
 const config = getDefaultConfig({
   appName: 'WritArcade',
-  projectId: 'YOUR_PROJECT_ID', // TODO: Get a project ID from WalletConnect
+  projectId: WALLET_CONNECT_PROJECT_ID || 'disabled-walletconnect',
   chains: [base, baseSepolia, storyAeneid],
   ssr: true,
   wallets: [
     {
       groupName: 'Recommended',
-      wallets: [
-        rainbowWallet,
-        metaMaskWallet,
-        coinbaseWallet,
-        walletConnectWallet,
-      ],
+      wallets: recommendedWallets,
     },
     {
       groupName: 'Others',
-      wallets: [
-        phantomWallet,
-        trustWallet,
-        ledgerWallet,
-        okxWallet,
-      ],
+      wallets: otherWallets,
     },
   ],
 });
@@ -111,47 +115,76 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
   const authenticationAdapter = useMemo(() => {
     return createAuthenticationAdapter({
       getNonce: async () => {
-        const response = await fetch('/api/auth/nonce');
-        const data = await response.json();
-        return data.nonce;
+        try {
+          const response = await fetch('/api/auth/nonce');
+          const data = await response.json();
+          console.log('[SIWE] Nonce fetched:', data.nonce);
+          return data.nonce;
+        } catch (e) {
+          console.error('[SIWE] Failed to fetch nonce:', e);
+          throw e;
+        }
       },
 
       createMessage: ({ nonce, address, chainId }) => {
-        return new SiweMessage({
-          domain: window.location.host,
-          address,
-          statement: 'Sign in with WritArcade to prove you own this wallet.',
-          uri: window.location.origin,
-          version: '1',
-          chainId,
-          nonce,
-        });
+        console.log('[SIWE] Creating message for:', { address, chainId, nonce });
+        try {
+          const message = new SiweMessage({
+            domain: window.location.host,
+            address,
+            statement: 'Sign in to WritArcade.',
+            uri: window.location.origin,
+            version: '1',
+            chainId,
+            nonce,
+          });
+          // RainbowKit expects a string for signing. Return the prepared string.
+          return message.prepareMessage();
+        } catch (e) {
+          console.error('[SIWE] Error creating SiweMessage:', e);
+          throw e;
+        }
       },
 
       verify: async ({ message, signature }) => {
-        const verifyRes = await fetch('/api/auth/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message, signature }),
-        });
+        console.log('[SIWE] Verifying signature...');
+        try {
+          // Ensure we send the exact string message that was signed
+          const messageContent = (message as any).prepareMessage?.() || String(message);
 
-        const success = Boolean(verifyRes.ok);
-        if (success) {
-          setAuthStatus('authenticated');
+          const verifyRes = await fetch('/api/auth/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: messageContent, signature }),
+          });
+
+          const success = verifyRes.ok;
+          console.log('[SIWE] Verification result:', success);
+
+          if (success) {
+            setAuthStatus('authenticated');
+          }
+          return success;
+        } catch (e) {
+          console.error('[SIWE] Verification error:', e);
+          return false;
         }
-        return success;
       },
 
       signOut: async () => {
-        const res = await fetch('/api/auth/logout', { method: 'POST' });
-        if (!res.ok) throw new Error('Failed to logout');
-        setAuthStatus('unauthenticated');
+        setAuthStatus('unauthenticated'); // Optimistic update
+        await fetch('/api/auth/logout', { method: 'POST' });
       },
     });
   }, []);
 
   return (
     <Web3AuthContext.Provider value={{ status: authStatus }}>
+      {!HAS_WC && (
+        <div className="fixed bottom-2 left-2 z-50 rounded-md bg-yellow-900/80 text-yellow-100 border border-yellow-600/60 px-3 py-2 text-xs shadow">
+          WalletConnect disabled: set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to enable.
+        </div>
+      )}
       <WagmiProvider config={config}>
         <QueryClientProvider client={queryClient}>
           <RainbowKitAuthenticationProvider
