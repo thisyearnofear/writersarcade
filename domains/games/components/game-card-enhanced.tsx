@@ -6,6 +6,8 @@ import { motion } from 'framer-motion'
 import { Game } from '../types'
 import { Play, Zap, Crown, Trash2, Eye, EyeOff, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useAccount } from 'wagmi'
+import { isAdmin } from '@/lib/constants'
 
 interface GameCardEnhancedProps {
   game: Game
@@ -33,6 +35,11 @@ export function GameCardEnhanced({
   isLoading = false,
 }: GameCardEnhancedProps) {
   const [isHovered, setIsHovered] = useState(false)
+  const { address } = useAccount()
+  const userIsAdmin = isAdmin(address)
+
+  // Settings visible if owner OR admin
+  const showSettings = isUserGame || userIsAdmin
 
   return (
     <motion.div
@@ -213,29 +220,35 @@ export function GameCardEnhanced({
                   <Eye className="w-4 h-4" />
                 )}
               </Button>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onSettingsClick}
-                disabled={isLoading}
-                className="flex items-center gap-2"
-                title="Configure Settings (Fee & Visibility)"
-              >
-                <Settings className="w-4 h-4" />
-              </Button>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onDeleteClick}
-                disabled={isLoading}
-                className="flex items-center gap-2 text-red-400 hover:text-red-300 hover:border-red-400"
-                title="Delete game"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
             </>
+          )}
+
+          {/* Settings Button Separated to be visible for Admins too */}
+          {showSettings && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onSettingsClick}
+              disabled={isLoading}
+              className="flex items-center gap-2"
+              title="Configure Settings (Fee & Visibility & Featured)"
+            >
+              <Settings className={`w-4 h-4 ${userIsAdmin && !isUserGame ? 'text-yellow-500' : ''}`} />
+            </Button>
+          )}
+
+          {/* Delete for Owner Only (or Admin if desired, but sticking to logic) */}
+          {isUserGame && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onDeleteClick}
+              disabled={isLoading}
+              className="flex items-center gap-2 text-red-400 hover:text-red-300 hover:border-red-400"
+              title="Delete game"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
           )}
         </div>
       </div>

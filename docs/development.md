@@ -196,6 +196,10 @@ Response:
 
 ## Smart Contracts
 
+- [x] **Smart Contracts V1**: Deployed to Base.
+- [x] **WriterCoinPayment V2 (Planned)**: Updated to support `payForGameplay` with dynamic splits (80% Creator / 10% Writer / 10% Platform).
+- [ ] **Agent Wallet**: Integrate Coinbase AgentKit.
+
 ### Deployment
 ```bash
 # Deploy to Base Sepolia testnet

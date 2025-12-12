@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
+import { parseEther } from 'viem'
 
 import { Loader2, Play, BookOpen, Lightbulb } from 'lucide-react'
 import { Game, ChatMessage, GameplayOption } from '../types'
@@ -12,6 +14,35 @@ import { ComicPanelCard } from './comic-panel-card'
 import { ComicBookFinale, type ComicBookFinalePanelData } from './comic-book-finale'
 import { parsePanel } from '../utils/text-parser'
 import { useToast } from '@/components/ui/use-toast'
+
+// Mock ABI for V2 functionality - replaced by real import in production
+const WRITER_COIN_PAYMENT_ABI = [
+  {
+    "type": "function",
+    "name": "payForGameplay",
+    "inputs": [
+      { "name": "writerCoin", "type": "address" },
+      { "name": "gameCreator", "type": "address" },
+      { "name": "amount", "type": "uint256" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "approve",
+    "inputs": [
+      { "name": "spender", "type": "address" },
+      { "name": "amount", "type": "uint256" }
+    ],
+    "outputs": [{ "name": "", "type": "bool" }],
+    "stateMutability": "nonpayable"
+  }
+]
+
+// WriterCoinPayment V2 Address (Needs update after redeployment)
+const PAYMENT_CONTRACT_ADDRESS = "0xa794b662E103790E44100E4A3240370a5C704209"
+const AVC_TOKEN_ADDRESS = "0xA8D70BFA7a0988da1A3ea8536A2d0724F13886E8" // Example
 
 interface GamePlayInterfaceProps {
   game: Game
@@ -28,6 +59,9 @@ const MAX_COMIC_PANELS = 5
 
 export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
   const { toast } = useToast()
+  const { address } = useAccount()
+  const { writeContractAsync } = useWriteContract()
+
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatEntry[]>([])
   const [isStarting, setIsStarting] = useState(false)
@@ -71,14 +105,37 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
   const handlePaymentConfirm = async () => {
     setIsPaying(true)
     try {
-      // Simulation of payment interaction
-      // In production: Call contract.pay(gameId)
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      if (!game.playFee) return
+
+      const gameCreator = game.creatorWallet || "0x0000000000000000000000000000000000000000" // Fallback if no creator wallet (should technically fail/msg user)
+
+      // Call payForGameplay on the V2 contract
+      const tx = await writeContractAsync({
+        address: PAYMENT_CONTRACT_ADDRESS as `0x${string}`,
+        abi: WRITER_COIN_PAYMENT_ABI,
+        functionName: 'payForGameplay',
+        args: [
+          AVC_TOKEN_ADDRESS,     // The coin user is paying with
+          gameCreator,           // The independent creator of this specific game
+          parseEther(game.playFee) // The amount
+        ]
+      })
+
+      console.log('Payment sent:', tx)
+      toast({
+        title: "Payment Successful!",
+        description: "Insert coin accepted. Game starting...",
+      })
 
       setShowPaymentModal(false)
       startGame()
     } catch (error) {
       console.error('Payment failed', error)
+      toast({
+        title: "Payment Failed",
+        description: "Please ensure you have enough tokens and try again.",
+        variant: "destructive"
+      })
     } finally {
       setIsPaying(false)
     }

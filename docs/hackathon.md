@@ -97,8 +97,8 @@ Unlike legacy interactive fiction tools (e.g., Twine) where creators must manual
   - Verified on Sourcify: https://repo.sourcify.dev/8453/0x778C87dAA2b284982765688AE22832AADae7dccC
   
 - ✅ **WriterCoinPayment** - Payment processor & revenue distribution
-  - Address: `0xf4d556E6E739B4Aa065Fae41f353a9f296371a35`
-  - Verified on Sourcify: https://repo.sourcify.dev/8453/0xf4d556E6E739B4Aa065Fae41f353a9f296371a35
+  - Address: `0xa794b662E103790E44100E4A3240370a5C704209`
+  - Verified on Sourcify: https://repo.sourcify.dev/8453/0xa794b662E103790E44100E4A3240370a5C704209
 
 **Features**:
 - Dynamic revenue splits (configurable per coin)

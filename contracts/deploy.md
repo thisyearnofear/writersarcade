@@ -12,9 +12,10 @@
   - `tokenExists(tokenId)` - Check if token exists
 
 ### 2. WriterCoinPayment.sol
-- **Purpose**: Handle payments and revenue distribution
-- **Functions**:
-  - `whitelistCoin(...)` - Add a writer coin to whitelist
+-3. **WriterCoinPayment**: Handles payments and revenue distribution.
+   - Now supports `payForGameplay` (V2) for dynamic creator/writer/platform splits.
+   - Requires `PlatformTreasury` and `CreatorPool` addresses.
+   - Must `setGameNFT` after deployment. to whitelist
   - `removeCoin(coinAddress)` - Remove a writer coin
   - `payForGameGeneration(writerCoin, user)` - Process game generation payment
   - `payForMinting(writerCoin, user)` - Process NFT minting payment

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/database'
+import { prisma } from '@/lib/prisma'
+import { isAdmin } from '@/lib/constants'
 
 /**
  * PATCH /api/games/[slug]/settings
- * Update game settings (play fee, visibility)
+ * Update game settings (play fee, visibility, featured status)
  */
 export async function PATCH(
     request: NextRequest,
@@ -12,7 +13,7 @@ export async function PATCH(
     try {
         const { slug } = await params
         const body = await request.json()
-        const { playFee, private: isPrivate, wallet } = body
+        const { playFee, private: isPrivate, featured, wallet } = body
 
         if (!wallet) {
             return NextResponse.json(
@@ -21,40 +22,52 @@ export async function PATCH(
             )
         }
 
-        // Fetch game to verify ownership
+        // Get current game to verify ownership
         const game = await prisma.game.findUnique({
             where: { slug },
-            include: { user: true },
+            include: {
+                user: true,
+            },
         })
 
         if (!game) {
+            return NextResponse.json({ error: 'Game not found' }, { status: 404 })
+        }
+
+        // Verify ownership or Admin status
+        const isOwner = game.user?.walletAddress?.toLowerCase() === wallet.toLowerCase()
+        const isUserAdmin = isAdmin(wallet)
+
+        if (!isOwner && !isUserAdmin) {
             return NextResponse.json(
-                { error: 'Game not found' },
-                { status: 404 }
+                { error: 'Unauthorized. Only the owner or an admin can update settings.' },
+                { status: 403 }
             )
         }
 
-        // Verify ownership
-        // Note: This is a robust check ensuring only the wallet that owns the game (via User relation) can update it
-        if (!game.user || game.user.walletAddress.toLowerCase() !== wallet.toLowerCase()) {
-            // Fallback check: if no user relation but creatorWallet matches (legacy/direct wallet games)
-            if (game.creatorWallet?.toLowerCase() !== wallet.toLowerCase()) {
-                return NextResponse.json(
-                    { error: 'Unauthorized: You do not own this game' },
-                    { status: 403 }
-                )
-            }
-        }
-
-        // Prepare update data
         const updateData: any = {}
 
+        // Privacy toggle (Owner or Admin)
         if (typeof isPrivate === 'boolean') {
             updateData.private = isPrivate
         }
 
+        // Featured toggle (Admin Only)
+        // IMPORTANT: Verify Admin again explicitly for this field
+        if (typeof featured === 'boolean') {
+            if (!isUserAdmin) {
+                // Silently ignore or throw 403? 
+                // Throwing 403 is safer to prevent hacking
+                return NextResponse.json(
+                    { error: 'Unauthorized. Only admins can feature games.' },
+                    { status: 403 }
+                )
+            }
+            updateData.featured = featured
+        }
+
+        // Play Fee (Owner or Admin)
         if (playFee !== undefined) {
-            // Validate play fee
             const fee = Number(playFee)
             if (isNaN(fee) || fee < 0) {
                 return NextResponse.json(
@@ -77,8 +90,10 @@ export async function PATCH(
                 slug,
                 private: updatedGame.private,
                 playFee: (updatedGame as any).playFee,
+                featured: (updatedGame as any).featured
             },
         })
+
     } catch (error) {
         console.error('Settings update error:', error)
         return NextResponse.json(
