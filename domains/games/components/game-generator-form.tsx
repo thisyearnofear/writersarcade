@@ -558,7 +558,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
 
         {/* Payment Section (shown when customization requested in story mode) */}
         {isStoryMode && showPayment && (
-          <div className="space-y-4 p-4 bg-purple-900/20 rounded-lg border border-purple-600/30">
+          <div className="space-y-4 p-4 rounded-xl border border-purple-700/60 bg-purple-950/80 shadow-[0_0_0_1px_rgba(168,85,247,0.25)]">
             <h3 className="font-semibold text-purple-200">Enable Customization</h3>
             <p className="text-sm text-purple-100">
               Connect your wallet and approve payment to unlock genre/difficulty customization. You can generate games for free without payment.

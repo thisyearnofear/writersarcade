@@ -80,7 +80,7 @@ export function PaymentOption({
 
       {/* Payment Flow */}
       {/* Elevated CTA visuals for stronger contrast */}
-      <div className="rounded-xl border border-purple-600/40 bg-black/40 p-3 shadow-[0_0_0_1px_rgba(168,85,247,0.25)]">
+      <div className="rounded-xl border border-purple-700/60 bg-black/60 p-3 shadow-[0_0_0_1px_rgba(168,85,247,0.35)]">
         <PaymentFlow
         writerCoin={writerCoin}
         action={action}
@@ -103,7 +103,7 @@ export function PaymentOption({
       )}
 
       {/* Info */}
-      <div className="rounded-lg bg-purple-900/30 p-3 text-xs text-purple-300">
+      <div className="rounded-lg border border-purple-700/60 bg-purple-950/80 p-3 text-xs text-purple-100">
         <p>
           💡 <span className="font-semibold">Tip:</span> Payment unlocks customization (genre/difficulty). Free games use AI default choices.
         </p>

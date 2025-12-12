@@ -13,6 +13,16 @@ import {
 } from 'wagmi/chains';
 import { defineChain } from 'viem';
 import {
+  rainbowWallet,
+  metaMaskWallet,
+  coinbaseWallet,
+  walletConnectWallet,
+  ledgerWallet,
+  trustWallet,
+  phantomWallet,
+  okxWallet,
+} from '@rainbow-me/rainbowkit/wallets';
+import {
   QueryClientProvider,
   QueryClient,
 } from '@tanstack/react-query';
@@ -43,6 +53,26 @@ const config = getDefaultConfig({
   projectId: 'YOUR_PROJECT_ID', // TODO: Get a project ID from WalletConnect
   chains: [base, baseSepolia, storyAeneid],
   ssr: true,
+  wallets: [
+    {
+      groupName: 'Recommended',
+      wallets: [
+        rainbowWallet,
+        metaMaskWallet,
+        coinbaseWallet,
+        walletConnectWallet,
+      ],
+    },
+    {
+      groupName: 'Others',
+      wallets: [
+        phantomWallet,
+        trustWallet,
+        ledgerWallet,
+        okxWallet,
+      ],
+    },
+  ],
 });
 
 const queryClient = new QueryClient();

@@ -44,16 +44,16 @@ export function CostPreview({ writerCoin, action, showBreakdown = true }: CostPr
   const actionLabel = action === 'generate-game' ? 'Generation Cost' : 'Minting Cost'
 
   return (
-    <div className="rounded-lg bg-purple-900/30 p-4">
+    <div className="rounded-xl border border-purple-700/60 bg-purple-950/80 p-4 shadow-[0_0_0_1px_rgba(168,85,247,0.25)]">
       <div className="space-y-2 text-sm">
         <div className="flex items-center justify-between">
-          <span className="text-purple-300">{actionLabel}:</span>
-          <span className="font-semibold text-purple-200">{cost.amountFormatted} {writerCoin.symbol}</span>
+          <span className="text-purple-200">{actionLabel}:</span>
+          <span className="font-semibold text-purple-100">{cost.amountFormatted} {writerCoin.symbol}</span>
         </div>
 
         {showBreakdown && (
           <>
-            <div className="border-t border-purple-600 pt-2">
+            <div className="border-t border-purple-700 pt-2">
               {action === 'generate-game' ? (
                 <>
                   <div className="flex items-center justify-between">
@@ -69,7 +69,7 @@ export function CostPreview({ writerCoin, action, showBreakdown = true }: CostPr
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-purple-300">Creator Pool:</span>
+                    <span className="text-purple-200">Creator Pool:</span>
                     <span className="font-semibold text-purple-400">
                       {(Number(distribution.creatorShare) / 10 ** writerCoin.decimals).toFixed(0)} {writerCoin.symbol}
                     </span>
@@ -78,7 +78,7 @@ export function CostPreview({ writerCoin, action, showBreakdown = true }: CostPr
               ) : (
                 <>
                   <div className="flex items-center justify-between">
-                    <span className="text-purple-300">Creator:</span>
+                    <span className="text-purple-200">Creator:</span>
                     <span className="font-semibold text-blue-400">
                       {(Number(distribution.creatorShare) / 10 ** writerCoin.decimals).toFixed(0)} {writerCoin.symbol}
                     </span>
