@@ -55,6 +55,10 @@ export interface Game {
   private: boolean
   userId?: string
 
+  // Monetization & Discovery
+  playFee?: string
+  featured?: boolean
+
   // Timestamps
   createdAt: Date
   updatedAt: Date

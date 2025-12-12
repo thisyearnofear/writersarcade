@@ -57,6 +57,33 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
     return () => clearTimeout(timeoutId)
   }, [messages])
 
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [isPaying, setIsPaying] = useState(false)
+
+  const handleStartClick = () => {
+    if (game.playFee && parseFloat(game.playFee) > 0) {
+      setShowPaymentModal(true)
+    } else {
+      startGame()
+    }
+  }
+
+  const handlePaymentConfirm = async () => {
+    setIsPaying(true)
+    try {
+      // Simulation of payment interaction
+      // In production: Call contract.pay(gameId)
+      await new Promise(resolve => setTimeout(resolve, 1500))
+
+      setShowPaymentModal(false)
+      startGame()
+    } catch (error) {
+      console.error('Payment failed', error)
+    } finally {
+      setIsPaying(false)
+    }
+  }
+
   const startGame = async () => {
     setIsStarting(true)
     setLoadingProgress({ text: false, images: false })
@@ -676,7 +703,7 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
             <div className="mt-6 sm:mt-8 pt-4">
               <div className="relative">
                 <Button
-                  onClick={startGame}
+                  onClick={handleStartClick}
                   disabled={isStarting}
                   size="lg"
                   className="w-full text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 rounded-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 disabled:opacity-50 relative z-10"
@@ -760,6 +787,57 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
             </motion.div>
           </div>
         </div>
+        {/* Payment Modal Overlay */}
+        {showPaymentModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-gray-900 border border-purple-500/30 rounded-xl p-6 max-w-sm w-full shadow-2xl"
+            >
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-purple-600/20 rounded-full flex items-center justify-center mx-auto">
+                  <div className="text-3xl">🪙</div>
+                </div>
+
+                <h3 className="text-xl font-bold text-white">Insert Coin to Play</h3>
+
+                <p className="text-gray-400">
+                  This arcade cabinet requires a credit of <br />
+                  <span className="text-xl font-bold text-purple-400">{game.playFee} $DONUT</span>
+                </p>
+
+                <div className="text-xs text-gray-500 bg-gray-950 p-3 rounded border border-gray-800">
+                  Funds are automatically split between the Game Creator and the Original Article Author via Story Protocol.
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <Button
+                    variant="ghost"
+                    onClick={() => setShowPaymentModal(false)}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handlePaymentConfirm}
+                    disabled={isPaying}
+                    className="flex-1 bg-purple-600 hover:bg-purple-700"
+                  >
+                    {isPaying ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Paying...
+                      </>
+                    ) : (
+                      'Confirm Payment'
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
       </div>
     )
   }

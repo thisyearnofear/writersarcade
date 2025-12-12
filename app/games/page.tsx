@@ -1,277 +1,163 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
+import { motion } from 'framer-motion'
+import { GameGrid } from '@/domains/games/components/game-grid'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
+import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
+import { Search, Filter, Gamepad2, Compass, Zap, Brain, Sword, Store, ChevronLeft, ChevronRight } from 'lucide-react'
 import { GameDatabaseService } from '@/domains/games/services/game-database.service'
 
-interface Game {
-  id: string
-  title: string
-  slug: string
-  description: string
-  tagline: string
-  genre: string
-  subgenre: string
-  primaryColor?: string
-  promptModel: string
-  createdAt: Date
-  private: boolean
-}
-
-interface GameStats {
-  totalGames: number
-  publicGames: number
-  topGenres: Array<{ genre: string; count: number }>
-  recentGames: number
-}
+const genres = [
+  { id: 'all', label: 'All Games', icon: Gamepad2 },
+  { id: 'Simulation', label: 'Simulation', icon: Store },
+  { id: 'Adventure', label: 'Adventure', icon: Compass },
+  { id: 'Action', label: 'Action', icon: Sword },
+  { id: 'Strategy', label: 'Strategy', icon: Zap },
+  { id: 'Puzzle', label: 'Puzzle', icon: Brain },
+]
 
 export default function GamesPage() {
-  const [games, setGames] = useState<Game[]>([])
-  const [stats, setStats] = useState<GameStats | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [selectedGenre, setSelectedGenre] = useState<string | null>(null)
+  const [selectedGenre, setSelectedGenre] = useState<string | undefined>(undefined)
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 12
+  const [totalGames, setTotalGames] = useState(0)
+  const [itemsPerPage] = useState(12)
+  const [gameStats, setGameStats] = useState<{ publicGames: number, totalGames: number } | null>(null)
 
+  // Fetch rudimentary stats for the header
   useEffect(() => {
-    const fetchGames = async () => {
-      try {
-        setLoading(true)
-        
-        // Fetch stats
-        const gameStats = await GameDatabaseService.getGameStats()
-        setStats(gameStats)
+    // We can't use GameDatabaseService directly in client component for data fetching 
+    // strictly speaking if it accesses DB, but the previous code did it?
+    // Wait, GameDatabaseService imports 'prisma' which is server-side only. 
+    // The previous code in app/games/page.tsx likely caused a build error or was using a client-side wrapper?
+    // Checking previous file content... it imported GameDatabaseService. 
+    // If that file was running on client ('use client'), it would fail at runtime or build time unless GameDatabaseService is isomorphic 
+    // (which it isn't, it imports prisma).
+    // So the previous file was effectively broken if it was 'use client'.
+    // I will NOT use GameDatabaseService here. I will just rely on GameGrid's onLoad or a separate API call if needed.
+    // For now, I'll skip the stats header fetching to be safe and clean.
 
-        // Fetch games with filters
-        const options: {
-          limit: number;
-          offset: number;
-          includePrivate: boolean;
-          genre?: string;
-          search?: string;
-        } = {
-          limit: itemsPerPage,
-          offset: (currentPage - 1) * itemsPerPage,
-          includePrivate: false, // Only show public games
-        }
+    // Actually, let's just use the onLoad from GameGrid to get the total count.
+  }, [])
 
-        if (selectedGenre) {
-          options.genre = selectedGenre
-        }
-        if (searchQuery) {
-          options.search = searchQuery
-        }
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
-        const fetchedGames = await GameDatabaseService.getGames(options)
-        setGames(fetchedGames.games)
-      } catch (error) {
-        console.error('Failed to fetch games:', error)
-        setGames([])
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    const timer = setTimeout(fetchGames, 300) // Debounce search
-    return () => clearTimeout(timer)
-  }, [selectedGenre, searchQuery, currentPage])
-
-  const genres = stats?.topGenres || []
+  const handleStatsLoad = (data: { total: number, count: number }) => {
+    setTotalGames(data.total)
+  }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
+    <ThemeWrapper theme="arcade">
+      <div className="flex flex-col min-h-screen bg-black">
+        <Header />
 
-      <main className="flex-1">
-        {/* Hero Section */}
-        <section className="py-12 px-4 bg-gradient-to-b from-purple-900/20 to-transparent border-b border-gray-800">
-          <div className="max-w-6xl mx-auto">
-            <h1 className="text-5xl font-bold mb-4">Game Gallery</h1>
-            <p className="text-gray-400 text-lg">
-              Explore {stats?.publicGames || 0} games created from Paragraph.xyz articles
-            </p>
-          </div>
-        </section>
-
-        {/* Stats Section */}
-        {stats && (
-          <section className="py-8 px-4 border-b border-gray-800">
-            <div className="max-w-6xl mx-auto">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-gray-900/50 rounded-lg p-6 border border-gray-800">
-                  <div className="text-3xl font-bold text-purple-400">{stats.publicGames}</div>
-                  <div className="text-gray-400 mt-2">Public Games</div>
-                </div>
-                <div className="bg-gray-900/50 rounded-lg p-6 border border-gray-800">
-                  <div className="text-3xl font-bold text-blue-400">{stats.totalGames}</div>
-                  <div className="text-gray-400 mt-2">Total Games</div>
-                </div>
-                <div className="bg-gray-900/50 rounded-lg p-6 border border-gray-800">
-                  <div className="text-3xl font-bold text-green-400">{genres.length}</div>
-                  <div className="text-gray-400 mt-2">Genres</div>
-                </div>
-              </div>
+        <main className="flex-1">
+          {/* Arcade Header */}
+          <div className="relative py-12 px-4 border-b border-purple-900/30 bg-purple-950/10">
+            <div className="max-w-7xl mx-auto">
+              <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400">
+                The Arcade
+              </h1>
+              <p className="text-gray-400 text-lg max-w-2xl">
+                Discover unique games generated from your favorite articles.
+                Play, compete, and own the experience.
+              </p>
             </div>
-          </section>
-        )}
+          </div>
 
-        {/* Search and Filters */}
-        <section className="py-8 px-4 border-b border-gray-800">
-          <div className="max-w-6xl mx-auto">
-            <div className="space-y-6">
-              {/* Search Bar */}
-              <div>
-                <input
-                  type="text"
-                  placeholder="Search games by title, description, or genre..."
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value)
-                    setCurrentPage(1)
-                  }}
-                  className="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
-                />
-              </div>
-
-              {/* Genre Filter */}
-              <div>
-                <h3 className="text-sm font-semibold text-gray-300 mb-3">Filter by Genre</h3>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => {
-                      setSelectedGenre(null)
-                      setCurrentPage(1)
+          <div className="max-w-7xl mx-auto px-4 py-8">
+            <div className="flex flex-col lg:flex-row gap-8">
+              {/* Sidebar Filters */}
+              <aside className="lg:w-64 flex-shrink-0 space-y-8">
+                {/* Search */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                  <input
+                    type="text"
+                    placeholder="Search games..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value)
+                      setCurrentPage(1) // Reset to page 1 on search
                     }}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                      selectedGenre === null
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-gray-900 border border-gray-800 text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    All Genres
-                  </button>
-                  {genres.map(({ genre, count }) => (
-                    <button
-                      key={genre}
-                      onClick={() => {
-                        setSelectedGenre(genre)
-                        setCurrentPage(1)
-                      }}
-                      className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                        selectedGenre === genre
-                          ? 'bg-purple-600 text-white'
-                          : 'bg-gray-900 border border-gray-800 text-gray-400 hover:text-white'
-                      }`}
-                    >
-                      {genre} <span className="text-xs ml-1">({count})</span>
-                    </button>
-                  ))}
+                    className="w-full bg-gray-900 border border-gray-800 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-purple-500 transition-colors placeholder-gray-600"
+                  />
                 </div>
+
+                {/* Genre Filter */}
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <Filter className="w-4 h-4" />
+                    Genres
+                  </h3>
+                  <div className="space-y-1">
+                    {genres.map((genre) => (
+                      <button
+                        key={genre.id}
+                        onClick={() => {
+                          setSelectedGenre(genre.id === 'all' ? undefined : genre.id)
+                          setCurrentPage(1) // Reset to page 1 on filter
+                        }}
+                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-sm font-medium ${(selectedGenre === genre.id) || (!selectedGenre && genre.id === 'all')
+                            ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30'
+                            : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
+                          }`}
+                      >
+                        <genre.icon className="w-4 h-4" />
+                        <span>{genre.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </aside>
+
+              {/* Game Grid Area */}
+              <div className="flex-1">
+                <GameGrid
+                  key={`${selectedGenre}-${searchQuery}-${currentPage}`} // Force remount to show loading state properly
+                  limit={itemsPerPage}
+                  page={currentPage}
+                  genre={selectedGenre}
+                  search={searchQuery}
+                  onLoad={handleStatsLoad}
+                />
+
+                {/* Pagination Controls */}
+                {totalGames > 0 && (
+                  <div className="mt-8 flex justify-center items-center gap-4 border-t border-gray-800 pt-8">
+                    <button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="p-2 rounded-lg border border-gray-800 text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed hover:border-purple-500 hover:text-white transition-colors"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+
+                    <span className="text-gray-400 text-sm">
+                      Page <span className="text-white font-medium">{currentPage}</span> of <span className="text-white font-medium">{Math.ceil(totalGames / itemsPerPage) || 1}</span>
+                    </span>
+
+                    <button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage >= Math.ceil(totalGames / itemsPerPage)}
+                      className="p-2 rounded-lg border border-gray-800 text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed hover:border-purple-500 hover:text-white transition-colors"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
-        </section>
+        </main>
 
-        {/* Games Grid */}
-        <section className="py-12 px-4">
-          <div className="max-w-6xl mx-auto">
-            {loading ? (
-              <div className="text-center py-12">
-                <div className="inline-block animate-spin">
-                  <div className="w-8 h-8 border-4 border-gray-700 border-t-purple-500 rounded-full" />
-                </div>
-                <p className="text-gray-400 mt-4">Loading games...</p>
-              </div>
-            ) : games.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-gray-400 text-lg">No games found. Try adjusting your filters.</p>
-              </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {games.map((game) => (
-                    <Link
-                      key={game.id}
-                      href={`/games/${game.slug}`}
-                      className="group bg-gray-900 border border-gray-800 rounded-lg overflow-hidden hover:border-purple-500 transition-all hover:shadow-xl hover:shadow-purple-500/20"
-                    >
-                      <div
-                        className="h-32 bg-gradient-to-br opacity-80 group-hover:opacity-100 transition-opacity"
-                        style={{
-                          background: `linear-gradient(135deg, ${game.primaryColor || '#8b5cf6'}40, ${game.primaryColor || '#8b5cf6'}10)`,
-                          borderBottom: `2px solid ${game.primaryColor || '#8b5cf6'}`,
-                        }}
-                      />
-
-                      <div className="p-6">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1">
-                            <span
-                              className="inline-block px-2 py-1 text-xs rounded-full border mb-3"
-                              style={{
-                                borderColor: game.primaryColor || '#8b5cf6',
-                                color: game.primaryColor || '#8b5cf6',
-                                backgroundColor: `${game.primaryColor || '#8b5cf6'}20`,
-                              }}
-                            >
-                              {game.genre}
-                            </span>
-                          </div>
-                        </div>
-
-                        <h3 className="text-lg font-bold text-white mb-2 group-hover:text-purple-400 transition-colors line-clamp-2">
-                          {game.title}
-                        </h3>
-
-                        <p className="text-sm text-gray-400 mb-4 line-clamp-2">
-                          {game.tagline}
-                        </p>
-
-                        <div className="text-xs text-gray-500 space-y-1">
-                          <p>
-                            Generated with <span className="text-gray-400">{game.promptModel}</span>
-                          </p>
-                          <p>
-                            Created {new Date(game.createdAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-
-                {/* Pagination */}
-                <div className="mt-12 flex justify-center items-center gap-4">
-                  <button
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    className="px-4 py-2 rounded-lg border border-gray-800 text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed hover:border-purple-500 hover:text-white transition-colors"
-                  >
-                    Previous
-                  </button>
-
-                  <div className="text-gray-400">
-                    Page <span className="font-semibold">{currentPage}</span>
-                  </div>
-
-                  <button
-                    onClick={() => setCurrentPage((p) => p + 1)}
-                    disabled={games.length < itemsPerPage}
-                    className="px-4 py-2 rounded-lg border border-gray-800 text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed hover:border-purple-500 hover:text-white transition-colors"
-                  >
-                    Next
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </section>
-      </main>
-
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </ThemeWrapper>
   )
 }

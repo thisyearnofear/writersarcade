@@ -11,27 +11,35 @@ interface GameGridProps {
   limit?: number
   search?: string
   genre?: string
+  page?: number
+  featured?: boolean
+  onLoad?: (data: { total: number, count: number }) => void
 }
 
-export function GameGrid({ limit = 25, search, genre }: GameGridProps) {
+export function GameGrid({ limit = 25, search, genre, page = 1, featured, onLoad }: GameGridProps) {
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  
+
   useEffect(() => {
     async function fetchGames() {
       try {
         setLoading(true)
         const params = new URLSearchParams()
         if (limit) params.set('limit', limit.toString())
+        if (page) params.set('offset', ((page - 1) * limit).toString())
         if (search) params.set('search', search)
         if (genre) params.set('genre', genre)
-        
+        if (featured) params.set('featured', 'true')
+
         const response = await fetch(`/api/games/generate?${params}`)
         const result = await response.json()
-        
+
         if (result.success) {
           setGames(result.data.games)
+          if (onLoad) {
+            onLoad({ total: result.data.total, count: result.data.games.length })
+          }
         } else {
           setError(result.error || 'Failed to load games')
         }
@@ -41,10 +49,10 @@ export function GameGrid({ limit = 25, search, genre }: GameGridProps) {
         setLoading(false)
       }
     }
-    
+
     fetchGames()
-  }, [limit, search, genre])
-  
+  }, [limit, search, genre, page, featured, onLoad])
+
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -54,13 +62,13 @@ export function GameGrid({ limit = 25, search, genre }: GameGridProps) {
       </div>
     )
   }
-  
+
   if (error) {
     return (
       <div className="text-center text-red-400 py-12">
         <p>{error}</p>
-        <button 
-          onClick={() => window.location.reload()} 
+        <button
+          onClick={() => window.location.reload()}
           className="mt-4 text-purple-400 hover:text-purple-300"
         >
           Try again
@@ -68,7 +76,7 @@ export function GameGrid({ limit = 25, search, genre }: GameGridProps) {
       </div>
     )
   }
-  
+
   if (games.length === 0) {
     return (
       <div className="text-center text-gray-400 py-12">
@@ -79,7 +87,7 @@ export function GameGrid({ limit = 25, search, genre }: GameGridProps) {
       </div>
     )
   }
-  
+
   return (
     <motion.div
       className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
@@ -107,13 +115,13 @@ function GameCardSkeleton() {
         <div className="flex items-start justify-between mb-3">
           <div className="h-5 w-16 bg-gray-600 rounded-full"></div>
         </div>
-        
+
         <div className="h-6 bg-gray-600 rounded mb-2"></div>
         <div className="h-4 bg-gray-600 rounded mb-1 w-3/4"></div>
         <div className="h-4 bg-gray-600 rounded mb-4 w-1/2"></div>
-        
+
         <div className="h-4 bg-gray-600 rounded mb-4 w-5/6"></div>
-        
+
         <div className="flex items-center justify-between">
           <div className="h-3 bg-gray-600 rounded w-20"></div>
           <div className="h-3 bg-gray-600 rounded w-16"></div>

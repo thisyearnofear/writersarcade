@@ -145,6 +145,7 @@ export class GameDatabaseService {
     genre?: string
     userId?: string
     includePrivate?: boolean
+    featured?: boolean
   } = {}) {
     const {
       limit = 25,
@@ -152,7 +153,8 @@ export class GameDatabaseService {
       search,
       genre,
       userId,
-      includePrivate = false
+      includePrivate = false,
+      featured
     } = options
 
     try {
@@ -163,6 +165,8 @@ export class GameDatabaseService {
           includePrivate ? {} : { private: false },
           // User filter
           userId ? { userId } : {},
+          // Featured filter - Cast to any until schema regen propagates
+          featured ? { featured: true } as any : {},
           // Search filter
           search ? {
             OR: [
@@ -235,7 +239,7 @@ export class GameDatabaseService {
    */
   static async updateGame(
     id: string,
-    updates: Partial<Pick<Game, 'title' | 'description' | 'tagline' | 'private'>>
+    updates: Partial<Pick<Game, 'title' | 'description' | 'tagline' | 'private' | 'playFee'>>
   ): Promise<Game | null> {
     try {
       const game = await prisma.game.update({
@@ -377,6 +381,9 @@ export class GameDatabaseService {
       nftMintedAt: prismaGame.nftMintedAt || undefined,
       private: prismaGame.private,
       userId: prismaGame.userId || undefined,
+      // Cast to any because Prisma types are not yet updated in the running process
+      playFee: (prismaGame as any).playFee || undefined,
+      featured: (prismaGame as any).featured || false,
       createdAt: prismaGame.createdAt,
       updatedAt: prismaGame.updatedAt,
     }

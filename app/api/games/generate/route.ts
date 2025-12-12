@@ -229,6 +229,7 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0')
     const search = searchParams.get('search') || undefined
     const genre = searchParams.get('genre') || undefined
+    const featured = searchParams.get('featured') === 'true'
 
     // Fetch games from database
     const result = await GameDatabaseService.getGames({
@@ -236,6 +237,7 @@ export async function GET(request: NextRequest) {
       offset,
       search,
       genre,
+      featured,
       includePrivate: false, // Public API endpoint
     })
 

@@ -173,13 +173,35 @@ export default function HomePage() {
           </section>
 
           {/* Featured Games */}
-          <section className="py-16 px-4 bg-gray-900/50">
+          <section className="py-16 px-4 bg-black">
             <div className="max-w-6xl mx-auto">
-              <h2 className="text-3xl font-bold mb-8 text-center">
-                Recently Generated Games
-              </h2>
-              <Suspense fallback={<div className="text-center">Loading games...</div>}>
-                <GameGrid limit={12} />
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-amber-600">
+                  Featured Arcade Cabinets
+                </h2>
+                <a href="/games" className="text-sm text-yellow-500 hover:text-yellow-400 flex items-center gap-1">
+                  View All <span className="text-xs">→</span>
+                </a>
+              </div>
+              <Suspense fallback={<div className="h-64 bg-gray-900/50 rounded-lg animate-pulse" />}>
+                <GameGrid limit={3} featured={true} />
+              </Suspense>
+            </div>
+          </section>
+
+          {/* Recent Games */}
+          <section className="py-16 px-4 bg-gray-900/30 border-t border-gray-800">
+            <div className="max-w-6xl mx-auto">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl font-bold text-white">
+                  Fresh from the Generator
+                </h2>
+                <a href="/games" className="text-sm text-purple-400 hover:text-purple-300">
+                  Browse Gallery →
+                </a>
+              </div>
+              <Suspense fallback={<div className="h-64 bg-gray-900/50 rounded-lg animate-pulse" />}>
+                <GameGrid limit={4} />
               </Suspense>
             </div>
           </section>

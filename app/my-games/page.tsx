@@ -7,6 +7,7 @@ import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { GameCardEnhanced } from '@/domains/games/components/game-card-enhanced'
 import { Game } from '@/domains/games/types'
+import { GameSettingsModal } from '@/domains/games/components/game-settings-modal'
 import { Loader2, Plus } from 'lucide-react'
 import Link from 'next/link'
 
@@ -17,6 +18,7 @@ export default function MyGamesPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [actionInProgress, setActionInProgress] = useState<string | null>(null)
+  const [settingsGame, setSettingsGame] = useState<Game | null>(null)
 
   // Require connection
   useEffect(() => {
@@ -34,21 +36,21 @@ export default function MyGamesPage() {
       try {
         setLoading(true)
         setError(null)
-        
+
         // Call new /api/games/my-games endpoint
         const response = await fetch(
           `/api/games/my-games?wallet=${encodeURIComponent(address)}&limit=100`
         )
-        
+
         if (!response.ok) {
           throw new Error('Failed to load games')
         }
-        
+
         const data = await response.json()
         if (!data.success || !data.data) {
           throw new Error('Invalid response format')
         }
-        
+
         setGames((data.data.games || []) as Game[])
       } catch (err) {
         console.error('Failed to load games:', err)
@@ -63,12 +65,12 @@ export default function MyGamesPage() {
 
   const handleMintClick = async (gameId: string) => {
     if (!address) return
-    
+
     setActionInProgress(gameId)
     try {
       const game = games.find(g => g.id === gameId)
       if (!game) throw new Error('Game not found')
-      
+
       // Step 1: Prepare minting (get metadata + contract details)
       const prepareResponse = await fetch('/api/games/mint', {
         method: 'POST',
@@ -80,18 +82,18 @@ export default function MyGamesPage() {
           writerCoinId: 'avc',
         }),
       })
-      
+
       if (!prepareResponse.ok) {
         throw new Error('Failed to prepare minting')
       }
-      
+
       const prepareData = await prepareResponse.json()
       if (!prepareData.success) throw new Error(prepareData.error)
-      
+
       // Step 2: Show minting modal or redirect (frontend would handle contract call)
       console.log('Minting prepared:', prepareData.data)
       alert(`Ready to mint! Transaction will cost ${prepareData.data.estimatedCost} AVC tokens.`)
-      
+
       // TODO: Frontend would call contract here and then call PATCH endpoint to confirm
       // For now, just log the data
     } catch (err) {
@@ -105,17 +107,17 @@ export default function MyGamesPage() {
 
   const handleRegisterClick = async (gameId: string) => {
     if (!address) return
-    
+
     setActionInProgress(gameId)
     try {
       const game = games.find(g => g.id === gameId)
       if (!game) throw new Error('Game not found')
-      
+
       // Story Protocol registration is optional - this would be a future enhancement
       // For now, show a placeholder message
       console.log('Register game as IP:', gameId)
       alert('Story Protocol registration coming soon! This will allow you to set license terms and earn royalties from derivatives.')
-      
+
       // TODO: Implement full Story Protocol flow when SDK is integrated
       // Would call /api/assets/[id]/register endpoint
     } catch (err) {
@@ -129,12 +131,12 @@ export default function MyGamesPage() {
 
   const handleToggleVisibility = async (gameId: string, isPrivate: boolean) => {
     if (!address) return
-    
+
     setActionInProgress(gameId)
     try {
       const game = games.find(g => g.id === gameId)
       if (!game) throw new Error('Game not found')
-      
+
       // Call visibility toggle endpoint
       const response = await fetch(`/api/games/${game.slug}/visibility`, {
         method: 'PATCH',
@@ -144,14 +146,14 @@ export default function MyGamesPage() {
           wallet: address,
         }),
       })
-      
+
       if (!response.ok) {
         throw new Error('Failed to update visibility')
       }
-      
+
       const data = await response.json()
       if (!data.success) throw new Error(data.error)
-      
+
       // Update local state
       setGames(games.map(g => g.id === gameId ? { ...g, private: data.data.private } : g))
     } catch (err) {
@@ -165,7 +167,7 @@ export default function MyGamesPage() {
 
   const handleDeleteClick = async (gameId: string) => {
     if (!address) return
-    
+
     if (!window.confirm('Are you sure you want to delete this game? This action cannot be undone.')) {
       return
     }
@@ -174,12 +176,12 @@ export default function MyGamesPage() {
     try {
       const game = games.find(g => g.id === gameId)
       if (!game) throw new Error('Game not found')
-      
+
       // Check if game is minted (prevent deletion)
       if (game.nftTokenId) {
         throw new Error('Cannot delete games that have been minted as NFTs. NFT records are permanent on-chain.')
       }
-      
+
       // Call delete endpoint
       const response = await fetch(`/api/games/${game.slug}/delete`, {
         method: 'DELETE',
@@ -188,14 +190,14 @@ export default function MyGamesPage() {
           wallet: address,
         }),
       })
-      
+
       if (!response.ok) {
         throw new Error('Failed to delete game')
       }
-      
+
       const data = await response.json()
       if (!data.success) throw new Error(data.error)
-      
+
       // Remove from local state
       setGames(games.filter(g => g.id !== gameId))
     } catch (err) {
@@ -204,6 +206,43 @@ export default function MyGamesPage() {
       alert(message)
     } finally {
       setActionInProgress(null)
+    }
+  }
+
+  const handleSettingsUpdate = async (slug: string, updates: { playFee?: string; private?: boolean }) => {
+    if (!address) return
+
+    try {
+      const response = await fetch(`/api/games/${slug}/settings`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...updates,
+          wallet: address,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update settings')
+      }
+
+      const data = await response.json()
+      if (!data.success) throw new Error(data.error)
+
+      // Update local state
+      setGames(games.map(g => {
+        if (g.slug === slug) {
+          return {
+            ...g,
+            private: updates.private !== undefined ? updates.private : g.private,
+            playFee: updates.playFee !== undefined ? updates.playFee : g.playFee,
+          }
+        }
+        return g
+      }))
+    } catch (err) {
+      console.error('Settings update error:', err)
+      throw err // Re-throw to be handled by modal
     }
   }
 
@@ -282,6 +321,7 @@ export default function MyGamesPage() {
                       onMintClick={() => handleMintClick(game.id)}
                       onRegisterClick={() => handleRegisterClick(game.id)}
                       onToggleVisibility={() => handleToggleVisibility(game.id, !game.private)}
+                      onSettingsClick={() => setSettingsGame(game)}
                       onDeleteClick={() => handleDeleteClick(game.id)}
                       isLoading={actionInProgress === game.id}
                     />
@@ -289,6 +329,13 @@ export default function MyGamesPage() {
                 </div>
               </div>
             )}
+
+            <GameSettingsModal
+              game={settingsGame}
+              isOpen={!!settingsGame}
+              onClose={() => setSettingsGame(null)}
+              onUpdate={handleSettingsUpdate}
+            />
           </div>
         </section>
       </main>

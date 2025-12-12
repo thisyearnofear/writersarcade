@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Game } from '../types'
-import { Play, Zap, Crown, Trash2, Eye, EyeOff } from 'lucide-react'
+import { Play, Zap, Crown, Trash2, Eye, EyeOff, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface GameCardEnhancedProps {
@@ -13,6 +13,7 @@ interface GameCardEnhancedProps {
   onMintClick?: () => void
   onRegisterClick?: () => void
   onToggleVisibility?: (isPrivate: boolean) => void
+  onSettingsClick?: () => void
   onDeleteClick?: () => void
   isLoading?: boolean
 }
@@ -27,6 +28,7 @@ export function GameCardEnhanced({
   onMintClick,
   onRegisterClick,
   onToggleVisibility,
+  onSettingsClick,
   onDeleteClick,
   isLoading = false,
 }: GameCardEnhancedProps) {
@@ -157,7 +159,16 @@ export function GameCardEnhanced({
               />
               <span className="relative flex items-center gap-2">
                 <Play className="w-4 h-4" />
-                Play
+                {game.playFee ? (
+                  <span className="flex items-center gap-1">
+                    Play
+                    <span className="bg-white/20 px-1.5 py-0.5 rounded text-xs font-bold">
+                      {game.playFee} $DONUT
+                    </span>
+                  </span>
+                ) : (
+                  'Play'
+                )}
               </span>
             </Link>
           </motion.div>
@@ -201,6 +212,17 @@ export function GameCardEnhanced({
                 ) : (
                   <Eye className="w-4 h-4" />
                 )}
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onSettingsClick}
+                disabled={isLoading}
+                className="flex items-center gap-2"
+                title="Configure Settings (Fee & Visibility)"
+              >
+                <Settings className="w-4 h-4" />
               </Button>
 
               <Button

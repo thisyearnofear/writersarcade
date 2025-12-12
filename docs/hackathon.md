@@ -271,11 +271,3 @@ All Story Protocol code compiles cleanly and is ready for production:
 npm run type-check  # ✅ No TypeScript errors
 npm run build       # Ready
 ```
-
-The integration is modular - Story Protocol can be disabled for testing:
-
-```env
-STORY_IP_REGISTRATION_ENABLED="false"
-```
-
-This will use mock responses, allowing development without Story tokens.

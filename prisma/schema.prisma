@@ -92,6 +92,10 @@ model Game {
   paymentId        String?
   payment          Payment?  @relation(fields: [paymentId], references: [id])
 
+  // Monetization & Discovery
+  playFee          String?   // Fee to play in tokens (BigInt as String)
+  featured         Boolean   @default(false)
+  
   // Access control
   private Boolean @default(false)
 
