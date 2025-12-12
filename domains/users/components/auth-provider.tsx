@@ -1,123 +1,71 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
+import { useWeb3Auth } from '@/components/providers/Web3Provider'
 
 interface User {
   id: string
-  email: string
-  username: string
-  walletAddress?: string
-  isCreator: boolean
-  isAdmin: boolean
-  model: string
+  // email: string // Removed email/pass fields
+  // username: string
+  walletAddress: string
+  preferredModel: string
   private: boolean
+  // isCreator: boolean // fetch dynamically if needed
+  // isAdmin: boolean
 }
 
 interface AuthContextType {
   user: User | null
   loading: boolean
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
-  signup: (email: string, username: string, password: string) => Promise<{ success: boolean; error?: string }>
-  logout: () => Promise<void>
   refresh: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const { status } = useWeb3Auth()
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  
-  // Check authentication on mount
+
+  // Fetch user data whenever auth status becomes 'authenticated'
   useEffect(() => {
-    checkAuth()
-  }, [])
-  
-  const checkAuth = async () => {
-    try {
-      const response = await fetch('/api/auth/me')
-      const data = await response.json()
-      
-      if (data.success) {
-        setUser(data.user)
-      } else {
+    async function fetchUser() {
+      if (status === 'authenticated') {
+        try {
+          const response = await fetch('/api/auth/me')
+          const data = await response.json()
+
+          if (data.success) {
+            setUser(data.user)
+          } else {
+            console.error('Failed to fetch user data despite being authenticated')
+            setUser(null)
+          }
+        } catch (error) {
+          console.error('Error fetching user:', error)
+          setUser(null)
+        }
+      } else if (status === 'unauthenticated') {
         setUser(null)
       }
-    } catch {
-      console.error('Auth check failed')
-      setUser(null)
-    } finally {
       setLoading(false)
     }
-  }
-  
-  const login = async (email: string, password: string) => {
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      })
-      
-      const data = await response.json()
-      
-      if (data.success) {
-        setUser(data.user)
-        return { success: true }
-      } else {
-        return { success: false, error: data.error }
-      }
-    } catch {
-      return { success: false, error: 'Network error' }
+
+    if (status !== 'loading') {
+      fetchUser()
     }
-  }
-  
-  const signup = async (email: string, username: string, password: string) => {
-    try {
-      const response = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, username, password }),
-      })
-      
-      const data = await response.json()
-      
-      if (data.success) {
-        setUser(data.user)
-        return { success: true }
-      } else {
-        return { success: false, error: data.error }
-      }
-    } catch {
-      return { success: false, error: 'Network error' }
-    }
-  }
-  
-  const logout = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' })
-      setUser(null)
-    } catch (error) {
-      console.error('Logout error:', error)
-      setUser(null)
-    }
-  }
-  
+  }, [status])
+
   const refresh = async () => {
-    await checkAuth()
+    if (status === 'authenticated') {
+      const response = await fetch('/api/auth/me')
+      const data = await response.json()
+      if (data.success) setUser(data.user)
+    }
   }
-  
-  const value = {
-    user,
-    loading,
-    login,
-    signup,
-    logout,
-    refresh,
-  }
-  
+
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, loading: status === 'loading' || loading, refresh }}>
       {children}
     </AuthContext.Provider>
   )

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { useAccount } from 'wagmi'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -36,13 +36,15 @@ function previewStyleFor(genre: GameGenre, difficulty: GameDifficulty) {
 
 function StylePreview({ genre, difficulty }: { genre: GameGenre; difficulty: GameDifficulty }) {
   const s = previewStyleFor(genre, difficulty)
+  const prefersReducedMotion = useReducedMotion()
   return (
     <div className="mx-auto max-w-md w-full">
       <motion.div
-        className={`rounded-lg border border-purple-500/50 p-3 bg-gradient-to-br ${s.gradient} text-purple-100 shadow-md flex items-start gap-2`}
-        initial={{ opacity: 0.9 }}
-        animate={{ opacity: [0.9, 1, 0.95, 1] }}
-        transition={{ duration: 6, repeat: Infinity }}
+        key={`${genre}-${difficulty}`}
+        className={`rounded-lg border border-purple-700/60 p-3 bg-gradient-to-br ${s.gradient} text-purple-100 shadow-md flex items-start gap-2`}
+        initial={{ opacity: 0 }}
+        animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1 }}
+        transition={{ duration: 0.25 }}
       >
         {/* Genre icon for quick recognition */}
         <div className="mt-0.5">
@@ -58,9 +60,9 @@ function StylePreview({ genre, difficulty }: { genre: GameGenre; difficulty: Gam
           )}
         </div>
         <div className="text-xs">
-          <div className="font-semibold mb-1">Preview — {genre} • {difficulty}</div>
-          <div className="opacity-90">{s.blurb}</div>
-          <div className="opacity-75">{s.diff}</div>
+          <div className="font-semibold mb-1">Live Preview — {genre} • {difficulty}</div>
+          <div className="opacity-95">{s.blurb}</div>
+          <div className="opacity-90">{s.diff}</div>
         </div>
       </motion.div>
     </div>
@@ -479,7 +481,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
               <AnimatePresence>
                 {showCustomization && (
                   <motion.div
-                    className="mt-4 space-y-5 p-5 bg-black/50 rounded-xl border border-purple-500 shadow-[0_0_0_1px_rgba(168,85,247,0.3)]"
+                    className="mt-4 space-y-5 p-5 rounded-xl border border-[color:var(--ia-panel-border)] bg-[color:var(--ia-panel-bg)] shadow-[0_0_0_1px_var(--ia-outline)]"
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
@@ -508,9 +510,9 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                       </div>
 
                       {/* Current selection pills */}
-                      <div className="flex justify-center gap-2 mb-2">
-                        <span className="inline-flex items-center rounded-full bg-purple-700/40 border border-purple-400/50 px-2 py-0.5 text-xs text-purple-100">Genre: {genre}</span>
-                        <span className="inline-flex items-center rounded-full bg-purple-700/40 border border-purple-400/50 px-2 py-0.5 text-xs text-purple-100">Difficulty: {difficulty}</span>
+                      <div className="flex justify-center gap-2 mb-2 text-xs">
+                        <span className="inline-flex items-center rounded-full bg-purple-800/60 border border-purple-500/60 px-2 py-0.5 text-xs text-purple-100">Genre: {genre}</span>
+                        <span className="inline-flex items-center rounded-full bg-purple-800/60 border border-purple-500/60 px-2 py-0.5 text-xs text-purple-100">Difficulty: {difficulty}</span>
                       </div>
 
                       {/* Live style preview */}
@@ -518,11 +520,11 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
 
                       {/* Center the genre selector */}
                       <div className="flex justify-center">
-                        <GenreSelector value={genre} onChange={setGenre} disabled={isGenerating} />
+                        <GenreSelector value={genre} onChange={setGenre} disabled={isGenerating || (!paymentApproved && isStoryMode)} />
                       </div>
 
                       <div className="flex justify-center">
-                        <DifficultySelector value={difficulty} onChange={setDifficulty} disabled={isGenerating} />
+                        <DifficultySelector value={difficulty} onChange={setDifficulty} disabled={isGenerating || (!paymentApproved && isStoryMode)} />
                       </div>
 
                       <motion.div
@@ -532,7 +534,13 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                         transition={{ delay: 0.2, duration: 0.3 }}
                       >
                         <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0 text-yellow-300" />
-                        <span>Higher difficulty creates more complex narratives. Genre affects story tone and visual style.</span>
+                        <div className="space-y-0.5">
+                          <div>Genre shapes tone and visual style.</div>
+                          <div>Higher difficulty creates deeper branches.</div>
+                          {!paymentApproved && (
+                            <div className="text-[11px] text-purple-200/90">Selections are preview-only until payment is approved.</div>
+                          )}
+                        </div>
                       </motion.div>
                     </motion.div>
                   </motion.div>
@@ -558,7 +566,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
 
         {/* Payment Section (shown when customization requested in story mode) */}
         {isStoryMode && showPayment && (
-          <div className="space-y-4 p-4 rounded-xl border border-purple-700/60 bg-purple-950/80 shadow-[0_0_0_1px_rgba(168,85,247,0.25)]">
+          <div className="space-y-4 p-4 rounded-xl border border-[color:var(--ia-panel-border)] bg-[color:var(--ia-panel-bg)] shadow-[0_0_0_1px_var(--ia-outline)]">
             <h3 className="font-semibold text-purple-200">Enable Customization</h3>
             <p className="text-sm text-purple-100">
               Connect your wallet and approve payment to unlock genre/difficulty customization. You can generate games for free without payment.

@@ -171,7 +171,7 @@ export function PaymentButton({
         </div>
       )}
 
-      <div className="rounded-lg border border-purple-700/60 bg-purple-950/80 p-3 text-xs text-purple-100">
+      <div className="rounded-lg border border-[color:var(--ia-panel-border)] bg-[color:var(--ia-panel-bg)] p-3 text-xs text-purple-100">
         <p>
           💡 <span className="font-semibold">Payment flow:</span> You'll approve spending in your Farcaster wallet, then we process your payment on Base.
         </p>

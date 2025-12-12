@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { radioCardClass } from './radioCard'
 
 export type GameGenre = 'horror' | 'comedy' | 'mystery'
 
@@ -18,11 +19,10 @@ interface GenreSelectorProps {
 }
 
 export function GenreSelector({ value = 'horror', onChange, disabled = false }: GenreSelectorProps) {
-  const [selected, setSelected] = useState<GameGenre>(value)
+  const selected = value
 
   const handleSelect = (genre: GameGenre) => {
     if (disabled) return
-    setSelected(genre)
     onChange?.(genre)
   }
 
@@ -61,19 +61,24 @@ export function GenreSelector({ value = 'horror', onChange, disabled = false }: 
   }
 
   return (
-    <div className="game-type-selector">
+    <div className="game-type-selector" role="radiogroup" aria-label="Genre">
       <label className="mb-3 block text-sm font-medium text-purple-200">Genre</label>
       <div className="grid grid-cols-3 gap-3">
         {GENRES.map((genre) => (
           <button
             key={genre}
+            type="button"
             onClick={() => handleSelect(genre)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSelect(genre) }
+              if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); const idx = GENRES.indexOf(selected); const next = GENRES[(idx + 1) % GENRES.length]; handleSelect(next) }
+              if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); const idx = GENRES.indexOf(selected); const prev = GENRES[(idx - 1 + GENRES.length) % GENRES.length]; handleSelect(prev) }
+            }}
+            role="radio"
+            aria-checked={selected === genre}
+            tabIndex={selected === genre ? 0 : -1}
             disabled={disabled}
-            className={`game-type-option rounded-xl border-2 px-4 py-4 sm:px-5 sm:py-5 font-medium capitalize transition-all disabled:cursor-not-allowed flex flex-col items-center justify-center gap-1.5 ${
-              selected === genre
-                ? 'border-purple-400 bg-purple-600 text-white shadow-lg ring-2 ring-purple-300'
-                : 'border-purple-700 bg-black/30 text-purple-200 hover:border-purple-400 hover:bg-purple-900/40 disabled:hover:border-purple-700 disabled:hover:bg-black/30'
-            } hover:translate-y-[-1px] active:translate-y-[0px]`}
+            className={radioCardClass(selected === genre, disabled)}
 >
             <GenreIcon genre={genre} />
             <span className="text-sm capitalize">{genre}</span>

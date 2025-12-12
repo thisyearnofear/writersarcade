@@ -1,67 +1,34 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useAccount } from 'wagmi'
+import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { useWeb3Auth } from '@/components/providers/Web3Provider'
 
 /**
  * Wallet Sync Provider
  * 
- * Syncs browser wallet connection to user session
- * Allows web app to track user's connected wallet address
+ * Syncs auth state changes to Next.js router
+ * Triggered when RainbowKit completes SIWE flow or Disconnects
  */
 export function WalletSync() {
-  const { address, isConnected, chainId } = useAccount()
+  const { status } = useWeb3Auth()
   const router = useRouter()
+  const prevStatus = useRef(status)
 
   useEffect(() => {
-    async function handleWalletState() {
-      if (isConnected && address) {
-        // LOGIN / SYNC
-        try {
-          // Only sync if on Base chain (chainId 8453)
-          const onBase = chainId === 8453
-
-          const response = await fetch('/api/auth/wallet', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              address,
-              chainId,
-              isConnected: true,
-            }),
-          })
-
-          if (response.ok) {
-            console.log(`[WalletSync] Wallet synced: ${address} ${onBase ? '(on Base)' : '(not on Base)'}`)
-            router.refresh()
-          } else {
-            console.error('[WalletSync] Failed to sync wallet')
-          }
-        } catch (error) {
-          console.error('[WalletSync] Error syncing wallet:', error)
-        }
-      } else {
-        // LOGOUT / CLEAR SESSION
-        // If not connected, we ensure the backend session is cleared
-        try {
-          // We can check if we have a cookie first to avoid spamming, but 
-          // the logout endpoint is cheap and idempotent.
-          await fetch('/api/auth/logout', { method: 'POST' })
-          console.log('[WalletSync] Wallet disconnected - Session cleared')
-          // Only refresh if we actually cleared something? 
-          // Router refresh is safe though.
-          router.refresh()
-        } catch (error) {
-          console.error('[WalletSync] Error clearing session:', error)
-        }
+    // If status changed from loading/unauthenticated -> authenticated (Login)
+    // Or from authenticated -> unauthenticated (Logout)
+    if (prevStatus.current !== status) {
+      if (status === 'authenticated') {
+        console.log('[WalletSync] SIWE Login detected')
+        router.refresh()
+      } else if (status === 'unauthenticated' && prevStatus.current === 'authenticated') {
+        console.log('[WalletSync] Logout detected')
+        router.refresh()
       }
+      prevStatus.current = status
     }
-
-    handleWalletState()
-  }, [address, isConnected, chainId, router])
+  }, [status, router])
 
   return null
 }

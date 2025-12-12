@@ -1,4 +1,16 @@
 @tailwind base;
+
+:root {
+  --ia-panel-bg: rgba(20, 8, 35, 0.8); /* dark purple panel */
+  --ia-panel-border: rgba(126, 58, 242, 0.6); /* purple-700/60 */
+  --ia-outline: rgba(168, 85, 247, 0.25); /* subtle outline */
+}
+
+.dark {
+  --ia-panel-bg: rgba(12, 6, 24, 0.8);
+  --ia-panel-border: rgba(126, 58, 242, 0.6);
+  --ia-outline: rgba(168, 85, 247, 0.25);
+}
 @tailwind components;
 @tailwind utilities;
 

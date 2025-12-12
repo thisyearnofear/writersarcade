@@ -44,7 +44,7 @@ export function CostPreview({ writerCoin, action, showBreakdown = true }: CostPr
   const actionLabel = action === 'generate-game' ? 'Generation Cost' : 'Minting Cost'
 
   return (
-    <div className="rounded-xl border border-purple-700/60 bg-purple-950/80 p-4 shadow-[0_0_0_1px_rgba(168,85,247,0.25)]">
+    <div className="rounded-xl border border-[color:var(--ia-panel-border)] bg-[color:var(--ia-panel-bg)] p-4 shadow-[0_0_0_1px_var(--ia-outline)]">
       <div className="space-y-2 text-sm">
         <div className="flex items-center justify-between">
           <span className="text-purple-200">{actionLabel}:</span>
