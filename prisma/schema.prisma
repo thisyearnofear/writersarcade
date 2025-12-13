@@ -18,6 +18,10 @@ model User {
   preferredModel String  @default("gpt-4o-mini")
   private        Boolean @default(false) // Hide games from public discovery
   
+  // Role management
+  isCreator      Boolean @default(false) // User can create/register IP assets
+  isAdmin        Boolean @default(false) // Platform admin access
+  
   // Relations
   games    Game[]
   chats    Chat[]

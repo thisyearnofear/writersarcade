@@ -7,6 +7,8 @@ export interface AuthUser {
   walletAddress: string
   preferredModel: string
   private: boolean
+  isCreator: boolean
+  isAdmin: boolean
   // Note: username, avatar, bio fetched from Farcaster at runtime
   // Use getFarcasterProfile(walletAddress) in components
 }
@@ -25,8 +27,8 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
       return null
     }
 
-    const user = await prisma.user.findUnique({
-      where: { walletAddress },
+    const user = await prisma.user.findFirst({
+      where: { walletAddress: { equals: walletAddress, mode: 'insensitive' } },
     })
 
     if (!user) {
@@ -38,6 +40,8 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
       walletAddress: user.walletAddress,
       preferredModel: user.preferredModel,
       private: user.private,
+      isCreator: user.isCreator,
+      isAdmin: user.isAdmin,
     }
 
   } catch (error) {

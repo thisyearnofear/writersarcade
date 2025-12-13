@@ -43,7 +43,7 @@ export function Header() {
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen)
 
   return (
-    <header className="border-b border-gray-800 bg-black/50 backdrop-blur">
+    <header className="border-b border-gray-800 bg-black/50 backdrop-blur relative z-50">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center space-x-2">
           <img src="/images/logo-white.png" alt="WritArcade Logo" className="h-8 w-auto" />

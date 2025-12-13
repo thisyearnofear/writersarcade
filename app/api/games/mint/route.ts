@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify user ownership (wallet matches game creator)
-    if (game.user?.walletAddress?.toLowerCase() !== wallet.toLowerCase()) {
+    if ((game.user?.walletAddress || '').localeCompare(wallet, undefined, { sensitivity: 'accent' }) !== 0) {
       return NextResponse.json(
         { error: 'Unauthorized: You do not own this game' },
         { status: 403 }

@@ -19,8 +19,8 @@ export async function GET() {
         walletAddress: user.walletAddress,
         email: '', // Legacy field for auth provider compatibility
         username: user.walletAddress.substring(0, 8), // Shortened wallet as username
-        isCreator: false, // TODO: Implement creator logic
-        isAdmin: false, // TODO: Implement admin logic
+        isCreator: user.isCreator,
+        isAdmin: user.isAdmin,
         model: user.preferredModel,
         private: user.private,
       }

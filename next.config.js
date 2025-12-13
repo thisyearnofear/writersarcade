@@ -15,24 +15,27 @@ const nextConfig = {
   typescript: {
     tsconfigPath: './tsconfig.json',
   },
+  experimental: {
+    optimizeCss: false, // Disable CSS optimization that may cause issues
+  },
   webpack: (config) => {
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
-      fs: false,
-      net: false,
-      tls: false,
-    };
-    
+    // Ignore test files from problematic dependencies
     config.module.rules.push({
       test: /\.(test|spec)\.(js|ts|mjs)$/,
       loader: 'ignore-loader',
     });
     
     config.module.rules.push({
-      test: /node_modules\/@wagmi\/connectors\/node_modules\/thread-stream\/(test|bench)/,
+      test: /node_modules\/(thread-stream|pino)\/.*\.(test|spec|indexes)/,
       loader: 'ignore-loader',
     });
-    
+
+    // Ignore RainbowKit CSS to avoid vanilla-extract parsing
+    config.module.rules.unshift({
+      test: /rainbowkit.*\.css$/,
+      loader: 'ignore-loader',
+    });
+
     return config;
   },
 }

@@ -1,20 +1,75 @@
 'use client'
 
-import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
+import { UndoManager } from '@/lib/undo-manager'
+import { useToastNotification } from '@/hooks/use-toast-notification'
+import { ToastContainer } from '@/components/ui/toast-container'
 import { AssetCard } from './components/AssetCard'
-import { MarketplaceSidebar } from './components/MarketplaceSidebar'
-import { AssetGenerationResponse } from '@/domains/games/types'
+import { AssetCanvas } from '@/components/ui/asset-canvas'
+import { AssetPalette } from '@/components/ui/asset-palette'
+import { AssetPresets } from '@/components/ui/asset-presets'
+import { AssetBalanceAnalysis } from '@/components/ui/asset-balance-analysis'
+import { AssetMintChecklist } from '@/components/ui/asset-mint-checklist'
+import { CollapsibleSection } from '@/components/ui/collapsible-section'
+import { BalanceGauge } from '@/components/ui/balance-gauge'
+import { SuccessMoment } from '@/components/ui/success-moment'
+import { AssetHoverProvider } from '@/components/providers/asset-hover-provider'
+import { AssetGenerationResponse, AssetRelationship } from '@/domains/games/types'
+import { AssetRelationshipService } from '@/domains/assets/services/asset-relationship.service'
 import { useRouter } from 'next/navigation'
+import { RotateCcw } from 'lucide-react'
 
 type WorkshopState = 'input' | 'processing' | 'workshop' | 'compiling' | 'minting'
+type LayoutMode = 'grid' | 'flow'
+
+interface AssetTag {
+    key: string
+    value: string
+}
 
 export default function WorkshopPage() {
     const router = useRouter()
+    const { toasts, show: showToast, dismiss } = useToastNotification()
     const [url, setUrl] = useState('')
     const [state, setState] = useState<WorkshopState>('input')
     const [assets, setAssets] = useState<AssetGenerationResponse | null>(null)
     const [isMarketplaceOpen, setMarketplaceOpen] = useState(false)
+    const [layoutMode, setLayoutMode] = useState<LayoutMode>('grid')
+    const [assetTags, setAssetTags] = useState<Record<string, AssetTag[]>>({})
+    const [undoManager] = useState(() => new UndoManager<AssetGenerationResponse>(15))
+    const [relationships, setRelationships] = useState<AssetRelationship[]>([])
+    const [showMintSuccess, setShowMintSuccess] = useState(false)
+    const [allChecklistsPassed, setAllChecklistsPassed] = useState(false)
+
+    // Push to undo history when assets change + compute relationships
+    useEffect(() => {
+        if (assets && state === 'workshop') {
+            undoManager.push(assets, 'Asset modified')
+            // Recompute relationships whenever assets change
+            const rels = AssetRelationshipService.computeRelationships(
+                assets.characters,
+                assets.gameMechanics,
+                assets.storyBeats
+            )
+            setRelationships(rels)
+
+            // Check if all checklists pass
+            const hasTitle = assets.title.trim().length > 0
+            const hasDescription = assets.description.trim().length > 0
+            const hasChars = assets.characters.length >= 2
+            const hasMechs = assets.gameMechanics.length >= 1
+            const hasBeats = assets.storyBeats.length >= 3
+            const isPassing = hasTitle && hasDescription && hasChars && hasMechs && hasBeats
+
+            if (isPassing && !allChecklistsPassed) {
+                setAllChecklistsPassed(true)
+                setShowMintSuccess(true)
+            } else if (!isPassing && allChecklistsPassed) {
+                setAllChecklistsPassed(false)
+            }
+        }
+    }, [assets, state, undoManager, allChecklistsPassed])
 
     // Handlers
     const handleDecompose = async () => {
@@ -148,10 +203,39 @@ export default function WorkshopPage() {
     // Workshop Actions
     const removeAsset = (type: 'characters' | 'gameMechanics' | 'storyBeats', index: number) => {
         if (!assets) return
-        const newAssets = { ...assets }
-        // @ts-expect-error - dynamic key access
-        newAssets[type] = newAssets[type].filter((_: unknown, i: number) => i !== index)
+        const newAssets = JSON.parse(JSON.stringify(assets))
+
+        let removed;
+        if (type === 'characters') {
+            removed = newAssets[type][index]
+            newAssets[type] = newAssets[type].filter((_: unknown, i: number) => i !== index)
+        } else if (type === 'gameMechanics') {
+            removed = newAssets[type][index]
+            newAssets[type] = newAssets[type].filter((_: unknown, i: number) => i !== index)
+        } else if (type === 'storyBeats') {
+            removed = newAssets[type][index]
+            newAssets[type] = newAssets[type].filter((_: unknown, i: number) => i !== index)
+        }
+
+        // Store previous state for undo
+        const previousAssets = assets
         setAssets(newAssets)
+        
+        // Get removed asset name
+        const removedName = (removed as { name?: string; title?: string }).name || (removed as { name?: string; title?: string }).title || 'Item'
+        
+        // Show toast with undo action
+        showToast(`Deleted ${removedName}`, {
+            type: 'info',
+            duration: 5000,
+            action: {
+                label: 'Undo',
+                onClick: () => {
+                    setAssets(previousAssets)
+                    showToast('Restored', { type: 'success', duration: 2000 })
+                }
+            }
+        })
     }
 
     const updateAsset = <K extends 'characters' | 'gameMechanics' | 'storyBeats'>(
@@ -161,13 +245,60 @@ export default function WorkshopPage() {
         value: string
     ) => {
         if (!assets) return
-        const newAssets = { ...assets }
-        // @ts-expect-error - dynamic key access
-        newAssets[type] = newAssets[type].map((item: Record<string, unknown>, i: number) =>
-            i === index ? { ...item, [field]: value } : item
-        )
+        const newAssets = JSON.parse(JSON.stringify(assets))
+
+        if (type === 'characters') {
+            newAssets[type] = newAssets[type].map((item: Record<string, unknown>, i: number) =>
+                i === index ? { ...item, [field]: value } : item
+            )
+        } else if (type === 'gameMechanics') {
+            newAssets[type] = newAssets[type].map((item: Record<string, unknown>, i: number) =>
+                i === index ? { ...item, [field]: value } : item
+            )
+        } else if (type === 'storyBeats') {
+            newAssets[type] = newAssets[type].map((item: Record<string, unknown>, i: number) =>
+                i === index ? { ...item, [field]: value } : item
+            )
+        }
         setAssets(newAssets)
     }
+
+    const updateAssetTags = (type: 'characters' | 'gameMechanics' | 'storyBeats', index: number, tags: AssetTag[]) => {
+        if (!assets) return
+        const key = `${type}-${index}`
+        setAssetTags({ ...assetTags, [key]: tags })
+    }
+
+    const getAssetTags = (type: 'characters' | 'gameMechanics' | 'storyBeats', index: number): AssetTag[] => {
+        const key = `${type}-${index}`
+        return assetTags[key] || []
+    }
+
+    const handleUndo = () => {
+        const previous = undoManager.undo()
+        if (previous) {
+            setAssets(previous.state)
+            showToast('Undone', { type: 'success', duration: 2000 })
+        }
+    }
+
+    // Keyboard shortcuts
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            // Cmd+Z or Ctrl+Z for undo
+            if ((event.metaKey || event.ctrlKey) && event.key === 'z' && !event.shiftKey && state === 'workshop') {
+                event.preventDefault()
+                handleUndo()
+            }
+            // Escape to close marketplace
+            if (event.key === 'Escape' && isMarketplaceOpen) {
+                setMarketplaceOpen(false)
+            }
+        }
+
+        window.addEventListener('keydown', handleKeyDown)
+        return () => window.removeEventListener('keydown', handleKeyDown)
+    }, [state, isMarketplaceOpen, undoManager])
 
     const handleInject = (asset: { id: string, title: string, description: string, type: string, content: unknown }) => {
         if (!assets) return
@@ -244,11 +375,32 @@ export default function WorkshopPage() {
 
                         {/* Toolbar */}
                         <div className="flex justify-between items-center mb-8 sticky top-4 z-10 bg-black/80 backdrop-blur p-4 rounded-xl border border-gray-800/50 shadow-xl">
-                            <div>
+                            <div className="flex-1">
                                 <h2 className="text-xl font-bold">{assets.title}</h2>
                                 <p className="text-xs text-gray-400">Asset Pack v1.0 • {assets.characters.length + assets.gameMechanics.length + assets.storyBeats.length} Assets</p>
                             </div>
+                            {/* Balance gauge */}
+                            <div className="px-6 py-2">
+                                <BalanceGauge
+                                    characters={assets.characters}
+                                    mechanics={assets.gameMechanics}
+                                    storyBeats={assets.storyBeats}
+                                />
+                            </div>
                             <div className="flex gap-3">
+                                <button
+                                    onClick={handleUndo}
+                                    disabled={!undoManager.canUndo()}
+                                    title="Undo (Cmd+Z)"
+                                    className="px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-300 border border-gray-700 rounded-lg text-sm font-bold transition-all flex items-center gap-2"
+                                >
+                                    <RotateCcw className="w-4 h-4" />
+                                    Undo
+                                </button>
+                                <AssetPresets
+                                    currentAssets={assets}
+                                    onLoadPreset={setAssets}
+                                />
                                 <button
                                     onClick={() => handleSave(false)}
                                     className="px-4 py-2 bg-blue-900/40 hover:bg-blue-800/60 text-blue-200 border border-blue-700/50 rounded-lg text-sm font-bold transition-all"
@@ -276,86 +428,144 @@ export default function WorkshopPage() {
                             </div>
                         </div>
 
-                        {/* Asset Grid */}
+                        {/* Analysis Section */}
+                        <div className="space-y-4">
+                            <CollapsibleSection
+                                title="✓ Mint Readiness"
+                                defaultOpen={false}
+                            >
+                                <AssetMintChecklist
+                                    title={assets.title}
+                                    description={assets.description}
+                                    characters={assets.characters}
+                                    mechanics={assets.gameMechanics}
+                                    storyBeats={assets.storyBeats}
+                                />
+                            </CollapsibleSection>
+                            <CollapsibleSection
+                                title="⚖ Game Balance"
+                                defaultOpen={false}
+                            >
+                                <AssetBalanceAnalysis
+                                    characters={assets.characters}
+                                    mechanics={assets.gameMechanics}
+                                    storyBeats={assets.storyBeats}
+                                />
+                            </CollapsibleSection>
+                        </div>
+
+                        {/* Asset Canvas Grid with Hover Provider */}
+                        <AssetHoverProvider
+                            relationships={relationships}
+                            characters={assets.characters}
+                            mechanics={assets.gameMechanics}
+                            storyBeats={assets.storyBeats}
+                        >
                         <div className="space-y-12">
 
-                            <section>
-                                <h3 className="text-gray-400 text-sm font-bold tracking-wider uppercase mb-4 flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-blue-500"></span> Characters ({assets.characters.length})
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <AnimatePresence>
-                                        {assets.characters.map((char, i) => (
-                                            <AssetCard
-                                                key={i}
-                                                title={char.name}
-                                                type="Character"
-                                                onDelete={() => removeAsset('characters', i)}
-                                                onTitleChange={(newName) => updateAsset('characters', i, 'name', newName)}
-                                            >
-                                                <p className="text-sm text-gray-300 italic mb-2">{char.role}</p>
-                                                <p className="text-xs text-gray-400">{char.personality}</p>
-                                            </AssetCard>
-                                        ))}
-                                    </AnimatePresence>
-                                </div>
-                            </section>
+                            {/* Characters Canvas */}
+                            <AssetCanvas
+                                sectionTitle={`Characters (${assets.characters.length})`}
+                                sectionColor="blue"
+                                layoutMode={layoutMode}
+                                onLayoutModeChange={setLayoutMode}
+                                assets={assets.characters.map((char, i) => ({
+                                    id: `char-${i}`,
+                                    title: char.name,
+                                    type: 'character' as const,
+                                    component: (
+                                        <AssetCard
+                                            title={char.name}
+                                            type="Character"
+                                            assetType="character"
+                                            assetIndex={i}
+                                            tags={getAssetTags('characters', i)}
+                                            onDelete={() => removeAsset('characters', i)}
+                                            onTitleChange={(newName) => updateAsset('characters', i, 'name', newName)}
+                                            onTagsChange={(tags) => updateAssetTags('characters', i, tags)}
+                                        >
+                                            <p className="text-sm text-gray-300 italic mb-2">{char.role}</p>
+                                            <p className="text-xs text-gray-400">{char.personality}</p>
+                                        </AssetCard>
+                                    )
+                                }))}
+                            />
 
-                            <section>
-                                <h3 className="text-gray-400 text-sm font-bold tracking-wider uppercase mb-4 flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-red-500"></span> Mechanics ({assets.gameMechanics.length})
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <AnimatePresence>
-                                        {assets.gameMechanics.map((mech, i) => (
-                                            <AssetCard
-                                                key={i}
-                                                title={mech.name}
-                                                type="Mechanic"
-                                                onDelete={() => removeAsset('gameMechanics', i)}
-                                                onTitleChange={(newName) => updateAsset('gameMechanics', i, 'name', newName)}
-                                            >
-                                                <p className="text-sm text-gray-300 mb-2">{mech.description}</p>
-                                                <p className="text-xs text-gray-500 font-mono bg-gray-900 p-2 rounded block">
-                                                    {mech.consequence}
-                                                </p>
-                                            </AssetCard>
-                                        ))}
-                                    </AnimatePresence>
-                                </div>
-                            </section>
+                            {/* Mechanics Canvas */}
+                            <AssetCanvas
+                                sectionTitle={`Mechanics (${assets.gameMechanics.length})`}
+                                sectionColor="red"
+                                layoutMode={layoutMode}
+                                assets={assets.gameMechanics.map((mech, i) => ({
+                                    id: `mech-${i}`,
+                                    title: mech.name,
+                                    type: 'mechanic' as const,
+                                    component: (
+                                        <AssetCard
+                                            title={mech.name}
+                                            type="Mechanic"
+                                            assetType="mechanic"
+                                            assetIndex={i}
+                                            tags={getAssetTags('gameMechanics', i)}
+                                            onDelete={() => removeAsset('gameMechanics', i)}
+                                            onTitleChange={(newName) => updateAsset('gameMechanics', i, 'name', newName)}
+                                            onTagsChange={(tags) => updateAssetTags('gameMechanics', i, tags)}
+                                        >
+                                            <p className="text-sm text-gray-300 mb-2">{mech.description}</p>
+                                            <p className="text-xs text-gray-500 font-mono bg-gray-900 p-2 rounded block">
+                                                {mech.consequence}
+                                            </p>
+                                        </AssetCard>
+                                    )
+                                }))}
+                            />
 
-                            <section>
-                                <h3 className="text-gray-400 text-sm font-bold tracking-wider uppercase mb-4 flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-yellow-500"></span> Story Beats ({assets.storyBeats.length})
-                                </h3>
-                                <div className="grid grid-cols-1 gap-4">
-                                    <AnimatePresence>
-                                        {assets.storyBeats.map((beat, i) => (
-                                            <AssetCard
-                                                key={i}
-                                                title={beat.title}
-                                                type="Story"
-                                                onDelete={() => removeAsset('storyBeats', i)}
-                                                onTitleChange={(newTitle) => updateAsset('storyBeats', i, 'title', newTitle)}
-                                            >
-                                                <p className="text-sm text-gray-300">{beat.description}</p>
-                                            </AssetCard>
-                                        ))}
-                                    </AnimatePresence>
-                                </div>
-                            </section>
+                            {/* Story Beats Canvas */}
+                            <AssetCanvas
+                                sectionTitle={`Story Beats (${assets.storyBeats.length})`}
+                                sectionColor="yellow"
+                                layoutMode={layoutMode}
+                                assets={assets.storyBeats.map((beat, i) => ({
+                                    id: `beat-${i}`,
+                                    title: beat.title,
+                                    type: 'story' as const,
+                                    component: (
+                                        <AssetCard
+                                            title={beat.title}
+                                            type="Story"
+                                            assetType="story"
+                                            assetIndex={i}
+                                            tags={getAssetTags('storyBeats', i)}
+                                            onDelete={() => removeAsset('storyBeats', i)}
+                                            onTitleChange={(newTitle) => updateAsset('storyBeats', i, 'title', newTitle)}
+                                            onTagsChange={(tags) => updateAssetTags('storyBeats', i, tags)}
+                                        >
+                                            <p className="text-sm text-gray-300">{beat.description}</p>
+                                        </AssetCard>
+                                    )
+                                }))}
+                            />
 
                         </div>
+                        </AssetHoverProvider>
                     </motion.div>
                 )}
 
-                <MarketplaceSidebar
+                <AssetPalette
                     isOpen={isMarketplaceOpen}
                     onClose={() => setMarketplaceOpen(false)}
                     onInject={handleInject}
                 />
             </div>
+
+            {/* Toast notifications */}
+            <ToastContainer toasts={toasts} onDismiss={dismiss} />
+
+            {/* Success moment */}
+            <SuccessMoment
+                trigger={showMintSuccess}
+                onComplete={() => setShowMintSuccess(false)}
+            />
         </div >
     )
 }

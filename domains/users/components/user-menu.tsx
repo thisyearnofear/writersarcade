@@ -148,12 +148,12 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-10"
+            className="fixed inset-0 z-[60]"
             onClick={() => setIsOpen(false)}
           />
 
           {/* Menu */}
-          <div ref={menuRef} className="absolute right-0 mt-2 w-72 bg-gray-900 border border-purple-500/30 rounded-lg shadow-xl shadow-purple-500/10 z-20">
+          <div ref={menuRef} className="absolute right-0 mt-3 w-72 bg-gray-900 border border-purple-500/30 rounded-lg shadow-xl shadow-purple-500/10 z-[70] max-h-[80vh] overflow-auto">
             <div className="p-4 border-b border-gray-700 bg-gradient-to-r from-purple-900/20 to-pink-900/20">
               <div className="flex items-center space-x-3">
                 {profile?.pfpUrl ? (

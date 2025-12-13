@@ -1,6 +1,7 @@
 'use client';
 
-import '@rainbow-me/rainbowkit/styles.css';
+// RainbowKit CSS is handled via a stub to avoid vanilla-extract parsing errors
+// import '@rainbow-me/rainbowkit/styles.css';
 import {
   getDefaultConfig,
   RainbowKitProvider,

@@ -3,19 +3,24 @@
  * Handles metadata uploads to IPFS for IP asset registration
  */
 
-import { createHash } from "crypto";
+import { createHash } from "crypto"
+import { logger, config } from "./config"
 
 /**
  * Upload metadata to IPFS
  * Requires PINATA_JWT or similar IPFS provider credentials
  */
 export async function uploadToIPFS(metadata: object): Promise<string> {
-  const pinataBearerToken = process.env.PINATA_JWT;
+  const pinataBearerToken = config.ipfs.pinataJwt;
 
   if (!pinataBearerToken) {
-    console.warn(
-      "PINATA_JWT not set. Using mock IPFS hash. Set PINATA_JWT to enable real uploads."
-    );
+    if (config.isProduction) {
+      logger.error('PINATA_JWT missing in production', undefined, { context: 'ipfs-upload' });
+      throw new Error(
+        'PINATA_JWT environment variable is required in production for IPFS uploads.'
+      );
+    }
+    logger.warn("IPFS: Using mock hash for development", { context: 'ipfs-upload' });
     return generateMockIPFSHash(JSON.stringify(metadata));
   }
 
@@ -46,15 +51,19 @@ export async function uploadToIPFS(metadata: object): Promise<string> {
     const data = (await response.json()) as { IpfsHash: string };
     const ipfsHash = data.IpfsHash;
 
-    console.log(`✓ Uploaded to IPFS: ipfs://${ipfsHash}`);
+    logger.ipfs('Uploaded to IPFS', { hash: ipfsHash });
     return `ipfs://${ipfsHash}`;
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unknown IPFS error";
-    console.error(`IPFS upload error: ${message}`);
+    logger.error("IPFS upload failed", error, { context: 'ipfs-upload' });
 
-    // Fall back to mock for development
-    console.warn("Falling back to mock IPFS hash for development");
+    if (config.isProduction) {
+      throw error;
+    }
+
+    // Fall back to mock for development only
+    logger.warn("Falling back to mock IPFS hash for development", { context: 'ipfs-upload' });
     return generateMockIPFSHash(JSON.stringify(metadata));
   }
 }

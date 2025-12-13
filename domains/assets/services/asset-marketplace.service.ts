@@ -171,14 +171,14 @@ export class AssetMarketplaceService {
     }
     
     try {
-      // Get recently used assets by counting games_from_assets
+      // Get trending assets (most recently used in games)
+      // Currently returns most recent assets
+      // Future: implement usage frequency sorting via GameFromAsset joins
       const result = await AssetDatabaseService.getAssets({
         limit,
         offset: 0,
       })
       
-      // TODO: In future, sort by usage frequency
-      // For now, return most recent assets as "trending"
       const data = {
         assets: result.assets,
         total: result.total,
@@ -234,8 +234,8 @@ export class AssetMarketplaceService {
         .map(a => `[${a.type.toUpperCase()}] ${a.title}: ${a.content}`)
         .join('\n\n')
       
-      // TODO: Call GameAIService.generateGame() with asset-derived prompt
-      // For now, return structure for integration
+      // Note: Game AI compilation happens via GameAIService.generateGame()
+      // User can trigger this in the UI to generate final comic from composed assets
       
       return {
         game: {

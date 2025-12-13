@@ -112,9 +112,16 @@ export function GameCardEnhanced({
             {game.genre}
           </span>
           {isUserGame && (
-            <span className={`text-xs px-2 py-1 rounded ${game.private ? 'bg-red-500/20 text-red-300' : 'bg-green-500/20 text-green-300'}`}>
-              {game.private ? 'Private' : 'Public'}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className={`text-xs px-2 py-1 rounded ${game.private ? 'bg-red-500/20 text-red-300' : 'bg-green-500/20 text-green-300'}`}>
+                {game.private ? 'Private' : 'Public'}
+              </span>
+              {game.nftTokenId && (
+                <span className="text-xs px-2 py-1 rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">
+                  Minted
+                </span>
+              )}
+            </div>
           )}
         </div>
 
@@ -123,13 +130,13 @@ export function GameCardEnhanced({
           <h3 className="text-base sm:text-lg font-bold text-white mb-1 group-hover:text-purple-400 transition-colors line-clamp-2">
             {game.title}
           </h3>
-          <p className="text-xs sm:text-sm text-gray-400 line-clamp-2 italic">
+          <p className="text-xs sm:text-sm text-gray-400 line-clamp-2 italic uppercase">
             {game.tagline}
           </p>
         </div>
 
         {/* Description with responsive sizing */}
-        <p className="text-xs sm:text-sm text-gray-400 line-clamp-2">
+        <p className="text-xs sm:text-sm text-gray-400 line-clamp-3">
           {game.description}
         </p>
 
@@ -212,12 +219,12 @@ export function GameCardEnhanced({
                 onClick={() => onToggleVisibility?.(!game.private)}
                 disabled={isLoading}
                 className="flex items-center gap-2"
-                title={game.private ? 'Make public' : 'Make private'}
+                title={game.private ? 'Make public' : 'Make private'} aria-label={game.private ? 'Make public' : 'Make private'}
               >
                 {game.private ? (
-                  <EyeOff className="w-4 h-4" />
+                  <span className="flex items-center gap-1"><EyeOff className="w-4 h-4" /><span className="hidden sm:inline">Make Public</span></span>
                 ) : (
-                  <Eye className="w-4 h-4" />
+                  <span className="flex items-center gap-1"><Eye className="w-4 h-4" /><span className="hidden sm:inline">Make Private</span></span>
                 )}
               </Button>
             </>

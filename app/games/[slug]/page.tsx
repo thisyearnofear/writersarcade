@@ -57,7 +57,8 @@ export default async function GamePage({ params }: GamePageProps) {
   }
 
   // Extract and flatten assets for the attribution component
-  // @ts-expect-error - The service include typings are complex, but the data is there
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-expect-error - GameDatabaseService includes assets via include; type not reflected here
   const linkedAssets = game.gamesFromAssets?.map((relation: { asset: unknown }) => relation.asset) || []
 
   return (

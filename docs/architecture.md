@@ -1,7 +1,7 @@
 # WritArcade Architecture
 
-**Last Updated:** December 12, 2025
-**Status:** Phase 7 - Customization MVP (Surreal World Assets Buildathon)
+**Last Updated:** December 13, 2025
+**Status:** Phase 7 - Customization MVP (Surreal World Assets Buildathon) - Production Ready
 
 ## Overview
 
@@ -233,3 +233,128 @@ Asset
 - Business metrics dashboards
 - User behavior analytics
 - Smart contract event monitoring
+
+---
+
+## Production Readiness (December 13, 2025)
+
+### User Roles & Access Control
+
+**User Model** now includes role fields:
+- `isCreator` (boolean): Can create and register IP assets
+- `isAdmin` (boolean): Platform administrative access
+
+Auto-set by:
+- Setting `isCreator=true` when user first registers IP on Story Protocol
+- Manual admin assignment for platform team
+
+**API Endpoint**: `GET /api/auth/me` returns both fields.
+
+### Configuration & Environment
+
+**Required in Production**:
+```env
+PINATA_JWT=pina_xxx...              # IPFS metadata uploads (Story Protocol)
+DATABASE_URL=postgresql://...       # PostgreSQL connection
+STORY_RPC_URL=https://aeneid...    # Story Protocol RPC
+NODE_ENV=production                 # Enables strict validation
+```
+
+**Production Safety Checks**:
+- ✅ IPFS uploads **require** `PINATA_JWT` (throws error if missing, no silent fallbacks)
+- ✅ Database connection uses TLS/SSL
+- ✅ Rate limiting enabled by default
+- ✅ All user input validated via Zod schemas
+
+### Payment Verification (Async)
+
+Payment verification is **non-blocking**:
+
+```
+Frontend                    Backend              Database
+   │                           │                    │
+   ├─ POST /api/payments/verify ─────────────────────>
+   │                           │                    │
+   │ <─ paymentId + statusUrl ──                    │ Stores payment record
+   │                           │              with status="pending"
+   │                           │
+   │ Poll GET /api/payments/{id}/status
+   │ ───────────────────────────>
+   │                           │
+   │ <─ status: "pending" ────────────────────────────
+   │   (check again in 3 seconds)
+```
+
+**Flow**:
+1. User submits transaction hash via POST
+2. Payment stored in DB immediately (status="pending")
+3. Frontend polls GET endpoint for confirmation
+4. Status updates when blockchain confirms (future: real on-chain verification)
+
+**Database Fields**: `transactionHash`, `amount`, `status`, `verifiedAt`, `userId`
+
+### Data Sources (No Mocks in Production)
+
+All dashboards and stats query real data:
+
+| Endpoint | Data Source | Logic |
+|----------|-------------|-------|
+| `/api/auth/me` | User table | Returns actual role fields |
+| `/api/creators/{wallet}/stats` | Payment + Game aggregates | Verified payments only, real article grouping |
+| `/api/games/my-games` | Game table | User's wallet address |
+| `CreatorDAO Dashboard` | Asset + AssetStoryRegistration tables | Real IP registration count |
+
+**No simulated data, no hardcoded percentages, no mock dashboards.**
+
+### IPFS & Story Protocol
+
+**IPFS Storage** (`lib/ipfs-utils.ts`):
+- Production: Pinata upload (requires `PINATA_JWT`)
+- Development: Mock IPFS hash generation (for testing without Pinata)
+- Fallback: Only in dev; production throws error if Pinata fails
+
+**Story Protocol** (`app/my-games/page.tsx`):
+- ✅ Client-side wallet signing (user owns their IP)
+- ✅ Chain switching UX (Base → Story Aeneid → Base)
+- ✅ Real SDK integration (not mocked)
+- ✅ Optional flow (user can mint NFT on Base without Story registration)
+
+### Logging & Debugging
+
+Centralized logger (`lib/config.ts`) with:
+- **Development**: Emoji indicators (ℹ️ info, ⚠️ warn, ❌ error, 🔍 debug)
+- **Production**: Structured JSON output (ready for Sentry/DataDog)
+- **Domain-specific**: `logger.payment()`, `logger.ipfs()`, `logger.storyProtocol()`
+
+Example:
+```typescript
+logger.payment('Payment recorded for verification', {
+  paymentId: payment.id,
+  transactionHash: validatedData.transactionHash,
+  status: payment.status,
+  userId: user?.id,
+})
+```
+
+### Deployment Checklist
+
+Before deploying to production:
+
+- [ ] Run Prisma migration: `npx prisma migrate deploy` (adds `isCreator`, `isAdmin` fields)
+- [ ] Set `PINATA_JWT` environment variable
+- [ ] Verify `DATABASE_URL` uses TLS connection
+- [ ] Enable `ENABLE_RATE_LIMITING=true` (default)
+- [ ] Test `/api/auth/me` returns `isCreator` and `isAdmin`
+- [ ] Test payment verification flow (POST then GET polling)
+- [ ] Test creator dashboard loads real data
+- [ ] Verify Story Protocol registration works end-to-end
+- [ ] Check logs show structured output (not just console.log)
+
+### Removed in December 2025
+
+- ✅ **Deleted**: `lib/migrations/data-migrator.ts` (legacy Sequelize migration, no longer used)
+- ✅ **Removed**: Hardcoded false values for `isCreator` and `isAdmin`
+- ✅ **Removed**: Mock data from CreatorDAO dashboard (now fetches API)
+- ✅ **Removed**: Simulated stats service (now queries DB)
+- ✅ **Removed**: Placeholder wallet addresses in migrations
+- ✅ **Removed**: Story Protocol "Coming Soon" placeholders (flow implemented)

@@ -171,6 +171,18 @@ export interface AssetGenerationRequest {
   model?: string
 }
 
+export interface AssetRelationship {
+  source: {
+    type: 'character' | 'mechanic' | 'story'
+    index: number
+  }
+  target: {
+    type: 'character' | 'mechanic' | 'story'
+    index: number
+  }
+  relationshipType: 'activates' | 'uses' | 'triggers' | 'requires'
+}
+
 export interface AssetGenerationResponse {
   title: string
   description: string
@@ -178,4 +190,5 @@ export interface AssetGenerationResponse {
   storyBeats: StoryBeat[]
   gameMechanics: GameMechanic[]
   visualGuidelines?: VisualGuideline
+  relationships?: AssetRelationship[]
 }

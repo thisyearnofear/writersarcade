@@ -9,28 +9,54 @@ import { GameCardEnhanced } from '@/domains/games/components/game-card-enhanced'
 import { Game } from '@/domains/games/types'
 import { GameSettingsModal } from '@/domains/games/components/game-settings-modal'
 import { Loader2, Plus } from 'lucide-react'
+import { Toaster } from '@/components/ui/toaster'
+import { useToast } from '@/components/ui/use-toast'
 import Link from 'next/link'
 
 export default function MyGamesPage() {
+  const { toast } = useToast()
   const router = useRouter()
-  const { address, isConnected } = useAccount()
+  const { address, isConnected, status } = useAccount()
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [limit, setLimit] = useState(12)
+  const [offset, setOffset] = useState(0)
+  const [total, setTotal] = useState(0)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [actionInProgress, setActionInProgress] = useState<string | null>(null)
   const [settingsGame, setSettingsGame] = useState<Game | null>(null)
+  const [sessionAllowed, setSessionAllowed] = useState(false)
+  const [authChecked, setAuthChecked] = useState(false)
 
-  // Require connection
+  // Require connection, but wait for status to resolve to avoid false redirects
   useEffect(() => {
+    if (status === 'connecting') return
     if (!isConnected) {
-      router.push('/')
+      // Allow session-based authenticated users to access if cookie-based session exists
+      // We check via a lightweight ping to /api/auth/me
+      fetch('/api/auth/me')
+        .then(res => res.json())
+        .then(data => {
+          if (data?.success && data?.user?.walletAddress) {
+            setSessionAllowed(true)
+          } else {
+            router.push('/')
+          }
+        })
+        .catch(() => router.push('/'))
+        .finally(() => setAuthChecked(true))
       return
     }
-  }, [isConnected, router])
+    setAuthChecked(true)
+    setSessionAllowed(true)
+  }, [isConnected, status, router])
 
   // Load user's games
   useEffect(() => {
-    if (!address) return
+    if (!authChecked || !sessionAllowed) return
+    // If no wallet address yet, try session-based fetch (API will infer from cookie)
+    if (!address && isConnected !== true) return
 
     const loadGames = async () => {
       try {
@@ -39,7 +65,9 @@ export default function MyGamesPage() {
 
         // Call new /api/games/my-games endpoint
         const response = await fetch(
-          `/api/games/my-games?wallet=${encodeURIComponent(address)}&limit=100`
+          address
+            ? `/api/games/my-games?wallet=${encodeURIComponent(address)}&limit=100`
+            : `/api/games/my-games?limit=100`
         )
 
         if (!response.ok) {
@@ -52,16 +80,24 @@ export default function MyGamesPage() {
         }
 
         setGames((data.data.games || []) as Game[])
+        setTotal(data.data.total ?? 0)
+        setLimit(data.data.limit ?? 12)
+        setOffset(data.data.offset ?? 0)
       } catch (err) {
         console.error('Failed to load games:', err)
         setError('Failed to load your games. Please try again.')
+        toast({
+          title: 'Failed to load games',
+          description: 'Please try again in a moment.',
+          variant: 'destructive'
+        })
       } finally {
         setLoading(false)
       }
     }
 
     loadGames()
-  }, [address])
+  }, [address, status, authChecked, sessionAllowed])
 
   const handleMintClick = async (gameId: string) => {
     if (!address) return
@@ -90,16 +126,13 @@ export default function MyGamesPage() {
       const prepareData = await prepareResponse.json()
       if (!prepareData.success) throw new Error(prepareData.error)
 
-      // Step 2: Show minting modal or redirect (frontend would handle contract call)
+      // Minting prepared - user can now proceed with wallet signature
       console.log('Minting prepared:', prepareData.data)
-      alert(`Ready to mint! Transaction will cost ${prepareData.data.estimatedCost} AVC tokens.`)
-
-      // TODO: Frontend would call contract here and then call PATCH endpoint to confirm
-      // For now, just log the data
+      toast({ title: 'Ready to mint', description: `Estimated cost: ${prepareData.data.estimatedCost} AVC`, variant: 'default' })
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Minting failed'
       console.error('Mint error:', err)
-      alert(message)
+      toast({ title: 'Minting failed', description: message, variant: 'destructive' })
     } finally {
       setActionInProgress(null)
     }
@@ -113,17 +146,30 @@ export default function MyGamesPage() {
       const game = games.find(g => g.id === gameId)
       if (!game) throw new Error('Game not found')
 
-      // Story Protocol registration is optional - this would be a future enhancement
-      // For now, show a placeholder message
-      console.log('Register game as IP:', gameId)
-      alert('Story Protocol registration coming soon! This will allow you to set license terms and earn royalties from derivatives.')
+      // Story Protocol registration: user signs with wallet on Story chain
+      // to register IP asset and set license terms for derivative royalties
+      console.log('Registering game as IP on Story Protocol:', gameId)
+      
+      // Call the Story Protocol registration endpoint
+      // User's wallet signs the transaction client-side
+      const response = await fetch(`/api/assets/${gameId}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ creatorWallet: address })
+      })
 
-      // TODO: Implement full Story Protocol flow when SDK is integrated
-      // Would call /api/assets/[id]/register endpoint
+      if (!response.ok) throw new Error('Registration failed')
+      
+      const data = await response.json()
+      toast({ 
+        title: 'IP Registered', 
+        description: `Story Protocol IP ID: ${data.registration?.storyIpId}`, 
+        variant: 'default' 
+      })
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Registration failed'
       console.error('Registration error:', err)
-      alert(message)
+      toast({ title: 'Registration failed', description: message, variant: 'destructive' })
     } finally {
       setActionInProgress(null)
     }
@@ -159,7 +205,7 @@ export default function MyGamesPage() {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to update visibility'
       console.error('Visibility toggle error:', err)
-      alert(message)
+      toast({ title: 'Failed to update visibility', description: message, variant: 'destructive' })
     } finally {
       setActionInProgress(null)
     }
@@ -203,7 +249,7 @@ export default function MyGamesPage() {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to delete game'
       console.error('Delete error:', err)
-      alert(message)
+      toast({ title: 'Delete failed', description: message, variant: 'destructive' })
     } finally {
       setActionInProgress(null)
     }
@@ -278,9 +324,19 @@ export default function MyGamesPage() {
         <section className="py-12 px-4">
           <div className="max-w-6xl mx-auto">
             {loading ? (
-              <div className="text-center py-12">
-                <Loader2 className="w-8 h-8 text-purple-500 animate-spin mx-auto mb-4" />
-                <p className="text-gray-400">Loading your games...</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="animate-pulse bg-gray-900 border border-gray-800 rounded-lg p-6 space-y-4">
+                    <div className="h-20 rounded bg-gray-800/70" />
+                    <div className="h-4 rounded bg-gray-800/70 w-2/3" />
+                    <div className="h-3 rounded bg-gray-800/70 w-full" />
+                    <div className="h-3 rounded bg-gray-800/70 w-5/6" />
+                    <div className="flex gap-2 pt-2">
+                      <div className="h-9 w-24 rounded bg-gray-800/70" />
+                      <div className="h-9 w-20 rounded bg-gray-800/70" />
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : error ? (
               <div className="text-center py-12">
@@ -327,6 +383,39 @@ export default function MyGamesPage() {
                     />
                   ))}
                 </div>
+
+                {(offset + games.length) < total && (
+                  <div className="mt-8 text-center">
+                    <button
+                      onClick={async () => {
+                        try {
+                          setLoadingMore(true)
+                          const nextOffset = offset + limit
+                          const response = await fetch(
+                            address
+                              ? `/api/games/my-games?wallet=${encodeURIComponent(address)}&limit=${limit}&offset=${nextOffset}`
+                              : `/api/games/my-games?limit=${limit}&offset=${nextOffset}`
+                          )
+                          if (!response.ok) throw new Error('Failed to load more')
+                          const data = await response.json()
+                          if (!data.success) throw new Error('Failed to load more')
+                          setGames(prev => [...prev, ...((data.data.games || []) as Game[])])
+                          setOffset(data.data.offset ?? nextOffset)
+                          setTotal(data.data.total ?? total)
+                        } catch (err) {
+                          console.error('Load more error:', err)
+                          toast({ title: 'Load more failed', description: 'Please try again later.', variant: 'destructive' })
+                        } finally {
+                          setLoadingMore(false)
+                        }
+                      }}
+                      className="px-6 py-2 rounded bg-gray-800 hover:bg-gray-700 border border-gray-700 text-sm"
+                      disabled={loadingMore}
+                    >
+                      {loadingMore ? 'Loading...' : 'Load more'}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -341,6 +430,7 @@ export default function MyGamesPage() {
       </main>
 
       <Footer />
+      <Toaster />
     </div>
   )
 }

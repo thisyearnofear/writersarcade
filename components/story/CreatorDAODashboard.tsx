@@ -56,59 +56,34 @@ export function CreatorDAODashboard({ authorUsername, authorWallet }: CreatorDAO
     const fetchDAOData = async () => {
       try {
         setIsLoading(true);
-        // In production, this would fetch from your API
-        // For now, return mock data for demonstration
-        const mockData: AuthorCreatorDAO = {
-          authorUsername: authorUsername,
-          authorWallet: authorWallet,
-          totalGamesCreated: 12,
-          totalRoyaltiesEarned: 2400, // 60% of 4000 tokens earned
-          totalCreatorEarnings: 1600, // 30% of 4000 tokens earned
-          recentGames: [
-            {
-              gameId: "game-001",
-              title: "The Future of AI",
-              genre: "mystery",
-              creatorAddress: "0x742d35Cc6634C0532925a3b844Bc9e7595f42bA",
-              creatorName: "Alice",
-              storyIPAssetId: "story-ip-001",
-              registeredAt: Math.floor(Date.now() / 1000) - 86400,
-              estimatedRoyalties: 250,
-              baseNFTTokenId: 1,
-            },
-            {
-              gameId: "game-002",
-              title: "Web3 Lessons",
-              genre: "comedy",
-              creatorAddress: "0x8626f6940E2eb28930DF11c01840a6F0EA48CcBA",
-              creatorName: "Bob",
-              storyIPAssetId: "story-ip-002",
-              registeredAt: Math.floor(Date.now() / 1000) - 172800,
-              estimatedRoyalties: 200,
-              baseNFTTokenId: 2,
-            },
-            {
-              gameId: "game-003",
-              title: "Startup Lessons",
-              genre: "horror",
-              creatorAddress: "0x742d35Cc6634C0532925a3b844Bc9e7595f42bA",
-              creatorName: "Alice",
-              storyIPAssetId: "story-ip-003",
-              registeredAt: Math.floor(Date.now() / 1000) - 259200,
-              estimatedRoyalties: 150,
-              baseNFTTokenId: 3,
-            },
-          ],
-        };
-        setData(mockData);
+        // Fetch real data from API based on wallet address
+        const response = await fetch(`/api/creators/${encodeURIComponent(authorWallet)}/stats`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to load creator stats: ${response.statusText}`);
+        }
+        
+        const apiData = await response.json();
+        
+        if (apiData.success && apiData.data) {
+          setData(apiData.data);
+        } else {
+          throw new Error(apiData.error || 'No data returned');
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load DAO data");
+        // Continue showing UI with empty state rather than breaking
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchDAOData();
+    if (authorWallet) {
+      fetchDAOData();
+    }
   }, [authorUsername, authorWallet]);
 
   if (isLoading) {

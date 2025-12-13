@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { optionalAuth } from '@/lib/auth'
 
 /**
  * GET /api/games/my-games
@@ -11,11 +12,22 @@ import { prisma } from '@/lib/prisma'
  * - offset: number (default 0)
  */
 export async function GET(request: NextRequest) {
+  // Try to infer wallet from session if not provided
+
   try {
     const { searchParams } = new URL(request.url)
-    const wallet = searchParams.get('wallet')
-    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100)
+    let wallet = searchParams.get('wallet')
+    const limit = Math.min(parseInt(searchParams.get('limit') || '12'), 100)
     const offset = parseInt(searchParams.get('offset') || '0')
+
+    if (!wallet) {
+      try {
+        const maybeUser = await optionalAuth()
+        if (maybeUser?.walletAddress) {
+          wallet = maybeUser.walletAddress
+        }
+      } catch {}
+    }
 
     if (!wallet) {
       return NextResponse.json(
@@ -33,8 +45,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch user
-    const user = await prisma.user.findUnique({
-      where: { walletAddress: wallet.toLowerCase() },
+    const user = await prisma.user.findFirst({
+      where: { walletAddress: { equals: wallet, mode: 'insensitive' } },
     })
 
     if (!user) {
@@ -73,13 +85,41 @@ export async function GET(request: NextRequest) {
       id: game.id,
       slug: game.slug,
       title: game.title,
+      description: game.description,
+      tagline: game.tagline,
       genre: game.genre,
+      subgenre: game.subgenre,
+      primaryColor: game.primaryColor,
+      mode: game.mode as 'story' | 'wordle' || 'story',
+      promptName: game.promptName,
+      promptText: game.promptText,
+      promptModel: game.promptModel,
+      articleUrl: game.articleUrl,
+      articleContext: game.articleContext,
+      writerCoinId: game.writerCoinId,
       difficulty: game.difficulty,
+      creatorWallet: game.creatorWallet,
+      authorWallet: game.authorWallet,
+      authorParagraphUsername: game.authorParagraphUsername,
+      publicationName: game.publicationName,
+      publicationSummary: game.publicationSummary,
+      subscriberCount: game.subscriberCount,
+      articlePublishedAt: game.articlePublishedAt,
       imageUrl: game.imageUrl,
-      private: game.private,
-      createdAt: game.createdAt,
+      imagePromptModel: game.imagePromptModel,
+      imagePromptName: game.imagePromptName,
+      imagePromptText: game.imagePromptText,
+      imageData: game.imageData,
+      musicPromptText: game.musicPromptText,
+      musicPromptSeedImage: game.musicPromptSeedImage,
       nftTokenId: game.nftTokenId,
+      nftTransactionHash: game.nftTransactionHash,
       nftMintedAt: game.nftMintedAt,
+      private: game.private,
+      playFee: (game as any).playFee,
+      featured: (game as any).featured ?? false,
+      createdAt: game.createdAt,
+      updatedAt: game.updatedAt,
     }))
 
     return NextResponse.json({
