@@ -15,12 +15,15 @@ import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { BalanceGauge } from '@/components/ui/balance-gauge'
 import { SuccessMoment } from '@/components/ui/success-moment'
 import { AssetHoverProvider } from '@/components/providers/asset-hover-provider'
+import { IPRegistrationFlow } from '@/components/story/IPRegistrationFlow'
+import { RegistrationFlowContext } from '@/hooks/use-story-protocol-flow'
 import { AssetGenerationResponse, AssetRelationship } from '@/domains/games/types'
 import { AssetRelationshipService } from '@/domains/assets/services/asset-relationship.service'
 import { useRouter } from 'next/navigation'
+import { useAccount } from 'wagmi'
 import { RotateCcw } from 'lucide-react'
 
-type WorkshopState = 'input' | 'processing' | 'workshop' | 'compiling' | 'minting'
+type WorkshopState = 'input' | 'processing' | 'workshop' | 'compiling'
 type LayoutMode = 'grid' | 'flow'
 
 interface AssetTag {
@@ -30,6 +33,7 @@ interface AssetTag {
 
 export default function WorkshopPage() {
     const router = useRouter()
+    const { address } = useAccount()
     const { toasts, show: showToast, dismiss } = useToastNotification()
     const [url, setUrl] = useState('')
     const [state, setState] = useState<WorkshopState>('input')
@@ -41,6 +45,7 @@ export default function WorkshopPage() {
     const [relationships, setRelationships] = useState<AssetRelationship[]>([])
     const [showMintSuccess, setShowMintSuccess] = useState(false)
     const [allChecklistsPassed, setAllChecklistsPassed] = useState(false)
+    const [isIPRegistrationModalOpen, setIsIPRegistrationModalOpen] = useState(false)
 
     // Push to undo history when assets change + compute relationships
     useEffect(() => {
@@ -89,14 +94,24 @@ export default function WorkshopPage() {
     }
 
     const handleMint = async () => {
-        if (!assets) return
-        if (!confirm('Mint this Asset Pack on Story Protocol? This permanently registers it as your IP.')) return
+        if (!assets || !address) return
+        
+        // Open IP registration flow modal instead of alert/confirm
+        setIsIPRegistrationModalOpen(true)
+    }
 
-        setState('minting')
+    const handleIPRegistrationSuccess = async (result: any) => {
+        if (!assets) return
+        
+        // Log success to console and show toast
+        showToast(`✓ IP Registered! IP ID: ${result.ipId.slice(0, 10)}...`, {
+            type: 'success',
+            duration: 5000,
+        })
+        
+        // Optionally: Save the registration result to database
         try {
-            // First save draft to ensure we have ID (Simplification: save inline or require save first)
-            // For now, we send raw data to API which handles it
-            const res = await fetch('/api/assets/register', {
+            await fetch('/api/assets/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -106,21 +121,13 @@ export default function WorkshopPage() {
                         description: assets.description || 'Generated from ' + url,
                         articleUrl: url,
                         type: 'pack'
-                    }
+                    },
+                    ipId: result.ipId,
+                    txHash: result.txHash
                 })
             })
-
-            const data = await res.json()
-            if (data.success) {
-                alert(`SUCCESS! Asset Minted on Story Protocol.\nIP ID: ${data.data.ipId}`)
-            } else {
-                throw new Error(data.error)
-            }
         } catch (e) {
-            console.error(e)
-            alert('Minting failed: ' + (e instanceof Error ? e.message : 'Unknown error'))
-        } finally {
-            setState('workshop')
+            console.error('Failed to save registration metadata:', e)
         }
     }
 
@@ -566,6 +573,24 @@ export default function WorkshopPage() {
                 trigger={showMintSuccess}
                 onComplete={() => setShowMintSuccess(false)}
             />
+
+            {/* IP Registration Flow Modal */}
+            {assets && address && (
+                <IPRegistrationFlow
+                    isOpen={isIPRegistrationModalOpen}
+                    context={{
+                        assetTitle: assets.title || 'Untitled Asset Pack',
+                        assetDescription: assets.description || 'Generated asset pack',
+                        articleUrl: url,
+                        genre: (assets.visualGuidelines?.artStyle?.includes('horror') ? 'horror' : 'comedy') as 'horror' | 'comedy' | 'mystery',
+                        difficulty: 'hard',
+                        authorUsername: 'Anonymous',
+                        authorWalletAddress: address,
+                    }}
+                    onClose={() => setIsIPRegistrationModalOpen(false)}
+                    onSuccess={handleIPRegistrationSuccess}
+                />
+            )}
         </div >
     )
 }

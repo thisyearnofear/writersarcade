@@ -52,12 +52,18 @@ const ROYALTY_CONFIG = {
 /**
  * IP Registration Component - Client-Side Wallet Signing
  * 
+ * Now integrated with useStoryProtocolFlow hook for orchestrated user flow.
+ * Can render as:
+ * - Card (existing full UI)
+ * - Modal (via parent container)
+ * - Inline (minimal mode)
+ * 
  * Flow:
- * 1. User views value proposition (visible by default)
- * 2. If not on Story network → prompt chain switch
- * 3. User clicks "Sign & Register" → wallet prompts for signature
- * 4. Transaction sent from USER'S wallet → THEY own the IP
- * 5. Success: show IP ID and explorer link
+ * 1. User views value proposition
+ * 2. Pre-requisites check (wallet + network)
+ * 3. User confirms with context
+ * 4. Wallet signature requested
+ * 5. Success: show IP details and next steps
  */
 export function IPRegistration({ game, onRegistrationComplete }: IPRegistrationProps) {
   // Wallet state from wagmi
@@ -66,7 +72,7 @@ export function IPRegistration({ game, onRegistrationComplete }: IPRegistrationP
   const { switchChain, isPending: isSwitching } = useSwitchChain();
   const { data: walletClient } = useWalletClient();
 
-  // Component state
+  // Component state (legacy for backward compatibility, can be replaced with hook)
   const [isRegistering, setIsRegistering] = useState(false);
   const [isSwitchingChain, setIsSwitchingChain] = useState(false);
   const [result, setResult] = useState<IPRegistrationResult | null>(null);

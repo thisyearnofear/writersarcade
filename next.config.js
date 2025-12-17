@@ -30,6 +30,12 @@ const nextConfig = {
       loader: 'ignore-loader',
     });
 
+    // Ignore ox files with TypeScript type exports that webpack can't parse
+    config.module.rules.push({
+      test: /node_modules\/ox\/_esm\/.*\.js$/,
+      loader: 'ignore-loader',
+    });
+
     // Ignore RainbowKit CSS to avoid vanilla-extract parsing
     config.module.rules.unshift({
       test: /rainbowkit.*\.css$/,
