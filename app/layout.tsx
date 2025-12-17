@@ -7,6 +7,7 @@ import { Web3Provider } from '@/components/providers/Web3Provider'
 import { WalletSync } from '@/components/providers/WalletSync'
 import { ToastProvider } from '@/components/ui/use-toast'
 import { DarkModeProvider } from '@/components/providers/DarkModeProvider'
+import { MobileBottomNav } from '@/components/navigation/MobileBottomNav'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -29,7 +30,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.className} bg-black text-white min-h-screen`}>
+      <body className={`${inter.className} bg-black text-white min-h-screen pb-16 md:pb-0`}>
         <Web3Provider>
           <ToastProvider>
             <WalletSync />
@@ -41,6 +42,7 @@ export default function RootLayout({
             </DarkModeProvider>
           </ToastProvider>
         </Web3Provider>
+        <MobileBottomNav />
       </body>
     </html>
   )

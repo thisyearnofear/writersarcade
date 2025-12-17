@@ -19,6 +19,7 @@ const SelectTrigger = React.forwardRef<
         ref={ref}
         className={cn(
             "flex h-10 w-full items-center justify-between rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm ring-offset-background placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+            "sm:h-12 sm:px-4 sm:py-3 sm:min-h-[48px]", // Enhanced mobile touch targets
             className
         )}
         {...props}
@@ -118,13 +119,14 @@ const SelectItem = React.forwardRef<
         ref={ref}
         className={cn(
             "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-gray-800 focus:text-white data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+            "sm:py-3 sm:pl-10 sm:pr-4 sm:text-base", // Enhanced mobile touch targets
             className
         )}
         {...props}
     >
-        <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+        <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center sm:left-3 sm:h-5 sm:w-5">
             <SelectPrimitive.ItemIndicator>
-                <Check className="h-4 w-4" />
+                <Check className="h-4 w-4 sm:h-5 sm:w-5" />
             </SelectPrimitive.ItemIndicator>
         </span>
 

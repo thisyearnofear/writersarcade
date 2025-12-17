@@ -46,7 +46,7 @@ function HowItWorksSection() {
         </motion.h2>
 
         <motion.div
-          className="grid md:grid-cols-3 gap-8"
+          className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8"
           initial="hidden"
           animate={isVisible ? 'visible' : 'hidden'}
           variants={animationConfig.variants.staggerContainer}
@@ -66,7 +66,7 @@ function HowItWorksSection() {
             >
               {/* Animated number circle with glow */}
               <motion.div
-                className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 relative"
+                className="w-14 h-14 sm:w-16 sm:h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4 relative"
                 animate={{
                   boxShadow: [
                     '0 0 20px rgba(168, 85, 247, 0.5)',
@@ -81,11 +81,11 @@ function HowItWorksSection() {
                   },
                 }}
               >
-                <span className="text-2xl font-bold">{step.number}</span>
+                <span className="text-xl sm:text-2xl font-bold">{step.number}</span>
               </motion.div>
 
-              <h3 className="text-xl font-semibold mb-3 text-black">{step.title}</h3>
-              <p className="text-gray-600">{step.description}</p>
+              <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3 text-black">{step.title}</h3>
+              <p className="text-sm sm:text-base text-gray-600">{step.description}</p>
             </motion.div>
           ))}
         </motion.div>
@@ -122,7 +122,7 @@ export default function HomePage() {
 
             <div className="max-w-4xl mx-auto text-center relative z-10 writarcade-paper">
               {/* Kinetic title with typewriter font - staggered word animation with responsive sizing */}
-              <h1 className="text-4xl sm:text-5xl font-bold mb-6 typewriter-font">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 typewriter-font">
                 {['WritArcade'].map((word) => (
                   <motion.span
                     key={word}
@@ -143,7 +143,7 @@ export default function HomePage() {
 
               {/* Staggered description with responsive sizing */}
               <motion.p
-                className="text-base sm:text-lg text-gray-700 mb-6 max-w-2xl mx-auto"
+                className="text-sm sm:text-base md:text-lg text-gray-700 mb-4 max-w-2xl mx-auto leading-relaxed"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.6 }}
@@ -152,7 +152,7 @@ export default function HomePage() {
                 Pay with writer coins to create your unique interpretation.
               </motion.p>
               <motion.p
-                className="text-sm sm:text-base text-gray-600 mb-8 max-w-xl mx-auto leading-relaxed"
+                className="text-xs sm:text-sm md:text-base text-gray-600 mb-8 max-w-xl mx-auto leading-relaxed"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.35, duration: 0.6 }}

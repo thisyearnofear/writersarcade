@@ -330,7 +330,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
 
           {/* URL Input with Typewriter Styling */}
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mb-2">
               <Label htmlFor="url" className="text-sm font-medium">
                 Paragraph.xyz Article URL
               </Label>
@@ -355,9 +355,10 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
               placeholder="https://paragraph.xyz/@author/article-title"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              className="mt-1 typewriter-input"
+              className="mt-1 typewriter-input focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-black"
               typewriter
             />
+            <p className="text-xs text-gray-400 mt-1 px-1">Tap to enter the full Paragraph.xyz URL</p>
           </div>
 
 
@@ -595,8 +596,8 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
             <Button
               type="submit"
               disabled={isGenerating}
-              className="w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-50 relative overflow-hidden"
-              size="lg"
+              className="w-full bg-purple-600 hover:bg-purple-700 disabled:opacity-50 relative overflow-hidden focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-black"
+              size="mobile"
               arcade
             >
               {isGenerating ? (
