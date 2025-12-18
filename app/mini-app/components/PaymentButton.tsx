@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { type WriterCoin } from '@/lib/writerCoins'
 import {
   encodePayForGameGeneration,
-  encodePayForMinting,
   encodePayAndMintGame,
 } from '@/lib/contracts'
 import { detectWalletProvider, type WalletProvider } from '@/lib/wallet'
@@ -88,9 +87,7 @@ export function PaymentButton({
       let transactionData: string
       if (action === 'generate-game') {
         transactionData = encodePayForGameGeneration(
-          contractAddress,
-          writerCoin.address,
-          userAddress
+          writerCoin.address
         )
       } else {
         // Minting flow: requires metadata

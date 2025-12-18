@@ -35,9 +35,8 @@ export const CONTRACT_ABIS = {
   WriterCoinPayment: [
     'function getRevenueDistribution(address coinAddress) external view returns (uint256 writerShare, uint256 platformShare, uint256 creatorPoolShare)',
     'function mintDistributions(address coinAddress) external view returns (uint256 creatorShare, uint256 writerShare, uint256 platformShare)',
-    'function payForGameGeneration(address writerCoin, address user) external',
-    'function payForMinting(address writerCoin, address user) external',
-    'function payAndMintGame(address writerCoin, string memory tokenURI, tuple(string, address, address, string, string, uint256, string) memory metadata) external',
+    'function payForGameGeneration(address writerCoin) external',
+    'function payAndMintGame(address writerCoin, string memory tokenURI, tuple(string, address, address, string, string, uint256, string) memory metadata) external returns (uint256)',
     'function isCoinWhitelisted(address coinAddress) external view returns (bool)',
     'function getCoinConfig(address coinAddress) external view returns (tuple(uint256, uint256, bool))',
     'function whitelistCoin(address coinAddress, uint256 gameGenerationCost, uint256 mintCost, address treasury, uint256 writerShare, uint256 platformShare, uint256 creatorPoolShare, uint256 mintWriterShare, uint256 mintPlatformShare, uint256 mintCreatorShare) external',
@@ -337,51 +336,28 @@ export function gameToMetadata(data: {
 /**
  * Prepare transaction data for game generation payment
  * 
- * @param contractAddress - WriterCoinPayment contract address
  * @param writerCoinAddress - ERC-20 token address
- * @param userAddress - User's wallet address
  * @returns Encoded transaction data
  */
 export function encodePayForGameGeneration(
-  contractAddress: string,
-  writerCoinAddress: string,
-  userAddress: string
+  writerCoinAddress: string
 ): string {
-  // Function signature: payForGameGeneration(address writerCoin, address user)
-  // Selector: 0x7c4f5c5b (calculated from keccak256("payForGameGeneration(address,address)"))
+  // Function signature: payForGameGeneration(address writerCoin)
+  // Selector calculated from keccak256("payForGameGeneration(address)")
+  const abi = [{
+    name: 'payForGameGeneration',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [
+      { name: 'writerCoin', type: 'address' }
+    ]
+  }] as const
 
-  const selector = '0x7c4f5c5b'
-
-  // Encode parameters
-  const encodedCoin = writerCoinAddress.slice(2).padStart(64, '0')
-  const encodedUser = userAddress.slice(2).padStart(64, '0')
-
-  return selector + encodedCoin + encodedUser
-}
-
-/**
- * Prepare transaction data for NFT minting payment
- * 
- * @param contractAddress - WriterCoinPayment contract address
- * @param writerCoinAddress - ERC-20 token address
- * @param userAddress - User's wallet address
- * @returns Encoded transaction data
- */
-export function encodePayForMinting(
-  contractAddress: string,
-  writerCoinAddress: string,
-  userAddress: string
-): string {
-  // Function signature: payForMinting(address writerCoin, address user)
-  // Selector: 0xd0e521c0 (calculated from keccak256("payForMinting(address,address)"))
-
-  const selector = '0xd0e521c0'
-
-  // Encode parameters
-  const encodedCoin = writerCoinAddress.slice(2).padStart(64, '0')
-  const encodedUser = userAddress.slice(2).padStart(64, '0')
-
-  return selector + encodedCoin + encodedUser
+  return encodeFunctionData({
+    abi,
+    functionName: 'payForGameGeneration',
+    args: [writerCoinAddress as `0x${string}`]
+  })
 }
 
 /**

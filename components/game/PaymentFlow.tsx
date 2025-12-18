@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { encodeFunctionData } from 'viem'
 import { type WriterCoin } from '@/lib/writerCoins'
 import { detectWalletProvider } from '@/lib/wallet'
 import type { WalletProvider, TransactionRequest } from '@/lib/wallet/types'
@@ -272,13 +273,24 @@ function encodeFarcasterPayment(
   userAddress: `0x${string}`,
   action: PaymentAction
 ): `0x${string}` {
-  // Correct function selectors for WriterCoinPayment contract
-  // payForGameGeneration(address,address) -> 0x7c4f5c5b
-  // payForMinting(address,address) -> 0xd0e521c0
-  const selector = action === 'generate-game' ? '0x7c4f5c5b' : '0xd0e521c0'
- 
-  const encodedCoin = writerCoinAddress.slice(2).padStart(64, '0')
-  const encodedUser = userAddress.slice(2).padStart(64, '0')
- 
-  return (selector + encodedCoin + encodedUser) as `0x${string}`
+  if (action === 'generate-game') {
+    // Function signature: payForGameGeneration(address writerCoin)
+    const abi = [{
+      name: 'payForGameGeneration',
+      type: 'function',
+      stateMutability: 'nonpayable',
+      inputs: [
+        { name: 'writerCoin', type: 'address' }
+      ]
+    }] as const
+
+    return encodeFunctionData({
+      abi,
+      functionName: 'payForGameGeneration',
+      args: [writerCoinAddress]
+    })
+  } else {
+    // For minting, this should not be used - payAndMintGame should be called instead
+    throw new Error('Minting requires payAndMintGame function, not payForMinting')
+  }
 }
