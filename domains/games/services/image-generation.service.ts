@@ -70,11 +70,12 @@ export class ImageGenerationService {
     genre: string
     style?: string
     aspectRatio?: string
+    force?: boolean  // Force regeneration, bypass cache
   }): Promise<ImageGenerationResult> {
     const cacheKey = `${params.prompt}_${params.genre}_${params.style || 'comic'}`
     
-    // Check cache first
-    if (this.CACHE.has(cacheKey)) {
+    // Check cache first (unless force=true for regeneration)
+    if (!params.force && this.CACHE.has(cacheKey)) {
       console.log('Image cache hit for:', cacheKey.substring(0, 50) + '...')
       return this.CACHE.get(cacheKey)!
     }

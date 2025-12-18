@@ -52,7 +52,8 @@ interface ChatEntry extends ChatMessage {
   options?: GameplayOption[]
   imageModel?: string             // Which Venice AI model generated this image
   imageRating?: number            // User rating (1-5) for this image
-  narrativeImage?: string | null  // Comic panel image URL
+  narrativeImage?: string | null  // Comic panel image URL (current selected)
+  imageHistory?: Array<{ url: string | null; model: string; timestamp: number }> // All generated versions
 }
 
 const MAX_COMIC_PANELS = 5
@@ -442,6 +443,21 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
       if (targetMessage) {
         targetMessage.imageModel = result.model
         targetMessage.narrativeImage = result.imageUrl || null
+        
+        // Initialize or update image history
+        if (!targetMessage.imageHistory) {
+          targetMessage.imageHistory = [{
+            url: result.imageUrl,
+            model: result.model,
+            timestamp: result.timestamp
+          }]
+        } else {
+          targetMessage.imageHistory.push({
+            url: result.imageUrl,
+            model: result.model,
+            timestamp: result.timestamp
+          })
+        }
       }
       return newMessages
     })
@@ -495,7 +511,8 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
         prompt: promptToUse,
         genre: game.genre,
         style: 'comic_book',
-        aspectRatio: 'landscape'
+        aspectRatio: 'landscape',
+        force: true  // Bypass cache for regeneration
       })
 
       // Update the message with the new image

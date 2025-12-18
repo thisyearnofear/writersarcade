@@ -10,6 +10,12 @@ import { ImageLightbox } from './image-lightbox'
 import { TypewriterEffect } from './typewriter-effect'
 import { AnimatedOptionButton } from './animated-option-button'
 
+interface ImageVersion {
+  url: string | null
+  model: string
+  timestamp: number
+}
+
 interface ComicPanelCardProps {
   messageId: string
   narrativeText: string
@@ -29,6 +35,7 @@ interface ComicPanelCardProps {
   shouldRevealContent?: boolean
   showLoadingState?: boolean
   isRegenerating?: boolean
+  maxRegenerations?: number
 }
 
 export function ComicPanelCard({
@@ -48,6 +55,7 @@ export function ComicPanelCard({
   shouldRevealContent = true,
   showLoadingState = false,
   isRegenerating = false,
+  maxRegenerations = 3,
 }: ComicPanelCardProps) {
   const { narrative, options: parsedOptions } = parsePanel(narrativeText)
   const [imageRating, setImageRating] = useState<number | null>(null)
@@ -56,6 +64,10 @@ export function ComicPanelCard({
   const [showPrompt, setShowPrompt] = useState(false)
   const [customPrompt, setCustomPrompt] = useState('')
   const [isCustomPromptMode, setIsCustomPromptMode] = useState(false)
+  const [imageHistory, setImageHistory] = useState<ImageVersion[]>([])
+  const [currentImageIndex, setCurrentImageIndex] = useState<number>(0)
+  const [showImageComparison, setShowImageComparison] = useState(false)
+  const [regenerationCount, setRegenerationCount] = useState(0)
   const messageIdRef = useRef(messageId)
 
   // Reset rating and trigger reveal animation when messageId changes
@@ -64,6 +76,11 @@ export function ComicPanelCard({
       messageIdRef.current = messageId
       setImageRating(null)
       setRevealAnimation(true)
+      // Reset regeneration state for new panel
+      setImageHistory([])
+      setCurrentImageIndex(0)
+      setShowImageComparison(false)
+      setRegenerationCount(0)
     }
   }, [messageId])
 
@@ -73,6 +90,17 @@ export function ComicPanelCard({
       setRevealAnimation(true)
     }
   }, [shouldRevealContent])
+
+  // Initialize image history when narrativeImage changes
+  useEffect(() => {
+    if (narrativeImage && imageHistory.length === 0) {
+      setImageHistory([{
+        url: narrativeImage,
+        model: imageModel || 'unknown',
+        timestamp: Date.now()
+      }])
+    }
+  }, [narrativeImage, imageModel, imageHistory.length])
 
   const handleRating = (rating: number) => {
     setImageRating(rating)
@@ -85,13 +113,36 @@ export function ComicPanelCard({
     setIsImageExpanded(true)
   }
 
+  const canRegenerate = regenerationCount < maxRegenerations
+
+  const handleImageRegeneration = async (customPromptText?: string) => {
+    if (!canRegenerate || !onImageRegenerate) return
+    setRegenerationCount(prev => prev + 1)
+    setShowPrompt(false)
+    setIsCustomPromptMode(false)
+    
+    const promptToUse = customPromptText && customPromptText.trim() ? customPromptText.trim() : undefined
+    await onImageRegenerate(narrative, promptToUse)
+  }
+
   const handleRegenerateWithPrompt = () => {
-    if (onImageRegenerate) {
-      const promptToUse = isCustomPromptMode && customPrompt.trim() ? customPrompt.trim() : undefined
-      onImageRegenerate(narrative, promptToUse)
-      setShowPrompt(false)
-      setIsCustomPromptMode(false)
-    }
+    const promptToUse = isCustomPromptMode && customPrompt.trim() ? customPrompt.trim() : undefined
+    handleImageRegeneration(promptToUse)
+  }
+
+  const handleRegenerateQuick = () => {
+    handleImageRegeneration()
+  }
+
+  const addImageToHistory = (newImage: ImageVersion) => {
+    setImageHistory(prev => [...prev, newImage])
+    setCurrentImageIndex(prev => prev + 1)
+    setShowImageComparison(true)
+  }
+
+  const selectImage = (index: number) => {
+    setCurrentImageIndex(index)
+    setShowImageComparison(false)
   }
 
   return (
@@ -126,12 +177,12 @@ export function ComicPanelCard({
 
             {/* Image container - responsive height with better mobile scaling */}
             <div className="w-full h-48 sm:h-64 md:h-80 lg:h-96 overflow-hidden cursor-pointer relative" onClick={handleImageExpand}>
-              {narrativeImage ? (
+              {imageHistory.length > 0 && imageHistory[currentImageIndex]?.url ? (
                 <>
                   <img
-                    src={narrativeImage}
+                    src={imageHistory[currentImageIndex].url}
                     alt="Story panel"
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className={`w-full h-full object-cover transition-all duration-300 ${isRegenerating ? 'opacity-60' : 'group-hover:scale-105'}`}
                   />
                   {/* Subtle vignette overlay */}
                   <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/20 pointer-events-none" />
@@ -163,24 +214,50 @@ export function ComicPanelCard({
                     <span className="text-xs font-mono px-3 py-1.5 rounded-md bg-black/85 text-white/80 backdrop-blur-sm border border-white/10">
                       {imageModel || 'unknown'}
                     </span>
-                    {/* Regenerate button */}
-                    {onImageRegenerate && (
-                      <motion.button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onImageRegenerate(narrative)
-                        }}
-                        disabled={isRegenerating || isWaiting}
-                        className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-md bg-purple-600/80 hover:bg-purple-500 text-white backdrop-blur-sm border border-purple-400/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        title="Regenerate image"
-                      >
-                        <RefreshCw className={`w-3 h-3 ${isRegenerating ? 'animate-spin' : ''}`} />
-                        {isRegenerating ? 'Regenerating...' : 'New Image'}
-                      </motion.button>
-                    )}
+                    {/* Regenerate button with attempt counter */}
+                      {onImageRegenerate && (
+                        <motion.button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleRegenerateQuick()
+                          }}
+                          disabled={isRegenerating || isWaiting || !canRegenerate}
+                          className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-md ${
+                            canRegenerate 
+                              ? 'bg-purple-600/80 hover:bg-purple-500 text-white' 
+                              : 'bg-gray-600/50 text-gray-400 cursor-not-allowed'
+                          } backdrop-blur-sm border border-purple-400/30 transition-all disabled:opacity-50`}
+                          whileHover={canRegenerate ? { scale: 1.05 } : {}}
+                          whileTap={canRegenerate ? { scale: 0.95 } : {}}
+                          title={canRegenerate ? 'Regenerate image' : `Max ${maxRegenerations} attempts used`}
+                        >
+                          <RefreshCw className={`w-3 h-3 ${isRegenerating ? 'animate-spin' : ''}`} />
+                          <span>
+                            {isRegenerating ? 'Regenerating...' : `New (${regenerationCount}/${maxRegenerations})`}
+                          </span>
+                        </motion.button>
+                      )}
                   </div>
+
+                  {/* Loading overlay during regeneration */}
+                  {isRegenerating && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+                    >
+                      <div className="text-center space-y-2">
+                        <Loader2 className="w-8 h-8 animate-spin mx-auto" style={{ color: primaryColor }} />
+                        <p className="text-white text-sm font-medium">
+                          Generating attempt {regenerationCount + 1}...
+                        </p>
+                        <p className="text-gray-300 text-xs">
+                          {maxRegenerations - regenerationCount} {maxRegenerations - regenerationCount === 1 ? 'attempt' : 'attempts'} remaining
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
 
                   {/* Rating stars - right side with better mobile touch targets */}
                   <div className="absolute top-4 right-4 flex gap-1 bg-black/70 px-3 py-1.5 rounded-md backdrop-blur-sm border border-white/10">
@@ -356,9 +433,108 @@ export function ComicPanelCard({
                 </div>
               </div>
             )}
-          </div>
-        </div>
-      </div>
-    </>
-  )
-}
+            </div>
+            </div>
+            </div>
+
+            {/* Image Comparison Modal */}
+            <AnimatePresence>
+            {showImageComparison && imageHistory.length > 1 && (
+            <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            onClick={() => setShowImageComparison(false)}
+            >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-gray-900 border border-white/10 rounded-xl overflow-hidden w-full max-w-5xl max-h-[90vh] flex flex-col"
+            >
+              {/* Header */}
+              <div className="p-4 border-b border-white/10 bg-black/50">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-white">Choose Your Image</h3>
+                  <button
+                    onClick={() => setShowImageComparison(false)}
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">
+                  {imageHistory.length} version{imageHistory.length !== 1 ? 's' : ''} generated
+                </p>
+              </div>
+
+              {/* Image Grid */}
+              <div className="flex-1 overflow-y-auto p-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {imageHistory.map((version, idx) => (
+                    <motion.button
+                      key={idx}
+                      onClick={() => selectImage(idx)}
+                      className={`relative group rounded-lg overflow-hidden border-2 transition-all ${
+                        currentImageIndex === idx
+                          ? 'border-purple-500 shadow-lg shadow-purple-500/50'
+                          : 'border-white/10 hover:border-white/30'
+                      }`}
+                      whileHover={{ scale: 1.02 }}
+                    >
+                      <img
+                        src={version.url || ''}
+                        alt={`Attempt ${idx + 1}`}
+                        className="w-full h-48 object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                        <div className="text-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <p className="text-white font-semibold">Attempt {idx + 1}</p>
+                          <p className="text-xs text-gray-300 mt-1">
+                            {idx === 0 ? 'Original' : `Retry ${idx}`}
+                          </p>
+                        </div>
+                      </div>
+                      {/* Model badge */}
+                      <div className="absolute bottom-2 left-2 bg-black/70 px-2 py-1 rounded text-xs text-white/80">
+                        {version.model}
+                      </div>
+                      {/* Selection indicator */}
+                      {currentImageIndex === idx && (
+                        <div className="absolute top-2 right-2 bg-purple-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+                          ✓
+                        </div>
+                      )}
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 border-t border-white/10 bg-black/50 flex gap-3">
+                <button
+                  onClick={() => setShowImageComparison(false)}
+                  className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors text-sm font-medium"
+                >
+                  Keep Selected
+                </button>
+                {canRegenerate && (
+                  <button
+                    onClick={handleRegenerateQuick}
+                    disabled={isRegenerating}
+                    className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:bg-purple-600/50 text-white rounded-lg transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${isRegenerating ? 'animate-spin' : ''}`} />
+                    {isRegenerating ? 'Generating...' : 'Try Again'}
+                  </button>
+                )}
+              </div>
+            </motion.div>
+            </motion.div>
+            )}
+            </AnimatePresence>
+            </>
+            )
+            }

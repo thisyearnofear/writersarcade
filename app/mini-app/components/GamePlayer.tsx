@@ -88,6 +88,11 @@ export function GamePlayer({ game, onBack, writerCoin }: GamePlayerProps) {
     startGame();
   }, [game.slug, sessionId]);
 
+  // Prevent scroll when showing modals
+  if (typeof document !== 'undefined') {
+    document.documentElement.style.overflow = (showMintDialog || showSuccessDialog) ? 'hidden' : ''
+  }
+
   const handleMintSuccess = async (transactionHash: string, storyIPAssetId?: string) => {
     setShowMintDialog(false);
     setIsMinting(false);
@@ -296,7 +301,7 @@ export function GamePlayer({ game, onBack, writerCoin }: GamePlayerProps) {
 
       {/* Mint Dialog */}
       {showMintDialog && writerCoin && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md">
           <div className="mx-4 w-full max-w-md rounded-lg bg-purple-900/95 p-6 shadow-2xl">
             <h3 className="mb-4 text-xl font-bold text-white">
               Mint Game as NFT
@@ -343,7 +348,7 @@ export function GamePlayer({ game, onBack, writerCoin }: GamePlayerProps) {
         </div>
       )}
       {showSuccessDialog && mintResult && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md">
           <div className="mx-4 w-full max-w-md rounded-lg bg-green-900/95 p-6 shadow-2xl border border-green-500/50">
             <div className="flex justify-center mb-4">
               <div className="h-16 w-16 rounded-full bg-green-500/20 flex items-center justify-center">

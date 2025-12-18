@@ -81,11 +81,32 @@ export function GameCustomizer({ writerCoin, articleUrl, onBack, onGameGenerated
     }
   }
 
+  // Prevent scroll when generating
+  if (typeof document !== 'undefined') {
+    document.documentElement.style.overflow = isGenerating ? 'hidden' : ''
+  }
+
   return (
     <div>
+      {/* Generation Loading Overlay */}
+      {isGenerating && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[9999]">
+          <div className="text-center space-y-4">
+            <div className="flex justify-center mb-4">
+              <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-purple-400 border-t-transparent"></div>
+            </div>
+            <h3 className="text-xl font-semibold text-white">Generating Your Game</h3>
+            <p className="text-purple-200 text-sm max-w-xs">
+              Our AI is analyzing the article and creating an interactive experience just for you...
+            </p>
+          </div>
+        </div>
+      )}
+
       <button
         onClick={onBack}
         className="mb-4 flex items-center space-x-2 text-purple-300 hover:text-purple-200"
+        disabled={isGenerating}
       >
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
