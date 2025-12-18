@@ -55,7 +55,7 @@
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^3.4.0",
     "uuid": "^11.0.3",
-    "viem": "^2.40.0",
+    "viem": "2.21.40",
     "wagmi": "^2.19.5",
     "why-is-node-running": "^3.2.2",
     "zod": "^3.23.8",
@@ -94,5 +94,13 @@
   },
   "engines": {
     "node": "20.x"
+  },
+  "pnpm": {
+    "overrides": {
+      "@base-org/account": "2.4.0",
+      "@coinbase/wallet-sdk": "3.9.3",
+      "viem": "2.21.40",
+      "ox": "0.6.9"
+    }
   }
 }

@@ -18,7 +18,7 @@ const nextConfig = {
   experimental: {
     optimizeCss: false, // Disable CSS optimization that may cause issues
   },
-  webpack: (config) => {
+  webpack: (config, { isServer, webpack }) => {
     // Ignore test files from problematic dependencies
     config.module.rules.push({
       test: /\.(test|spec)\.(js|ts|mjs)$/,
@@ -41,6 +41,15 @@ const nextConfig = {
       test: /rainbowkit.*\.css$/,
       loader: 'ignore-loader',
     });
+
+    // Stub out the problematic baseAccount connector since we're not using it
+    // This avoids the ox import compatibility issue
+    config.plugins.push(
+      new webpack.NormalModuleReplacementPlugin(
+        /@wagmi\/connectors\/dist\/esm\/baseAccount\.js$/,
+        require.resolve('./webpack-stubs/baseAccount-stub.js')
+      )
+    );
 
     return config;
   },
