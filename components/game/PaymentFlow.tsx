@@ -140,19 +140,31 @@ export function PaymentFlow({
             chainId: 8453,
           }
 
+          console.log('[PaymentFlow] Sending transaction to:', contractAddress)
+          console.log('[PaymentFlow] Transaction data:', transactionData)
+          console.log('[PaymentFlow] Action:', action)
+          console.log('[PaymentFlow] Writer coin:', writerCoin.address)
+          console.log('[PaymentFlow] User address:', userAddress)
+          console.log('[PaymentFlow] Amount:', amount)
+
           const txResult = await wallet.sendTransaction(txRequest)
 
           if (!txResult.success || !txResult.transactionHash) {
             const errorMsg = txResult.error || 'Transaction was rejected or failed'
+            console.error('[PaymentFlow] Transaction failed:', errorMsg)
+            
             // Provide helpful context for common errors
             if (errorMsg.includes('1002') || errorMsg.includes('execution reverted')) {
-              throw new Error('Payment failed: Please ensure you have enough tokens and try again. The contract rejected the transaction. Error code: 1002')
+              throw new Error('Payment failed: Contract rejected the transaction. This could be due to: 1) Insufficient token balance, 2) Token not approved, 3) Wrong contract address, 4) Wrong function parameters. Error code: 1002. Contract: ' + contractAddress)
             }
             if (errorMsg.includes('insufficient balance') || errorMsg.includes('not enough funds')) {
               throw new Error('Payment failed: Insufficient token balance. Please ensure you have enough ' + writerCoin.symbol + ' tokens.')
             }
             if (errorMsg.includes('allowance') || errorMsg.includes('approval')) {
               throw new Error('Payment failed: Token approval required. Please approve the contract to spend your tokens first.')
+            }
+            if (errorMsg.includes('invalid address') || errorMsg.includes('address(0)')) {
+              throw new Error('Payment failed: Invalid contract address. Please check the contract configuration.')
             }
             throw new Error(errorMsg)
           }
@@ -260,10 +272,13 @@ function encodeFarcasterPayment(
   userAddress: `0x${string}`,
   action: PaymentAction
 ): `0x${string}` {
+  // Correct function selectors for WriterCoinPayment contract
+  // payForGameGeneration(address,address) -> 0x7c4f5c5b
+  // payForMinting(address,address) -> 0xd0e521c0
   const selector = action === 'generate-game' ? '0x7c4f5c5b' : '0xd0e521c0'
-
+ 
   const encodedCoin = writerCoinAddress.slice(2).padStart(64, '0')
   const encodedUser = userAddress.slice(2).padStart(64, '0')
-
+ 
   return (selector + encodedCoin + encodedUser) as `0x${string}`
 }
