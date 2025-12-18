@@ -195,7 +195,13 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
                 <span className="text-gray-300 group-hover:text-white">My Games</span>
               </Link>
 
-              {/* Disconnect removed to avoid redundancy: handled by RainbowKit account modal */}
+              <button
+                onClick={handleLogout}
+                className="flex items-center space-x-3 w-full p-3 rounded-lg hover:bg-red-600/10 transition-colors group text-left"
+              >
+                <LogOut className="w-4 h-4 text-red-400 group-hover:text-red-300" />
+                <span className="text-gray-300 group-hover:text-white">Disconnect Wallet</span>
+              </button>
             </div>
           </div>
         </>
