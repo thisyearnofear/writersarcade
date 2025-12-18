@@ -153,7 +153,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
           />
 
           {/* Menu */}
-          <div ref={menuRef} className="absolute right-0 mt-3 w-72 bg-gray-900 border border-purple-500/30 rounded-lg shadow-xl shadow-purple-500/10 z-[70] max-h-[80vh] overflow-auto">
+          <div ref={menuRef} className="absolute right-0 mt-4 w-72 bg-gray-900 border border-purple-500/30 rounded-lg shadow-xl shadow-purple-500/10 z-[70] max-h-[80vh] overflow-auto">
             <div className="p-4 border-b border-gray-700 bg-gradient-to-r from-purple-900/20 to-pink-900/20">
               <div className="flex items-center space-x-3">
                 {profile?.pfpUrl ? (
@@ -169,14 +169,11 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-white">{displayName}</div>
-                  <div className="text-xs text-purple-300 mt-1 font-mono truncate">
-                    {address}
-                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="p-2">
+            <div className="p-2 space-y-1">
               <Link
                 href="/profile"
                 className="flex items-center space-x-3 w-full p-3 rounded-lg hover:bg-purple-600/10 transition-colors group"
