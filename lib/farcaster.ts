@@ -7,7 +7,19 @@
  * - Social features (sharing, wallet)
  */
 
-import { sdk } from '@farcaster/miniapp-sdk'
+// Lazy load SDK to avoid SSR issues with ox package compatibility
+let sdk: any = null
+const getSdk = async () => {
+    if (typeof window === 'undefined') {
+        // Return mock SDK for server-side rendering
+        return { context: null, actions: { ready: async () => {}, composeCast: async () => {}, openUrl: async () => {} } }
+    }
+    if (!sdk) {
+        const { sdk: farcasterSdk } = await import('@farcaster/miniapp-sdk')
+        sdk = farcasterSdk
+    }
+    return sdk
+}
 
 export interface FarcasterProfile {
     fid?: number
@@ -24,7 +36,8 @@ export interface FarcasterProfile {
  */
 export async function getFarcasterContext(): Promise<unknown> {
     try {
-        const context = await sdk.context
+        const farcasterSdk = await getSdk()
+        const context = await farcasterSdk.context
         console.log('Farcaster context loaded:', context)
         return context
     } catch (error) {
@@ -39,7 +52,8 @@ export async function getFarcasterContext(): Promise<unknown> {
  */
 export async function readyMiniApp(): Promise<void> {
     try {
-        await sdk.actions.ready()
+        const farcasterSdk = await getSdk()
+        await farcasterSdk.actions.ready()
     } catch (error) {
         console.error('Failed to signal ready:', error)
     }
@@ -48,9 +62,11 @@ export async function readyMiniApp(): Promise<void> {
 /**
  * Check if app is running in Farcaster context
  */
-export function isInFarcasterContext(): boolean {
+export async function isInFarcasterContext(): Promise<boolean> {
     try {
-        return sdk.context !== null
+        if (typeof window === 'undefined') return false
+        const farcasterSdk = await getSdk()
+        return farcasterSdk.context !== null
     } catch {
         return false
     }
@@ -110,12 +126,13 @@ export async function composeCast(params: {
     embeds?: string[]
 }): Promise<boolean> {
     try {
-        if (!isInFarcasterContext()) {
+        if (!(await isInFarcasterContext())) {
             console.warn('Not in Farcaster context, cannot compose cast')
             return false
         }
 
-        await sdk.actions.composeCast({
+        const farcasterSdk = await getSdk()
+        await farcasterSdk.actions.composeCast({
             text: params.text,
         })
         return true
@@ -130,12 +147,13 @@ export async function composeCast(params: {
  */
 export async function openUrl(url: string): Promise<boolean> {
     try {
-        if (!isInFarcasterContext()) {
+        if (!(await isInFarcasterContext())) {
             console.warn('Not in Farcaster context, cannot open URL')
             return false
         }
 
-        await sdk.actions.openUrl(url)
+        const farcasterSdk = await getSdk()
+        await farcasterSdk.actions.openUrl(url)
         return true
     } catch (error) {
         console.error('Error opening URL:', error)
