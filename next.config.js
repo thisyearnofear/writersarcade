@@ -36,12 +36,6 @@ const nextConfig = {
       loader: 'ignore-loader',
     });
 
-    // Ignore RainbowKit CSS to avoid vanilla-extract parsing
-    config.module.rules.unshift({
-      test: /rainbowkit.*\.css$/,
-      loader: 'ignore-loader',
-    });
-
     // Stub out the problematic baseAccount connector since we're not using it
     // This avoids the ox import compatibility issue
     config.plugins.push(
