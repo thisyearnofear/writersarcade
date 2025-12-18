@@ -23,7 +23,7 @@ import { useRouter } from 'next/navigation'
 import { useAccount } from 'wagmi'
 import { RotateCcw } from 'lucide-react'
 
-type WorkshopState = 'input' | 'processing' | 'workshop' | 'compiling'
+type WorkshopState = 'input' | 'processing' | 'workshop' | 'compiling' | 'minting'
 type LayoutMode = 'grid' | 'flow'
 
 interface AssetTag {
