@@ -439,7 +439,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
             </div>
           )}
 
-          {/* Enhanced Customization Toggle with Progressive Disclosure */}
+          {/* Enhanced Customization Section - Redesigned UX */}
           {!isGenerating && isStoryMode && (
             <motion.div
               className="pt-4 border-t border-gray-700"
@@ -450,7 +450,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
               <motion.button
                 type="button"
                 onClick={() => setShowCustomization(!showCustomization)}
-                className="text-sm font-medium text-purple-400 hover:text-purple-300 flex items-center gap-2"
+                className="w-full text-sm font-medium text-purple-400 hover:text-purple-300 flex items-center gap-2"
                 whileHover={{ x: 5 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -461,48 +461,44 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                 >
                   {showCustomization ? '▼' : '▶'}
                 </motion.span>
-                Customize Your Game
-                <span className="ml-2 text-xs text-purple-300/80 hidden sm:inline">Genre, difficulty, and tone</span>
-                <motion.div
-                  className="relative group ml-2"
-                  whileHover={{ scale: 1.1 }}
-                >
-                  <Info className="w-3 h-3 text-purple-300 cursor-help" />
-                  <motion.div
-                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-2 bg-black/80 border border-purple-700/60 rounded-lg text-xs text-purple-100 z-50 pointer-events-none shadow-lg"
-                    initial={{ opacity: 0, y: 5 }}
-                    whileHover={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    Dial in mood and challenge. Customization uses Writer Coins and enhances narrative detail, pacing, and visuals.
-                  </motion.div>
-                </motion.div>
+                <Sparkles className="w-4 h-4 text-yellow-300" />
+                <span>Enhanced Customization</span>
+                <span className="ml-auto text-xs text-purple-300/80">Optional • Unlock with Writer Coins</span>
               </motion.button>
 
               <AnimatePresence>
                 {showCustomization && (
                   <motion.div
-                    className="mt-4 space-y-5 p-5 rounded-xl border border-[color:var(--ia-panel-border)] bg-[color:var(--ia-panel-bg)] shadow-[0_0_0_1px_var(--ia-outline)]"
+                    className="mt-4 space-y-4 p-5 rounded-xl border-2 border-purple-500/40 bg-gradient-to-br from-purple-950/60 to-purple-900/40 shadow-lg"
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.3, ease: "easeInOut" }}
-                    style={{ overflow: 'hidden' }}
                   >
+                    {/* Customization Controls - Always interactive for preview */}
                     <motion.div
                       className="space-y-4"
                       initial={{ y: -10, opacity: 0 }}
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ delay: 0.1, duration: 0.3 }}
                     >
-                      <div className="flex items-center justify-between gap-2 mb-3">
+                      <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
-                          <Sparkles className="w-4 h-4 text-yellow-300" />
-                          <span className="text-sm font-semibold text-purple-100">Enhanced Customization</span>
+                          <span className="text-sm font-semibold text-purple-100">Preview & Customize</span>
+                          {paymentApproved && (
+                            <span className="px-2 py-0.5 bg-green-500/20 border border-green-500/50 rounded-full text-xs text-green-300">
+                              ✓ Paid
+                            </span>
+                          )}
+                          {!paymentApproved && (
+                            <span className="px-2 py-0.5 bg-yellow-500/20 border border-yellow-500/50 rounded-full text-xs text-yellow-300">
+                              Preview Mode
+                            </span>
+                          )}
                         </div>
                         <button
                           type="button"
-                          className="text-xs text-purple-300 hover:text-purple-200 underline decoration-dotted"
+                          className="text-xs text-purple-300 hover:text-purple-200 underline decoration-dotted disabled:opacity-50"
                           onClick={() => { setGenre('horror'); setDifficulty('easy') }}
                           disabled={isGenerating}
                         >
@@ -510,36 +506,44 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                         </button>
                       </div>
 
-                      {/* Current selection pills */}
-                      <div className="flex justify-center gap-2 mb-2 text-xs">
-                        <span className="inline-flex items-center rounded-full bg-purple-800/60 border border-purple-500/60 px-2 py-0.5 text-xs text-purple-100">Genre: {genre}</span>
-                        <span className="inline-flex items-center rounded-full bg-purple-800/60 border border-purple-500/60 px-2 py-0.5 text-xs text-purple-100">Difficulty: {difficulty}</span>
-                      </div>
-
                       {/* Live style preview */}
                       <StylePreview genre={genre} difficulty={difficulty} />
 
-                      {/* Center the genre selector */}
-                      <div className="flex justify-center">
-                        <GenreSelector value={genre} onChange={setGenre} disabled={isGenerating || (!paymentApproved && isStoryMode)} />
+                      {/* Current selection pills */}
+                      <div className="flex justify-center gap-2 text-xs">
+                        <span className="inline-flex items-center rounded-full bg-purple-800/80 border border-purple-500/80 px-3 py-1 text-purple-100 font-medium">
+                          {genre}
+                        </span>
+                        <span className="inline-flex items-center rounded-full bg-purple-800/80 border border-purple-500/80 px-3 py-1 text-purple-100 font-medium">
+                          {difficulty}
+                        </span>
                       </div>
 
-                      <div className="flex justify-center">
-                        <DifficultySelector value={difficulty} onChange={setDifficulty} disabled={isGenerating || (!paymentApproved && isStoryMode)} />
+                      {/* Genre selector - Always enabled for preview */}
+                      <div>
+                        <GenreSelector value={genre} onChange={setGenre} disabled={isGenerating} />
                       </div>
 
+                      {/* Difficulty selector - Always enabled for preview */}
+                      <div>
+                        <DifficultySelector value={difficulty} onChange={setDifficulty} disabled={isGenerating} />
+                      </div>
+
+                      {/* Info tip with payment requirement notice */}
                       <motion.div
-                        className="p-3 rounded-lg bg-purple-900/70 border border-purple-400 text-sm text-purple-100 flex items-start gap-2 shadow-inner"
+                        className="p-3 rounded-lg bg-purple-900/50 border border-purple-500/30 text-sm text-purple-100 flex items-start gap-2"
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2, duration: 0.3 }}
                       >
                         <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0 text-yellow-300" />
-                        <div className="space-y-0.5">
-                          <div>Genre shapes tone and visual style.</div>
-                          <div>Higher difficulty creates deeper branches.</div>
+                        <div className="space-y-1 text-xs">
+                          <div>• <strong>Genre</strong> shapes narrative tone and visual style</div>
+                          <div>• <strong>Difficulty</strong> controls branching complexity</div>
                           {!paymentApproved && (
-                            <div className="text-[11px] text-purple-200/90">Selections are preview-only until payment is approved.</div>
+                            <div className="mt-2 pt-2 border-t border-purple-500/20 text-yellow-200">
+                              💳 Payment required to generate with custom settings
+                            </div>
                           )}
                         </div>
                       </motion.div>
@@ -567,11 +571,62 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
 
         {/* Payment Section (shown when customization requested in story mode) */}
         {isStoryMode && showPayment && (
-          <div className="space-y-4 p-4 rounded-xl border border-[color:var(--ia-panel-border)] bg-[color:var(--ia-panel-bg)] shadow-[0_0_0_1px_var(--ia-outline)]">
-            <h3 className="font-semibold text-purple-200">Enable Customization</h3>
-            <p className="text-sm text-purple-100">
-              Connect your wallet and approve payment to unlock genre/difficulty customization. You can generate games for free without payment.
-            </p>
+          <div className="space-y-4 p-5 rounded-xl border-2 border-purple-500/50 bg-gradient-to-br from-purple-950/80 to-purple-900/60 shadow-xl">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-purple-500/20 border-2 border-purple-500 flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-5 h-5 text-purple-300" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-lg text-purple-100 mb-1">Confirm Your Customization</h3>
+                <p className="text-sm text-purple-200/90 mb-3">
+                  You've selected custom options below. Approve payment to generate with these settings.
+                </p>
+              </div>
+            </div>
+
+            {/* Show what user selected */}
+            <div className="p-4 rounded-lg bg-purple-900/40 border border-purple-500/30 space-y-3">
+              <div className="flex items-center gap-2 text-sm font-medium text-purple-100">
+                <span>📋</span>
+                <span>Your Selections</span>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-lg bg-black/30 border border-purple-600/40">
+                  <div className="text-xs text-purple-300 mb-1">Genre</div>
+                  <div className="font-semibold text-white capitalize flex items-center gap-2">
+                    {genre === 'horror' && '🎃'}
+                    {genre === 'comedy' && '😄'}
+                    {genre === 'mystery' && '🔍'}
+                    {genre}
+                  </div>
+                  <div className="text-xs text-purple-300/80 mt-1">
+                    {genre === 'horror' && 'Dark, high stakes'}
+                    {genre === 'comedy' && 'Light, witty beats'}
+                    {genre === 'mystery' && 'Clues and reveals'}
+                  </div>
+                </div>
+                
+                <div className="p-3 rounded-lg bg-black/30 border border-purple-600/40">
+                  <div className="text-xs text-purple-300 mb-1">Difficulty</div>
+                  <div className="font-semibold text-white capitalize flex items-center gap-2">
+                    {difficulty === 'easy' && '⚡'}
+                    {difficulty === 'hard' && '🎯'}
+                    {difficulty}
+                  </div>
+                  <div className="text-xs text-purple-300/80 mt-1">
+                    {difficulty === 'easy' && 'Faster progression'}
+                    {difficulty === 'hard' && 'Deeper branches'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Preview the style they'll get */}
+              <div className="pt-2">
+                <StylePreview genre={genre} difficulty={difficulty} />
+              </div>
+            </div>
+
             <PaymentOption
               writerCoin={writerCoin}
               action="generate-game"
@@ -585,6 +640,10 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                 generateGame()
               }}
             />
+
+            <p className="text-xs text-purple-300/70 text-center">
+              Free generation uses AI default choices (horror/easy)
+            </p>
           </div>
         )}
 
@@ -626,8 +685,10 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                   <Sparkles className="w-4 h-4 mr-2" />
                   {isStoryMode
                     ? paymentApproved
-                      ? 'Generate Custom Story Game'
-                      : 'Create Story Game'
+                      ? `Generate Custom ${genre.charAt(0).toUpperCase() + genre.slice(1)} Game`
+                      : showCustomization
+                        ? 'Review Customization & Pay'
+                        : 'Create Free Story Game'
                     : 'Create Wordle Game'}
                 </>
               )}
