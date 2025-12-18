@@ -22,7 +22,7 @@ export default function MiniAppPage() {
             // Get Farcaster context to verify we're in Mini App
             await getFarcasterContext()
             setIsInitialized(true)
-            setIsInFrame(isInFarcasterContext())
+            setIsInFrame(await isInFarcasterContext())
             
             // Signal that Mini App is ready to display
             await readyMiniApp()
