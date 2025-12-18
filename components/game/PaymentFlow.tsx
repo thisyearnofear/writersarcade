@@ -88,12 +88,41 @@ export function PaymentFlow({
 
           const paymentInfo = await initiateResponse.json()
           const contractAddress = paymentInfo.contractAddress as `0x${string}`
+          const amount = paymentInfo.amount as string
 
           if (!contractAddress) {
             throw new Error('Invalid contract address received from server')
           }
 
-          // Step 3: Encode transaction data based on action and wallet type
+          // Step 3: Check if approval is needed for ERC20 token
+          // ERC20 tokens require approval before spending
+          const approvalData = encodeERC20Approval(contractAddress, amount)
+          
+          try {
+            const approvalTx = await wallet.sendTransaction({
+              to: writerCoin.address as `0x${string}`,
+              data: approvalData,
+              chainId: 8453,
+            })
+
+            if (!approvalTx.success) {
+              // If approval fails, it might already be approved, continue anyway
+              console.warn('[PaymentFlow] Approval transaction failed, attempting payment anyway:', approvalTx.error)
+            } else {
+              console.log('[PaymentFlow] Approval transaction successful:', approvalTx.transactionHash)
+            }
+          } catch (approvalErr) {
+            // Log but don't fail - might already be approved
+            console.warn('[PaymentFlow] Approval error (continuing):', approvalErr)
+            
+            // Check if error indicates already approved
+            const errorMessage = String(approvalErr)
+            if (errorMessage.includes('already approved') || errorMessage.includes('allowance sufficient')) {
+              console.log('[PaymentFlow] Token already approved, proceeding with payment')
+            }
+          }
+
+          // Step 4: Encode transaction data based on action and wallet type
           let transactionData: `0x${string}`
 
           if (walletType === 'farcaster') {
@@ -104,7 +133,7 @@ export function PaymentFlow({
             transactionData = encodeFarcasterPayment(contractAddress, writerCoin.address, userAddress, action)
           }
 
-          // Step 4: Send transaction through wallet provider
+          // Step 5: Send transaction through wallet provider
           const txRequest: TransactionRequest = {
             to: contractAddress,
             data: transactionData,
@@ -114,10 +143,21 @@ export function PaymentFlow({
           const txResult = await wallet.sendTransaction(txRequest)
 
           if (!txResult.success || !txResult.transactionHash) {
-            throw new Error(txResult.error || 'Transaction was rejected or failed')
+            const errorMsg = txResult.error || 'Transaction was rejected or failed'
+            // Provide helpful context for common errors
+            if (errorMsg.includes('1002') || errorMsg.includes('execution reverted')) {
+              throw new Error('Payment failed: Please ensure you have enough tokens and try again. The contract rejected the transaction. Error code: 1002')
+            }
+            if (errorMsg.includes('insufficient balance') || errorMsg.includes('not enough funds')) {
+              throw new Error('Payment failed: Insufficient token balance. Please ensure you have enough ' + writerCoin.symbol + ' tokens.')
+            }
+            if (errorMsg.includes('allowance') || errorMsg.includes('approval')) {
+              throw new Error('Payment failed: Token approval required. Please approve the contract to spend your tokens first.')
+            }
+            throw new Error(errorMsg)
           }
 
-          // Step 5: Verify payment on backend
+          // Step 6: Verify payment on backend
           const verifyResponse = await fetch('/api/payments/verify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -187,6 +227,27 @@ export function PaymentFlow({
       </div>
     </div>
   )
+}
+
+/**
+ * Encode ERC20 approval transaction
+ * Approves contract to spend tokens on behalf of user
+ */
+function encodeERC20Approval(
+  spenderAddress: `0x${string}`,
+  amount: string
+): `0x${string}` {
+  // ERC20 approve function selector: approve(address,uint256)
+  const selector = '0x095ea7b3'
+  
+  // Encode spender address (pad to 32 bytes)
+  const encodedSpender = spenderAddress.slice(2).padStart(64, '0')
+  
+  // Encode amount (convert to hex and pad to 32 bytes)
+  const amountBigInt = BigInt(amount)
+  const encodedAmount = amountBigInt.toString(16).padStart(64, '0')
+  
+  return (selector + encodedSpender + encodedAmount) as `0x${string}`
 }
 
 /**

@@ -1,15 +1,21 @@
 @tailwind base;
 
 :root {
-  --ia-panel-bg: rgba(20, 8, 35, 0.8); /* dark purple panel */
-  --ia-panel-border: rgba(126, 58, 242, 0.6); /* purple-700/60 */
-  --ia-outline: rgba(168, 85, 247, 0.25); /* subtle outline */
+  --ia-panel-bg: rgba(12, 10, 35, 0.8); /* dark indigo panel */
+  --ia-panel-border: rgba(79, 70, 229, 0.6); /* indigo-600/60 */
+  --ia-outline: rgba(99, 102, 241, 0.25); /* subtle indigo outline */
+  --ia-accent-blue: rgba(59, 130, 246, 1); /* blue-500 */
+  --ia-accent-cyan: rgba(6, 182, 212, 1); /* cyan-500 */
+  --ia-accent-teal: rgba(20, 184, 166, 1); /* teal-500 */
 }
 
 .dark {
   --ia-panel-bg: rgba(12, 6, 24, 0.8);
-  --ia-panel-border: rgba(126, 58, 242, 0.6);
-  --ia-outline: rgba(168, 85, 247, 0.25);
+  --ia-panel-border: rgba(79, 70, 229, 0.6);
+  --ia-outline: rgba(99, 102, 241, 0.25);
+  --ia-accent-blue: rgba(59, 130, 246, 1);
+  --ia-accent-cyan: rgba(6, 182, 212, 1);
+  --ia-accent-teal: rgba(20, 184, 166, 1);
 }
 @tailwind components;
 @tailwind utilities;

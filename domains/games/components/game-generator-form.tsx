@@ -22,9 +22,9 @@ interface GameGeneratorFormProps {
 
 function previewStyleFor(genre: GameGenre, difficulty: GameDifficulty) {
   const genreMap: Record<GameGenre, { gradient: string; blurb: string }> = {
-    horror: { gradient: 'from-purple-900 via-red-900 to-black', blurb: 'Dark, tense pacing with dramatic contrasts.' },
-    comedy: { gradient: 'from-pink-600 via-purple-600 to-indigo-700', blurb: 'Light, playful tone with punchy beats.' },
-    mystery: { gradient: 'from-indigo-900 via-purple-900 to-black', blurb: 'Moody, investigative with slow reveals.' },
+    horror: { gradient: 'from-indigo-900 via-red-900 to-black', blurb: 'Dark, tense pacing with dramatic contrasts.' },
+    comedy: { gradient: 'from-pink-600 via-blue-600 to-indigo-700', blurb: 'Light, playful tone with punchy beats.' },
+    mystery: { gradient: 'from-blue-900 via-indigo-900 to-black', blurb: 'Moody, investigative with slow reveals.' },
   }
   const diffMap: Record<GameDifficulty, string> = {
     easy: 'Simpler choices, faster progression',
@@ -469,7 +469,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
               <AnimatePresence>
                 {showCustomization && (
                   <motion.div
-                    className="mt-4 space-y-4 p-5 rounded-xl border-2 border-purple-500/40 bg-gradient-to-br from-purple-950/60 to-purple-900/40 shadow-lg"
+                    className="mt-4 space-y-4 p-5 rounded-xl border-2 border-indigo-500/40 bg-gradient-to-br from-slate-900/80 to-indigo-950/60 shadow-lg"
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
@@ -491,14 +491,14 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                             </span>
                           )}
                           {!paymentApproved && (
-                            <span className="px-2 py-0.5 bg-yellow-500/20 border border-yellow-500/50 rounded-full text-xs text-yellow-300">
+                            <span className="px-2 py-0.5 bg-amber-500/20 border border-amber-500/50 rounded-full text-xs text-amber-300">
                               Preview Mode
                             </span>
                           )}
                         </div>
                         <button
                           type="button"
-                          className="text-xs text-purple-300 hover:text-purple-200 underline decoration-dotted disabled:opacity-50"
+                          className="text-xs text-indigo-300 hover:text-indigo-200 underline decoration-dotted disabled:opacity-50"
                           onClick={() => { setGenre('horror'); setDifficulty('easy') }}
                           disabled={isGenerating}
                         >
@@ -571,29 +571,29 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
 
         {/* Payment Section (shown when customization requested in story mode) */}
         {isStoryMode && showPayment && (
-          <div className="space-y-4 p-5 rounded-xl border-2 border-purple-500/50 bg-gradient-to-br from-purple-950/80 to-purple-900/60 shadow-xl">
+          <div className="space-y-4 p-5 rounded-xl border-2 border-cyan-500/50 bg-gradient-to-br from-slate-950/90 to-cyan-950/60 shadow-xl">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-purple-500/20 border-2 border-purple-500 flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-5 h-5 text-purple-300" />
+              <div className="w-10 h-10 rounded-full bg-cyan-500/20 border-2 border-cyan-500 flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-5 h-5 text-cyan-300" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-lg text-purple-100 mb-1">Confirm Your Customization</h3>
-                <p className="text-sm text-purple-200/90 mb-3">
+                <h3 className="font-semibold text-lg text-cyan-50 mb-1">Confirm Your Customization</h3>
+                <p className="text-sm text-cyan-100/90 mb-3">
                   You've selected custom options below. Approve payment to generate with these settings.
                 </p>
               </div>
             </div>
 
             {/* Show what user selected */}
-            <div className="p-4 rounded-lg bg-purple-900/40 border border-purple-500/30 space-y-3">
-              <div className="flex items-center gap-2 text-sm font-medium text-purple-100">
+            <div className="p-4 rounded-lg bg-slate-900/60 border border-cyan-500/30 space-y-3">
+              <div className="flex items-center gap-2 text-sm font-medium text-cyan-100">
                 <span>📋</span>
                 <span>Your Selections</span>
               </div>
               
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-black/30 border border-purple-600/40">
-                  <div className="text-xs text-purple-300 mb-1">Genre</div>
+                <div className="p-3 rounded-lg bg-slate-950/50 border border-indigo-500/40">
+                  <div className="text-xs text-indigo-300 mb-1">Genre</div>
                   <div className="font-semibold text-white capitalize flex items-center gap-2">
                     {genre === 'horror' && '🎃'}
                     {genre === 'comedy' && '😄'}
@@ -607,8 +607,8 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                   </div>
                 </div>
                 
-                <div className="p-3 rounded-lg bg-black/30 border border-purple-600/40">
-                  <div className="text-xs text-purple-300 mb-1">Difficulty</div>
+                <div className="p-3 rounded-lg bg-slate-950/50 border border-cyan-500/40">
+                  <div className="text-xs text-cyan-300 mb-1">Difficulty</div>
                   <div className="font-semibold text-white capitalize flex items-center gap-2">
                     {difficulty === 'easy' && '⚡'}
                     {difficulty === 'hard' && '🎯'}
