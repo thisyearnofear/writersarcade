@@ -60,15 +60,6 @@ export function PaymentOption({
           </div>
         </div>
 
-        {optional && onSkip && (
-          <button
-            onClick={onSkip}
-            disabled={disabled}
-            className="w-full rounded-lg border border-gray-600 px-6 py-3 font-medium text-gray-300 transition-colors hover:bg-gray-900 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Continue Without Payment
-          </button>
-        )}
       </div>
     )
   }
@@ -91,21 +82,10 @@ export function PaymentOption({
       />
      </div>
 
-      {/* Optional Skip */}
-      {optional && onSkip && (
-        <button
-          onClick={onSkip}
-          disabled={disabled}
-          className="w-full rounded-lg border border-gray-600 px-6 py-3 font-medium text-gray-300 transition-colors hover:bg-gray-900 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Skip & Play Free
-        </button>
-      )}
-
       {/* Info */}
       <div className="rounded-lg border border-[color:var(--ia-panel-border)] bg-[color:var(--ia-panel-bg)] p-3 text-xs text-purple-100">
         <p>
-          💡 <span className="font-semibold">Tip:</span> Payment unlocks customization (genre/difficulty). Free games use AI default choices.
+          💡 <span className="font-semibold">Note:</span> Payment is required to generate games. Your payment supports the platform and content creators.
         </p>
       </div>
     </div>

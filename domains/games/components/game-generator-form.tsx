@@ -13,6 +13,7 @@ import { DifficultySelector, type GameDifficulty } from '@/components/game/Diffi
 import { PaymentOption } from '@/components/game/PaymentOption'
 import { ErrorCard } from '@/components/error/ErrorCard'
 import { SuccessModal } from '@/components/success/SuccessModal'
+import { GameGenerationOverlay } from '@/components/game/GameGenerationOverlay'
 import { getWriterCoinById } from '@/lib/writerCoins'
 import { retryWithBackoff } from '@/lib/error-handler'
 
@@ -234,20 +235,13 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
       return
     }
 
-    // If customization requested in story mode, require payment
-    if (isStoryMode && showCustomization && !isConnected) {
-      setError('Please connect your wallet to use customization')
+    // Story mode always requires payment
+    if (isStoryMode && !paymentApproved) {
       setShowPayment(true)
       return
     }
 
-    // If customization but not approved payment yet, show payment (story mode only)
-    if (isStoryMode && showCustomization && !paymentApproved) {
-      setShowPayment(true)
-      return
-    }
-
-    // Otherwise generate normally
+    // Wordle mode is free, generate directly
     await generateGame()
   }
 
@@ -362,82 +356,6 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
           </div>
 
 
-          {/* Loading Progress */}
-          {isGenerating && (
-            <div className="p-4 bg-purple-900/20 rounded-lg border border-purple-600/30 space-y-4">
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <Loader2 className="w-5 h-5 text-purple-400 animate-spin" />
-                  <h3 className="text-lg font-semibold text-white">Creating your game</h3>
-                </div>
-                <p className="text-sm text-gray-400 ml-8">This may take 30-60 seconds</p>
-              </div>
-
-              {/* Steps */}
-              <div className="space-y-3">
-                {(['validate', 'extract', 'generate', 'save'] as const).map((step, index) => {
-                  const status = stepStatuses[step]
-                  const stepLabel = {
-                    validate: 'Validating input...',
-                    extract: 'Extracting article content...',
-                    generate: 'Generating game with AI...',
-                    save: 'Saving game...',
-                  }[step]
-
-                  return (
-                    <div key={step} className="flex items-center gap-3">
-                      <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${status === 'error'
-                          ? 'bg-red-900/50 border border-red-500'
-                          : status === 'completed'
-                            ? 'bg-purple-900/50 border border-purple-500'
-                            : status === 'in-progress'
-                              ? 'bg-purple-600 border border-purple-400'
-                              : 'bg-gray-700 border border-gray-600'
-                          }`}
-                      >
-                        {status === 'error' ? (
-                          <span className="text-xs text-red-400">✕</span>
-                        ) : status === 'completed' ? (
-                          <span className="text-xs text-purple-300">✓</span>
-                        ) : status === 'in-progress' ? (
-                          <Loader2 className="w-4 h-4 text-white animate-spin" />
-                        ) : (
-                          <span className="text-xs text-gray-500">{index + 1}</span>
-                        )}
-                      </div>
-                      <span
-                        className={`text-sm transition-colors ${status === 'in-progress'
-                          ? 'text-purple-300 font-medium'
-                          : status === 'completed'
-                            ? 'text-gray-300'
-                            : status === 'error'
-                              ? 'text-red-400'
-                              : 'text-gray-500'
-                          }`}
-                      >
-                        {stepLabel}
-                      </span>
-                    </div>
-                  )
-                })}
-              </div>
-
-              {/* Progress Bar */}
-              <ProgressBar
-                value={
-                  ((['validate', 'extract', 'generate', 'save'] as const).findIndex(
-                    (s) => s === loadingStep
-                  ) +
-                    1) /
-                  4 *
-                  100
-                }
-                label="Progress"
-                percent
-              />
-            </div>
-          )}
 
           {/* Enhanced Customization Section - Redesigned UX */}
           {!isGenerating && isStoryMode && (
@@ -462,8 +380,8 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                   {showCustomization ? '▼' : '▶'}
                 </motion.span>
                 <Sparkles className="w-4 h-4 text-yellow-300" />
-                <span>Enhanced Customization</span>
-                <span className="ml-auto text-xs text-purple-300/80">Optional • Unlock with Writer Coins</span>
+                <span>Game Customization</span>
+                <span className="ml-auto text-xs text-purple-300/80">Required • Paid Feature</span>
               </motion.button>
 
               <AnimatePresence>
@@ -540,11 +458,13 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                         <div className="space-y-1 text-xs">
                           <div>• <strong>Genre</strong> shapes narrative tone and visual style</div>
                           <div>• <strong>Difficulty</strong> controls branching complexity</div>
-                          {!paymentApproved && (
-                            <div className="mt-2 pt-2 border-t border-purple-500/20 text-yellow-200">
-                              💳 Payment required to generate with custom settings
-                            </div>
-                          )}
+                          <div className="mt-2 pt-2 border-t border-purple-500/20 text-yellow-200">
+                            {paymentApproved ? (
+                              <span className="text-green-300">✓ Payment approved - ready to generate!</span>
+                            ) : (
+                              <span>💳 Payment required to generate Story games</span>
+                            )}
+                          </div>
                         </div>
                       </motion.div>
                     </motion.div>
@@ -633,16 +553,10 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
               onPaymentSuccess={handlePaymentSuccess}
               onPaymentError={(err) => setError(err)}
               disabled={isGenerating}
-              optional={true}
-              onSkip={() => {
-                setShowPayment(false)
-                setShowCustomization(false)
-                generateGame()
-              }}
             />
 
             <p className="text-xs text-purple-300/70 text-center">
-              Free generation uses AI default choices (horror/easy)
+              Payment is required to generate games with custom settings
             </p>
           </div>
         )}
@@ -686,10 +600,8 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
                   {isStoryMode
                     ? paymentApproved
                       ? `Generate Custom ${genre.charAt(0).toUpperCase() + genre.slice(1)} Game`
-                      : showCustomization
-                        ? 'Review Customization & Pay'
-                        : 'Create Free Story Game'
-                    : 'Create Wordle Game'}
+                      : 'Review Customization & Pay'
+                    : 'Create Wordle Game (Free)'}
                 </>
               )}
             </Button>
@@ -708,6 +620,15 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
           <li>• <a href="/workshop" className="text-purple-600 hover:text-purple-700 underline font-medium">Use the Workshop</a> for deeper personalization — edit characters, mechanics, and story beats before generating</li>
         </ul>
       </div>
+
+      {/* Full-screen generation overlay */}
+      <GameGenerationOverlay
+        isOpen={isGenerating}
+        currentStep={loadingStep}
+        stepStatuses={stepStatuses}
+        genre={genre}
+        difficulty={difficulty}
+      />
 
       {/* Success Modal */}
       <SuccessModal
