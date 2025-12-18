@@ -147,6 +147,11 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
         }
       },
 
+      getMessageBody: ({ message }) => {
+        // Return the message body - in RainbowKit 2.1.7 this is required
+        return String(message);
+      },
+
       verify: async ({ message, signature }) => {
         console.log('[SIWE] Verifying signature...');
         try {
