@@ -50,7 +50,7 @@ export const WRITER_COINS: WriterCoin[] = [
         mintCost: BigInt(50 * 10 ** 18), // 50 $AVC
         decimals: 18,
         gameNftAddress: "0x778C87dAA2b284982765688AE22832AADae7dccC", // Base mainnet - GameNFT
-        paymentContractAddress: "0xf4d556E6E739B4Aa065Fae41f353a9f296371a35", // Base mainnet - WriterCoinPayment
+        paymentContractAddress: "0xf11822F99FF5f6982d42d4A0923d2b3f9589fA75", // Base mainnet - WriterCoinPayment
         revenueDistribution: {
             writer: 60, // 60% to writer treasury (on-chain configurable)
             creator: 20, // 20% to creator pool (on-chain configurable)

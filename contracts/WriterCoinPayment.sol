@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+// Enable optimizer with viaIR for stack too deep issues
+// solc: optimizer: true
+// solc: viaIR: true
+
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -21,6 +25,9 @@ interface IGameNFT {
         string memory tokenURI,
         GameMetadata memory metadata
     ) external returns (uint256);
+    
+    function ownerOf(uint256 tokenId) external view returns (address);
+    function exists(uint256 tokenId) external view returns (bool);
 }
 
 /**
@@ -30,10 +37,12 @@ interface IGameNFT {
  * Users pay in writer coins (e.g., $AVC) to:
  * 1. Generate games from articles (100 tokens)
  * 2. Mint generated games as NFTs (50 tokens)
+ * 3. Play games (variable amount)
  * 
  * Revenue is split:
  * - Game generation: 60% writer, 20% platform, 20% creator pool
- * - NFT minting: 30% creator, 15% writer, 5% platform
+ * - NFT minting: 50% creator, 15% writer, 5% platform (30% kept by minter)
+ * - Gameplay: 80% game creator, 10% writer, 10% platform
  */
 contract WriterCoinPayment is Ownable, ReentrancyGuard {
     
@@ -51,19 +60,20 @@ contract WriterCoinPayment is Ownable, ReentrancyGuard {
         uint256 creatorPoolShare;    // Share for creator pool (e.g., 2000 = 20%)
     }
 
-    // Explicit splits for Minting (NFT) - often different from Game Gen
+    // Minting distribution (basis points)
+    // Note: Total may be less than 10000 - remainder stays with minter
     struct MintDistribution {
-        uint256 creatorShare;        // Share for the game creator (e.g., 3000 = 30%)
+        uint256 creatorShare;        // Share for the game creator (e.g., 5000 = 50%)
         uint256 writerShare;         // Share for the writer (e.g., 1500 = 15%)
         uint256 platformShare;       // Share for the platform (e.g., 500 = 5%)
-        // Remaining balance stays with user/payer (effectively a discount) or creates the liquidity
+        // Remaining (3000 = 30%) stays with minter as incentive
     }
 
-    // Explicit splits for Gameplay (Pay-to-Play)
+    // Gameplay distribution (basis points)
     struct GameplayDistribution {
-        uint256 creatorShare;        // Share for the game creator (Game Owner)
-        uint256 writerShare;         // Share for the writer (Original IP)
-        uint256 platformShare;       // Share for the platform
+        uint256 creatorShare;        // Share for the game creator (e.g., 8000 = 80%)
+        uint256 writerShare;         // Share for the writer (e.g., 1000 = 10%)
+        uint256 platformShare;       // Share for the platform (e.g., 1000 = 10%)
     }
     
     // Writer coin whitelist
@@ -97,22 +107,25 @@ contract WriterCoinPayment is Ownable, ReentrancyGuard {
         uint256 amount,
         uint256 writerShare,
         uint256 platformShare,
-        uint256 creatorShare
+        uint256 creatorPoolShare
     );
     
     event GameMinted(
-        address indexed user,
+        address indexed minter,
         address indexed writerCoin,
-        uint256 amount,
+        uint256 tokenId,
+        uint256 totalCost,
         uint256 creatorShare,
         uint256 writerShare,
-        uint256 platformShare
+        uint256 platformShare,
+        uint256 minterRefund
     );
 
     event GameplayPaid(
-        address indexed user,
+        address indexed player,
         address indexed gameCreator,
         address indexed writerCoin,
+        uint256 gameId,
         uint256 amount,
         uint256 creatorShare,
         uint256 writerShare,
@@ -141,13 +154,18 @@ contract WriterCoinPayment is Ownable, ReentrancyGuard {
     
     event GameNFTUpdated(address indexed newGameNFT);
     
+    event RevenueSplitsUpdated(
+        address indexed coinAddress,
+        string distributionType
+    );
+    
     constructor(
         address initialOwner,
         address _platformTreasury,
         address _creatorPool
     ) Ownable(initialOwner) {
-        require(_platformTreasury != address(0), "Platform treasury cannot be zero");
-        require(_creatorPool != address(0), "Creator pool cannot be zero");
+        require(_platformTreasury != address(0), "WriterCoinPayment: zero platform treasury");
+        require(_creatorPool != address(0), "WriterCoinPayment: zero creator pool");
         
         platformTreasury = _platformTreasury;
         creatorPool = _creatorPool;
@@ -162,6 +180,12 @@ contract WriterCoinPayment is Ownable, ReentrancyGuard {
      * @param writerShare Basis points for writer (e.g., 6000 = 60%)
      * @param platformShare Basis points for platform (e.g., 2000 = 20%)
      * @param creatorPoolShare Basis points for creator pool (e.g., 2000 = 20%)
+     * @param mintCreatorShare Basis points for game creator on mint (e.g., 5000 = 50%)
+     * @param mintWriterShare Basis points for writer on mint (e.g., 1500 = 15%)
+     * @param mintPlatformShare Basis points for platform on mint (e.g., 500 = 5%)
+     * @param playCreatorShare Basis points for game creator on gameplay (e.g., 8000 = 80%)
+     * @param playWriterShare Basis points for writer on gameplay (e.g., 1000 = 10%)
+     * @param playPlatformShare Basis points for platform on gameplay (e.g., 1000 = 10%)
      */
     function whitelistCoin(
         address coinAddress,
@@ -171,17 +195,28 @@ contract WriterCoinPayment is Ownable, ReentrancyGuard {
         uint256 writerShare,
         uint256 platformShare,
         uint256 creatorPoolShare,
-        uint256 mintWriterShare,     // New: Explicit mint splits
+        uint256 mintCreatorShare,
+        uint256 mintWriterShare,
         uint256 mintPlatformShare,
-        uint256 mintCreatorShare
+        uint256 playCreatorShare,
+        uint256 playWriterShare,
+        uint256 playPlatformShare
     ) external onlyOwner {
-        require(coinAddress != address(0), "Coin address cannot be zero");
-        require(treasury != address(0), "Treasury cannot be zero");
-        require(gameGenerationCost > 0, "Generation cost must be greater than 0");
-        require(mintCost > 0, "Mint cost must be greater than 0");
+        require(coinAddress != address(0), "WriterCoinPayment: zero coin address");
+        require(treasury != address(0), "WriterCoinPayment: zero treasury");
+        require(gameGenerationCost > 0, "WriterCoinPayment: zero generation cost");
+        require(mintCost > 0, "WriterCoinPayment: zero mint cost");
         require(
             writerShare + platformShare + creatorPoolShare == 10000,
-            "Shares must total 10000 basis points"
+            "WriterCoinPayment: generation shares must total 100%"
+        );
+        require(
+            mintCreatorShare + mintWriterShare + mintPlatformShare <= 10000,
+            "WriterCoinPayment: mint shares exceed 100%"
+        );
+        require(
+            playCreatorShare + playWriterShare + playPlatformShare <= 10000,
+            "WriterCoinPayment: gameplay shares exceed 100%"
         );
         
         whitelistedCoins[coinAddress] = PaymentConfig({
@@ -197,9 +232,15 @@ contract WriterCoinPayment is Ownable, ReentrancyGuard {
         });
 
         mintDistributions[coinAddress] = MintDistribution({
+            creatorShare: mintCreatorShare,
             writerShare: mintWriterShare,
-            platformShare: mintPlatformShare,
-            creatorShare: mintCreatorShare
+            platformShare: mintPlatformShare
+        });
+        
+        gameplayDistributions[coinAddress] = GameplayDistribution({
+            creatorShare: playCreatorShare,
+            writerShare: playWriterShare,
+            platformShare: playPlatformShare
         });
         
         writerTreasuries[coinAddress] = treasury;
@@ -212,7 +253,7 @@ contract WriterCoinPayment is Ownable, ReentrancyGuard {
      * @param _gameNFT Address of the GameNFT contract
      */
     function setGameNFT(address _gameNFT) external onlyOwner {
-        require(_gameNFT != address(0), "GameNFT cannot be zero");
+        require(_gameNFT != address(0), "WriterCoinPayment: zero GameNFT address");
         gameNFT = IGameNFT(_gameNFT);
         emit GameNFTUpdated(_gameNFT);
     }
@@ -222,7 +263,7 @@ contract WriterCoinPayment is Ownable, ReentrancyGuard {
      * @param coinAddress The coin to remove
      */
     function removeCoin(address coinAddress) external onlyOwner {
-        require(whitelistedCoins[coinAddress].enabled, "Coin not whitelisted");
+        require(whitelistedCoins[coinAddress].enabled, "WriterCoinPayment: coin not whitelisted");
         whitelistedCoins[coinAddress].enabled = false;
         emit CoinRemoved(coinAddress);
     }
@@ -233,8 +274,8 @@ contract WriterCoinPayment is Ownable, ReentrancyGuard {
      * @param newTreasury The new treasury address
      */
     function updateWriterTreasury(address coinAddress, address newTreasury) external onlyOwner {
-        require(whitelistedCoins[coinAddress].enabled, "Coin not whitelisted");
-        require(newTreasury != address(0), "Treasury cannot be zero");
+        require(whitelistedCoins[coinAddress].enabled, "WriterCoinPayment: coin not whitelisted");
+        require(newTreasury != address(0), "WriterCoinPayment: zero treasury");
         writerTreasuries[coinAddress] = newTreasury;
         emit TreasuryUpdated(coinAddress, newTreasury);
     }
@@ -244,7 +285,7 @@ contract WriterCoinPayment is Ownable, ReentrancyGuard {
      * @param newTreasury The new treasury address
      */
     function updatePlatformTreasury(address newTreasury) external onlyOwner {
-        require(newTreasury != address(0), "Treasury cannot be zero");
+        require(newTreasury != address(0), "WriterCoinPayment: zero treasury");
         platformTreasury = newTreasury;
         emit PlatformTreasuryUpdated(newTreasury);
     }
@@ -254,7 +295,7 @@ contract WriterCoinPayment is Ownable, ReentrancyGuard {
      * @param newPool The new pool address
      */
     function updateCreatorPool(address newPool) external onlyOwner {
-        require(newPool != address(0), "Pool cannot be zero");
+        require(newPool != address(0), "WriterCoinPayment: zero pool");
         creatorPool = newPool;
         emit CreatorPoolUpdated(newPool);
     }
@@ -270,9 +311,9 @@ contract WriterCoinPayment is Ownable, ReentrancyGuard {
         uint256 newGenerationCost,
         uint256 newMintCost
     ) external onlyOwner {
-        require(whitelistedCoins[coinAddress].enabled, "Coin not whitelisted");
-        require(newGenerationCost > 0, "Generation cost must be greater than 0");
-        require(newMintCost > 0, "Mint cost must be greater than 0");
+        require(whitelistedCoins[coinAddress].enabled, "WriterCoinPayment: coin not whitelisted");
+        require(newGenerationCost > 0, "WriterCoinPayment: zero generation cost");
+        require(newMintCost > 0, "WriterCoinPayment: zero mint cost");
         
         whitelistedCoins[coinAddress].gameGenerationCost = newGenerationCost;
         whitelistedCoins[coinAddress].mintCost = newMintCost;
@@ -282,112 +323,78 @@ contract WriterCoinPayment is Ownable, ReentrancyGuard {
 
     /**
      * @dev Update revenue splits for a coin (Dynamic Configuration)
-     * This empowers writers/platform to adjust business models without redeploying.
+     * @param coinAddress The writer coin address
+     * @param genWriter Basis points for writer (generation)
+     * @param genPlatform Basis points for platform (generation)
+     * @param genPool Basis points for creator pool (generation)
+     * @param mintCreator Basis points for game creator (mint)
+     * @param mintWriter Basis points for writer (mint)
+     * @param mintPlatform Basis points for platform (mint)
+     * @param playCreator Basis points for game creator (gameplay)
+     * @param playWriter Basis points for writer (gameplay)
+     * @param playPlatform Basis points for platform (gameplay)
      */
     function updateRevenueSplits(
         address coinAddress,
         uint256 genWriter,
         uint256 genPlatform,
         uint256 genPool,
+        uint256 mintCreator,
         uint256 mintWriter,
         uint256 mintPlatform,
-        uint256 mintCreator,
+        uint256 playCreator,
         uint256 playWriter,
-        uint256 playPlatform,
-        uint256 playCreator
+        uint256 playPlatform
     ) external onlyOwner {
-        require(whitelistedCoins[coinAddress].enabled, "Coin not whitelisted");
-        require(genWriter + genPlatform + genPool == 10000, "Gen shares != 100%");
-        require(mintWriter + mintPlatform + mintCreator <= 10000, "Mint shares > 100%");
-        require(playWriter + playPlatform + playCreator <= 10000, "Play shares > 100%");
+        require(whitelistedCoins[coinAddress].enabled, "WriterCoinPayment: coin not whitelisted");
+        require(genWriter + genPlatform + genPool == 10000, "WriterCoinPayment: generation shares != 100%");
+        require(mintCreator + mintWriter + mintPlatform <= 10000, "WriterCoinPayment: mint shares > 100%");
+        require(playCreator + playWriter + playPlatform <= 10000, "WriterCoinPayment: gameplay shares > 100%");
 
         revenueDistributions[coinAddress] = RevenueDistribution(genWriter, genPlatform, genPool);
         mintDistributions[coinAddress] = MintDistribution(mintCreator, mintWriter, mintPlatform);
         gameplayDistributions[coinAddress] = GameplayDistribution(playCreator, playWriter, playPlatform);
+        
+        emit RevenueSplitsUpdated(coinAddress, "all");
     }
     
     /**
      * @dev Process payment for game generation
      * @param writerCoin The writer coin token address
-     * @param user The user generating the game
      */
-    function payForGameGeneration(address writerCoin, address user) external nonReentrant {
-        require(whitelistedCoins[writerCoin].enabled, "Writer coin not whitelisted");
-        require(user != address(0), "User cannot be zero");
+    function payForGameGeneration(address writerCoin) external nonReentrant {
+        require(whitelistedCoins[writerCoin].enabled, "WriterCoinPayment: coin not whitelisted");
         
         uint256 amount = whitelistedCoins[writerCoin].gameGenerationCost;
+        IERC20 token = IERC20(writerCoin);
         
         // Transfer tokens from user to this contract
-        IERC20 token = IERC20(writerCoin);
         require(
-            token.transferFrom(user, address(this), amount),
-            "Token transfer failed"
+            token.transferFrom(msg.sender, address(this), amount),
+            "WriterCoinPayment: token transfer failed"
         );
         
-        // Calculate shares
+        // Calculate shares - last one gets remainder to prevent dust
         RevenueDistribution memory distribution = revenueDistributions[writerCoin];
+        
         uint256 writerShare = (amount * distribution.writerShare) / 10000;
         uint256 platformShare = (amount * distribution.platformShare) / 10000;
-        uint256 creatorShare = (amount * distribution.creatorPoolShare) / 10000;
         
-        // Distribute tokens
+        // Distribute tokens - all external calls at end
         require(
             token.transfer(writerTreasuries[writerCoin], writerShare),
-            "Writer transfer failed"
+            "WriterCoinPayment: writer transfer failed"
         );
         require(
             token.transfer(platformTreasury, platformShare),
-            "Platform transfer failed"
+            "WriterCoinPayment: platform transfer failed"
         );
         require(
-            token.transfer(creatorPool, creatorShare),
-            "Creator pool transfer failed"
+            token.transfer(creatorPool, amount - writerShare - platformShare),
+            "WriterCoinPayment: creator pool transfer failed"
         );
         
-        emit GameGenerated(user, writerCoin, amount, writerShare, platformShare, creatorShare);
-    }
-    
-    /**
-     * @dev Process payment for NFT minting
-     * @param writerCoin The writer coin token address
-     * @param user The user minting the NFT
-     */
-    function payForMinting(address writerCoin, address user) external nonReentrant {
-        require(whitelistedCoins[writerCoin].enabled, "Writer coin not whitelisted");
-        require(user != address(0), "User cannot be zero");
-        
-        uint256 amount = whitelistedCoins[writerCoin].mintCost;
-        
-        // Transfer tokens from user to this contract
-        IERC20 token = IERC20(writerCoin);
-        require(
-            token.transferFrom(user, address(this), amount),
-            "Token transfer failed"
-        );
-        
-        // Calculate shares for minting (different distribution)
-        // Calculate shares from DYNAMIC config
-        MintDistribution memory dist = mintDistributions[writerCoin];
-        uint256 creatorShare = (amount * dist.creatorShare) / 10000;
-        uint256 writerShare = (amount * dist.writerShare) / 10000;
-        uint256 platformShare = (amount * dist.platformShare) / 10000;
-        // 50% goes to creator/user directly (not distributed here)
-        
-        // Distribute tokens
-        require(
-            token.transfer(user, amount - creatorShare - writerShare - platformShare),
-            "Creator transfer failed"
-        );
-        require(
-            token.transfer(writerTreasuries[writerCoin], writerShare),
-            "Writer transfer failed"
-        );
-        require(
-            token.transfer(platformTreasury, platformShare),
-            "Platform transfer failed"
-        );
-        
-        emit GameMinted(user, writerCoin, amount, creatorShare, writerShare, platformShare);
+        emit GameGenerated(msg.sender, writerCoin, amount, writerShare, platformShare, amount - writerShare - platformShare);
     }
     
     /**
@@ -395,133 +402,128 @@ contract WriterCoinPayment is Ownable, ReentrancyGuard {
      * @param writerCoin The writer coin token address
      * @param tokenURI The IPFS URI for the token
      * @param metadata The game metadata struct
+     * @return tokenId The ID of the minted NFT
      */
     function payAndMintGame(
         address writerCoin,
         string memory tokenURI,
         IGameNFT.GameMetadata memory metadata
-    ) external nonReentrant {
-        require(address(gameNFT) != address(0), "GameNFT not set");
-        require(whitelistedCoins[writerCoin].enabled, "Writer coin not whitelisted");
-        require(metadata.creator != address(0), "Creator cannot be zero");
-        // User paying must be the caller, or the creator? 
-        // Usually the caller pays.
-        address payer = msg.sender;
+    ) external nonReentrant returns (uint256) {
+        require(address(gameNFT) != address(0), "WriterCoinPayment: GameNFT not set");
+        require(whitelistedCoins[writerCoin].enabled, "WriterCoinPayment: coin not whitelisted");
+        require(metadata.creator != address(0), "WriterCoinPayment: zero creator");
+        require(bytes(tokenURI).length > 0, "WriterCoinPayment: empty tokenURI");
+        require(metadata.writerCoin == writerCoin, "WriterCoinPayment: writerCoin mismatch");
         
-        uint256 amount = whitelistedCoins[writerCoin].mintCost;
-        
-        // Transfer tokens from payer to this contract
+        uint256 mintCost = whitelistedCoins[writerCoin].mintCost;
         IERC20 token = IERC20(writerCoin);
-        require(
-            token.transferFrom(payer, address(this), amount),
-            "Token transfer failed"
-        );
         
-        // Calculate shares
-        // Calculate shares from DYNAMIC config
+        // Calculate shares using fewer local variables
         MintDistribution memory dist = mintDistributions[writerCoin];
-        uint256 creatorShare = (amount * dist.creatorShare) / 10000;
-        uint256 writerShare = (amount * dist.writerShare) / 10000;
-        uint256 platformShare = (amount * dist.platformShare) / 10000;
         
-        // Distribute tokens
-        // For minting, 50% stays with user/creator? 
-        // "50% goes to creator/user directly (not distributed here)"
-        // If payer IS creator, we just don't take it? 
-        // Or we take 100% and send 50% back? The logic in payForMinting implies:
-        // transferFrom(user, this, amount) -> then transfer(user, amount - shares).
-        // This is inefficient but consistent.
+        // Calculate and distribute in one pass to reduce stack usage
+        uint256 creatorShare = (mintCost * dist.creatorShare) / 10000;
+        uint256 writerShare = (mintCost * dist.writerShare) / 10000;
+        uint256 platformShare = (mintCost * dist.platformShare) / 10000;
         
-        // Note: Logic copied from payForMinting
+        // Calculate net payment (what we actually need from minter)
+        uint256 netPayment = mintCost - (creatorShare + writerShare + platformShare);
+        
+        // Transfer only net payment from minter
         require(
-            token.transfer(payer, amount - creatorShare - writerShare - platformShare),
-            "Creator transfer failed"
-        );
-        require(
-            token.transfer(writerTreasuries[writerCoin], writerShare),
-            "Writer transfer failed"
-        );
-        require(
-            token.transfer(platformTreasury, platformShare),
-            "Platform transfer failed"
+            token.transferFrom(msg.sender, address(this), netPayment),
+            "WriterCoinPayment: token transfer failed"
         );
         
-        // Mint the NFT
-        gameNFT.mintGame(metadata.creator, tokenURI, metadata);
+        // Distribute shares - all external calls before minting
+        if (creatorShare > 0) {
+            require(
+                token.transfer(metadata.creator, creatorShare),
+                "WriterCoinPayment: creator transfer failed"
+            );
+        }
+        if (writerShare > 0) {
+            require(
+                token.transfer(writerTreasuries[writerCoin], writerShare),
+                "WriterCoinPayment: writer transfer failed"
+            );
+        }
+        if (platformShare > 0) {
+            require(
+                token.transfer(platformTreasury, platformShare),
+                "WriterCoinPayment: platform transfer failed"
+            );
+        }
         
-        emit GameMinted(payer, writerCoin, amount, creatorShare, writerShare, platformShare);
+        // Mint the NFT (external call last)
+        uint256 tokenId = gameNFT.mintGame(metadata.creator, tokenURI, metadata);
+        
+        emit GameMinted(msg.sender, writerCoin, tokenId, mintCost, creatorShare, writerShare, platformShare, mintCost - netPayment);
+        
+        return tokenId;
     }
 
     /**
-     * @dev Process payment for Gameplay (Play-to-Pay)
-     * Distributes revenue to Game Creator (User), Original Writer (IP), and Platform.
+     * @dev Process payment for Gameplay (Pay-to-Play)
+     * Distributes revenue to Game Creator, Original Writer (IP), and Platform.
      * @param writerCoin The writer coin used for payment
-     * @param gameCreator The address of the game creator to receive their share
+     * @param gameId The ID of the game being played
      * @param amount The amount of tokens to pay
      */
     function payForGameplay(
         address writerCoin,
-        address gameCreator,
+        uint256 gameId,
         uint256 amount
     ) external nonReentrant {
-        require(whitelistedCoins[writerCoin].enabled, "Writer coin not whitelisted");
-        require(gameCreator != address(0), "Creator address needed");
-        require(amount > 0, "Amount must be > 0");
-
-        address payer = msg.sender;
+        require(whitelistedCoins[writerCoin].enabled, "WriterCoinPayment: coin not whitelisted");
+        require(amount > 0, "WriterCoinPayment: zero amount");
+        require(address(gameNFT) != address(0), "WriterCoinPayment: GameNFT not set");
+        
+        // Validate game exists and get creator
+        address gameCreator = gameNFT.ownerOf(gameId);
+        require(gameCreator != address(0), "WriterCoinPayment: invalid game");
+        
         IERC20 token = IERC20(writerCoin);
 
-        // 1. Collect Payment
+        // Transfer payment from player
         require(
-            token.transferFrom(payer, address(this), amount),
-            "Token transfer failed"
+            token.transferFrom(msg.sender, address(this), amount),
+            "WriterCoinPayment: token transfer failed"
         );
 
-        // 2. Calculate Splits
+        // Calculate shares
         GameplayDistribution memory dist = gameplayDistributions[writerCoin];
         
-        // If no distribution set, default to: 80% Creator, 10% Writer, 10% Platform
-        uint256 creatorSharePct = dist.creatorShare > 0 ? dist.creatorShare : 8000;
-        uint256 writerSharePct = dist.writerShare > 0 ? dist.writerShare : 1000;
-        uint256 platformSharePct = dist.platformShare > 0 ? dist.platformShare : 1000;
-
-        uint256 creatorAmt = (amount * creatorSharePct) / 10000;
-        uint256 writerAmt = (amount * writerSharePct) / 10000;
-        uint256 platformAmt = (amount * platformSharePct) / 10000;
-
-        // 3. Distribute Revenue
+        uint256 creatorShare = (amount * dist.creatorShare) / 10000;
+        uint256 writerShare = (amount * dist.writerShare) / 10000;
         
-        // To Game Creator (Dynamic)
-        require(
-            token.transfer(gameCreator, creatorAmt),
-            "Creator transfer failed"
-        );
-
-        // To Original Writer (Fixed per Coin)
-        require(
-            token.transfer(writerTreasuries[writerCoin], writerAmt),
-            "Writer transfer failed"
-        );
-
-        // To Platform (Fixed)
-        require(
-            token.transfer(platformTreasury, platformAmt),
-            "Platform transfer failed"
-        );
-
-        // Return remainder to payer if any (dust)
-        uint256 remainder = amount - creatorAmt - writerAmt - platformAmt;
-        if (remainder > 0) {
-            token.transfer(payer, remainder);
+        // Distribute revenue - all external calls at end
+        if (creatorShare > 0) {
+            require(
+                token.transfer(gameCreator, creatorShare),
+                "WriterCoinPayment: creator transfer failed"
+            );
+        }
+        if (writerShare > 0) {
+            require(
+                token.transfer(writerTreasuries[writerCoin], writerShare),
+                "WriterCoinPayment: writer transfer failed"
+            );
+        }
+        if (amount - creatorShare - writerShare > 0) {
+            require(
+                token.transfer(platformTreasury, amount - creatorShare - writerShare),
+                "WriterCoinPayment: platform transfer failed"
+            );
         }
 
-        emit GameplayPaid(payer, gameCreator, writerCoin, amount, creatorAmt, writerAmt, platformAmt);
+        emit GameplayPaid(msg.sender, gameCreator, writerCoin, gameId, amount, creatorShare, writerShare, amount - creatorShare - writerShare);
     }
     
     /**
      * @dev Check if a coin is whitelisted
      * @param coinAddress The coin to check
-     * @return bool
+     * @return bool Whether the coin is whitelisted
      */
     function isCoinWhitelisted(address coinAddress) external view returns (bool) {
         return whitelistedCoins[coinAddress].enabled;
@@ -543,5 +545,52 @@ contract WriterCoinPayment is Ownable, ReentrancyGuard {
      */
     function getRevenueDistribution(address coinAddress) external view returns (RevenueDistribution memory) {
         return revenueDistributions[coinAddress];
+    }
+    
+    /**
+     * @dev Get mint distribution for a coin
+     * @param coinAddress The coin to check
+     * @return MintDistribution struct
+     */
+    function getMintDistribution(address coinAddress) external view returns (MintDistribution memory) {
+        return mintDistributions[coinAddress];
+    }
+    
+    /**
+     * @dev Get gameplay distribution for a coin
+     * @param coinAddress The coin to check
+     * @return GameplayDistribution struct
+     */
+    function getGameplayDistribution(address coinAddress) external view returns (GameplayDistribution memory) {
+        return gameplayDistributions[coinAddress];
+    }
+    
+    /**
+     * @dev Emergency function to recover accidentally sent ERC20 tokens
+     * @param tokenAddress The token contract address
+     * @param amount The amount to withdraw
+     */
+    function emergencyWithdraw(address tokenAddress, uint256 amount) external onlyOwner {
+        require(tokenAddress != address(0), "WriterCoinPayment: zero token address");
+        require(amount > 0, "WriterCoinPayment: zero amount");
+        
+        IERC20 token = IERC20(tokenAddress);
+        require(token.balanceOf(address(this)) >= amount, "WriterCoinPayment: insufficient balance");
+        
+        require(
+            token.transfer(owner(), amount),
+            "WriterCoinPayment: withdrawal failed"
+        );
+    }
+    
+    /**
+     * @dev Emergency function to recover accidentally sent native tokens
+     */
+    function emergencyWithdrawNative() external onlyOwner {
+        uint256 balance = address(this).balance;
+        require(balance > 0, "WriterCoinPayment: zero native balance");
+        
+        (bool success, ) = owner().call{value: balance}("");
+        require(success, "WriterCoinPayment: native withdrawal failed");
     }
 }

@@ -65,7 +65,7 @@ See docs for details:
 
 ## Smart contracts (Base mainnet)
 - GameNFT: 0x778C87dAA2b284982765688AE22832AADae7dccC
-- WriterCoinPayment: 0xf4d556E6E739B4Aa065Fae41f353a9f296371a35
+- WriterCoinPayment: 0xf11822F99FF5f6982d42d4A0923d2b3f9589fA75
 
 Revenue model is enforced on-chain and configurable per writer coin by the owner:
 - Game generation: writer/platform/creatorPool in basis points (must sum to 100%)
