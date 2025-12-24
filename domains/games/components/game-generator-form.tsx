@@ -14,6 +14,7 @@ import { PaymentOption } from '@/components/game/PaymentOption'
 import { ErrorCard } from '@/components/error/ErrorCard'
 import { SuccessModal } from '@/components/success/SuccessModal'
 import { GameGenerationOverlay } from '@/components/game/GameGenerationOverlay'
+import { ArticleFidelityReview } from '@/components/game/article-fidelity-review'
 import { getWriterCoinById } from '@/lib/writerCoins'
 import { retryWithBackoff } from '@/lib/error-handler'
 
@@ -86,6 +87,14 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
     title: string
     author?: string
   } | null>(null)
+  const [generatedGame, setGeneratedGame] = useState<{
+    id: string
+    slug: string
+    title: string
+    description: string
+    imageUrl?: string
+  } | null>(null)
+  const [showFidelityReview, setShowFidelityReview] = useState(false)
 
   // Loading step states
   type LoadingStep = 'validate' | 'extract' | 'generate' | 'save'
@@ -197,7 +206,18 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
       // Game is already saved on server, just mark as complete
       setStepStatuses((prev) => ({ ...prev, save: 'completed' }))
 
-      // Show success modal
+      // NEW: Store generated game and show fidelity review (approval workflow)
+      const gameData = {
+        id: result.data.id,
+        slug: result.data.slug,
+        title: result.data.title || 'Your Game',
+        description: result.data.description || '',
+        imageUrl: result.data.imageUrl,
+      }
+      setGeneratedGame(gameData)
+      setShowFidelityReview(true)
+
+      // Show success modal after approval
       setSuccessData({
         gameSlug: result.data.slug,
         title: result.data.title || 'Your Game',
@@ -629,6 +649,34 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
         genre={genre}
         difficulty={difficulty}
       />
+
+      {/* NEW: Fidelity Review Modal (approval workflow) */}
+      {generatedGame && (
+        <ArticleFidelityReview
+          isOpen={showFidelityReview}
+          game={{
+            id: generatedGame.id,
+            slug: generatedGame.slug,
+            title: generatedGame.title,
+            description: generatedGame.description,
+            imageUrl: generatedGame.imageUrl,
+          }}
+          articleUrl={url}
+          onApprove={() => {
+            setShowFidelityReview(false)
+            setSuccessData({
+              gameSlug: generatedGame.slug,
+              title: generatedGame.title,
+              author: undefined,
+            })
+          }}
+          onReject={() => {
+            setShowFidelityReview(false)
+            setGeneratedGame(null)
+            setError('Game rejected. You can regenerate with different settings.')
+          }}
+        />
+      )}
 
       {/* Success Modal */}
       <SuccessModal

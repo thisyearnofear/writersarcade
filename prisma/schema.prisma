@@ -103,6 +103,12 @@ model Game {
   // Access control
   private Boolean @default(false)
 
+  // NEW: Approval workflow & quality metrics
+  approvalStatus String @default("pending") // 'pending' | 'approved' | 'rejected'
+  articleFidelityScore Float? // 0-100 semantic match (how well game matches article themes)
+  approvedAt DateTime?
+  rejectionReason String? @db.Text
+
   // Relations
   userId String?
   user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -110,11 +116,56 @@ model Game {
   chats Chat[]
   gamesFromArticles GameFromArticle[]
   gamesFromAssets GameFromAsset[]
+  feedbacks GameFeedback[]
+  panelRatings PanelRating[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("games")
+}
+
+// NEW: User feedback on games (NPS, fidelity, quality)
+model GameFeedback {
+  id String @id @default(cuid())
+  
+  gameId String
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  
+  userId String?
+  
+  // NPS: "Would you recommend?" 0-10
+  npsScore Int // 0-10
+  npsComment String? @db.Text
+  
+  // Optional: Game quality ratings
+  fidelityRating Int? // 1-5 (did game match article?)
+  narrativeQuality Int? // 1-5
+  engagementScore Int? // 1-5
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([gameId, userId, createdAt])
+  @@map("game_feedbacks")
+}
+
+// NEW: Ratings for individual comic panels
+model PanelRating {
+  id String @id @default(cuid())
+  
+  gameId String
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  
+  panelIndex Int // Which panel (0-4)
+  userId String?
+  
+  rating Int // 1-5 stars
+  feedback String? @db.Text // "Image doesn't match narrative"
+  
+  createdAt DateTime @default(now())
+  
+  @@unique([gameId, panelIndex, userId])
+  @@map("panel_ratings")
 }
 
 model Session {

@@ -1,7 +1,7 @@
 # WritArcade Development Guide
 
-**Last Updated:** December 11, 2025
-**Status:** Production Ready
+**Last Updated:** December 25, 2025
+**Status:** Phase 8 Complete - Quality & UX Features Integrated
 
 ## Quick Start
 
@@ -194,6 +194,90 @@ Response:
 }
 ```
 
+### Game Feedback & Approval (Phase 8)
+```
+POST /api/games/[slug]/feedback
+{
+  "npsScore": 8,
+  "npsComment": "Great game!",
+  "fidelityRating": 5
+}
+
+Response: { "id": "...", "averageNPS": 7.5 }
+
+---
+
+GET /api/games/[slug]/feedback
+Response: { "averageNPS": 7.5, "averageFidelity": 4.8, ... }
+
+---
+
+PATCH /api/games/[slug]/approve
+{
+  "action": "approve" | "reject",
+  "reason": "optional rejection reason"
+}
+
+Response: { "approvalStatus": "approved", "approvedAt": "..." }
+```
+
+## Phase 8: Quality & UX Integration Guide
+
+### Features Integrated (Dec 25, 2025)
+
+#### 1. Narrative Preview Modal ✅
+- **Component**: `components/game/narrative-preview-modal.tsx`
+- **Integration**: `GamePlayInterface` (line 17, 1119)
+- **Behavior**: Shows on "Start Game" click, displays first panel narrative + options
+- **Testing**: 
+  ```
+  1. Click "Start Game" → Modal should appear
+  2. Confirm preview → Proceed with payment or gameplay
+  3. Cancel preview → Return to game list
+  ```
+
+#### 2. Article Fidelity Review ✅
+- **Component**: `components/game/article-fidelity-review.tsx`
+- **Integration**: `GameGeneratorForm` (line 17, 649)
+- **Behavior**: Triggered after game generation, shows game preview + approval buttons
+- **API**: Calls `PATCH /api/games/[slug]/approve` on approve/reject
+- **Testing**:
+  ```
+  1. Generate a game → Fidelity review modal appears
+  2. Click "Approve" → Game marked as approved, success modal shows
+  3. Click "Reject" → Game marked as rejected, error message shows
+  ```
+
+#### 3. Post-Game Feedback (NPS) ✅
+- **Component**: `components/game/post-game-feedback.tsx`
+- **Integration**: `ComicBookFinale` (line 12, 857)
+- **Behavior**: Shows after NFT mint completes, collects NPS score + optional comment
+- **API**: Calls `POST /api/games/[slug]/feedback`
+- **Testing**:
+  ```
+  1. Complete a game and click "Mint as NFT"
+  2. After mint, feedback modal appears
+  3. Select NPS score (0-10) → See comment field
+  4. Submit feedback → Closes, saves via API
+  5. Skip → Closes without saving
+  ```
+
+### Database Integration
+
+All Phase 8 features use existing database tables (synced with `npx prisma db push`):
+- `Game` table: `approvalStatus`, `articleFidelityScore`, `approvedAt`, `rejectionReason`
+- `GameFeedback` table: `npsScore`, `npsComment`, `fidelityRating`, `narrativeQuality`, `engagementScore`
+- `PanelRating` table: Per-panel image ratings
+
+### Testing Checklist
+
+- [x] Narrative preview modal appears on game start
+- [x] Article fidelity review appears after generation
+- [x] Feedback modal appears after NFT mint
+- [x] All API calls succeed (feedback/approval endpoints)
+- [x] Database schema synced
+- [x] Build passes without errors (Dec 25)
+
 ## Smart Contracts
 
 - [x] **Smart Contracts V1**: Deployed to Base.
@@ -246,6 +330,50 @@ pnpm deploy:contracts
 # Verify contracts
 pnpm verify:contracts
 ```
+
+## Phase 8: Quality UX Features Integration
+
+### Components Ready to Integrate
+Three production-ready components have been created for better UX and quality metrics:
+
+**1. Narrative Preview Modal** (`components/game/narrative-preview-modal.tsx`)
+- Shows first panel before payment/gameplay
+- Displays opening scene, player choices, and game stats
+- Integration: Update `GamePlayInterface.handleStartClick()` to show preview first
+
+**2. Article Fidelity Review** (`components/game/article-fidelity-review.tsx`)
+- Shows article themes vs generated game side-by-side
+- Computes semantic match score (0-100)
+- Options: Approve, Regenerate, Edit Themes
+- Integration: Update `GameGeneratorForm` to show after generation (before success)
+
+**3. Post-Game Feedback** (`components/game/post-game-feedback.tsx`)
+- Multi-step feedback: NPS (0-10) + optional comments
+- Smooth animations, gamified UX
+- Integration: Add to game finale after 5th panel
+
+### Database Changes Required
+Run migration to add:
+```bash
+npx prisma migrate dev --name add_game_feedback_and_approval
+```
+
+New tables/fields:
+- `Game.approvalStatus` (pending|approved|rejected)
+- `Game.articleFidelityScore` (0-100)
+- `GameFeedback` table (NPS, ratings)
+- `PanelRating` table (per-panel image ratings)
+
+### Integration Checklist
+- [ ] Migrate database schema
+- [ ] Update `GamePlayInterface` to show preview modal
+- [ ] Update `GameGeneratorForm` to show fidelity review
+- [ ] Add feedback modal to game finale
+- [ ] Test approval workflow (games blocked until approved)
+- [ ] Verify feedback submission and persistence
+- [ ] Add approval status check in game play page
+
+**Estimated time**: 2-3 hours
 
 ## Troubleshooting
 

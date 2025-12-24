@@ -1,7 +1,7 @@
 # WritArcade Roadmap & Status
 
-**Last Updated:** December 12, 2025
-**Status:** Phase 7 - Customization MVP for Surreal World Assets Buildathon
+**Last Updated:** December 25, 2025
+**Status:** Phase 8 - Quality & UX Features (Complete)
 
 ---
 
@@ -188,19 +188,66 @@ This ensures:
 
 ---
 
-## Future Roadmap (Post-Hackathon)
+## Phase 8: Quality & UX (Complete) ✅
 
-### Phase 8: Asset Marketplace (Q1 2026)
+### High-Impact UX Features (Integrated)
+
+#### 1. Narrative Preview Modal ✅
+**File**: `components/game/narrative-preview-modal.tsx`
+- Location: Shows before payment/gameplay in `GamePlayInterface`
+- Displays: First panel narrative + user choices
+- Behavior: Blocks progression until user confirms
+- Impact: Reduces abandonment, builds confidence
+
+#### 2. Article Fidelity Review ✅
+**File**: `components/game/article-fidelity-review.tsx`
+- Location: Triggers after game generation in `GameGeneratorForm`
+- Displays: Game preview with image + article context
+- Actions: Approve/Reject with API calls to `/api/games/[slug]/approve`
+- Impact: Ensures quality before players see games
+
+#### 3. Post-Game Feedback (NPS) ✅
+**File**: `components/game/post-game-feedback.tsx`
+- Location: Shows after NFT mint in `ComicBookFinale`
+- Workflow: NPS score (0-10) → Optional comment → Submit
+- API: Calls `POST /api/games/[slug]/feedback`
+- Impact: Data-driven improvements via NPS tracking
+
+#### 4. API Endpoints ✅
+- `POST /api/games/[slug]/feedback` - Submit feedback + NPS
+- `GET /api/games/[slug]/feedback` - Retrieve aggregate stats
+- `PATCH /api/games/[slug]/approve` - Approve/reject games (creator-gated)
+
+#### 5. Database Updates ✅
+- Fields added: `approvalStatus`, `articleFidelityScore`, `approvedAt`, `rejectionReason`
+- Tables created: `GameFeedback`, `PanelRating`
+- Status: Synced with `npx prisma db push`
+
+**Integration Status**: All 3 components integrated into gameplay flow
+**Build Status**: ✅ Compiles without errors (tested Dec 25)
+**Ready for**: Testing and deployment
+
+---
+
+## Future Roadmap (Post-Phase 8)
+
+### Phase 9: Quality Metrics Dashboard (Q4 2025)
+- Admin panel showing NPS trends per game
+- Fidelity score analysis + outlier detection
+- Feedback submission tracking
+- Approval workflow analytics
+
+### Phase 10: Asset Marketplace (Q1 2026)
 - Enable asset discovery at /assets
 - Derive assets from completed comics
 - Royalty chains via Story Protocol
 
-### Phase 9: Media Expansion (Q2 2026)
+### Phase 11: Media Expansion (Q2 2026)
 - ElevenLabs audio narration
 - Video export of comics
 - Social sharing integrations
 
-### Phase 10: Advanced Gameplay (Q3 2026)
+### Phase 12: Advanced Gameplay (Q3 2026)
 - Branching narratives with consequences
 - Character stats that affect outcomes
 - Multiplayer story contributions
@@ -233,4 +280,4 @@ This ensures:
 
 ---
 
-*Last Updated: December 12, 2025 - Phase 7 MVP Focus*
+*Last Updated: December 25, 2025 - Phase 8 Quality & UX Complete*

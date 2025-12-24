@@ -9,6 +9,7 @@ import { UserAttribution, AttributionPair } from '@/components/ui/user-attributi
 import { IPRegistration, type GameIPMetadata } from '@/components/story/IPRegistration'
 import { ipfsMetadataService, type GameCreator, type GameAuthor } from '@/lib/services/ipfs-metadata.service'
 import { userIdentityService } from '@/lib/services/user-identity.service'
+import { PostGameFeedback } from '@/components/game/post-game-feedback'
 
 export interface ComicBookFinalePanelData {
   id: string
@@ -60,6 +61,7 @@ export function ComicBookFinale({
   const [nftMintedMetadata, setNftMintedMetadata] = useState<{ nftMetadataUri: string; gameMetadataUri: string; creator: GameCreator; author: GameAuthor } | null>(null)
   const [isEditingText, setIsEditingText] = useState(false)
   const [editedText, setEditedText] = useState('')
+  const [showFeedback, setShowFeedback] = useState(false) // NEW: Show feedback modal after gameplay
   const currentPanel = panels[currentPanelIndex]
   const totalPanels = panels.length
 
@@ -141,11 +143,16 @@ export function ComicBookFinale({
 
       // Show IP registration option after successful mint
       setShowIPRegistration(true)
+      
+      // NEW: Show feedback modal after successful mint (gated behind completion)
+      setShowFeedback(true)
 
     } catch (error) {
       console.error('Error preparing NFT metadata:', error)
       // Fallback to original mint behavior
       onMint(panels)
+      // Still show feedback after fallback mint
+      setShowFeedback(true)
     }
   }
 
@@ -842,6 +849,42 @@ export function ComicBookFinale({
                   difficulty: difficulty.toLowerCase() as 'easy' | 'hard',
                   gameMetadataUri: nftMintedMetadata.gameMetadataUri,
                 }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* NEW: Post-game feedback modal (NPS + comments) */}
+        {showFeedback && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div className="w-full max-w-lg">
+              <PostGameFeedback
+                gameId={gameTitle}
+                onSubmit={async (feedback) => {
+                  try {
+                    // Determine the slug from the current location or pass it properly
+                    // For now, we'll extract it from the window location
+                    const slug = window.location.pathname.split('/').pop() || ''
+                    
+                    // Submit feedback to backend
+                    const response = await fetch(`/api/games/${slug}/feedback`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        npsScore: feedback.npsScore,
+                        npsComment: feedback.comment,
+                      }),
+                    })
+
+                    if (!response.ok) {
+                      throw new Error('Failed to submit feedback')
+                    }
+                  } catch (error) {
+                    console.error('Error submitting feedback:', error)
+                    // Don't throw, let user close anyway
+                  }
+                }}
+                onSkip={() => setShowFeedback(false)}
               />
             </div>
           </div>

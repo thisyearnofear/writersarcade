@@ -14,6 +14,7 @@ import { ComicPanelCard } from './comic-panel-card'
 import { ComicBookFinale, type ComicBookFinalePanelData } from './comic-book-finale'
 import { parsePanel } from '../utils/text-parser'
 import { useToast } from '@/components/ui/use-toast'
+import { NarrativePreviewModal } from '@/components/game/narrative-preview-modal'
 
 // Mock ABI for V2 functionality - replaced by real import in production
 const WRITER_COIN_PAYMENT_ABI = [
@@ -77,6 +78,7 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
   const [userChoices, setUserChoices] = useState<Array<{ panelIndex: number; choice: string; timestamp: string }>>([])
   const [regeneratingMessageId, setRegeneratingMessageId] = useState<string | null>(null) // Track which panel is regenerating
   const [editedPanels, setEditedPanels] = useState<Record<string, string>>({}) // Track edited panel text
+  const [showPreview, setShowPreview] = useState(false) // NEW: Preview modal state
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const assistantMessageCount = messages.filter(m => m.role === 'assistant').length
@@ -96,6 +98,13 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
   const [isPaying, setIsPaying] = useState(false)
 
   const handleStartClick = () => {
+    // NEW: Show preview modal first (before payment/gameplay)
+    setShowPreview(true)
+  }
+
+  const handlePreviewApproved = () => {
+    setShowPreview(false)
+    // Then show payment if needed, or start directly
     if (game.playFee && parseFloat(game.playFee) > 0) {
       setShowPaymentModal(true)
     } else {
@@ -938,6 +947,48 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
     )
   }
 
+  // NEW: Block gameplay if game not approved
+  if (game.approvalStatus === 'rejected') {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-4">
+        <div className="max-w-md text-center space-y-6">
+          <div className="text-6xl">❌</div>
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-2">Game Rejected</h2>
+            <p className="text-gray-400 mb-2">{game.rejectionReason || 'This game did not match the article themes.'}</p>
+            <p className="text-gray-400 text-sm">You can regenerate and try again.</p>
+          </div>
+          <button
+            onClick={() => window.history.back()}
+            className="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-semibold transition-colors"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (game.approvalStatus === 'pending') {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-4">
+        <div className="max-w-md text-center space-y-6">
+          <div className="text-6xl">⏳</div>
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-2">Game Awaiting Review</h2>
+            <p className="text-gray-400">This game needs to be approved before you can play. Review it and confirm it matches the original article.</p>
+          </div>
+          <button
+            onClick={() => window.history.back()}
+            className="px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-semibold transition-colors"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   // GAME PLAY SCREEN - During game
   return (
     <div
@@ -1063,6 +1114,17 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
           )}
         </div>
       </div>
+
+      {/* NEW: Narrative Preview Modal */}
+      <NarrativePreviewModal
+        isOpen={showPreview}
+        game={game}
+        firstPanelNarrative={messages.length > 0 ? messages[0]?.content : undefined}
+        firstPanelOptions={messages.length > 0 ? (messages[0]?.options || []) : []}
+        onClose={() => setShowPreview(false)}
+        onStart={handlePreviewApproved}
+        isLoading={isStarting}
+      />
     </div>
   )
 }
