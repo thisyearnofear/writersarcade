@@ -379,7 +379,7 @@ export function ComicBookFinale({
         canNavigateNext={currentPanelIndex < totalPanels - 1}
       />
       <div
-        className="min-h-screen w-full flex flex-col"
+        className="min-h-screen w-full flex flex-col animate-fade-in"
         style={{
           background: `linear-gradient(135deg, ${primaryColor}05, black)`,
         }}

@@ -19,6 +19,7 @@ import { IPRegistrationFlow } from '@/components/story/IPRegistrationFlow'
 import { RegistrationFlowContext } from '@/hooks/use-story-protocol-flow'
 import { AssetGenerationResponse, AssetRelationship } from '@/domains/games/types'
 import { AssetRelationshipService } from '@/domains/assets/services/asset-relationship.service'
+import { AssetEditPanel } from '@/components/ui/asset-edit-panel'
 import { useRouter } from 'next/navigation'
 import { useAccount } from 'wagmi'
 import { RotateCcw } from 'lucide-react'
@@ -333,9 +334,9 @@ export default function WorkshopPage() {
     }
 
     return (
-        <div className="min-h-screen bg-black text-white p-6 md:p-12 font-sans">
-            <header className="mb-12 max-w-4xl mx-auto">
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent mb-2">
+        <div className="min-h-screen bg-black text-white p-6 md:p-12 font-sans animate-fade-in">
+            <header className="mb-12 max-w-4xl mx-auto animate-slide-in">
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-writarcade-primary to-writarcade-accent bg-clip-text text-transparent mb-2">
                     Asset Workshop
                 </h1>
                 <p className="text-gray-400">
@@ -357,7 +358,7 @@ export default function WorkshopPage() {
                             <button
                                 onClick={handleDecompose}
                                 disabled={!url}
-                                className="px-6 py-3 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-bold transition-colors"
+                                className="px-6 py-3 bg-writarcade-primary hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-bold transition-colors btn-enhanced mobile"
                             >
                                 Decompose
                             </button>
@@ -491,8 +492,44 @@ export default function WorkshopPage() {
                                             onTitleChange={(newName) => updateAsset('characters', i, 'name', newName)}
                                             onTagsChange={(tags) => updateAssetTags('characters', i, tags)}
                                         >
-                                            <p className="text-sm text-gray-300 italic mb-2">{char.role}</p>
-                                            <p className="text-xs text-gray-400">{char.personality}</p>
+                                            {/* Enhanced with AssetEditPanel for character customization */}
+                                            <AssetEditPanel
+                                                title={char.name}
+                                                description={char.personality}
+                                                tags={getAssetTags('characters', i)}
+                                                onTitleChange={(newName) => updateAsset('characters', i, 'name', newName)}
+                                                onDescriptionChange={(newDesc) => updateAsset('characters', i, 'personality', newDesc)}
+                                                onTagsChange={(tags) => updateAssetTags('characters', i, tags)}
+                                                characterData={{
+                                                    name: char.name,
+                                                    role: char.role,
+                                                    personality: char.personality,
+                                                    appearance: char.appearance,
+                                                    customizationOptions: [
+                                                        {
+                                                            category: 'hair',
+                                                            options: ['Short', 'Long', 'Bald', 'Curly', 'Straight'],
+                                                            current: 'Short'
+                                                        },
+                                                        {
+                                                            category: 'clothing',
+                                                            options: ['Casual', 'Formal', 'Fantasy', 'Sci-Fi', 'Historical'],
+                                                            current: 'Casual'
+                                                        },
+                                                        {
+                                                            category: 'expression',
+                                                            options: ['Happy', 'Serious', 'Angry', 'Sad', 'Neutral'],
+                                                            current: 'Neutral'
+                                                        }
+                                                    ]
+                                                }}
+                                                onCharacterUpdate={(updates) => {
+                                                    if (updates.customization) {
+                                                        // In a real implementation, this would update the character's visual appearance
+                                                        console.log('Character customization updated:', updates.customization)
+                                                    }
+                                                }}
+                                            />
                                         </AssetCard>
                                     )
                                 }))}

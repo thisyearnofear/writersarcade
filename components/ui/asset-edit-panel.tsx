@@ -16,6 +16,25 @@ interface AssetEditPanelProps {
   onTitleChange?: (newTitle: string) => void
   onDescriptionChange?: (newDescription: string) => void
   onTagsChange?: (newTags: AssetTag[]) => void
+  // Enhanced with character customization
+  characterData?: {
+    name?: string
+    role?: string
+    personality?: string
+    appearance?: string
+    customizationOptions?: Array<{
+      category: string
+      options: string[]
+      current?: string
+    }>
+  }
+  onCharacterUpdate?: (updates: Partial<{
+    name: string
+    role: string
+    personality: string
+    appearance: string
+    customization: Record<string, string>
+  }>) => void
 }
 
 export function AssetEditPanel({
@@ -256,6 +275,79 @@ export function AssetEditPanel({
             >
               <Plus className="w-3 h-3" /> Add Tag
             </button>
+          )}
+        </div>
+      )}
+
+      {/* Character Customization - Enhanced Feature */}
+      {characterData && (
+        <div className="mt-4 p-3 bg-gray-800/50 border border-gray-700 rounded-lg">
+          <h4 className="text-sm font-semibold text-gray-300 mb-2 flex items-center gap-2">
+            <Pencil className="w-4 h-4 text-purple-400" />
+            Character Customization
+          </h4>
+
+          {/* Character Attributes */}
+          <div className="space-y-3 text-sm">
+            {characterData.name && (
+              <div className="flex items-center gap-2">
+                <span className="text-gray-400 w-16">Name:</span>
+                <span className="text-gray-100 font-medium">{characterData.name}</span>
+              </div>
+            )}
+            {characterData.role && (
+              <div className="flex items-center gap-2">
+                <span className="text-gray-400 w-16">Role:</span>
+                <span className="text-gray-100 font-medium">{characterData.role}</span>
+              </div>
+            )}
+            {characterData.personality && (
+              <div className="flex items-center gap-2">
+                <span className="text-gray-400 w-16">Personality:</span>
+                <span className="text-gray-100">{characterData.personality}</span>
+              </div>
+            )}
+            {characterData.appearance && (
+              <div className="flex items-center gap-2">
+                <span className="text-gray-400 w-16">Appearance:</span>
+                <span className="text-gray-100">{characterData.appearance}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Visual Customization Options */}
+          {characterData.customizationOptions && characterData.customizationOptions.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-gray-700">
+              <h5 className="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wide">
+                Visual Customization
+              </h5>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
+                {characterData.customizationOptions.map((option: any) => (
+                  <div key={option.category} className="space-y-1">
+                    <div className="text-gray-400 capitalize">{option.category}</div>
+                    <select
+                      value={option.current || option.options[0]}
+                      onChange={(e) => {
+                        if (onCharacterUpdate) {
+                          onCharacterUpdate({
+                            customization: {
+                              [option.category]: e.target.value
+                            }
+                          })
+                        }
+                      }}
+                      className="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-gray-100"
+                    >
+                      {option.options.map((opt: string) => (
+                        <option key={opt} value={opt} className="bg-gray-800 text-gray-100">
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </div>
       )}

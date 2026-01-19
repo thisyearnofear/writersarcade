@@ -52,6 +52,7 @@ interface GamePlayInterfaceProps {
 interface ChatEntry extends ChatMessage {
   options?: GameplayOption[]
   imageModel?: string             // Which Venice AI model generated this image
+  imagePromptText?: string        // The prompt used to generate this image
   imageRating?: number            // User rating (1-5) for this image
   narrativeImage?: string | null  // Comic panel image URL (current selected)
   imageHistory?: Array<{ url: string | null; model: string; timestamp: number }> // All generated versions
@@ -84,6 +85,120 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
   const assistantMessageCount = messages.filter(m => m.role === 'assistant').length
   const canAddMorePanels = assistantMessageCount < MAX_COMIC_PANELS
 
+  /**
+   * Generate visual storyboard preview - Enhanced Feature
+   * Creates preview data for all panels based on existing messages
+   */
+  const generateStoryboardPreview = (): Array<{
+    title: string
+    description: string
+    imagePrompt: string
+    previewImage?: string
+  }> => {
+    if (messages.length === 0) return []
+    
+    // Generate preview for each existing panel
+    return messages.filter(m => m.role === 'assistant').map((message, index) => ({
+      title: `Panel ${index + 1}: ${game.title} - Scene ${index + 1}`,
+      description: message.content.substring(0, 100) + (message.content.length > 100 ? '...' : ''),
+      imagePrompt: message.imagePromptText || `A ${game.genre} scene showing ${message.content.substring(0, 50)}...`,
+      previewImage: message.narrativeImage || undefined
+    }))
+  }
+
+  /**
+   * Available visual themes - Enhanced Feature
+   * Theme selection for comic panels
+   */
+  const availableThemes = [
+    {
+      name: 'default',
+      value: 'default',
+      label: 'Default Theme',
+      description: 'Standard comic book style'
+    },
+    {
+      name: 'cyberpunk',
+      value: 'cyberpunk',
+      label: 'Cyberpunk',
+      description: 'Neon lights and futuristic cityscapes'
+    },
+    {
+      name: 'fantasy',
+      value: 'fantasy',
+      label: 'Fantasy',
+      description: 'Magical realms and mythical creatures'
+    },
+    {
+      name: 'noir',
+      value: 'noir',
+      label: 'Film Noir',
+      description: 'Dark alleys and detective stories'
+    },
+    {
+      name: 'watercolor',
+      value: 'watercolor',
+      label: 'Watercolor',
+      description: 'Soft brush strokes and artistic feel'
+    }
+  ]
+
+  /**
+   * Handle theme selection - Enhanced Feature
+   * Updates the theme for comic panels
+   */
+  const handleThemeSelect = (theme: string) => {
+    // In a real implementation, this would update the game state or preferences
+    console.log('Theme selected:', theme)
+    // Could be enhanced to update game metadata or user preferences
+  }
+
+  /**
+   * Generate AI prompt suggestions - Enhanced Feature
+   * Creates AI-assisted prompt suggestions based on narrative content
+   */
+  const generateAIPromptSuggestions = (narrative: string): string[] => {
+    // In a real implementation, this would call an AI service
+    // For now, we'll generate some reasonable suggestions based on the content
+    
+    const baseSuggestions = [
+      `A ${game.genre} style illustration of ${narrative.substring(0, 50)}...`,
+      `Digital art of ${narrative.substring(0, 40)}..., ${game.genre} theme, cinematic lighting`,
+      `Fantasy scene featuring ${narrative.substring(0, 30)}..., detailed, 8k resolution`,
+      `Comic book style illustration: ${narrative.substring(0, 45)}..., vibrant colors`,
+      `Dark and moody ${game.genre} artwork showing ${narrative.substring(0, 35)}...`
+    ]
+    
+    // Add some genre-specific suggestions
+    if (game.genre.toLowerCase().includes('horror')) {
+      baseSuggestions.push(
+        `Horror-themed illustration of ${narrative.substring(0, 40)}..., eerie atmosphere, dark colors`,
+        `Spooky scene featuring ${narrative.substring(0, 30)}..., Halloween vibe, creepy details`
+      )
+    } else if (game.genre.toLowerCase().includes('comedy')) {
+      baseSuggestions.push(
+        `Funny cartoon illustration of ${narrative.substring(0, 40)}..., exaggerated expressions, bright colors`,
+        `Comical scene showing ${narrative.substring(0, 30)}..., humorous details, playful style`
+      )
+    } else if (game.genre.toLowerCase().includes('fantasy')) {
+      baseSuggestions.push(
+        `Epic fantasy artwork of ${narrative.substring(0, 40)}..., magical elements, grand scale`,
+        `Mythical scene featuring ${narrative.substring(0, 30)}..., dragons, castles, enchanted forest`
+      )
+    }
+    
+    return baseSuggestions
+  }
+
+  /**
+   * Handle AI prompt selection - Enhanced Feature
+   * Updates the custom prompt when user selects an AI suggestion
+   */
+  const handleAIPromptSelect = (prompt: string) => {
+    console.log('AI prompt selected:', prompt)
+    // In a real implementation, this would update the regeneration prompt
+  }
+
   // Auto-scroll to new content when messages update and user isn't actively scrolling up
   useEffect(() => {
     // Small delay to ensure DOM is updated
@@ -99,6 +214,7 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
 
   const handleStartClick = () => {
     // NEW: Show preview modal first (before payment/gameplay)
+    // Enhanced with brand theme and animations
     setShowPreview(true)
   }
 
@@ -992,7 +1108,7 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
   // GAME PLAY SCREEN - During game
   return (
     <div
-      className="min-h-screen w-full flex flex-col"
+      className="min-h-screen w-full flex flex-col animate-fade-in mobile-optimized"
       style={{
         background: `linear-gradient(135deg, ${game.primaryColor || '#8b5cf6'}05, black)`,
       }}
@@ -1000,16 +1116,16 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
       {/* Main Content Area */}
       <div className="flex-1 overflow-y-auto">
         {messages.length === 0 ? (
-          // Loading State
+          // Loading State - Enhanced with brand theme
           <div className="h-full flex items-center justify-center">
             <div className="text-center space-y-4">
-              <Loader2 className="w-12 h-12 animate-spin mx-auto" style={{ color: game.primaryColor || '#8b5cf6' }} />
-              <p className="text-gray-400">Generating your story...</p>
+              <div className="loading-spinner mx-auto" />
+              <p className="text-gray-400 animate-pulse">Generating your story...</p>
             </div>
           </div>
         ) : (
-          // Comic Panel Display
-          <div className="w-full flex flex-col items-center justify-center min-h-full p-4 md:p-8 py-6 md:py-8">
+          // Comic Panel Display - Enhanced with animations
+          <div className="w-full flex flex-col items-center justify-center min-h-full p-4 md:p-8 py-6 md:py-8 animate-slide-in">
             {/* Story Progress Bar */}
             <div className="w-full max-w-5xl mb-8 pb-6 border-b border-white/10">
               <div className="flex items-center justify-between mb-3">
@@ -1066,6 +1182,14 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
                       imageModel={message.imageModel}
                       shouldRevealContent={true}
                       showLoadingState={!imageReady && isWaitingForResponse}
+                      // Enhanced with theme selection
+                      availableThemes={availableThemes}
+                      currentTheme={game.primaryColor || 'default'}
+                      onThemeSelect={handleThemeSelect}
+                      // Enhanced with AI prompt suggestions
+                      aiPromptSuggestions={generateAIPromptSuggestions(message.content)}
+                      onAIPromptSelect={handleAIPromptSelect}
+                      showAIPromptSuggestions={true}
                     />
                   </div>
                 )
@@ -1115,12 +1239,13 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
         </div>
       </div>
 
-      {/* NEW: Narrative Preview Modal */}
+      {/* NEW: Narrative Preview Modal - Enhanced with Visual Storyboard */}
       <NarrativePreviewModal
         isOpen={showPreview}
         game={game}
         firstPanelNarrative={messages.length > 0 ? messages[0]?.content : undefined}
         firstPanelOptions={messages.length > 0 ? (messages[0]?.options || []) : []}
+        storyboardPanels={generateStoryboardPreview()}
         onClose={() => setShowPreview(false)}
         onStart={handlePreviewApproved}
         isLoading={isStarting}

@@ -1,8 +1,15 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Play, BookOpen } from 'lucide-react'
+import { X, Play, BookOpen, Image as ImageIcon, LayoutPanelTop } from 'lucide-react'
 import { Game } from '@/domains/games/types'
+
+interface StoryboardPanel {
+  title: string
+  description: string
+  imagePrompt: string
+  previewImage?: string
+}
 
 interface NarrativePreviewModalProps {
   isOpen: boolean
@@ -12,6 +19,8 @@ interface NarrativePreviewModalProps {
   onClose: () => void
   onStart: () => void
   isLoading?: boolean
+  // Enhanced with visual storyboard data
+  storyboardPanels?: StoryboardPanel[]
 }
 
 export function NarrativePreviewModal({
@@ -87,6 +96,55 @@ export function NarrativePreviewModal({
                       <p className="text-gray-100 leading-relaxed">
                         {firstPanelNarrative}
                       </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Visual Storyboard - Enhanced Feature */}
+                {storyboardPanels && storyboardPanels.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <LayoutPanelTop className="w-5 h-5 text-purple-400" />
+                      <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">
+                        Visual Storyboard
+                      </h3>
+                      <span className="text-xs bg-gray-700 px-2 py-1 rounded-full">
+                        {storyboardPanels.length} panels
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {storyboardPanels.map((panel: StoryboardPanel, index: number) => (
+                        <div key={index} className="bg-gray-800/50 border border-gray-700 rounded-lg p-3 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-mono text-gray-400 bg-gray-700 px-2 py-1 rounded">
+                              Panel {index + 1}
+                            </span>
+                            {panel.previewImage ? (
+                              <ImageIcon className="w-4 h-4 text-green-400" />
+                            ) : (
+                              <ImageIcon className="w-4 h-4 text-gray-500" />
+                            )}
+                          </div>
+                          <h4 className="font-medium text-gray-100 text-sm truncate">
+                            {panel.title}
+                          </h4>
+                          <p className="text-gray-400 text-xs line-clamp-2">
+                            {panel.description}
+                          </p>
+                          {panel.previewImage && (
+                            <div className="aspect-video bg-gray-700 rounded overflow-hidden">
+                              <img
+                                src={panel.previewImage}
+                                alt={panel.title}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          )}
+                          <p className="text-gray-500 text-xs italic line-clamp-1">
+                            {panel.imagePrompt}
+                          </p>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}

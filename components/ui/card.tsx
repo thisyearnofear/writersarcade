@@ -1,15 +1,47 @@
 import * as React from "react"
+import { useMobileOptimizations } from '@/hooks/useMobileOptimizations'
 
 const Card = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & { typewriter?: boolean }
->(({ className, typewriter = false, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={`rounded-lg border ${typewriter ? 'border-gray-700 bg-gray-900/50 text-white shadow-sm' : 'border-gray-700 bg-gray-900/50 text-white shadow-sm'} ${typewriter ? 'writarcade-paper' : ''} ${className || ""}`}
-    {...props}
-  />
-))
+  React.HTMLAttributes<HTMLDivElement> & { 
+    typewriter?: boolean;
+    enhanced?: boolean;
+    arcade?: boolean;
+    mobile?: boolean
+  }
+>(({ className, typewriter = false, enhanced = false, arcade = false, mobile = false, ...props }, ref) => {
+  
+  const { isMobile } = useMobileOptimizations()
+  const isMobileCard = mobile || isMobile
+  
+  // Determine card classes based on props
+  const cardClasses = [];
+  
+  if (typewriter) {
+    cardClasses.push('border-gray-700', 'bg-gray-900/50', 'text-white', 'shadow-sm', 'writarcade-paper');
+  } else if (enhanced) {
+    cardClasses.push('card-enhanced');
+  } else if (arcade) {
+    cardClasses.push('bg-writarcade-primary', 'text-white', 'border-writarcade-primary', 'shadow-lg');
+  } else {
+    cardClasses.push('border-gray-700', 'bg-gray-900/50', 'text-white', 'shadow-sm');
+  }
+  
+  // Add mobile optimizations
+  if (isMobileCard) {
+    cardClasses.push('p-4', 'sm:p-6');
+  } else {
+    cardClasses.push('p-6');
+  }
+  
+  return (
+    <div
+      ref={ref}
+      className={`rounded-lg border ${cardClasses.join(' ')} ${className || ""}`}
+      {...props}
+    />
+  )
+})
 Card.displayName = "Card"
 
 const CardHeader = React.forwardRef<

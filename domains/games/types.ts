@@ -59,6 +59,12 @@ export interface Game {
   playFee?: string
   featured?: boolean
 
+  // NEW: Approval workflow & quality metrics
+  approvalStatus?: 'pending' | 'approved' | 'rejected'
+  articleFidelityScore?: number // 0-100 semantic match
+  approvedAt?: Date
+  rejectionReason?: string
+
   // Timestamps
   createdAt: Date
   updatedAt: Date

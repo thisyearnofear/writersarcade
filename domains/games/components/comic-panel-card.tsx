@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ZoomIn, Loader2, RefreshCw, ChevronDown, ChevronUp, Sparkles } from 'lucide-react'
+import { ZoomIn, Loader2, RefreshCw, ChevronDown, ChevronUp, Sparkles, Lightbulb } from 'lucide-react'
 import { GameplayOption } from '../types'
 import { parsePanel } from '../utils/text-parser'
 import { ImageGenerationResult } from '../services/image-generation.service'
@@ -36,6 +36,19 @@ interface ComicPanelCardProps {
   showLoadingState?: boolean
   isRegenerating?: boolean
   maxRegenerations?: number
+  // Enhanced with theme selection
+  availableThemes?: Array<{
+    name: string
+    value: string
+    label: string
+    description: string
+  }>
+  currentTheme?: string
+  onThemeSelect?: (theme: string) => void
+  // Enhanced with AI prompt suggestions
+  aiPromptSuggestions?: string[]
+  onAIPromptSelect?: (prompt: string) => void
+  showAIPromptSuggestions?: boolean
 }
 
 export function ComicPanelCard({
@@ -156,9 +169,9 @@ export function ComicPanelCard({
         onClose={() => setIsImageExpanded(false)}
       />
       <div className="w-full max-w-7xl mx-auto">
-        {/* Comic Panel Container - Stacked layout with full-width image */}
+        {/* Comic Panel Container - Stacked layout with full-width image - Enhanced */}
         <div
-          className="rounded-lg shadow-2xl overflow-hidden transition-all duration-500 ease-out"
+          className="rounded-lg shadow-2xl overflow-hidden transition-all duration-500 ease-out card-enhanced"
           style={{
             backgroundColor: 'rgba(0,0,0,0.5)',
             border: `3px solid ${primaryColor}`,
@@ -238,6 +251,30 @@ export function ComicPanelCard({
                         </motion.button>
                       )}
                   </div>
+
+                  {/* Theme Selector - Enhanced Feature */}
+                  {availableThemes && availableThemes.length > 0 && (
+                    <div className="absolute top-4 right-4 z-20">
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-gray-900/80 backdrop-blur-sm border border-gray-700 rounded-lg p-1"
+                      >
+                        <select
+                          value={currentTheme}
+                          onChange={(e) => onThemeSelect?.(e.target.value)}
+                          className="bg-transparent text-white text-xs px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-purple-500"
+                          title="Select visual theme"
+                        >
+                          {availableThemes.map((theme: any) => (
+                            <option key={theme.value} value={theme.value} className="bg-gray-800 text-white">
+                              {theme.label}
+                            </option>
+                          ))}
+                        </select>
+                      </motion.div>
+                    </div>
+                  )}
 
                   {/* Loading overlay during regeneration */}
                   {isRegenerating && (
@@ -377,6 +414,32 @@ export function ComicPanelCard({
                         <RefreshCw className={`w-4 h-4 ${isRegenerating ? 'animate-spin' : ''}`} />
                         {isRegenerating ? 'Regenerating...' : isCustomPromptMode ? 'Regenerate with Custom Prompt' : 'Regenerate Image'}
                       </button>
+
+                      {/* AI Prompt Suggestions - Enhanced Feature */}
+                      {showAIPromptSuggestions && aiPromptSuggestions && aiPromptSuggestions.length > 0 && (
+                        <div className="mt-3 space-y-2">
+                          <div className="flex items-center gap-2 text-xs text-gray-400">
+                            <Lightbulb className="w-3 h-3 text-yellow-400" />
+                            <span>AI Suggestions</span>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto">
+                            {aiPromptSuggestions.map((suggestion: string, index: number) => (
+                              <button
+                                key={index}
+                                onClick={() => {
+                                  setCustomPrompt(suggestion)
+                                  setIsCustomPromptMode(true)
+                                  onAIPromptSelect?.(suggestion)
+                                }}
+                                className="text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 p-2 rounded border border-gray-700 transition-colors text-left line-clamp-2"
+                                title="Use this AI-generated prompt"
+                              >
+                                {suggestion}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 )}

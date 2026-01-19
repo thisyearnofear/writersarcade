@@ -55,14 +55,14 @@ export function AssetCard({
                 }
             }}
             onMouseLeave={() => setHoveredAsset(null)}
-            className={`bg-gray-800/40 border rounded-xl p-5 relative group transition-all ${
+            className={`card-enhanced relative group transition-all ${
                 isHovered
-                    ? 'border-purple-500 bg-purple-900/20 ring-2 ring-purple-500/30'
+                    ? 'border-writarcade-primary bg-writarcade-primary/10 ring-2 ring-writarcade-primary/30'
                     : isRelated
-                        ? 'border-purple-500/50 bg-purple-900/10'
+                        ? 'border-writarcade-primary/50 bg-writarcade-primary/10'
                         : isFaded
                             ? 'border-gray-700/30 bg-gray-800/20 opacity-40'
-                            : 'border-gray-700/50 hover:border-purple-500/30 hover:bg-gray-800/60'
+                            : 'border-gray-700/50 hover:border-writarcade-primary/30 hover:bg-gray-800/60'
             }`}
         >
             {/* Type Badge */}
