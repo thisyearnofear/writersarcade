@@ -26,12 +26,18 @@ export const metadata: Metadata = {
     description: 'Generate AI-powered games from articles using writer coins. Mint games as NFTs on Base.',
     images: [
       {
-        url: 'https://writarcade.vercel.app/api/og-image',
+        url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://writarcade.vercel.app'}/api/og-image`,
         width: 1200,
         height: 630,
         alt: 'WritArcade',
       },
     ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'WritArcade - Turn Articles into Games',
+    description: 'Generate AI-powered games from articles using writer coins. Mint games as NFTs on Base.',
+    images: [`${process.env.NEXT_PUBLIC_SITE_URL || 'https://writarcade.vercel.app'}/api/og-image`],
   },
 }
 

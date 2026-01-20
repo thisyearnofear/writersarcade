@@ -315,6 +315,8 @@ export class GameAIService {
 
   LENGTH REQUIREMENT: Keep narrative to exactly 2-3 sentences maximum. Use vivid, visual language that's punchy and engaging. Every sentence should describe the CURRENT scene.
 
+  FORMAT REQUIREMENT: Write ONLY the scene description. Do NOT include labels like "Opening Scene", "Scene 1", "The scene shows", or any other introductory text. Start immediately with the action and description.
+
   ${articleContext ? `\n  THEMATIC CONTINUITY: Keep the player's choices and journey grounded in the themes from the source article:\n  ${articleContext.split('\n').slice(0, 3).join('\n  ')}\n  Every moment should reinforce why this game was created based on that material.` : ''}
 
   ${paceGuidance}
@@ -517,8 +519,31 @@ CONCLUSION REQUIRED: This is the FINAL panel. You MUST bring the story to a sati
     if (isArticleContent) {
       basePrompt += `
 
-  CRITICAL: ARTICLE THEMATIC INTEGRATION
-  ========================================
+  The following article content defines your creative direction. Every game element MUST connect to its themes:
+  - Title, description, and tagline should reference or evoke the article's core ideas
+  - Game mechanics should reflect the article's arguments or narrative arc
+  - The subgenre should authentically represent the article's tone and subject matter
+  - Avoid generic "adventure" framing—this game must be specifically about this article's concepts
+
+  ${promptText}
+
+  After reading the above, you will design a game that makes readers think differently about these concepts.
+=======
+  CRITICAL: ARTICLE THEMATIC INTEGRATION (ENHANCED)
+  ==================================================
+  The following article content defines your creative direction. Every game element MUST connect to its themes AND particulars:
+  - Title, description, and tagline should reference or evoke the article's core ideas AND specific examples
+  - Game mechanics should reflect the article's arguments, narrative arc, AND key details
+  - The subgenre should authentically represent the article's tone, subject matter, AND specific scenarios
+  - Avoid generic "adventure" framing—this game must be specifically about this article's concepts AND particulars
+  - Capture at least 3-5 specific details, examples, or quotes from the article to make the game feel authentic
+
+  ${promptText}
+
+  After reading the above, you will design a game that:
+  1. Makes readers think differently about these concepts
+  2. Includes 3-5 specific references to article content (quotes, examples, data points)
+  3. Feels like it could only be about this specific article, not a generic version========================================
   The following article content defines your creative direction. Every game element MUST connect to its themes:
   - Title, description, and tagline should reference or evoke the article's core ideas
   - Game mechanics should reflect the article's arguments or narrative arc

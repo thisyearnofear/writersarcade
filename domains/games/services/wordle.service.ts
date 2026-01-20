@@ -26,17 +26,44 @@ export class WordleService {
   /**
    * Derive a Wordle answer from arbitrary article text.
    * Keeps logic pure so callers can pass in text from any source.
+   * 
+   * @param text - Article text to extract words from
+   * @param wordLength - Desired word length (default: 5)
+   * @param randomSeed - Optional seed for reproducible randomness (user ID, date, etc.)
+   * @param deterministic - If true, uses original deterministic algorithm (default: false)
    */
-  static deriveAnswerFromText(text: string, wordLength = WordleService.DEFAULT_WORD_LENGTH): string {
+  static deriveAnswerFromText(
+    text: string,
+    wordLength = WordleService.DEFAULT_WORD_LENGTH,
+    randomSeed?: string,
+    deterministic = false
+  ): string {
     const normalized = text.toLowerCase()
     const candidateWords = normalized.match(/\b[a-z]{3,}\b/g) || []
 
     const filtered = candidateWords.filter((w) => w.length === wordLength)
 
     if (filtered.length > 0) {
-      // Pick a deterministic-but-simple index so the same text yields the same answer
-      const index = Math.floor(filtered.length / 2)
-      return filtered[index]
+      if (deterministic) {
+        // Original deterministic algorithm: always pick the middle word
+        const index = Math.floor(filtered.length / 2)
+        return filtered[index]
+      } else {
+        // Enhanced algorithm: use seeded randomness for variety
+        // If no seed provided, use current date to ensure daily variety
+        const seed = randomSeed || new Date().toISOString().split('T')[0]
+        
+        // Simple hash function to convert seed to a number
+        let hash = 0
+        for (let i = 0; i < seed.length; i++) {
+          hash = (hash << 5) - hash + seed.charCodeAt(i)
+          hash |= 0 // Convert to 32bit integer
+        }
+        
+        // Use hash to select a word, ensuring we stay within bounds
+        const index = Math.abs(hash) % filtered.length
+        return filtered[index]
+      }
     }
 
     const fallback = WordleService.FALLBACK_WORDS.find((w) => w.length === wordLength)

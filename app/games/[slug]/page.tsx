@@ -41,8 +41,10 @@ export default async function GamePage({ params }: GamePageProps) {
       if (!game.articleUrl) {
         notFound()
       }
-      const processed = await ContentProcessorService.processUrl(game.articleUrl)
-      answer = WordleService.deriveAnswerFromText(processed.text)
+      // Enhanced: Use game-specific seed for randomness to avoid predictability
+      // Combine article URL and game ID for varied but reproducible results
+      const randomSeed = `${game.articleUrl}-${game.id}-${new Date().toISOString().split('T')[0]}`
+      answer = WordleService.deriveAnswerFromText(processed.text, undefined, randomSeed)
     }
 
     if (!answer) {

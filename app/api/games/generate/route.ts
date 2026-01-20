@@ -102,7 +102,10 @@ Your game MUST authentically interpret this article's core themes. Players shoul
         throw new Error('Failed to process article content for Wordle mode')
       }
 
-      const answer = WordleService.deriveAnswerFromText(processedContent.text)
+      // Enhanced: Use user-specific seed for randomness to avoid predictability
+      // Combine article URL and current date for varied but reproducible results
+      const randomSeed = validatedData.url ? `${validatedData.url}-${new Date().toISOString().split('T')[0]}` : new Date().toISOString()
+      const answer = WordleService.deriveAnswerFromText(processedContent.text, undefined, randomSeed)
       wordleAnswer = answer
 
       gameData = {

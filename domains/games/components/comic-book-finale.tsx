@@ -36,6 +36,8 @@ interface ComicBookFinaleProps {
   userChoices?: Array<{ panelIndex: number; choice: string; timestamp: string }>
   // Text editing callback
   onPanelTextChange?: (panelIndex: number, newText: string) => void
+  // Image editing callback
+  onPanelImageChange?: (panelIndex: number, customPrompt?: string) => void
 }
 
 export function ComicBookFinale({
@@ -492,18 +494,32 @@ export function ComicBookFinale({
                   )}
                 </div>
 
-                {/* Model badge */}
-                <div className="px-6 py-3 bg-black/40 border-b border-white/10 flex items-center gap-2">
-                  <span className="text-xs text-gray-400">Generated with:</span>
-                  <span
-                    className="text-xs font-mono px-2 py-1 rounded"
-                    style={{
-                      backgroundColor: `${primaryColor}20`,
-                      color: primaryColor,
-                    }}
-                  >
-                    {currentPanel.imageModel}
-                  </span>
+                {/* Model badge and regeneration */}
+                <div className="px-6 py-3 bg-black/40 border-b border-white/10 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-400">Generated with:</span>
+                    <span
+                      className="text-xs font-mono px-2 py-1 rounded"
+                      style={{
+                        backgroundColor: `${primaryColor}20`,
+                        color: primaryColor,
+                      }}
+                    >
+                      {currentPanel.imageModel}
+                    </span>
+                  </div>
+                  {currentPanel.imageUrl && onPanelImageChange && (
+                    <Button
+                      onClick={() => {
+                        const input = prompt('Enter custom prompt for regeneration (optional):')
+                        onPanelImageChange(currentPanelIndex, input || undefined)
+                      }}
+                      size="sm"
+                      className="bg-white/10 hover:bg-white/20 border-white/20 hover:border-white/30 text-white transition-all"
+                    >
+                      🔄 Regenerate Image
+                    </Button>
+                  )}
                 </div>
 
                 {/* Narrative in speech bubble */}
@@ -722,7 +738,7 @@ export function ComicBookFinale({
                 <Button
                   onClick={handlePrev}
                   disabled={currentPanelIndex === 0}
-                  className="px-4 py-2"
+                  className="px-4 py-2 bg-white/10 hover:bg-white/20 border-white/20 hover:border-white/30 text-white transition-all"
                   variant="outline"
                 >
                   ← Previous
@@ -748,7 +764,7 @@ export function ComicBookFinale({
                 <Button
                   onClick={handleNext}
                   disabled={currentPanelIndex === totalPanels - 1}
-                  className="px-4 py-2"
+                  className="px-4 py-2 bg-white/10 hover:bg-white/20 border-white/20 hover:border-white/30 text-white transition-all"
                   variant="outline"
                 >
                   Next →
