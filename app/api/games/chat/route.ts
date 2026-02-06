@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { GameAIService } from '@/domains/games/services/game-ai.service'
 import { prisma } from '@/lib/database'
 import { z } from 'zod'
+import { UserAIPreferenceService } from '@/lib/user-ai-preferences.service'
 
 const chatSchema = z.object({
   sessionId: z.string().uuid(),
@@ -86,6 +87,9 @@ export async function POST(request: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         try {
+          // Get user AI preferences
+          const userPreferences = await UserAIPreferenceService.getUserPreferences()
+
           // Get AI response with panel awareness and article thematic continuity
            const chatStream = GameAIService.chatGame(
              messages,
@@ -93,7 +97,8 @@ export async function POST(request: NextRequest) {
              game?.promptModel || 'gpt-4o-mini', // Use model from game generation for consistency
              currentPanelNumber,
              maxPanels,
-             articleContext
+             articleContext,
+             userPreferences
            )
           
           let assistantContent = ''

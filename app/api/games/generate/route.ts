@@ -6,6 +6,7 @@ import { WordleService } from '@/domains/games/services/wordle.service'
 import type { GameGenerationResponse } from '@/domains/games/types'
 import { optionalAuth } from '@/lib/auth'
 import { z } from 'zod'
+import { UserAIPreferenceService } from '@/lib/user-ai-preferences.service'
 
 // Request validation schema
 const generateGameSchema = z.object({
@@ -40,9 +41,13 @@ export async function POST(request: NextRequest) {
     const validatedData = generateGameSchema.parse(body)
     const mode = validatedData.mode ?? 'story'
 
-    //     // Get current user (optional)
+    // Get current user (optional)
     const user = await optionalAuth()
     console.log('User auth result:', { userId: user?.id, userWallet: user?.walletAddress })
+
+    // Get user AI preferences
+    const userPreferences = await UserAIPreferenceService.getUserPreferences()
+    console.log('User AI preferences:', { geminiEnabled: userPreferences.geminiEnabled, preferGemini: userPreferences.preferGemini })
 
     let processedPrompt = validatedData.promptText || ''
     let processedContent
@@ -142,9 +147,9 @@ Your game MUST authentically interpret this article's core themes. Players shoul
         payment: validatedData.payment,
       }
 
-      // Generate game using consolidated AI service
+      // Generate game using consolidated AI service with user preferences
       console.log('Calling GameAIService.generateGame with prompt length:', gameRequest.promptText?.length)
-      const aiGameData = await GameAIService.generateGame(gameRequest)
+      const aiGameData = await GameAIService.generateGame(gameRequest, 0, userPreferences)
       console.log('AI generation successful:', { title: aiGameData.title, genre: aiGameData.genre })
 
       gameData = {

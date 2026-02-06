@@ -3,6 +3,7 @@ import { GameDatabaseService } from '@/domains/games/services/game-database.serv
 import { GameAIService } from '@/domains/games/services/game-ai.service'
 import { prisma } from '@/lib/database'
 import { z } from 'zod'
+import { UserAIPreferenceService } from '@/lib/user-ai-preferences.service'
 
 const startGameSchema = z.object({
   sessionId: z.string().uuid(),
@@ -58,6 +59,9 @@ export async function POST(
     const stream = new ReadableStream({
       async start(controller) {
         try {
+          // Get user AI preferences
+          const userPreferences = await UserAIPreferenceService.getUserPreferences()
+
           // Start the game using AI service (panel 1 of 5)
           const gameStream = GameAIService.startGame(
             {
@@ -69,7 +73,8 @@ export async function POST(
             },
             sessionId,
             game.promptModel,
-            game.articleContext // Pass article context for narrative continuity
+            game.articleContext, // Pass article context for narrative continuity
+            userPreferences
           )
           
           let assistantContent = ''

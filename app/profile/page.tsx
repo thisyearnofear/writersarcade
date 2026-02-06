@@ -5,6 +5,7 @@ import { GameDatabaseService } from '@/domains/games/services/game-database.serv
 import { UserPreferencesForm } from '@/domains/users/components/user-profile-form'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
+import { AISettingsWrapper } from '@/components/settings/AISettingsWrapper'
 
 export const dynamic = 'force-dynamic'
 
@@ -48,13 +49,16 @@ export default async function ProfilePage() {
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Preferences Settings */}
             <div className="lg:col-span-1">
-              <div className="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
+              <div className="bg-gray-900/50 rounded-lg border border-gray-700 p-6 mb-6">
                 <h2 className="text-xl font-semibold mb-4">Game Preferences</h2>
                 <UserPreferencesForm user={user} />
               </div>
 
+              {/* The AISettingsWrapper will handle getting preferences client-side */}
+              <AISettingsWrapper />
+
               {/* Stats */}
-              <div className="mt-6 bg-gray-900/50 rounded-lg border border-gray-700 p-6">
+              <div className="bg-gray-900/50 rounded-lg border border-gray-700 p-6">
                 <h3 className="text-lg font-semibold mb-4">Your Stats</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between">

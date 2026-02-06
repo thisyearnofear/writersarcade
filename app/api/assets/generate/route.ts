@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { GameAIService } from '@/domains/games/services/game-ai.service'
 import { ContentProcessorService } from '@/domains/content/services/content-processor.service'
 import { z } from 'zod'
+import { UserAIPreferenceService } from '@/lib/user-ai-preferences.service'
 
 const generateAssetsSchema = z.object({
   url: z.string().url(),
@@ -17,13 +18,16 @@ export async function POST(request: NextRequest) {
     const content = await ContentProcessorService.processUrl(url)
     const promptText = `Content from "${content.title}" by ${content.author}:\n\n${content.text}`
 
-    // 2. Generate Assets (Reuse existing AI service)
+    // 2. Get user AI preferences
+    const userPreferences = await UserAIPreferenceService.getUserPreferences()
+
+    // Generate Assets (Reuse existing AI service)
     const assets = await GameAIService.generateAssets({
       promptText,
       genre,
       model,
       url
-    })
+    }, 0, userPreferences)
 
     // 3. Store Assets (Use Prisma directly for now, keeping it simple)
     // In a full implementation, we'd loop through and create Asset records

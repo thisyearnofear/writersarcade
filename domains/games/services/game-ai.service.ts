@@ -1,5 +1,3 @@
-import { openai } from '@ai-sdk/openai'
-import { anthropic } from '@ai-sdk/anthropic'
 import { generateObject, streamText } from 'ai'
 import { z } from 'zod'
 import type {
@@ -9,16 +7,9 @@ import type {
   AssetGenerationRequest,
   AssetGenerationResponse
 } from '../types'
+import type { UserAIPreferences } from '@/lib/user-ai-preferences.service'
+import { getModel } from '@/lib/ai-model-compatibility'
 
-// Consolidate AI model providers
-const getModel = (modelName: string) => {
-  if (modelName.startsWith('gpt')) {
-    return openai(modelName)
-  } else if (modelName.startsWith('claude')) {
-    return anthropic(modelName)
-  }
-  return openai('gpt-4o-mini') // fallback
-}
 
 // Game generation schema for structured output
 const gameGenerationSchema = z.object({
@@ -76,12 +67,12 @@ export class GameAIService {
   /**
    * Generate a new game from prompt text or URL content
    * Enhanced version of original GenerateGame.js
-   * 
+   *
    * Supports optional customization (genre, difficulty) for mini-app experience
    * Includes validation and retry logic for customization constraints
    */
-  static async generateGame(request: GameGenerationRequest, retryCount = 0): Promise<GameGenerationResponse> {
-    const model = getModel(request.model || 'gpt-4o-mini')
+  static async generateGame(request: GameGenerationRequest, retryCount = 0, userPreferences?: UserAIPreferences): Promise<GameGenerationResponse> {
+    const model = getModel(request.model || 'gpt-4o-mini', userPreferences)
     const maxRetries = 2
 
     let promptText = request.promptText || ''
@@ -168,17 +159,18 @@ export class GameAIService {
   /**
    * Generate reusable game assets from article content
    * Asset Marketplace feature (Sprint 1)
-   * 
+   *
    * Extracts: Characters, Story Beats, Game Mechanics, Visual Guidelines
    * Reuses: Same model provider, error handling, retry logic as generateGame()
-   * 
+   *
    * ENHANCEMENT FIRST: Follows same pattern as generateGame for consistency
    */
   static async generateAssets(
     request: AssetGenerationRequest,
-    retryCount = 0
+    retryCount = 0,
+    userPreferences?: UserAIPreferences
   ): Promise<AssetGenerationResponse> {
-    const model = getModel(request.model || 'gpt-4o-mini')
+    const model = getModel(request.model || 'gpt-4o-mini', userPreferences)
     const maxRetries = 2
 
     let promptText = request.promptText || ''
@@ -232,17 +224,18 @@ export class GameAIService {
   /**
    * Start a new game session with initial narrative
    * Enhanced version of original StartGame.js
-   * 
+   *
    * Now supports optional article context for richer narrative continuity
    */
   static async* startGame(
     game: { title: string; description: string; genre: string; subgenre: string; tagline: string },
     sessionId: string,
     model: string = 'gpt-4o-mini',
-    articleContext?: string
+    articleContext?: string,
+    userPreferences?: UserAIPreferences
   ): AsyncGenerator<GameplayResponse> {
 
-    const aiModel = getModel(model)
+    const aiModel = getModel(model, userPreferences)
     const prompt = this.buildStartGamePrompt(game, articleContext)
 
     try {
@@ -291,10 +284,11 @@ export class GameAIService {
     model: string = 'gpt-4o-mini',
     currentPanel: number = 1,
     maxPanels: number = 5,
-    articleContext?: string
+    articleContext?: string,
+    userPreferences?: UserAIPreferences
   ): AsyncGenerator<GameplayResponse> {
 
-    const aiModel = getModel(model)
+    const aiModel = getModel(model, userPreferences)
 
     // Build story pacing guidance based on position in narrative
     const paceGuidance = this.getPacingGuidance(currentPanel, maxPanels)

@@ -4,6 +4,7 @@ import { GameAIService } from '@/domains/games/services/game-ai.service'
 import { GameDatabaseService } from '@/domains/games/services/game-database.service'
 import { getWriterCoinById, validateArticleUrl } from '@/lib/writerCoins'
 import { z } from 'zod'
+import { UserAIPreferenceService } from '@/lib/user-ai-preferences.service'
 
 // Validation schema for mini-app game generation
 const miniAppGameGenerationSchema = z.object({
@@ -82,13 +83,16 @@ The game should be engaging and interactive with:
 - ${validatedData.difficulty === 'easy' ? 'Accessible gameplay with clear paths' : 'Challenging gameplay with meaningful consequences'}
 - Thematically relevant mechanics and narrative`
 
+    // Get user AI preferences
+    const userPreferences = await UserAIPreferenceService.getUserPreferences()
+
     // Generate game using AI service
     const gameData = await GameAIService.generateGame({
       promptText,
       url: validatedData.articleUrl,
       model: 'gpt-4o-mini',
       promptName: `MiniApp-${validatedData.genre}-${validatedData.difficulty}`,
-    })
+    }, 0, userPreferences)
 
     // Save to database with mini-app specific fields
     const savedGame = await GameDatabaseService.createGame(
