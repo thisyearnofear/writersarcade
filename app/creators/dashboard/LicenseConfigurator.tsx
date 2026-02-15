@@ -1,9 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { WriterCoin } from '@/lib/writerCoins';
-
-function formatBP(bp: number) { return `${(bp/100).toFixed(2)}%` }
 
 export function LicenseConfigurator({ writerCoin }: { writerCoin: WriterCoin }) {
     const [royalty, setRoyalty] = useState(writerCoin.revenueDistribution.writer);

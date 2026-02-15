@@ -83,7 +83,6 @@ export function AssetMintChecklist({
 
     const criticalItems = checklist.filter(item => item.category === 'critical')
     const optionalItems = checklist.filter(item => item.category === 'optional')
-    const allPassed = checklist.every(item => item.passed)
     const criticalPassed = criticalItems.every(item => item.passed)
 
     const canMint = criticalPassed

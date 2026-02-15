@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import { radioCardClass } from './radioCard'
 
 export type GameGenre = 'horror' | 'comedy' | 'mystery'

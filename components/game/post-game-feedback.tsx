@@ -2,16 +2,16 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ThumbsUp, ThumbsDown, MessageCircle } from 'lucide-react'
+import { ThumbsUp } from 'lucide-react'
 
 interface PostGameFeedbackProps {
-  gameId: string
+  _gameId: string
   onSubmit?: (feedback: { npsScore: number; comment?: string }) => Promise<void>
   onSkip?: () => void
 }
 
 export function PostGameFeedback({
-  gameId,
+  _gameId,
   onSubmit,
   onSkip,
 }: PostGameFeedbackProps) {

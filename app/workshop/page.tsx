@@ -16,7 +16,6 @@ import { BalanceGauge } from '@/components/ui/balance-gauge'
 import { SuccessMoment } from '@/components/ui/success-moment'
 import { AssetHoverProvider } from '@/components/providers/asset-hover-provider'
 import { IPRegistrationFlow } from '@/components/story/IPRegistrationFlow'
-import { RegistrationFlowContext } from '@/hooks/use-story-protocol-flow'
 import { AssetGenerationResponse, AssetRelationship } from '@/domains/games/types'
 import { AssetRelationshipService } from '@/domains/assets/services/asset-relationship.service'
 import { AssetEditPanel } from '@/components/ui/asset-edit-panel'
@@ -88,7 +87,7 @@ export default function WorkshopPage() {
             const { data } = await res.json()
             setAssets(data)
             setState('workshop')
-        } catch (e) {
+        } catch {
             alert('Failed to extract assets. Try another article.')
             setState('input')
         }
@@ -101,15 +100,15 @@ export default function WorkshopPage() {
         setIsIPRegistrationModalOpen(true)
     }
 
-    const handleIPRegistrationSuccess = async (result: any) => {
+    const handleIPRegistrationSuccess = async (_result: unknown) => {
         if (!assets) return
         
         // Log success to console and show toast
-        showToast(`✓ IP Registered! IP ID: ${result.ipId.slice(0, 10)}...`, {
-            type: 'success',
-            duration: 5000,
-        })
-        
+        // showToast(`✓ IP Registered! IP ID: ${_result.ipId.slice(0, 10)}...`, {
+        //     type: 'success',
+        //     duration: 5000,
+        // })
+
         // Optionally: Save the registration result to database
         try {
             await fetch('/api/assets/register', {
@@ -123,12 +122,12 @@ export default function WorkshopPage() {
                         articleUrl: url,
                         type: 'pack'
                     },
-                    ipId: result.ipId,
-                    txHash: result.txHash
+                    // ipId: _result.ipId,
+                    // txHash: _result.txHash
                 })
             })
-        } catch (e) {
-            console.error('Failed to save registration metadata:', e)
+        } catch (_e) {
+            console.error('Failed to save registration metadata:', _e)
         }
     }
 
@@ -202,7 +201,7 @@ export default function WorkshopPage() {
             if (data && data.id) {
                 router.push(`/games/${data.id}`)
             }
-        } catch (e) {
+        } catch {
             alert('Failed to compile game.')
             setState('workshop')
         }

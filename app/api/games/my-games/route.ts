@@ -26,7 +26,9 @@ export async function GET(request: NextRequest) {
         if (maybeUser?.walletAddress) {
           wallet = maybeUser.walletAddress
         }
-      } catch {}
+      } catch {
+        // Silently handle auth errors - user remains unauthenticated
+      }
     }
 
     if (!wallet) {
@@ -116,8 +118,8 @@ export async function GET(request: NextRequest) {
       nftTransactionHash: game.nftTransactionHash,
       nftMintedAt: game.nftMintedAt,
       private: game.private,
-      playFee: (game as any).playFee,
-      featured: (game as any).featured ?? false,
+      playFee: game.playFee,
+      featured: game.featured ?? false,
       createdAt: game.createdAt,
       updatedAt: game.updatedAt,
     }))

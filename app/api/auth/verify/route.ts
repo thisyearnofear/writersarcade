@@ -4,7 +4,7 @@ import { cookies } from 'next/headers'
 import { prisma } from '@/lib/database'
 
 export async function POST(req: Request) {
-    let message: any;
+    let message: unknown;
     let signature: string;
 
     try {
@@ -72,11 +72,11 @@ export async function POST(req: Request) {
 
         return response
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('SIWE verification failed:', error)
         console.error('Error content:', {
-            name: error?.name,
-            message: error?.message,
+            name: error instanceof Error ? error.name : 'Unknown',
+            message: error instanceof Error ? error.message : 'Unknown error',
         });
 
         if (message) {
@@ -84,7 +84,7 @@ export async function POST(req: Request) {
         }
 
         return NextResponse.json(
-            { success: false, error: String(error?.message || 'Invalid signature') },
+            { success: false, error: error instanceof Error ? error.message : 'Invalid signature' },
             { status: 401 }
         )
     }

@@ -18,7 +18,7 @@ const nextConfig = {
   experimental: {
     optimizeCss: false, // Disable CSS optimization that may cause issues
   },
-  webpack: (config, { isServer, webpack }) => {
+  webpack: (config, { _isServer, webpack }) => {
     // Ignore test files from problematic dependencies
     config.module.rules.push({
       test: /\.(test|spec)\.(js|ts|mjs)$/,

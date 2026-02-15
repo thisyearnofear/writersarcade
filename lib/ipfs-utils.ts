@@ -54,8 +54,6 @@ export async function uploadToIPFS(metadata: object): Promise<string> {
     logger.ipfs('Uploaded to IPFS', { hash: ipfsHash });
     return `ipfs://${ipfsHash}`;
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Unknown IPFS error";
     logger.error("IPFS upload failed", error, { context: 'ipfs-upload' });
 
     if (config.isProduction) {

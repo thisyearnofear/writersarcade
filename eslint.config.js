@@ -14,6 +14,7 @@ module.exports = [
       '.git/**',
       'test-content-processor.ts',
       'scripts/**',
+      'public/client.min.js',
     ],
   },
   js.configs.recommended,

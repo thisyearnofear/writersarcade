@@ -29,9 +29,9 @@ export async function POST(request: NextRequest) {
     // In production, you should verify the signature
     // See: https://docs.farcaster.xyz/developers/miniapps/notifications
     
-    const header = body.header
+    const _header = body.header
     const payload = body.payload
-    const signature = body.signature
+    const _signature = body.signature
 
     if (!payload) {
       return NextResponse.json(
@@ -53,11 +53,11 @@ export async function POST(request: NextRequest) {
         // User added your mini app
         // Save notification token if provided for sending notifications later
         if (decodedPayload.notificationDetails) {
-          const { token, url } = decodedPayload.notificationDetails
+          const { token, _url } = decodedPayload.notificationDetails
           console.log('Store notification token for user:', token)
           // TODO: Save token to database for this user
           // const userId = decodeFarcasterUser(header)
-          // await db.notificationTokens.create({ userId, token, url })
+          // await db.notificationTokens.create({ userId, token, _url })
         }
         break
 
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
       case 'notifications_enabled':
         // User re-enabled notifications
         if (decodedPayload.notificationDetails) {
-          const { token, url } = decodedPayload.notificationDetails
+          const { token, _url } = decodedPayload.notificationDetails
           console.log('Update notification token:', token)
           // TODO: Update token in database
         }

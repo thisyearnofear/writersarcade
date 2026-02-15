@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/database'
-import { getCurrentUser, requireAuth } from '@/lib/auth'
+import { getCurrentUser } from '@/lib/auth'
 import { logger } from '@/lib/config'
 
 /**

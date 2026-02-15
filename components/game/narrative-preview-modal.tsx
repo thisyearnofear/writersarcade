@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Play, BookOpen, Image as ImageIcon, LayoutPanelTop } from 'lucide-react'
+import { X, Play, Image as ImageIcon, LayoutPanelTop } from 'lucide-react'
 import { Game } from '@/domains/games/types'
 
 interface StoryboardPanel {

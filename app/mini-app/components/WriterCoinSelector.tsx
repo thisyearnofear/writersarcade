@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 
 import { WRITER_COINS, type WriterCoin } from '@/lib/writerCoins'
 
@@ -8,62 +7,7 @@ interface WriterCoinSelectorProps {
     onSelect: (coin: WriterCoin) => void
 }
 
-function formatBP(bp: number) { return `${(bp/100).toFixed(2)}%` }
-
-function OnChainSplit({ coinAddress }: { coinAddress: `0x${string}` }) {
-    const [gen, setGen] = useState<any>(null)
-    const [mint, setMint] = useState<any>(null)
-    const [error, setError] = useState<string | null>(null)
-
-    useEffect(() => {
-        let cancelled = false
-        ;(async () => {
-            try {
-                const { fetchGenerationDistributionOnChain, fetchMintDistributionOnChain } = await import('@/lib/contracts')
-                const genRes = await fetchGenerationDistributionOnChain(coinAddress)
-                const mintResRaw = await fetchMintDistributionOnChain(coinAddress)
-                const mintRes = { writerBP: (mintResRaw as any).writerBP || 0, platformBP: (mintResRaw as any).platformBP || 0, creatorBP: (mintResRaw as any).creatorBP || 0 }
-                if (!cancelled) { setGen(genRes); setMint(mintRes) }
-            } catch (e) {
-                if (!cancelled) setError('On-chain split unavailable')
-            }
-        })()
-        return () => { cancelled = true }
-    }, [coinAddress])
-
-    if (error) {
-        return (
-            <p className="text-xs text-purple-200">
-                <span className="font-semibold">Revenue:</span> On-chain configurable per coin (unavailable to load).
-            </p>
-        )
-    }
-
-    return (
-        <div className="text-xs text-purple-200 space-y-1">
-            <div>
-                <span className="font-semibold">Generation:</span>{' '}
-                {gen ? (
-                    <>
-                        Writer {formatBP(gen.writerBP)} • Platform {formatBP(gen.platformBP)} • Creator Pool {formatBP(gen.creatorBP)}
-                    </>
-                ) : (
-                    'Loading...'
-                )}
-            </div>
-            <div>
-                <span className="font-semibold">Minting:</span>{' '}
-                {mint ? (
-                    <>
-                        Creator {formatBP(mint.creatorBP)} • Writer {formatBP(mint.writerBP)} • Platform {formatBP(mint.platformBP)} • Remainder to payer
-                    </>
-                ) : (
-                    'Loading...'
-                )}
-            </div>
-        </div>
-    )
-}
+function _formatBP(bp: number) { return `${(bp/100).toFixed(2)}%` }
 
 export function WriterCoinSelector({ onSelect }: WriterCoinSelectorProps) {
     return (

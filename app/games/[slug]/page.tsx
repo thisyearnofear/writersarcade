@@ -3,7 +3,6 @@ import { GameDatabaseService } from '@/domains/games/services/game-database.serv
 import { GamePlayInterface } from '@/domains/games/components/game-play-interface'
 import { WordleGameInterface } from '@/domains/games/components/wordle-game-interface'
 import { ImageGenerationService } from '@/domains/games/services/image-generation.service'
-import { ContentProcessorService } from '@/domains/content/services/content-processor.service'
 import { WordleService } from '@/domains/games/services/wordle.service'
 import { IPAttribution } from '@/domains/games/components/ip-attribution'
 
@@ -59,7 +58,7 @@ export default async function GamePage({ params }: GamePageProps) {
   }
 
   // Extract and flatten assets for the attribution component
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+   
   // @ts-expect-error - GameDatabaseService includes assets via include; type not reflected here
   const linkedAssets = game.gamesFromAssets?.map((relation: { asset: unknown }) => relation.asset) || []
 

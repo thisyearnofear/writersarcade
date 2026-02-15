@@ -121,7 +121,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
       <button
         ref={kebabRef}
         onClick={() => setIsOpen(!isOpen)}
-        onBlur={(e) => {
+        onBlur={(_e) => {
           // Close when focus leaves kebab and menu
           setTimeout(() => {
             const related = document.activeElement

@@ -10,7 +10,7 @@
  */
 
 import { Address } from "viem";
-import { StoryClient, IpMetadata, PILFlavor } from "@story-protocol/core-sdk";
+import { StoryClient, IpMetadata } from "@story-protocol/core-sdk";
 import { computeMetadataHash } from "./ipfs-utils";
 import {
   STORY_SPG_CONTRACT,

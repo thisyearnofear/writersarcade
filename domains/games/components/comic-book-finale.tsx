@@ -1,15 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, Download, Zap, Grid3X3, Eye, Pencil, Check, X } from 'lucide-react'
+import { ChevronLeft, Download, Zap, Grid3X3, Eye, Pencil, Check, X, Volume2, VolumeX, Play, Pause, Loader2 } from 'lucide-react'
 import { ImageLightbox } from './image-lightbox'
 import { ShareDropdown } from '@/components/ui/share-dropdown'
 import { UserAttribution, AttributionPair } from '@/components/ui/user-attribution'
-import { IPRegistration, type GameIPMetadata } from '@/components/story/IPRegistration'
+import { IPRegistration } from '@/components/story/IPRegistration'
 import { ipfsMetadataService, type GameCreator, type GameAuthor } from '@/lib/services/ipfs-metadata.service'
 import { userIdentityService } from '@/lib/services/user-identity.service'
 import { PostGameFeedback } from '@/components/game/post-game-feedback'
+import { VoiceNarrationService } from '../services/voice-narration.service'
 
 export interface ComicBookFinalePanelData {
   id: string
@@ -17,6 +18,7 @@ export interface ComicBookFinalePanelData {
   imageUrl: string | null
   imageModel: string
   userChoice?: string
+  audioUrl?: string | null  // Audio narration URL
 }
 
 interface ComicBookFinaleProps {
@@ -38,6 +40,8 @@ interface ComicBookFinaleProps {
   onPanelTextChange?: (panelIndex: number, newText: string) => void
   // Image editing callback
   onPanelImageChange?: (panelIndex: number, customPrompt?: string) => void
+  // Audio editing callback - persists audio to panel data
+  onPanelAudioChange?: (panelIndex: number, audioUrl: string | null) => void
 }
 
 export function ComicBookFinale({
@@ -55,6 +59,8 @@ export function ComicBookFinale({
   difficulty = 'medium',
   userChoices = [],
   onPanelTextChange,
+  onPanelImageChange,
+  onPanelAudioChange,
 }: ComicBookFinaleProps) {
   const [currentPanelIndex, setCurrentPanelIndex] = useState(0)
   const [isImageExpanded, setIsImageExpanded] = useState(false)
@@ -63,9 +69,28 @@ export function ComicBookFinale({
   const [nftMintedMetadata, setNftMintedMetadata] = useState<{ nftMetadataUri: string; gameMetadataUri: string; creator: GameCreator; author: GameAuthor } | null>(null)
   const [isEditingText, setIsEditingText] = useState(false)
   const [editedText, setEditedText] = useState('')
-  const [showFeedback, setShowFeedback] = useState(false) // NEW: Show feedback modal after gameplay
+  const [showFeedback, setShowFeedback] = useState(false) // Show feedback modal after gameplay
+  
+  // Audio narration state
+  const [panelAudioUrls, setPanelAudioUrls] = useState<Map<string, string>>(() => {
+    // Initialize from panel data if audio already exists
+    const initial = new Map<string, string>()
+    panels.forEach(p => {
+      if (p.audioUrl) initial.set(p.id, p.audioUrl)
+    })
+    return initial
+  })
+  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false)
+  const [generatingPanelId, setGeneratingPanelId] = useState<string | null>(null) // Track per-panel generation
+  const [audioGenerationProgress, setAudioGenerationProgress] = useState(0)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [isAutoPlayMode, setIsAutoPlayMode] = useState(false)
+  const [audioError, setAudioError] = useState<string | null>(null)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  
   const currentPanel = panels[currentPanelIndex]
   const totalPanels = panels.length
+  const currentAudioUrl = panelAudioUrls.get(currentPanel?.id || '') || currentPanel?.audioUrl
 
   // Prepare share data using existing game props
   const shareData = {
@@ -113,6 +138,176 @@ export function ComicBookFinale({
     setIsEditingText(false)
   }
 
+  // Audio narration handlers
+  const generateAllNarration = useCallback(async () => {
+    if (isGeneratingAudio) return
+    
+    setIsGeneratingAudio(true)
+    setAudioGenerationProgress(0)
+    setAudioError(null)
+    
+    const newAudioUrls = new Map(panelAudioUrls)
+    let errorCount = 0
+    
+    for (let i = 0; i < panels.length; i++) {
+      const panel = panels[i]
+      setGeneratingPanelId(panel.id)
+      
+      // Skip if already generated
+      if (newAudioUrls.has(panel.id) || panel.audioUrl) {
+        setAudioGenerationProgress(((i + 1) / panels.length) * 100)
+        continue
+      }
+      
+      try {
+        const result = await VoiceNarrationService.generateNarration(
+          panel.narrativeText,
+          genre
+        )
+        
+        if (result.audioUrl) {
+          newAudioUrls.set(panel.id, result.audioUrl)
+          // Persist to panel data if callback provided
+          if (onPanelAudioChange) {
+            onPanelAudioChange(i, result.audioUrl)
+          }
+        } else {
+          errorCount++
+        }
+      } catch (error) {
+        console.error(`Failed to generate audio for panel ${i + 1}:`, error)
+        errorCount++
+      }
+      
+      setAudioGenerationProgress(((i + 1) / panels.length) * 100)
+    }
+    
+    setPanelAudioUrls(newAudioUrls)
+    setIsGeneratingAudio(false)
+    setGeneratingPanelId(null)
+    
+    if (errorCount > 0) {
+      setAudioError(`Failed to generate ${errorCount} of ${panels.length} panels`)
+    }
+  }, [panels, genre, isGeneratingAudio, panelAudioUrls, onPanelAudioChange])
+
+  // Generate audio for a single panel (per-panel regeneration)
+  const regeneratePanelAudio = useCallback(async (panelIndex: number) => {
+    const panel = panels[panelIndex]
+    if (!panel || generatingPanelId) return
+    
+    setGeneratingPanelId(panel.id)
+    setAudioError(null)
+    
+    try {
+      const result = await VoiceNarrationService.generateNarration(
+        panel.narrativeText,
+        genre,
+        { force: true } // Force regeneration
+      )
+      
+      if (result.audioUrl) {
+        setPanelAudioUrls(prev => {
+          const updated = new Map(prev)
+          updated.set(panel.id, result.audioUrl!)
+          return updated
+        })
+        // Persist to panel data if callback provided
+        if (onPanelAudioChange) {
+          onPanelAudioChange(panelIndex, result.audioUrl)
+        }
+      } else {
+        setAudioError('Failed to regenerate audio')
+      }
+    } catch (error) {
+      console.error(`Failed to regenerate audio for panel ${panelIndex + 1}:`, error)
+      setAudioError('Failed to regenerate audio')
+    }
+    
+    setGeneratingPanelId(null)
+  }, [panels, genre, generatingPanelId, onPanelAudioChange])
+
+  const togglePlayPause = useCallback(() => {
+    if (!audioRef.current || !currentAudioUrl) return
+    
+    setAudioError(null)
+    if (isPlaying) {
+      audioRef.current.pause()
+    } else {
+      audioRef.current.play().catch(err => {
+        console.error('Audio playback failed:', err)
+        setAudioError('Audio playback failed')
+      })
+    }
+    setIsPlaying(!isPlaying)
+  }, [isPlaying, currentAudioUrl])
+
+  const handleAudioEnded = useCallback(() => {
+    setIsPlaying(false)
+    
+    // Auto-advance to next panel in auto-play mode
+    if (isAutoPlayMode && currentPanelIndex < totalPanels - 1) {
+      setCurrentPanelIndex(prev => prev + 1)
+    } else if (isAutoPlayMode && currentPanelIndex === totalPanels - 1) {
+      setIsAutoPlayMode(false) // Stop auto-play at end
+    }
+  }, [isAutoPlayMode, currentPanelIndex, totalPanels])
+
+  const handleAudioError = useCallback(() => {
+    setIsPlaying(false)
+    setAudioError('Audio playback error')
+  }, [])
+
+  const startCinematicMode = useCallback(async () => {
+    // Generate all audio first if not already done
+    const generatedCount = panelAudioUrls.size + panels.filter(p => p.audioUrl).length
+    if (generatedCount < panels.length) {
+      await generateAllNarration()
+    }
+    
+    setCurrentPanelIndex(0)
+    setIsAutoPlayMode(true)
+  }, [panels, panelAudioUrls.size, generateAllNarration])
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      // Don't handle if user is typing in an input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      if (isImageExpanded || isEditingText) return
+      
+      // Spacebar: toggle play/pause
+      if (e.code === 'Space' && currentAudioUrl) {
+        e.preventDefault()
+        togglePlayPause()
+      }
+    }
+    
+    window.addEventListener('keydown', handleGlobalKeyDown)
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown)
+  }, [currentAudioUrl, togglePlayPause, isImageExpanded, isEditingText])
+
+  // Auto-play audio when panel changes in auto-play mode
+  useEffect(() => {
+    if (isAutoPlayMode && currentAudioUrl && audioRef.current) {
+      audioRef.current.src = currentAudioUrl
+      audioRef.current.play().then(() => setIsPlaying(true)).catch(err => {
+        console.error('Auto-play failed:', err)
+        setAudioError('Auto-play failed')
+        setIsAutoPlayMode(false)
+      })
+    }
+  }, [currentPanelIndex, isAutoPlayMode, currentAudioUrl])
+
+  // Update audio source when panel changes (manual navigation)
+  useEffect(() => {
+    if (audioRef.current && currentAudioUrl && !isAutoPlayMode) {
+      audioRef.current.src = currentAudioUrl
+      setIsPlaying(false)
+    }
+    // Clear error when changing panels
+    setAudioError(null)
+  }, [currentPanelIndex, currentAudioUrl, isAutoPlayMode])
 
   const handleMintWithMetadata = async () => {
     try {
@@ -361,6 +556,16 @@ export function ComicBookFinale({
 
   return (
     <>
+      {/* Hidden audio element for narration playback */}
+      <audio
+        ref={audioRef}
+        onEnded={handleAudioEnded}
+        onPause={() => setIsPlaying(false)}
+        onPlay={() => setIsPlaying(true)}
+        onError={handleAudioError}
+        className="hidden"
+      />
+      
       <ImageLightbox
         isOpen={isImageExpanded}
         imageUrl={currentPanel.imageUrl}
@@ -806,7 +1011,91 @@ export function ComicBookFinale({
             </div>
 
             {/* Action buttons */}
-            <div className="flex gap-3 flex-wrap">
+            <div className="flex gap-3 flex-wrap items-center">
+              {/* Audio error indicator */}
+              {audioError && (
+                <span className="text-xs text-red-400 px-2 py-1 bg-red-500/10 rounded">
+                  {audioError}
+                </span>
+              )}
+              
+              {/* Audio narration controls */}
+              {panelAudioUrls.size === 0 && !panels.some(p => p.audioUrl) ? (
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  onClick={generateAllNarration}
+                  disabled={isGeneratingAudio}
+                  title="Generate voice narration for all panels (Spacebar to play/pause)"
+                >
+                  {isGeneratingAudio ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      {Math.round(audioGenerationProgress)}%
+                    </>
+                  ) : (
+                    <>
+                      <Volume2 className="w-4 h-4" />
+                      Narration
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <>
+                  {/* Play/Pause current panel audio */}
+                  <Button
+                    variant="outline"
+                    className="gap-2"
+                    onClick={togglePlayPause}
+                    disabled={!currentAudioUrl || generatingPanelId === currentPanel?.id}
+                    title={isPlaying ? 'Pause narration (Space)' : 'Play narration (Space)'}
+                  >
+                    {generatingPanelId === currentPanel?.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : isPlaying ? (
+                      <Pause className="w-4 h-4" />
+                    ) : (
+                      <Play className="w-4 h-4" />
+                    )}
+                    {generatingPanelId === currentPanel?.id ? 'Generating...' : isPlaying ? 'Pause' : 'Play'}
+                  </Button>
+                  
+                  {/* Regenerate current panel audio */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1 text-xs"
+                    onClick={() => regeneratePanelAudio(currentPanelIndex)}
+                    disabled={!!generatingPanelId || isAutoPlayMode}
+                    title="Regenerate audio for this panel"
+                  >
+                    🔄
+                  </Button>
+                  
+                  {/* Cinematic auto-play mode */}
+                  <Button
+                    variant={isAutoPlayMode ? 'default' : 'outline'}
+                    className="gap-2"
+                    onClick={() => isAutoPlayMode ? setIsAutoPlayMode(false) : startCinematicMode()}
+                    disabled={isGeneratingAudio}
+                    style={{
+                      backgroundColor: isAutoPlayMode ? primaryColor : undefined,
+                      borderColor: primaryColor,
+                    }}
+                    title={isAutoPlayMode ? 'Stop cinematic mode' : 'Start cinematic auto-play'}
+                  >
+                    {isGeneratingAudio ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : isAutoPlayMode ? (
+                      <VolumeX className="w-4 h-4" />
+                    ) : (
+                      <Volume2 className="w-4 h-4" />
+                    )}
+                    {isAutoPlayMode ? 'Stop' : 'Cinematic'}
+                  </Button>
+                </>
+              )}
+              
               <ShareDropdown
                 data={shareData}
                 variant="outline"

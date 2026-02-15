@@ -1,4 +1,3 @@
-import { WriterCoin } from '@/lib/writerCoins'
 import { prisma } from '@/lib/database'
 
 export interface CreatorStats {

@@ -67,10 +67,10 @@ export function useMobileOptimizations(): MobileOptimizations {
     
     // Also listen for changes to reduced motion preference
     const motionMediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const handleMotionChange = (e: MediaQueryListEvent) => {
+    const handleMotionChange = (_e: MediaQueryListEvent) => {
       setOptimizations(prev => ({
         ...prev,
-        prefersReducedMotion: e.matches,
+        prefersReducedMotion: _e.matches,
       }));
     };
     
@@ -98,8 +98,8 @@ export function useMobileOptimizations(): MobileOptimizations {
     }
     
     // Optimize font loading for mobile - ORGANIZED
-    (document.body.style as any).fontSmoothing = 'antialiased';
-    (document.body.style as any).webkitFontSmoothing = 'antialiased';
+    (document.body.style as CSSStyleDeclaration).fontSmoothing = 'antialiased';
+    (document.body.style as CSSStyleDeclaration).webkitFontSmoothing = 'antialiased';
   };
 
   /**

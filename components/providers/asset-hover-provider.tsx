@@ -3,22 +3,21 @@
 import { useState, useMemo } from 'react'
 import { AssetHoverContext, HoverAsset } from '@/contexts/asset-hover.context'
 import { AssetRelationship, CharacterProfile, GameMechanic, StoryBeat } from '@/domains/games/types'
-import { AssetRelationshipService } from '@/domains/assets/services/asset-relationship.service'
 
 interface AssetHoverProviderProps {
   children: React.ReactNode
   relationships: AssetRelationship[]
-  characters: CharacterProfile[]
-  mechanics: GameMechanic[]
-  storyBeats: StoryBeat[]
+  _characters: CharacterProfile[]
+  _mechanics: GameMechanic[]
+  _storyBeats: StoryBeat[]
 }
 
 export function AssetHoverProvider({
   children,
   relationships,
-  characters,
-  mechanics,
-  storyBeats
+  _characters,
+  _mechanics,
+  _storyBeats
 }: AssetHoverProviderProps) {
   const [hoveredAsset, setHoveredAsset] = useState<HoverAsset | null>(null)
 

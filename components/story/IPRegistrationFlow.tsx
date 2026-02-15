@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Address } from 'viem';
 import {
   Dialog,
   DialogContent,
@@ -10,8 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Loader2,
   CheckCircle2,
@@ -27,13 +25,12 @@ import {
   RegistrationFlowContext,
   type IPRegistrationResult,
 } from '@/hooks/use-story-protocol-flow';
-import { getIPAssetExplorerUrl } from '@/lib/story-sdk-client';
 
 interface IPRegistrationFlowProps {
   isOpen: boolean;
   context: RegistrationFlowContext;
   onClose: () => void;
-  onSuccess?: (result: IPRegistrationResult) => void;
+  _onSuccess?: (result: IPRegistrationResult) => void;
 }
 
 /**
@@ -50,10 +47,9 @@ export function IPRegistrationFlow({
   isOpen,
   context,
   onClose,
-  onSuccess,
+  _onSuccess,
 }: IPRegistrationFlowProps) {
   const flow = useStoryProtocolFlow(context);
-  const [showConfirmation, setShowConfirmation] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   // Start flow when modal opens
@@ -77,12 +73,6 @@ export function IPRegistrationFlow({
     }
   };
 
-  // On success, call callback and keep modal open to show results
-  const handleSuccess = () => {
-    if (flow.result) {
-      onSuccess?.(flow.result);
-    }
-  };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>

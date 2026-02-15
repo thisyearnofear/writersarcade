@@ -192,7 +192,7 @@ export class AssetPresetsService {
    */
   static isValidPreset(preset: unknown): preset is CompositionPreset {
     if (!preset || typeof preset !== 'object') return false
-    const p = preset as any
+    const p = preset as Record<string, unknown>
     return (
       typeof p.id === 'string' &&
       typeof p.name === 'string' &&

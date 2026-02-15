@@ -45,7 +45,7 @@ export async function PATCH(
             )
         }
 
-        const updateData: any = {}
+        const updateData: Record<string, unknown> = {}
 
         // Privacy toggle (Owner or Admin)
         if (typeof isPrivate === 'boolean') {
@@ -89,8 +89,8 @@ export async function PATCH(
             data: {
                 slug,
                 private: updatedGame.private,
-                playFee: (updatedGame as any).playFee,
-                featured: (updatedGame as any).featured
+                playFee: updatedGame.playFee,
+                featured: updatedGame.featured
             },
         })
 

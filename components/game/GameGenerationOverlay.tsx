@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { Loader2, Sparkles, Zap, Gamepad2 } from 'lucide-react'
+import { Loader2, Sparkles, Gamepad2 } from 'lucide-react'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 
 type LoadingStep = 'validate' | 'extract' | 'generate' | 'save'

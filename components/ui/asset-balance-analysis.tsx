@@ -23,12 +23,6 @@ interface BalanceMetric {
  * Game balance analysis for asset composition
  * Provides guidance on coverage and distribution
  */
-/**
- * Returns true if any metrics have warnings
- */
-function hasBalanceWarnings(metrics: BalanceMetric[]): boolean {
-  return metrics.some(m => m.status !== 'good')
-}
 
 export function AssetBalanceAnalysis({
     characters,

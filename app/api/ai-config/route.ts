@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { google } from '@ai-sdk/google'
-import { generateObject } from 'ai'
-import { z } from 'zod'
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,9 +12,9 @@ export async function POST(request: NextRequest) {
     // Validate API key by attempting to create the model
     try {
       // Just try to create the model with the API key - if invalid, it will throw
-      const testModel = google('gemini-3-pro', {
+      google('gemini-3-pro', {
         apiKey: googleApiKey
-      } as any);
+      });
 
       // If we get here, the API key is syntactically valid
       // For a more thorough validation, we could make a simple API call

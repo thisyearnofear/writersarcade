@@ -94,7 +94,7 @@ export function AISettingsPanel({ initialPreferences }: { initialPreferences?: U
       } else {
         setValidationError(result.error || 'Invalid API key');
       }
-    } catch (error) {
+    } catch {
       setValidationError('Validation failed');
     } finally {
       setIsValidating(false);

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Download, Upload, Save, Trash2, Plus, ChevronDown } from 'lucide-react'
+import { Download, Upload, Save, Trash2, ChevronDown } from 'lucide-react'
 import { AssetPresetsService, CompositionPreset } from '@/domains/assets/services/asset-presets.service'
 import { AssetGenerationResponse } from '@/domains/games/types'
 
@@ -21,7 +21,7 @@ export function AssetPresets({ currentAssets, onLoadPreset }: AssetPresetsProps)
     const [saveMode, setSaveMode] = useState(false)
     const [presetName, setPresetName] = useState('')
     const [presetDescription, setPresetDescription] = useState('')
-    const [mergeMode, setMergeMode] = useState<'replace' | 'merge'>('replace')
+    const [_mergeMode, _setMergeMode] = useState<'replace' | 'merge'>('replace')
 
     useEffect(() => {
         loadPresets()
@@ -51,7 +51,7 @@ export function AssetPresets({ currentAssets, onLoadPreset }: AssetPresetsProps)
     }
 
     const handleLoadPreset = (preset: CompositionPreset) => {
-        const applied = AssetPresetsService.applyPreset(currentAssets, preset, mergeMode)
+        const applied = AssetPresetsService.applyPreset(currentAssets, preset, 'replace')
         onLoadPreset(applied)
         setIsOpen(false)
     }

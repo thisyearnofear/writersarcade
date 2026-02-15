@@ -166,7 +166,7 @@ export class GameDatabaseService {
           // User filter
           userId ? { userId } : {},
           // Featured filter - Cast to any until schema regen propagates
-          featured ? { featured: true } as any : {},
+          featured ? { featured: true } as Partial<Game> : {},
           // Search filter
           search ? {
             OR: [
@@ -382,8 +382,8 @@ export class GameDatabaseService {
       private: prismaGame.private,
       userId: prismaGame.userId || undefined,
       // Cast to any because Prisma types are not yet updated in the running process
-      playFee: (prismaGame as any).playFee || undefined,
-      featured: (prismaGame as any).featured || false,
+      playFee: (prismaGame as { playFee?: string }).playFee || undefined,
+      featured: (prismaGame as { featured?: boolean }).featured || false,
       createdAt: prismaGame.createdAt,
       updatedAt: prismaGame.updatedAt,
     }
@@ -544,7 +544,7 @@ export class GameDatabaseService {
   private static safeJsonParse(text: string) {
     try {
       return JSON.parse(text)
-    } catch (e) {
+    } catch {
       return text
     }
   }

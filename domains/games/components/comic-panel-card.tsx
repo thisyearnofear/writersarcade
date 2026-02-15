@@ -19,7 +19,7 @@ interface ImageVersion {
 interface ComicPanelCardProps {
   messageId: string
   narrativeText: string
-  genre: string
+  _genre: string
   primaryColor: string
   options: GameplayOption[]
   onOptionSelect: (option: GameplayOption) => void
@@ -54,13 +54,13 @@ interface ComicPanelCardProps {
 export function ComicPanelCard({
   messageId,
   narrativeText,
-  genre,
+  _genre,
   primaryColor,
   options,
   onOptionSelect,
   isWaiting,
   onImageRating,
-  onImagesReady,
+  _onImagesReady,
   onImageRegenerate,
   pendingOptionId,
   narrativeImage,
@@ -145,12 +145,6 @@ export function ComicPanelCard({
 
   const handleRegenerateQuick = () => {
     handleImageRegeneration()
-  }
-
-  const addImageToHistory = (newImage: ImageVersion) => {
-    setImageHistory(prev => [...prev, newImage])
-    setCurrentImageIndex(prev => prev + 1)
-    setShowImageComparison(true)
   }
 
   const selectImage = (index: number) => {
@@ -266,7 +260,7 @@ export function ComicPanelCard({
                           className="bg-transparent text-white text-xs px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-purple-500"
                           title="Select visual theme"
                         >
-                          {availableThemes.map((theme: any) => (
+                          {availableThemes.map((theme: { value: string, label: string }) => (
                             <option key={theme.value} value={theme.value} className="bg-gray-800 text-white">
                               {theme.label}
                             </option>

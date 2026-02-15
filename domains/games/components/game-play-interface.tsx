@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
+import { useAccount, useWriteContract } from 'wagmi'
 import { parseEther } from 'viem'
 
 import { Loader2, Play, BookOpen, Lightbulb } from 'lucide-react'
@@ -62,7 +62,7 @@ const MAX_COMIC_PANELS = 5
 
 export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
   const { toast } = useToast()
-  const { address } = useAccount()
+  const { _address } = useAccount()
   const { writeContractAsync } = useWriteContract()
 
   const [sessionId, setSessionId] = useState<string | null>(null)
@@ -78,7 +78,6 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
   const [responseReady, setResponseReady] = useState({ text: false, images: false }) // Track when response is FULLY ready
   const [userChoices, setUserChoices] = useState<Array<{ panelIndex: number; choice: string; timestamp: string }>>([])
   const [regeneratingMessageId, setRegeneratingMessageId] = useState<string | null>(null) // Track which panel is regenerating
-  const [editedPanels, setEditedPanels] = useState<Record<string, string>>({}) // Track edited panel text
   const [showPreview, setShowPreview] = useState(false) // NEW: Preview modal state
   const messagesEndRef = useRef<HTMLDivElement>(null)
 

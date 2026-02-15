@@ -1,13 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
 import { GameGrid } from '@/domains/games/components/game-grid'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
 import { Search, Filter, Gamepad2, Compass, Zap, Brain, Sword, Store, ChevronLeft, ChevronRight } from 'lucide-react'
-import { GameDatabaseService } from '@/domains/games/services/game-database.service'
 
 const genres = [
   { id: 'all', label: 'All Games', icon: Gamepad2 },
@@ -24,7 +22,6 @@ export default function GamesPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalGames, setTotalGames] = useState(0)
   const [itemsPerPage] = useState(12)
-  const [gameStats, setGameStats] = useState<{ publicGames: number, totalGames: number } | null>(null)
 
   // Fetch rudimentary stats for the header
   useEffect(() => {

@@ -8,7 +8,7 @@
  */
 
 // Lazy load SDK to avoid SSR issues with ox package compatibility
-let sdk: any = null
+let sdk: unknown = null
 const getSdk = async () => {
     if (typeof window === 'undefined') {
         // Return mock SDK for server-side rendering

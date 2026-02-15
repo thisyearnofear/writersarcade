@@ -105,7 +105,7 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
         const res = await fetch('/api/auth/me');
         const data = await res.json();
         setAuthStatus(data.success ? 'authenticated' : 'unauthenticated');
-      } catch (error) {
+      } catch {
         setAuthStatus('unauthenticated');
       }
     }
@@ -155,7 +155,9 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
         console.log('[SIWE] Verifying signature...');
         try {
           // Ensure we send the exact string message that was signed
-          const messageContent = (message as any).prepareMessage?.() || String(message);
+          const messageContent = typeof message === 'object' && message !== null && 'prepareMessage' in message && typeof (message as { prepareMessage?: () => string }).prepareMessage === 'function' 
+            ? (message as { prepareMessage?: () => string }).prepareMessage?.() 
+            : String(message);
 
           const verifyRes = await fetch('/api/auth/verify', {
             method: 'POST',

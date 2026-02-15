@@ -9,10 +9,6 @@ interface UserAIPreferences {
   preferGemini: boolean;
 }
 
-interface AISettingsWrapperProps {
-  initialPreferences?: UserAIPreferences;
-}
-
 export function AISettingsWrapper() {
   const [mounted, setMounted] = useState(false);
   const [initialPreferences, setInitialPreferences] = useState<UserAIPreferences | null>(null);

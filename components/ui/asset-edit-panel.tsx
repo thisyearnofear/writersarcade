@@ -322,7 +322,7 @@ export function AssetEditPanel({
                 Visual Customization
               </h5>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-                {characterData.customizationOptions.map((option: any) => (
+                {characterData.customizationOptions.map((option: { category: string, options: string[], current?: string }) => (
                   <div key={option.category} className="space-y-1">
                     <div className="text-gray-400 capitalize">{option.category}</div>
                     <select

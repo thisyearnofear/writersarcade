@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { GameDatabaseService } from '@/domains/games/services/game-database.service'
 import { optionalAuth } from '@/lib/auth'
 import { z } from 'zod'
-import { AssetGenerationResponse } from '@/domains/games/types'
 
 // Validation Schema
 const saveAssetSchema = z.object({

@@ -16,8 +16,8 @@ interface PaymentOptionProps {
   onPaymentSuccess?: (transactionHash: string) => void
   onPaymentError?: (error: string) => void
   disabled?: boolean
-  optional?: boolean // If true, user can skip payment
-  onSkip?: () => void
+  _optional?: boolean // If true, user can skip payment
+  _onSkip?: () => void
 }
 
 /**
@@ -35,8 +35,8 @@ export function PaymentOption({
   onPaymentSuccess,
   onPaymentError,
   disabled = false,
-  optional = false,
-  onSkip,
+  _optional = false,
+  _onSkip,
 }: PaymentOptionProps) {
   const { isConnected } = useAccount()
 
