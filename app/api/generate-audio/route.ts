@@ -2,15 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 
 /**
  * Audio Generation API Route
- * Generates voice narration using OpenAI TTS (with ElevenLabs upgrade path)
- * 
+ * Generates voice narration using ElevenLabs TTS
+ *
  * POST /api/generate-audio
- * Body: { text: string, voice?: string, provider?: 'openai' | 'elevenlabs', speed?: number }
+ * Body: { text: string, voice?: string, speed?: number }
  * Returns: { audioUrl: string (base64 data URL), durationMs: number, characterCount: number }
  */
 
-// Valid OpenAI TTS voices
-const VALID_OPENAI_VOICES = ['alloy', 'ash', 'coral', 'echo', 'fable', 'nova', 'onyx', 'sage', 'shimmer']
 
 // Simple in-memory rate limiting
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>()
@@ -77,22 +75,22 @@ function calculateMp3Duration(buffer: ArrayBuffer): number {
 export async function POST(req: NextRequest) {
   try {
     // Rate limiting
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || 
-               req.headers.get('x-real-ip') || 
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0] ||
+               req.headers.get('x-real-ip') ||
                'unknown'
     const rateLimit = checkRateLimit(ip)
-    
+
     if (!rateLimit.allowed) {
       return NextResponse.json(
         { error: 'Rate limit exceeded. Please try again later.' },
-        { 
+        {
           status: 429,
           headers: { 'X-RateLimit-Remaining': '0' }
         }
       )
     }
 
-    const { text, voice = 'nova', provider = 'openai', speed = 1.0 } = await req.json()
+    const { text, voice = 'Rachel' } = await req.json()
 
     if (!text || typeof text !== 'string') {
       return NextResponse.json(
@@ -101,7 +99,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Limit text length to prevent abuse (OpenAI TTS supports up to 4096 chars)
+    // Limit text length to prevent abuse (ElevenLabs TTS supports up to 4096 chars)
     if (text.length > 4096) {
       return NextResponse.json(
         { error: 'Text exceeds maximum length of 4096 characters' },
@@ -109,19 +107,9 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Route to appropriate provider
-    let response: NextResponse
-    if (provider === 'openai') {
-      response = await generateWithOpenAI(text, voice, speed)
-    } else if (provider === 'elevenlabs') {
-      response = await generateWithElevenLabs(text, voice)
-    } else {
-      return NextResponse.json(
-        { error: 'Invalid provider. Supported: openai, elevenlabs' },
-        { status: 400 }
-      )
-    }
-    
+    // Generate with ElevenLabs
+    const response = await generateWithElevenLabs(text, voice)
+
     // Add rate limit headers
     response.headers.set('X-RateLimit-Remaining', rateLimit.remaining.toString())
     return response
@@ -134,91 +122,24 @@ export async function POST(req: NextRequest) {
   }
 }
 
-/**
- * Generate audio using OpenAI TTS API
- */
-async function generateWithOpenAI(text: string, voice: string, speed: number) {
-  const apiKey = process.env.OPENAI_API_KEY
-
-  if (!apiKey) {
-    console.warn('[generate-audio] OpenAI API key not configured')
-    return NextResponse.json(
-      { audioUrl: null, error: 'OpenAI API key not configured' },
-      { status: 200 }
-    )
-  }
-
-  // Validate voice
-  const validVoice = VALID_OPENAI_VOICES.includes(voice) ? voice : 'nova'
-
-  // Clamp speed to valid range
-  const validSpeed = Math.min(4.0, Math.max(0.25, speed))
-
-  try {
-    const response = await fetch('https://api.openai.com/v1/audio/speech', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'tts-1',        // Standard quality, faster
-        input: text,
-        voice: validVoice,
-        speed: validSpeed,
-        response_format: 'mp3',
-      }),
-    })
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('[generate-audio] OpenAI API error:', response.status, errorText)
-      return NextResponse.json(
-        { audioUrl: null, error: `OpenAI API error: ${response.status}` },
-        { status: 200 }
-      )
-    }
-
-    // Convert audio buffer to base64 data URL
-    const audioBuffer = await response.arrayBuffer()
-    const base64Audio = Buffer.from(audioBuffer).toString('base64')
-    const audioUrl = `data:audio/mp3;base64,${base64Audio}`
-
-    // Calculate actual duration from MP3 data
-    const durationMs = calculateMp3Duration(audioBuffer)
-
-    return NextResponse.json({
-      audioUrl,
-      durationMs,
-      characterCount: text.length,
-      voice: validVoice,
-      provider: 'openai',
-    })
-  } catch (error) {
-    console.error('[generate-audio] OpenAI TTS failed:', error)
-    return NextResponse.json(
-      { audioUrl: null, error: 'OpenAI TTS generation failed' },
-      { status: 200 }
-    )
-  }
-}
 
 /**
- * Generate audio using ElevenLabs API (future upgrade path)
- * Placeholder for Phase 11 implementation
+ * Generate audio using ElevenLabs API
  */
 async function generateWithElevenLabs(text: string, voice: string) {
   const apiKey = process.env.ELEVENLABS_API_KEY
 
   if (!apiKey) {
-    console.warn('[generate-audio] ElevenLabs API key not configured, falling back to OpenAI')
-    // Fallback to OpenAI if ElevenLabs not configured
-    return generateWithOpenAI(text, voice, 1.0)
+    console.warn('[generate-audio] ElevenLabs API key not configured')
+    return NextResponse.json(
+      { audioUrl: null, error: 'ElevenLabs API key not configured' },
+      { status: 200 }
+    )
   }
 
   // ElevenLabs voice IDs - these would be configured per-project
-  // For now, use a default multilingual voice
-  const voiceId = process.env.ELEVENLABS_DEFAULT_VOICE_ID || '21m00Tcm4TlvDq8ikWAM' // Rachel
+  // Use the voice passed in, or default to Rachel
+  const voiceId = voice || process.env.ELEVENLABS_DEFAULT_VOICE_ID || '21m00Tcm4TlvDq8ikWAM' // Rachel
 
   try {
     const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
@@ -241,8 +162,10 @@ async function generateWithElevenLabs(text: string, voice: string) {
     if (!response.ok) {
       const errorText = await response.text()
       console.error('[generate-audio] ElevenLabs API error:', response.status, errorText)
-      // Fallback to OpenAI on ElevenLabs error
-      return generateWithOpenAI(text, voice, 1.0)
+      return NextResponse.json(
+        { audioUrl: null, error: `ElevenLabs API error: ${response.status}` },
+        { status: 200 }
+      )
     }
 
     const audioBuffer = await response.arrayBuffer()
@@ -257,11 +180,12 @@ async function generateWithElevenLabs(text: string, voice: string) {
       durationMs,
       characterCount: text.length,
       voice: voiceId,
-      provider: 'elevenlabs',
     })
   } catch (error) {
     console.error('[generate-audio] ElevenLabs TTS failed:', error)
-    // Fallback to OpenAI
-    return generateWithOpenAI(text, voice, 1.0)
+    return NextResponse.json(
+      { audioUrl: null, error: 'ElevenLabs TTS generation failed' },
+      { status: 200 }
+    )
   }
 }
