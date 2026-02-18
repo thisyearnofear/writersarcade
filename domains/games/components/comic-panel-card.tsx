@@ -19,7 +19,7 @@ interface ImageVersion {
 interface ComicPanelCardProps {
   messageId: string
   narrativeText: string
-  _genre: string
+  genre: string
   primaryColor: string
   options: GameplayOption[]
   onOptionSelect: (option: GameplayOption) => void
@@ -54,13 +54,13 @@ interface ComicPanelCardProps {
 export function ComicPanelCard({
   messageId,
   narrativeText,
-  _genre,
+  genre,
   primaryColor,
   options,
   onOptionSelect,
   isWaiting,
   onImageRating,
-  _onImagesReady,
+  onImagesReady,
   onImageRegenerate,
   pendingOptionId,
   narrativeImage,
@@ -69,6 +69,12 @@ export function ComicPanelCard({
   showLoadingState = false,
   isRegenerating = false,
   maxRegenerations = 3,
+  availableThemes,
+  currentTheme,
+  onThemeSelect,
+  aiPromptSuggestions,
+  onAIPromptSelect,
+  showAIPromptSuggestions,
 }: ComicPanelCardProps) {
   const { narrative, options: parsedOptions } = parsePanel(narrativeText)
   const [imageRating, setImageRating] = useState<number | null>(null)

@@ -5,13 +5,13 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ThumbsUp } from 'lucide-react'
 
 interface PostGameFeedbackProps {
-  _gameId: string
+  gameId: string
   onSubmit?: (feedback: { npsScore: number; comment?: string }) => Promise<void>
   onSkip?: () => void
 }
 
 export function PostGameFeedback({
-  _gameId,
+  gameId,
   onSubmit,
   onSkip,
 }: PostGameFeedbackProps) {

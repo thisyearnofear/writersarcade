@@ -31,6 +31,7 @@ export function NarrativePreviewModal({
   onClose,
   onStart,
   isLoading = false,
+  storyboardPanels,
 }: NarrativePreviewModalProps) {
   return (
     <AnimatePresence>

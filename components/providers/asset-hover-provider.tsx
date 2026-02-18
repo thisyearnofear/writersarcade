@@ -7,17 +7,17 @@ import { AssetRelationship, CharacterProfile, GameMechanic, StoryBeat } from '@/
 interface AssetHoverProviderProps {
   children: React.ReactNode
   relationships: AssetRelationship[]
-  _characters: CharacterProfile[]
-  _mechanics: GameMechanic[]
-  _storyBeats: StoryBeat[]
+  characters?: CharacterProfile[]
+  mechanics?: GameMechanic[]
+  storyBeats?: StoryBeat[]
 }
 
 export function AssetHoverProvider({
   children,
   relationships,
-  _characters,
-  _mechanics,
-  _storyBeats
+  characters = [],
+  mechanics = [],
+  storyBeats = []
 }: AssetHoverProviderProps) {
   const [hoveredAsset, setHoveredAsset] = useState<HoverAsset | null>(null)
 

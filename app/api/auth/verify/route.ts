@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
-import { SiweMessage } from 'siwe'
+import { SiweMessage, type SiweMessage as SiweMessageType } from 'siwe'
 import { cookies } from 'next/headers'
 import { prisma } from '@/lib/database'
 
 export async function POST(req: Request) {
-    let message: unknown;
+    let message: string | SiweMessageType | undefined;
     let signature: string;
 
     try {
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Nonce not found' }, { status: 422 })
         }
 
-        const SIWEObject = new SiweMessage(message)
+        const SIWEObject = new SiweMessage(message as string)
 
         // Use the domain from the message itself to verify, 
         // as we trusts the frontend provided domain in the message 

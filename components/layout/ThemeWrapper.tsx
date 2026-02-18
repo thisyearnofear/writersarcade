@@ -60,7 +60,7 @@ export function ThemeWrapper({ children, theme = 'default' }: ThemeWrapperProps)
     '--color-accent': currentTheme.accent,
     '--color-background': currentTheme.background,
     '--color-text': currentTheme.text,
-  }), [currentTheme])
+  } as React.CSSProperties), [currentTheme])
 
   const themeClasses = theme === 'arcade' 
     ? 'writarcade-theme min-h-screen' 

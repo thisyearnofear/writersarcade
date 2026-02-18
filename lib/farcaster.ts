@@ -1,22 +1,43 @@
 /**
  * Farcaster Integration Utilities
- * 
+ *
  * Provides functions to interact with Farcaster Mini Apps for:
  * - User profile data (username, avatar, bio)
  * - Mini App SDK integration for actions and context
  * - Social features (sharing, wallet)
  */
 
+interface FarcasterSdk {
+  context: {
+    user?: {
+      fid?: number
+      username?: string
+      displayName?: string
+      bio?: string
+      pfpUrl?: string
+    }
+    client?: {
+      fid?: number
+      username?: string
+    }
+  } | null
+  actions: {
+    ready: () => Promise<void>
+    composeCast: (params: { text: string; embeds?: string[] }) => Promise<void>
+    openUrl: (url: string) => Promise<void>
+  }
+}
+
 // Lazy load SDK to avoid SSR issues with ox package compatibility
-let sdk: unknown = null
-const getSdk = async () => {
+let sdk: FarcasterSdk | null = null
+const getSdk = async (): Promise<FarcasterSdk> => {
     if (typeof window === 'undefined') {
         // Return mock SDK for server-side rendering
         return { context: null, actions: { ready: async () => {}, composeCast: async () => {}, openUrl: async () => {} } }
     }
     if (!sdk) {
         const { sdk: farcasterSdk } = await import('@farcaster/miniapp-sdk')
-        sdk = farcasterSdk
+        sdk = farcasterSdk as FarcasterSdk
     }
     return sdk
 }
@@ -34,7 +55,7 @@ export interface FarcasterProfile {
  * Get Farcaster context for current user
  * Returns user info, client data, etc.
  */
-export async function getFarcasterContext(): Promise<unknown> {
+export async function getFarcasterContext(): Promise<FarcasterSdk['context']> {
     try {
         const farcasterSdk = await getSdk()
         const context = await farcasterSdk.context

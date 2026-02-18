@@ -30,12 +30,12 @@ interface IPRegistrationFlowProps {
   isOpen: boolean;
   context: RegistrationFlowContext;
   onClose: () => void;
-  _onSuccess?: (result: IPRegistrationResult) => void;
+  onSuccess?: (result: IPRegistrationResult) => void;
 }
 
 /**
  * IP Registration Flow Modal
- * 
+ *
  * Orchestrated flow:
  * 1. Wallet prerequisite check
  * 2. Network prerequisite check
@@ -47,7 +47,7 @@ export function IPRegistrationFlow({
   isOpen,
   context,
   onClose,
-  _onSuccess,
+  onSuccess,
 }: IPRegistrationFlowProps) {
   const flow = useStoryProtocolFlow(context);
   const [copiedField, setCopiedField] = useState<string | null>(null);

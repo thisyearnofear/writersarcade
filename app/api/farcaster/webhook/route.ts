@@ -22,13 +22,13 @@ export async function POST(request: NextRequest) {
   try {
     // Parse the incoming webhook
     const body = await request.json()
-    
+
     console.log('Farcaster Mini App Webhook:', body)
 
     // The webhook data comes in JSON Farcaster Signature format
     // In production, you should verify the signature
     // See: https://docs.farcaster.xyz/developers/miniapps/notifications
-    
+
     const _header = body.header
     const payload = body.payload
     const _signature = body.signature
@@ -53,11 +53,11 @@ export async function POST(request: NextRequest) {
         // User added your mini app
         // Save notification token if provided for sending notifications later
         if (decodedPayload.notificationDetails) {
-          const { token, _url } = decodedPayload.notificationDetails
+          const { token } = decodedPayload.notificationDetails
           console.log('Store notification token for user:', token)
           // TODO: Save token to database for this user
           // const userId = decodeFarcasterUser(header)
-          // await db.notificationTokens.create({ userId, token, _url })
+          // await db.notificationTokens.create({ userId, token })
         }
         break
 
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
       case 'notifications_enabled':
         // User re-enabled notifications
         if (decodedPayload.notificationDetails) {
-          const { token, _url } = decodedPayload.notificationDetails
+          const { token } = decodedPayload.notificationDetails
           console.log('Update notification token:', token)
           // TODO: Update token in database
         }

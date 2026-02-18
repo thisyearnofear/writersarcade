@@ -45,6 +45,8 @@ export function AssetEditPanel({
   onTitleChange,
   onDescriptionChange,
   onTagsChange,
+  characterData,
+  onCharacterUpdate,
 }: AssetEditPanelProps) {
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [editedTitle, setEditedTitle] = useState(title)

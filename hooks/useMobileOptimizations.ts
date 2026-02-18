@@ -58,8 +58,8 @@ export function useMobileOptimizations(): MobileOptimizations {
       }
       
       // Optimize font rendering for mobile
-      (document.body.style as CSSStyleDeclaration).fontSmoothing = 'antialiased';
-      (document.body.style as CSSStyleDeclaration).webkitFontSmoothing = 'antialiased';
+      document.body.style.setProperty('-webkit-font-smoothing', 'antialiased');
+      document.body.style.setProperty('-moz-osx-font-smoothing', 'grayscale');
     }
     
     setOptimizations({

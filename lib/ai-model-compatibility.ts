@@ -15,17 +15,29 @@ export function getCompatibleGoogleModel(modelName: string, apiKey?: string): Co
     throw new Error('Google API key is required');
   }
 
-  return google(modelName, {
-    apiKey: resolvedApiKey,
-  });
+  // In @ai-sdk/google v3.x, API key is set via environment variable
+  // Set it temporarily for this model creation
+  const originalApiKey = process.env.GOOGLE_API_KEY;
+  if (apiKey && apiKey !== originalApiKey) {
+    process.env.GOOGLE_API_KEY = apiKey;
+  }
+
+  const model = google(modelName) as unknown as CompatibleLanguageModel;
+
+  // Restore original API key if we changed it
+  if (originalApiKey && apiKey !== originalApiKey) {
+    process.env.GOOGLE_API_KEY = originalApiKey;
+  }
+
+  return model;
 }
 
 export function getCompatibleOpenAIModel(modelName: string): CompatibleLanguageModel {
-  return openai(modelName);
+  return openai(modelName) as unknown as CompatibleLanguageModel;
 }
 
 export function getCompatibleAnthropicModel(modelName: string): CompatibleLanguageModel {
-  return anthropic(modelName);
+  return anthropic(modelName) as unknown as CompatibleLanguageModel;
 }
 
 // Consolidate AI model providers with compatibility

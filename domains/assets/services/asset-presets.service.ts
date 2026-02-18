@@ -192,15 +192,17 @@ export class AssetPresetsService {
    */
   static isValidPreset(preset: unknown): preset is CompositionPreset {
     if (!preset || typeof preset !== 'object') return false
-    const p = preset as Record<string, unknown>
+    const p = preset as Partial<CompositionPreset> & { data?: unknown }
+    if (!p.data || typeof p.data !== 'object' || p.data === null) return false
+    
+    const data = p.data as unknown as Record<string, unknown>
     return (
       typeof p.id === 'string' &&
       typeof p.name === 'string' &&
       typeof p.description === 'string' &&
-      p.data &&
-      Array.isArray(p.data.characters) &&
-      Array.isArray(p.data.gameMechanics) &&
-      Array.isArray(p.data.storyBeats)
+      Array.isArray(data.characters) &&
+      Array.isArray(data.gameMechanics) &&
+      Array.isArray(data.storyBeats)
     )
   }
 }
