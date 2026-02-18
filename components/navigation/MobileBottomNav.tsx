@@ -2,13 +2,16 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Gamepad2, Wrench, Sparkles, User } from 'lucide-react';
+import { Home, Gamepad2, Library, Sparkles, User } from 'lucide-react';
 
+// Mobile bottom nav focuses on the primary user journey:
+// Discover → Create → Own (My Games) → Profile
+// Workshop is an advanced feature, accessible from desktop nav and Generate page
 const navItems = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/games', label: 'Games', icon: Gamepad2 },
-  { href: '/workshop', label: 'Workshop', icon: Wrench },
   { href: '/generate', label: 'Create', icon: Sparkles },
+  { href: '/my-games', label: 'My Games', icon: Library },
   { href: '/profile', label: 'Profile', icon: User },
 ];
 

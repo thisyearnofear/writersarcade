@@ -34,10 +34,32 @@ export function useMobileOptimizations(): MobileOptimizations {
     // Check if prefers reduced motion
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     const prefersReducedMotion = mediaQuery.matches;
+
+    /**
+     * Prevent double-tap zoom on mobile - PERFORMANT
+     * Defined inside effect so the same reference can be removed on cleanup
+     */
+    const preventDoubleTapZoom = (e: TouchEvent) => {
+      if (e.touches.length > 1) {
+        e.preventDefault();
+      }
+    };
     
     // Apply mobile optimizations if needed
     if (isMobile || isTouch) {
-      applyMobileOptimizations();
+      // Prevent double-tap zoom — reference kept for cleanup below
+      document.addEventListener('touchmove', preventDoubleTapZoom, { passive: false });
+      
+      // Add mobile-specific CSS classes
+      document.body.classList.add('mobile-device');
+      
+      if (isTouch) {
+        document.body.classList.add('touch-device');
+      }
+      
+      // Optimize font rendering for mobile
+      (document.body.style as CSSStyleDeclaration).fontSmoothing = 'antialiased';
+      (document.body.style as CSSStyleDeclaration).webkitFontSmoothing = 'antialiased';
     }
     
     setOptimizations({
@@ -52,7 +74,8 @@ export function useMobileOptimizations(): MobileOptimizations {
     });
 
     const handleResize = () => {
-      const updatedIsMobile = window.innerWidth < 768;
+      // Use isMobileDevice() utility consistently instead of raw breakpoint
+      const updatedIsMobile = isMobileDevice();
       setOptimizations(prev => ({
         ...prev,
         isMobile: updatedIsMobile,
@@ -79,38 +102,10 @@ export function useMobileOptimizations(): MobileOptimizations {
     return () => {
       window.removeEventListener('resize', handleResize);
       motionMediaQuery.removeEventListener('change', handleMotionChange);
+      // BUGFIX: Remove touchmove listener to prevent memory leak
+      document.removeEventListener('touchmove', preventDoubleTapZoom);
     };
   }, []);
-
-  /**
-   * Apply mobile-specific optimizations - AGGRESSIVE CONSOLIDATION
-   * Consolidates various mobile optimizations into single function
-   */
-  const applyMobileOptimizations = () => {
-    // Prevent double-tap zoom on mobile - PERFORMANT
-    document.addEventListener('touchmove', preventDoubleTapZoom, { passive: false });
-    
-    // Add mobile-specific CSS classes - CLEAN
-    document.body.classList.add('mobile-device');
-    
-    if (isTouchDevice()) {
-      document.body.classList.add('touch-device');
-    }
-    
-    // Optimize font loading for mobile - ORGANIZED
-    (document.body.style as CSSStyleDeclaration).fontSmoothing = 'antialiased';
-    (document.body.style as CSSStyleDeclaration).webkitFontSmoothing = 'antialiased';
-  };
-
-  /**
-   * Prevent double-tap zoom on mobile - PERFORMANT
-   * Lightweight event handler that doesn't impact performance
-   */
-  const preventDoubleTapZoom = (e: TouchEvent) => {
-    if (e.touches.length > 1) {
-      e.preventDefault();
-    }
-  };
 
   /**
    * Get mobile-optimized class names - DRY approach

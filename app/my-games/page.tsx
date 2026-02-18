@@ -30,8 +30,11 @@ export default function MyGamesPage() {
   const [authChecked, setAuthChecked] = useState(false)
 
   // Require connection, but wait for status to resolve to avoid false redirects
+  // Guard against 'connecting' AND 'reconnecting' — both are transient states
+  // that may resolve to 'connected'. Redirecting during 'reconnecting' would
+  // incorrectly kick out a valid session on page refresh.
   useEffect(() => {
-    if (status === 'connecting') return
+    if (status === 'connecting' || status === 'reconnecting') return
     if (!isConnected) {
       // Allow session-based authenticated users to access if cookie-based session exists
       // We check via a lightweight ping to /api/auth/me

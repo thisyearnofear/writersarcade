@@ -2,8 +2,21 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { AssetMarketplaceService } from '@/domains/assets/services/asset-marketplace.service'
-import type { Asset } from '@/domains/assets/services/asset-database.service'
+import { Header } from '@/components/layout/header'
+import { Footer } from '@/components/layout/footer'
+
+// Asset type mirrored here to avoid importing prisma-dependent service on client
+interface Asset {
+  id: string
+  title: string
+  description: string
+  type: string
+  genre: string
+  tags: string[]
+  content?: unknown
+  articleUrl?: string
+  createdAt?: string | Date
+}
 
 const ASSET_TYPES = ['character', 'mechanic', 'plot', 'world', 'dialog']
 const GENRES = ['Horror', 'Comedy', 'Mystery', 'Sci-Fi', 'Fantasy', 'Adventure']
@@ -27,51 +40,25 @@ export default function AssetsPage() {
   const loadAssets = async () => {
     setLoading(true)
     try {
-      let result:
-        | { // getFeaturedAssets return type
-          assets: Asset[];
-          total: number;
-          lastUpdated: Date;
-        }
-        | { // other methods return type
-          assets: Asset[];
-          total: number;
-          limit: number;
-          offset: number;
-          hasMore: boolean;
-          lastUpdated: Date;
-          type?: string;
-          genre?: string;
-          searchTerm?: string;
-        }
+      // P0 FIX: was importing AssetMarketplaceService (Prisma) directly in client component.
+      // Now uses the existing GET /api/assets/marketplace API route instead.
+      const params = new URLSearchParams()
+      params.set('limit', ITEMS_PER_PAGE.toString())
+      params.set('offset', (currentPage * ITEMS_PER_PAGE).toString())
+      if (searchTerm) params.set('search', searchTerm)
+      if (selectedType) params.set('type', selectedType)
+      if (selectedGenre) params.set('genre', selectedGenre.toLowerCase())
 
-      if (searchTerm) {
-        result = await AssetMarketplaceService.searchAssets(
-          searchTerm,
-          ITEMS_PER_PAGE,
-          currentPage * ITEMS_PER_PAGE
-        ) as
-          | { assets: Asset[]; total: number; lastUpdated: Date }
-          | { assets: Asset[]; total: number; limit: number; offset: number; hasMore: boolean; lastUpdated: Date; searchTerm?: string };
-      } else if (selectedType) {
-        result = await AssetMarketplaceService.getAssetsByType(selectedType, ITEMS_PER_PAGE) as
-          | { assets: Asset[]; total: number; lastUpdated: Date }
-          | { assets: Asset[]; total: number; limit: number; offset: number; hasMore: boolean; lastUpdated: Date; type?: string };
-      } else if (selectedGenre) {
-        result = await AssetMarketplaceService.getAssetsByGenre(
-          selectedGenre.toLowerCase(),
-          ITEMS_PER_PAGE
-        ) as
-          | { assets: Asset[]; total: number; lastUpdated: Date }
-          | { assets: Asset[]; total: number; limit: number; offset: number; hasMore: boolean; lastUpdated: Date; genre?: string };
-      } else {
-        result = await AssetMarketplaceService.getFeaturedAssets(ITEMS_PER_PAGE) as
-          { assets: Asset[]; total: number; lastUpdated: Date };
-      }
+      const res = await fetch(`/api/assets/marketplace?${params}`)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const json = await res.json()
 
-      setAssets(result.assets || [])
-      setTotalAssets(result.total || 0)
-      setHasMore('hasMore' in result ? result.hasMore : false)
+      if (!json.success) throw new Error(json.error || 'Failed to load assets')
+
+      const data = json.data || {}
+      setAssets(data.assets || [])
+      setTotalAssets(data.total || 0)
+      setHasMore(data.hasMore ?? false)
     } catch (error) {
       console.error('Failed to load assets:', error)
       setAssets([])
@@ -98,9 +85,12 @@ export default function AssetsPage() {
   }
 
   return (
-    <div className="min-h-screen py-12 px-4 bg-gradient-to-br from-purple-900/30 to-pink-900/20">
+    <div className="min-h-screen flex flex-col bg-black">
+      <Header />
+
+      <main className="flex-1 py-12 px-4 bg-gradient-to-br from-purple-900/30 to-pink-900/20">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
+        {/* Page Header */}
         <div className="mb-12 flex items-start justify-between">
           <div>
             <h1 className="text-4xl font-bold text-white mb-2 typewriter-font">Asset Marketplace</h1>
@@ -260,6 +250,9 @@ export default function AssetsPage() {
           </div>
         ) : null}
       </div>
+      </main>
+
+      <Footer />
     </div>
   )
 }

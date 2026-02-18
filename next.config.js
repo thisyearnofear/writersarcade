@@ -1,15 +1,24 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
+    // Scoped remotePatterns — avoids the wildcard '**' security footgun that
+    // allows any HTTPS image to be proxied/optimised through our Next.js server.
+    // Add new hostnames here as image sources are introduced.
     remotePatterns: [
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-      },
-      {
-        protocol: 'https',
-        hostname: '**',
-      },
+      { protocol: 'http',  hostname: 'localhost' },
+      { protocol: 'https', hostname: '*.ipfs.io' },
+      { protocol: 'https', hostname: 'ipfs.io' },
+      { protocol: 'https', hostname: '*.pinata.cloud' },
+      { protocol: 'https', hostname: 'gateway.pinata.cloud' },
+      { protocol: 'https', hostname: '*.nft.storage' },
+      { protocol: 'https', hostname: '*.venice.ai' },
+      { protocol: 'https', hostname: '*.openai.com' },
+      { protocol: 'https', hostname: 'oaidalleapiprodscus.blob.core.windows.net' },
+      { protocol: 'https', hostname: '*.paragraph.xyz' },
+      { protocol: 'https', hostname: 'paragraph.xyz' },
+      { protocol: 'https', hostname: '*.vercel.app' },
+      // Story Protocol media
+      { protocol: 'https', hostname: '*.storyprotocol.xyz' },
     ],
   },
   typescript: {

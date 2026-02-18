@@ -1,7 +1,8 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { Loader2, Sparkles, Gamepad2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Loader2, Sparkles, Gamepad2, X } from 'lucide-react'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 
 type LoadingStep = 'validate' | 'extract' | 'generate' | 'save'
@@ -13,7 +14,13 @@ interface GameGenerationOverlayProps {
   stepStatuses: Record<LoadingStep, StepStatus>
   genre?: string
   difficulty?: string
+  /** Called when the user manually cancels or the 60s timeout fires */
+  onCancel?: () => void
 }
+
+// Timeout durations
+const WARN_AFTER_MS = 30_000   // Show "taking long" hint at 30s
+const ABORT_AFTER_MS = 90_000  // Auto-dismiss with error at 90s
 
 const stepConfig = {
   validate: {
@@ -44,10 +51,34 @@ export function GameGenerationOverlay({
   stepStatuses,
   genre = 'story',
   difficulty = 'easy',
+  onCancel,
 }: GameGenerationOverlayProps) {
   const steps = ['validate', 'extract', 'generate', 'save'] as const
   const currentStepIndex = currentStep ? steps.indexOf(currentStep) : -1
   const progress = currentStep ? ((currentStepIndex + 1) / steps.length) * 100 : 0
+
+  const [showSlowHint, setShowSlowHint] = useState(false)
+  const warnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const abortTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Start timers when overlay opens, clear them when it closes
+  useEffect(() => {
+    if (isOpen) {
+      setShowSlowHint(false)
+      warnTimerRef.current = setTimeout(() => setShowSlowHint(true), WARN_AFTER_MS)
+      abortTimerRef.current = setTimeout(() => {
+        onCancel?.()
+      }, ABORT_AFTER_MS)
+    } else {
+      setShowSlowHint(false)
+      if (warnTimerRef.current) clearTimeout(warnTimerRef.current)
+      if (abortTimerRef.current) clearTimeout(abortTimerRef.current)
+    }
+    return () => {
+      if (warnTimerRef.current) clearTimeout(warnTimerRef.current)
+      if (abortTimerRef.current) clearTimeout(abortTimerRef.current)
+    }
+  }, [isOpen, onCancel])
 
   return (
     <AnimatePresence>
@@ -84,7 +115,7 @@ export function GameGenerationOverlay({
 
           {/* Main content */}
           <motion.div
-            className="relative z-10 w-full max-w-2xl mx-4 px-8 py-12 bg-gradient-to-br from-purple-950/90 via-indigo-950/90 to-purple-900/90 border-4 border-purple-500/50 rounded-2xl shadow-2xl"
+            className="relative z-10 w-full max-w-2xl mx-4 px-6 sm:px-8 py-8 sm:py-12 bg-gradient-to-br from-purple-950/90 via-indigo-950/90 to-purple-900/90 border-4 border-purple-500/50 rounded-2xl shadow-2xl"
             initial={{ scale: 0.9, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 200, damping: 20 }}
@@ -272,29 +303,54 @@ export function GameGenerationOverlay({
                 </div>
               </motion.div>
 
-              {/* Bottom arcade-style decoration */}
-              <motion.div
-                className="flex justify-center gap-4 pt-4"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6 }}
-              >
-                {[...Array(5)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="w-3 h-3 rounded-full bg-purple-500"
-                    animate={{
-                      scale: [1, 1.5, 1],
-                      opacity: [0.5, 1, 0.5],
-                    }}
-                    transition={{
-                      duration: 1.5,
-                      repeat: Infinity,
-                      delay: i * 0.2,
-                    }}
-                  />
-                ))}
-              </motion.div>
+              {/* Slow hint + cancel */}
+              {showSlowHint && (
+                <motion.div
+                  className="p-3 rounded-lg bg-amber-900/30 border border-amber-500/40 text-sm text-amber-200 flex items-center gap-2"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <span>⏳</span>
+                  <span className="flex-1">Taking longer than expected. Try a shorter article or check your connection.</span>
+                  {onCancel && (
+                    <button
+                      onClick={onCancel}
+                      className="shrink-0 px-3 py-1 rounded-md bg-amber-700/60 hover:bg-amber-600/80 text-amber-100 text-xs font-semibold"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </motion.div>
+              )}
+
+              {/* Bottom row: dots + cancel link */}
+              <div className="flex items-center justify-between pt-2">
+                <motion.div
+                  className="flex gap-4"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  {[...Array(5)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="w-3 h-3 rounded-full bg-purple-500"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }}
+                    />
+                  ))}
+                </motion.div>
+                {onCancel && (
+                  <button
+                    onClick={onCancel}
+                    className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-300 transition-colors"
+                    aria-label="Cancel game generation"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    Cancel
+                  </button>
+                )}
+              </div>
             </div>
           </motion.div>
         </motion.div>

@@ -205,7 +205,10 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
       // Game is already saved on server, just mark as complete
       setStepStatuses((prev) => ({ ...prev, save: 'completed' }))
 
-      // NEW: Store generated game and show fidelity review (approval workflow)
+      // NEW: Store generated game and show fidelity review (approval workflow).
+      // BUG FIX: successData was being set HERE (before approval), causing both
+      // ArticleFidelityReview AND SuccessModal to appear simultaneously.
+      // Now successData is only set inside the onApprove callback below.
       const gameData = {
         id: result.data.id,
         slug: result.data.slug,
@@ -215,13 +218,6 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
       }
       setGeneratedGame(gameData)
       setShowFidelityReview(true)
-
-      // Show success modal after approval
-      setSuccessData({
-        gameSlug: result.data.slug,
-        title: result.data.title || 'Your Game',
-        author: result.data.authorParagraphUsername,
-      })
 
       onGameGenerated?.(result.data)
 
@@ -663,6 +659,7 @@ export function GameGeneratorForm({ onGameGenerated }: GameGeneratorFormProps) {
           articleUrl={url}
           onApprove={() => {
             setShowFidelityReview(false)
+            // BUG FIX: successData now set ONLY after approval — prevents double modal
             setSuccessData({
               gameSlug: generatedGame.slug,
               title: generatedGame.title,

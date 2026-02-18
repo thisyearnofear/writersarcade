@@ -37,7 +37,7 @@ function HowItWorksSection() {
     <section className="py-16 px-4" ref={ref}>
       <div className="max-w-4xl mx-auto">
         <motion.h2
-          className="text-3xl font-bold mb-12 text-center text-black"
+          className="text-3xl font-bold mb-12 text-center text-white"
           initial={{ opacity: 0, y: 20 }}
           animate={isVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.6 }}
@@ -84,8 +84,9 @@ function HowItWorksSection() {
                 <span className="text-xl sm:text-2xl font-bold">{step.number}</span>
               </motion.div>
 
-              <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3 text-black">{step.title}</h3>
-              <p className="text-sm sm:text-base text-gray-600">{step.description}</p>
+              {/* BUG FIX: was text-black (invisible on dark bg) → text-white */}
+              <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3 text-white">{step.title}</h3>
+              <p className="text-sm sm:text-base text-gray-300">{step.description}</p>
             </motion.div>
           ))}
         </motion.div>

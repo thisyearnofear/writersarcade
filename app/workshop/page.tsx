@@ -22,6 +22,7 @@ import { AssetEditPanel } from '@/components/ui/asset-edit-panel'
 import { useRouter } from 'next/navigation'
 import { useAccount } from 'wagmi'
 import { RotateCcw } from 'lucide-react'
+import { Header } from '@/components/layout/header'
 
 type WorkshopState = 'input' | 'processing' | 'workshop' | 'compiling' | 'minting'
 type LayoutMode = 'grid' | 'flow'
@@ -46,6 +47,10 @@ export default function WorkshopPage() {
     const [showMintSuccess, setShowMintSuccess] = useState(false)
     const [allChecklistsPassed, setAllChecklistsPassed] = useState(false)
     const [isIPRegistrationModalOpen, setIsIPRegistrationModalOpen] = useState(false)
+    // Replaces browser confirm() — stores the pending asset until user confirms or cancels
+    const [pendingVisualAsset, setPendingVisualAsset] = useState<{
+        id: string; title: string; description: string; type: string; content: unknown
+    } | null>(null)
 
     // Push to undo history when assets change + compute relationships
     useEffect(() => {
@@ -88,7 +93,7 @@ export default function WorkshopPage() {
             setAssets(data)
             setState('workshop')
         } catch {
-            alert('Failed to extract assets. Try another article.')
+            showToast('Failed to extract assets. Try a different article URL.', { type: 'error', duration: 6000 })
             setState('input')
         }
     }
@@ -146,14 +151,14 @@ export default function WorkshopPage() {
             })
             const data = await res.json()
             if (res.ok && data.success) {
-                if (!silent) alert('Asset Pack Saved to Library!')
+                if (!silent) showToast('Asset Pack saved to library!', { type: 'success', duration: 3000 })
                 return data.data.id // Return the Asset ID
             } else {
                 throw new Error('Save failed')
             }
         } catch (e) {
             console.error(e)
-            if (!silent) alert('Error saving assets.')
+            if (!silent) showToast('Error saving assets. Please try again.', { type: 'error', duration: 5000 })
             return null
         }
     }
@@ -198,11 +203,16 @@ export default function WorkshopPage() {
             })
 
             const { data } = await res.json()
-            if (data && data.id) {
+            // BUGFIX: Route by slug (not UUID id) — /games/[slug] expects a slug
+            if (data && data.slug) {
+                router.push(`/games/${data.slug}`)
+            } else if (data && data.id) {
+                // Fallback if slug is missing (shouldn't happen but guards against 404)
+                console.warn('[Workshop] Game missing slug, falling back to id:', data.id)
                 router.push(`/games/${data.id}`)
             }
         } catch {
-            alert('Failed to compile game.')
+            showToast('Failed to compile game. Please try again.', { type: 'error', duration: 6000 })
             setState('workshop')
         }
     }
@@ -317,13 +327,11 @@ export default function WorkshopPage() {
         } else if (type === 'character') {
             newAssets.characters.push(asset.content as import('@/domains/games/types').CharacterProfile)
         } else if (type === 'visual' || type === 'world') {
-            // Merge visual guidelines or replace
-            if (confirm(`Replace visual style with "${asset.title}"?`)) {
-                newAssets.visualGuidelines = {
-                    ...newAssets.visualGuidelines,
-                    ...(asset.content as import('@/domains/games/types').VisualGuideline)
-                }
-            }
+            // P0 FIX: replace browser confirm() with state-based confirmation banner
+            // Store the pending asset; the user approves/cancels via the UI below
+            setPendingVisualAsset(asset)
+            setMarketplaceOpen(false)
+            return // Don't apply yet — wait for confirmation
         } else {
             console.log("Unknown asset type", type)
         }
@@ -333,8 +341,12 @@ export default function WorkshopPage() {
     }
 
     return (
-        <div className="min-h-screen bg-black text-white p-6 md:p-12 font-sans animate-fade-in">
-            <header className="mb-12 max-w-4xl mx-auto animate-slide-in">
+        <div className="min-h-screen bg-black text-white font-sans">
+            {/* Global navigation header — consistent with rest of web app */}
+            <Header />
+
+            <div className="p-4 sm:p-6 lg:p-12">
+            <header className="mb-8 max-w-4xl mx-auto animate-slide-in">
                 <h1 className="text-4xl font-bold bg-gradient-to-r from-writarcade-primary to-writarcade-accent bg-clip-text text-transparent mb-2">
                     Asset Workshop
                 </h1>
@@ -380,60 +392,101 @@ export default function WorkshopPage() {
                 {state === 'workshop' && assets && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
 
-                        {/* Toolbar */}
-                        <div className="flex justify-between items-center mb-8 sticky top-4 z-10 bg-black/80 backdrop-blur p-4 rounded-xl border border-gray-800/50 shadow-xl">
-                            <div className="flex-1">
-                                <h2 className="text-xl font-bold">{assets.title}</h2>
-                                <p className="text-xs text-gray-400">Asset Pack v1.0 • {assets.characters.length + assets.gameMechanics.length + assets.storyBeats.length} Assets</p>
-                            </div>
-                            {/* Balance gauge */}
-                            <div className="px-6 py-2">
+                        {/* Toolbar — responsive: wraps on < lg to avoid overflow */}
+                        <div className="mb-8 sticky top-4 z-10 bg-black/80 backdrop-blur p-3 sm:p-4 rounded-xl border border-gray-800/50 shadow-xl">
+                            {/* Title row */}
+                            <div className="flex items-center justify-between gap-3 mb-3">
+                                <div className="min-w-0">
+                                    <h2 className="text-lg font-bold truncate">{assets.title}</h2>
+                                    <p className="text-xs text-gray-400">
+                                        {assets.characters.length + assets.gameMechanics.length + assets.storyBeats.length} Assets
+                                    </p>
+                                </div>
                                 <BalanceGauge
                                     characters={assets.characters}
                                     mechanics={assets.gameMechanics}
                                     storyBeats={assets.storyBeats}
                                 />
                             </div>
-                            <div className="flex gap-3">
+                            {/* Action buttons — flex-wrap so they stack on narrow screens */}
+                            <div className="flex flex-wrap gap-2">
                                 <button
                                     onClick={handleUndo}
                                     disabled={!undoManager.canUndo()}
                                     title="Undo (Cmd+Z)"
-                                    className="px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-300 border border-gray-700 rounded-lg text-sm font-bold transition-all flex items-center gap-2"
+                                    className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed text-gray-300 border border-gray-700 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5"
                                 >
-                                    <RotateCcw className="w-4 h-4" />
-                                    Undo
+                                    <RotateCcw className="w-3.5 h-3.5" />
+                                    <span className="hidden sm:inline">Undo</span>
                                 </button>
-                                <AssetPresets
-                                    currentAssets={assets}
-                                    onLoadPreset={setAssets}
-                                />
+                                <AssetPresets currentAssets={assets} onLoadPreset={setAssets} />
                                 <button
                                     onClick={() => handleSave(false)}
-                                    className="px-4 py-2 bg-blue-900/40 hover:bg-blue-800/60 text-blue-200 border border-blue-700/50 rounded-lg text-sm font-bold transition-all"
+                                    className="px-3 py-1.5 bg-blue-900/40 hover:bg-blue-800/60 text-blue-200 border border-blue-700/50 rounded-lg text-xs font-bold transition-all"
                                 >
                                     Save Draft
                                 </button>
                                 <button
-                                    onClick={handleMint}
-                                    className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-lg text-sm font-bold transition-all shadow-lg shadow-orange-900/20 flex items-center gap-2"
-                                >
-                                    <span>✦</span> Mint IP
-                                </button>
-                                <button
                                     onClick={() => setMarketplaceOpen(true)}
-                                    className="px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                                    className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg text-xs font-medium transition-colors flex items-center gap-1"
                                 >
-                                    <span>+</span> Add Marketplace Asset
+                                    <span>+</span>
+                                    <span className="hidden sm:inline">Add Asset</span>
                                 </button>
-                                <button
-                                    onClick={handleCompile}
-                                    className="px-6 py-2 bg-green-600 hover:bg-green-500 text-white rounded-lg font-bold transition-colors shadow-lg shadow-green-900/20"
-                                >
-                                    Compile Game
-                                </button>
+                                {/* Critical actions pushed to end */}
+                                <div className="flex gap-2 ml-auto">
+                                    <button
+                                        onClick={handleMint}
+                                        className="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1"
+                                    >
+                                        <span>✦</span>
+                                        <span className="hidden sm:inline">Mint IP</span>
+                                    </button>
+                                    <button
+                                        onClick={handleCompile}
+                                        className="px-4 py-1.5 bg-green-600 hover:bg-green-500 text-white rounded-lg text-xs font-bold transition-colors"
+                                    >
+                                        Compile Game
+                                    </button>
+                                </div>
                             </div>
                         </div>
+
+                        {/* Visual Style Confirmation Banner — replaces browser confirm() */}
+                        {pendingVisualAsset && (
+                            <div className="mb-6 p-4 rounded-xl border border-amber-500/40 bg-amber-900/20 flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                                <div className="flex-1 text-sm">
+                                    <span className="font-semibold text-amber-300">Replace visual style</span>
+                                    <span className="text-amber-200/80"> with &ldquo;{pendingVisualAsset.title}&rdquo;?</span>
+                                    <p className="text-xs text-amber-200/60 mt-0.5">This will overwrite the current visual guidelines.</p>
+                                </div>
+                                <div className="flex gap-2 shrink-0">
+                                    <button
+                                        onClick={() => {
+                                            if (!assets) return
+                                            setAssets({
+                                                ...assets,
+                                                visualGuidelines: {
+                                                    ...assets.visualGuidelines,
+                                                    ...(pendingVisualAsset.content as import('@/domains/games/types').VisualGuideline)
+                                                }
+                                            })
+                                            setPendingVisualAsset(null)
+                                            showToast('Visual style applied', { type: 'success', duration: 2000 })
+                                        }}
+                                        className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold rounded-lg"
+                                    >
+                                        Replace
+                                    </button>
+                                    <button
+                                        onClick={() => setPendingVisualAsset(null)}
+                                        className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-gray-200 text-xs rounded-lg"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Analysis Section */}
                         <div className="space-y-4">
@@ -627,6 +680,7 @@ export default function WorkshopPage() {
                     onSuccess={handleIPRegistrationSuccess}
                 />
             )}
-        </div >
+            </div>{/* end p-4 sm:p-6 lg:p-12 */}
+        </div>
     )
 }

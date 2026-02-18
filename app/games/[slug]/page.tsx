@@ -6,7 +6,9 @@ import { ImageGenerationService } from '@/domains/games/services/image-generatio
 import { WordleService } from '@/domains/games/services/wordle.service'
 import { IPAttribution } from '@/domains/games/components/ip-attribution'
 
-export const dynamic = 'force-dynamic'
+// ISR: revalidate game pages every 5 minutes from CDN — eliminates per-request DB hits
+// for read-only story game pages. Wordle answer is stable so this is safe.
+export const revalidate = 300
 
 interface GamePageProps {
   params: Promise<{
@@ -40,10 +42,17 @@ export default async function GamePage({ params }: GamePageProps) {
       if (!game.articleUrl) {
         notFound()
       }
-      // Enhanced: Use game-specific seed for randomness to avoid predictability
-      // Combine article URL and game ID for varied but reproducible results
+      // BUG FIX: `processed` was referenced but never defined here.
+      // We use the article URL slug tokens as a deterministic word source instead.
+      // Extract meaningful words from the URL path (e.g. "how-to-build-in-public" → ["build","public"])
+      const urlTokens = game.articleUrl!
+        .replace(/https?:\/\/[^/]+/, '')  // strip origin
+        .replace(/[^a-z-]/gi, ' ')         // non-alpha → space
+        .split(/[\s-]+/)
+        .filter(w => w.length >= 4 && w.length <= 8) // Wordle-friendly length
       const randomSeed = `${game.articleUrl}-${game.id}-${new Date().toISOString().split('T')[0]}`
-      answer = WordleService.deriveAnswerFromText(processed.text, undefined, randomSeed)
+      // Use the URL-derived tokens as candidate words with game-specific seed
+      answer = WordleService.deriveAnswerFromText(urlTokens.join(' '), undefined, randomSeed)
     }
 
     if (!answer) {

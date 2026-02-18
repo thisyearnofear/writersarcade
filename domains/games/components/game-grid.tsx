@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Game } from '../types'
@@ -20,6 +20,10 @@ export function GameGrid({ limit = 25, search, genre, page = 1, featured, onLoad
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  // Stable ref for onLoad to avoid adding it to deps (parent re-renders would cause
+  // infinite fetch loop if onLoad is defined inline at the call site)
+  const onLoadRef = useRef(onLoad)
+  onLoadRef.current = onLoad
 
   useEffect(() => {
     async function fetchGames() {
@@ -32,14 +36,15 @@ export function GameGrid({ limit = 25, search, genre, page = 1, featured, onLoad
         if (genre) params.set('genre', genre)
         if (featured) params.set('featured', 'true')
 
-        const response = await fetch(`/api/games/generate?${params}`)
+        // BUG FIX: was incorrectly calling /api/games/generate (POST creation endpoint)
+        // via GET. The listing endpoint is /api/games.
+        const response = await fetch(`/api/games?${params}`)
         const result = await response.json()
 
         if (result.success) {
           setGames(result.data.games)
-          if (onLoad) {
-            onLoad({ total: result.data.total, count: result.data.games.length })
-          }
+          // Use ref so onLoad is never in the deps array — prevents infinite loop
+          onLoadRef.current?.({ total: result.data.total, count: result.data.games.length })
         } else {
           setError(result.error || 'Failed to load games')
         }
@@ -51,12 +56,16 @@ export function GameGrid({ limit = 25, search, genre, page = 1, featured, onLoad
     }
 
     fetchGames()
-  }, [limit, search, genre, page, featured, onLoad])
+  // onLoad intentionally omitted — use onLoadRef.current inside instead
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [limit, search, genre, page, featured])
 
   if (loading) {
+    // Cap skeletons to avoid huge layout shift — never render more than 6
+    const SKELETON_COUNT = Math.min(limit, 6)
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {Array.from({ length: limit }).map((_, i) => (
+        {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
           <GameCardSkeleton key={i} />
         ))}
       </div>

@@ -62,7 +62,8 @@ const MAX_COMIC_PANELS = 5
 
 export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
   const { toast } = useToast()
-  const { _address } = useAccount()
+  // useAccount hook kept for future gameplay payment features (v2 contract)
+  useAccount()
   const { writeContractAsync } = useWriteContract()
 
   const [sessionId, setSessionId] = useState<string | null>(null)

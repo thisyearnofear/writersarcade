@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from '@/components/ui/toaster'
@@ -11,16 +11,20 @@ import { MobileBottomNav } from '@/components/navigation/MobileBottomNav'
 
 const inter = Inter({ subsets: ['latin'] })
 
+// Viewport must be exported separately in Next.js 14+ (not nested inside metadata)
+// Allow user scaling up to 5x for accessibility (WCAG 1.4.4 Resize Text)
+// Double-tap zoom prevention is handled in JS (useMobileOptimizations hook)
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+}
+
 export const metadata: Metadata = {
   title: 'WritArcade - Turn Articles into Mintable Games',
   description: 'Generate AI-powered games from articles using writer coins. Play, create, and mint games as NFTs on Base.',
   keywords: ['AI', 'games', 'articles', 'NFT', 'memecoin', 'paragraph', 'farcaster', 'base'],
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
   openGraph: {
     title: 'WritArcade - Turn Articles into Games',
     description: 'Generate AI-powered games from articles using writer coins. Mint games as NFTs on Base.',

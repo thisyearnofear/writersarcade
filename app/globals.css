@@ -43,15 +43,52 @@
   --writarcade-info: #60a5fa;         /* Lighter blue */
 }
 
+/* ─── CSS Variable Colour Tokens ───────────────────────────────────────────
+   SEMANTICS:
+   • :root  = light mode (Sun icon, no .dark class on <html>)
+   • .dark  = dark mode  (Moon icon, .dark class added by DarkModeProvider)
+   
+   The app defaults to dark mode (DarkModeProvider initialises isDarkMode=true).
+   html always starts with className="dark" in layout.tsx.
+   
+   PREVIOUS BUG: :root had black bg and .dark had white bg — these were inverted,
+   meaning shadcn/ui components using CSS variables rendered backwards.
+   This is now corrected.
+   ─────────────────────────────────────────────────────────────────────────── */
 @layer base {
   :root {
+    /* Light mode — activated when user toggles to Sun/day */
+    --background: 0 0% 98%;
+    --foreground: 0 0% 3%;
+    --card: 0 0% 96%;
+    --card-foreground: 0 0% 3%;
+    --popover: 0 0% 98%;
+    --popover-foreground: 0 0% 3%;
+    --primary: 271 81% 56%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 90%;
+    --secondary-foreground: 0 0% 10%;
+    --muted: 0 0% 90%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 0 0% 90%;
+    --accent-foreground: 0 0% 10%;
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 82%;
+    --input: 0 0% 88%;
+    --ring: 271 81% 56%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    /* Dark mode — default state (Moon icon) */
     --background: 0 0% 0%;
     --foreground: 0 0% 98%;
     --card: 0 0% 3.9%;
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 271 81% 56%;
+    --primary: 271 81% 65%;
     --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 14.9%;
     --secondary-foreground: 0 0% 98%;
@@ -63,30 +100,7 @@
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 14.9%;
     --input: 0 0% 14.9%;
-    --ring: 271 81% 56%;
-    --radius: 0.5rem;
-  }
-
-  .dark {
-    --background: 0 0% 98%;
-    --foreground: 0 0% 0%;
-    --card: 0 0% 98%;
-    --card-foreground: 0 0% 0%;
-    --popover: 0 0% 98%;
-    --popover-foreground: 0 0% 0%;
-    --primary: 271 81% 56%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 90%;
-    --secondary-foreground: 0 0% 0%;
-    --muted: 0 0% 90%;
-    --muted-foreground: 0 0% 30%;
-    --accent: 0 0% 90%;
-    --accent-foreground: 0 0% 0%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 271 81% 56%;
+    --ring: 271 81% 65%;
     --radius: 0.5rem;
   }
 }
@@ -94,6 +108,17 @@
 @layer base {
   * {
     @apply border-border;
+    /* Prevent double-tap zoom via CSS — this is preferred over the
+       {passive: false} touchmove event listener in useMobileOptimizations.ts
+       because it doesn't block native scroll performance.
+       Works on iOS Safari 13+ and all modern Android browsers. */
+    touch-action: manipulation;
+  }
+
+  /* Restore natural scroll behaviour for scrollable containers */
+  [data-scroll], .overflow-auto, .overflow-y-auto, .overflow-x-auto,
+  [role="listbox"], [role="grid"] {
+    touch-action: pan-y;
   }
 
   body {
@@ -575,6 +600,11 @@
   }
 }
 
+/* Dynamic viewport height — fixes iOS Safari 100vh including address bar.
+   Use .dvh-screen instead of min-h-screen for full-screen game views. */
+.dvh-screen { min-height: 100dvh; }
+.h-dvh      { height: 100dvh; }
+
 /* WritArcade Enhanced Utility Classes - Core Principles Edition */
 @layer utilities {
   /* Brand color utilities - ENHANCEMENT FIRST approach */
@@ -607,6 +637,16 @@
   @keyframes slideIn {
     from { opacity: 0; transform: translateX(-20px); }
     to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* Used by mobile filter drawer on /games page */
+  .animate-slide-in-up {
+    animation: slideInUp 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  @keyframes slideInUp {
+    from { opacity: 0; transform: translateY(100%); }
+    to   { opacity: 1; transform: translateY(0); }
   }
   
   /* Enhanced card styles - PREVENT BLOAT by reusing existing patterns */
