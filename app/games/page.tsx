@@ -6,8 +6,11 @@ import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
 import { Search, Filter, Gamepad2, Compass, Zap, Brain, Sword, Store, ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { GenreFilterList } from '@/domains/games/components/genre-filter-list'
+import type { GenreOption } from '@/domains/games/components/genre-filter-list'
 
-const genres = [
+// Single source of truth — consumed by both sidebar and mobile drawer via GenreFilterList
+const genres: GenreOption[] = [
   { id: 'all', label: 'All Games', icon: Gamepad2 },
   { id: 'Simulation', label: 'Simulation', icon: Store },
   { id: 'Adventure', label: 'Adventure', icon: Compass },
@@ -101,26 +104,12 @@ export default function GamesPage() {
                     <X className="w-5 h-5" />
                   </button>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  {genres.map((genre) => (
-                    <button
-                      key={genre.id}
-                      onClick={() => {
-                        setSelectedGenre(genre.id === 'all' ? undefined : genre.id)
-                        setCurrentPage(1)
-                        setFilterDrawerOpen(false)
-                      }}
-                      className={`flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-medium transition-colors ${
-                        (selectedGenre === genre.id) || (!selectedGenre && genre.id === 'all')
-                          ? 'bg-purple-600/30 text-purple-300 border border-purple-500/50'
-                          : 'text-gray-400 bg-gray-900 border border-gray-800 hover:border-gray-600'
-                      }`}
-                    >
-                      <genre.icon className="w-4 h-4" />
-                      {genre.label}
-                    </button>
-                  ))}
-                </div>
+                <GenreFilterList
+                  genres={genres}
+                  selected={selectedGenre}
+                  onSelect={(id) => { setSelectedGenre(id); setCurrentPage(1); setFilterDrawerOpen(false) }}
+                  variant="drawer"
+                />
               </div>
             </>
           )}
@@ -145,22 +134,12 @@ export default function GamesPage() {
                   <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                     <Filter className="w-4 h-4" /> Genres
                   </h3>
-                  <div className="space-y-1">
-                    {genres.map((genre) => (
-                      <button
-                        key={genre.id}
-                        onClick={() => { setSelectedGenre(genre.id === 'all' ? undefined : genre.id); setCurrentPage(1) }}
-                        className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-sm font-medium ${
-                          (selectedGenre === genre.id) || (!selectedGenre && genre.id === 'all')
-                            ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30'
-                            : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
-                        }`}
-                      >
-                        <genre.icon className="w-4 h-4" />
-                        <span>{genre.label}</span>
-                      </button>
-                    ))}
-                  </div>
+                  <GenreFilterList
+                    genres={genres}
+                    selected={selectedGenre}
+                    onSelect={(id) => { setSelectedGenre(id); setCurrentPage(1) }}
+                    variant="sidebar"
+                  />
                 </div>
               </aside>
 

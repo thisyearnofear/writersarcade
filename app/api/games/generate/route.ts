@@ -229,36 +229,6 @@ Your game MUST authentically interpret this article's core themes. Players shoul
   }
 }
 
-export async function GET(request: NextRequest) {
-  // Get recent games for homepage
-  try {
-    const { searchParams } = new URL(request.url)
-    const limit = parseInt(searchParams.get('limit') || '25')
-    const offset = parseInt(searchParams.get('offset') || '0')
-    const search = searchParams.get('search') || undefined
-    const genre = searchParams.get('genre') || undefined
-    const featured = searchParams.get('featured') === 'true'
-
-    // Fetch games from database
-    const result = await GameDatabaseService.getGames({
-      limit,
-      offset,
-      search,
-      genre,
-      featured,
-      includePrivate: false, // Public API endpoint
-    })
-
-    return NextResponse.json({
-      success: true,
-      data: result,
-    })
-
-  } catch (error) {
-    console.error('Get games error:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch games' },
-      { status: 500 }
-    )
-  }
-}
+// GET /api/games/generate is POST-only.
+// Game listing lives at GET /api/games (app/api/games/route.ts) with caching.
+// Keeping this comment so future contributors don't re-add the duplicate.
