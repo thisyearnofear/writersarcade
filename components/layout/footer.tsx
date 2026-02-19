@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { ExternalLink } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { useReducedMotion } from 'framer-motion'
 
 const NAV_LINKS = [
   { href: '/games', label: 'Games' },
@@ -27,6 +29,53 @@ const SOCIAL_LINKS = [
   { label: 'Farcaster', href: 'https://warpcast.com/~/channel/writarcade' },
 ]
 
+function AnimatedFooterLink({ href, children }: { href: string; children: React.ReactNode }) {
+  const prefersReducedMotion = useReducedMotion()
+  
+  return (
+    <motion.div whileHover={prefersReducedMotion ? {} : { x: 4 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
+      <Link href={href} className="text-gray-400 hover:text-white text-sm transition-colors">
+        {children}
+      </Link>
+    </motion.div>
+  )
+}
+
+function AnimatedContractLink({ href, label }: { href: string; label: string }) {
+  const prefersReducedMotion = useReducedMotion()
+  
+  return (
+    <motion.a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-gray-400 hover:text-purple-400 text-xs font-mono flex items-center gap-1 transition-colors"
+      whileHover={prefersReducedMotion ? {} : { scale: 1.02, x: 2 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+    >
+      <span>{label}</span>
+      <ExternalLink className="w-3 h-3 flex-shrink-0" />
+    </motion.a>
+  )
+}
+
+function AnimatedExternalLink({ href, children }: { href: string; children: React.ReactNode }) {
+  const prefersReducedMotion = useReducedMotion()
+  
+  return (
+    <motion.a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-gray-400 hover:text-white text-sm flex items-center gap-1 transition-colors"
+      whileHover={prefersReducedMotion ? {} : { x: 4 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+    >
+      {children}
+    </motion.a>
+  )
+}
+
 export function Footer() {
   return (
     <footer className="border-t border-gray-800 bg-black/80 py-10">
@@ -34,7 +83,12 @@ export function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           {/* Brand */}
           <div>
-            <p className="text-white font-semibold mb-2">WritArcade</p>
+            <motion.p 
+              className="text-white font-semibold mb-2"
+              whileHover={{ scale: 1.02 }}
+            >
+              WritArcade
+            </motion.p>
             <p className="text-gray-400 text-sm leading-relaxed">
               Turn articles into playable, mintable games with on-chain IP and revenue splits.
             </p>
@@ -46,12 +100,7 @@ export function Footer() {
             <ul className="space-y-2">
               {NAV_LINKS.map((link) => (
                 <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-gray-400 hover:text-white text-sm transition-colors"
-                  >
-                    {link.label}
-                  </Link>
+                  <AnimatedFooterLink href={link.href}>{link.label}</AnimatedFooterLink>
                 </li>
               ))}
             </ul>
@@ -65,15 +114,7 @@ export function Footer() {
             <ul className="space-y-2">
               {CONTRACT_LINKS.map((c) => (
                 <li key={c.label}>
-                  <a
-                    href={c.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-purple-400 text-xs font-mono flex items-center gap-1 transition-colors"
-                  >
-                    <span>{c.label}</span>
-                    <ExternalLink className="w-3 h-3 flex-shrink-0" />
-                  </a>
+                  <AnimatedContractLink href={c.href} label={c.label} />
                   <span className="text-gray-600 text-xs font-mono">
                     {c.address.slice(0, 6)}…{c.address.slice(-4)}
                   </span>
@@ -88,15 +129,10 @@ export function Footer() {
             <ul className="space-y-2">
               {SOCIAL_LINKS.map((link) => (
                 <li key={link.label}>
-                  <a
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-400 hover:text-white text-sm flex items-center gap-1 transition-colors"
-                  >
+                  <AnimatedExternalLink href={link.href}>
                     {link.label}
                     <ExternalLink className="w-3 h-3" />
-                  </a>
+                  </AnimatedExternalLink>
                 </li>
               ))}
             </ul>

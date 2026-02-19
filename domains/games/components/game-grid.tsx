@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { Game } from '../types'
 import { GameCardEnhanced } from './game-card-enhanced'
 import { animationConfig } from '@/lib/animations'
+import { CardSkeleton } from '@/components/effects'
 
 interface GameGridProps {
   limit?: number
@@ -66,7 +67,7 @@ export function GameGrid({ limit = 25, search, genre, page = 1, featured, onLoad
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
-          <GameCardSkeleton key={i} />
+          <CardSkeleton key={i} />
         ))}
       </div>
     )

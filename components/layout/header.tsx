@@ -8,6 +8,7 @@ import { BalanceDisplay } from '@/components/ui/balance-display'
 import { Sparkles, Menu, X, Moon, Sun } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import { useDarkMode } from '@/components/providers/DarkModeProvider'
+import { motion, useReducedMotion } from 'framer-motion'
 
 function DarkModeToggle() {
   const { isDarkMode, toggleDarkMode } = useDarkMode()
@@ -45,6 +46,53 @@ const NAV_LINKS = [
   { href: '/my-games', label: 'My Games' },
 ]
 
+function AnimatedNavLink({ href, label, isActive }: { href: string; label: string; isActive: boolean }) {
+  const prefersReducedMotion = useReducedMotion()
+  
+  return (
+    <motion.div
+      whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
+      whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
+    >
+      <Link
+        href={href}
+        className={`relative transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-black rounded pb-0.5 ${
+          isActive
+            ? 'text-white after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-purple-500 after:rounded-full'
+            : 'text-gray-400 hover:text-white'
+        }`}
+        aria-current={isActive ? 'page' : undefined}
+      >
+        {label}
+      </Link>
+    </motion.div>
+  )
+}
+
+function AnimatedCreateButton({ isActive }: { isActive: boolean }) {
+  const prefersReducedMotion = useReducedMotion()
+  
+  return (
+    <motion.div
+      whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
+      whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
+    >
+      <Link
+        href="/generate"
+        className={`flex items-center space-x-2 px-3 py-2 rounded-lg border transition-all text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-black ${
+          isActive
+            ? 'bg-purple-600/40 border-purple-500/70 text-purple-200'
+            : 'bg-purple-600/20 border-purple-500/30 hover:bg-purple-600/30 hover:border-purple-500/50 text-purple-300 hover:text-purple-200'
+        }`}
+        aria-current={isActive ? 'page' : undefined}
+      >
+        <Sparkles className="w-4 h-4" />
+        <span>Create</span>
+      </Link>
+    </motion.div>
+  )
+}
+
 export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const pathname = usePathname()
@@ -62,38 +110,22 @@ export function Header() {
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo — use /logo.png (exists in /public); /images/logo-white.png does not exist */}
         <Link href="/" className="flex items-center space-x-2" onClick={closeMobileMenu}>
-          <img src="/logo.png" alt="WritArcade" className="h-8 w-auto" />
+          <motion.img 
+            src="/logo.png" 
+            alt="WritArcade" 
+            className="h-8 w-auto"
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+          />
         </Link>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-6">
           {NAV_LINKS.map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              className={`relative transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-black rounded pb-0.5 ${
-                isActive(href)
-                  ? 'text-white after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-purple-500 after:rounded-full'
-                  : 'text-gray-400 hover:text-white'
-              }`}
-              aria-current={isActive(href) ? 'page' : undefined}
-            >
-              {label}
-            </Link>
+            <AnimatedNavLink key={href} href={href} label={label} isActive={isActive(href)} />
           ))}
 
-          <Link
-            href="/generate"
-            className={`flex items-center space-x-2 px-3 py-2 rounded-lg border transition-all text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-black ${
-              isActive('/generate')
-                ? 'bg-purple-600/40 border-purple-500/70 text-purple-200'
-                : 'bg-purple-600/20 border-purple-500/30 hover:bg-purple-600/30 hover:border-purple-500/50 text-purple-300 hover:text-purple-200'
-            }`}
-            aria-current={isActive('/generate') ? 'page' : undefined}
-          >
-            <Sparkles className="w-4 h-4" />
-            <span>Create</span>
-          </Link>
+          <AnimatedCreateButton isActive={isActive('/generate')} />
 
           <BalanceDisplay />
           <DarkModeToggle />
@@ -101,18 +133,19 @@ export function Header() {
         </nav>
 
         {/* Mobile Menu Button */}
-        <button
+        <motion.button
           onClick={() => setIsMobileMenuOpen(v => !v)}
           className="md:hidden p-3 rounded-md hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-black"
           aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={isMobileMenuOpen}
+          whileTap={{ scale: 0.95 }}
         >
           {isMobileMenuOpen ? (
             <X className="w-6 h-6 text-white" />
           ) : (
             <Menu className="w-6 h-6 text-white" />
           )}
-        </button>
+        </motion.button>
       </div>
 
       {/* Transparent backdrop — tap outside to dismiss mobile menu */}
