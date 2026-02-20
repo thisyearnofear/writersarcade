@@ -2,41 +2,75 @@
 
 import { redirect } from 'next/navigation'
 import { useState, useEffect } from 'react'
-import { getCurrentUser } from '@/lib/auth'
 import { getDisplayName, getAvatarUrl } from '@/lib/farcaster'
-import { GameDatabaseService } from '@/domains/games/services/game-database.service'
 import { UserPreferencesForm } from '@/domains/users/components/user-profile-form'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { AISettingsWrapper } from '@/components/settings/AISettingsWrapper'
 
+interface User {
+  id: string
+  walletAddress: string
+  preferredModel: string
+  private: boolean
+  isCreator: boolean
+  isAdmin: boolean
+}
+
+interface Game {
+  id: string
+  slug: string
+  title: string
+  description: string
+  genre: string
+  subgenre: string
+  private: boolean
+  createdAt: string
+}
+
 export default function ProfilePage() {
-  const [user, setUser] = useState<any>(null)
-  const [userGames, setUserGames] = useState<any>({ games: [] })
+  const [user, setUser] = useState<User | null>(null)
+  const [userGames, setUserGames] = useState<Game[]>([])
   const [displayName, setDisplayName] = useState<string>('User')
   const [avatarUrl, setAvatarUrl] = useState<string>('/default-avatar.png')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function loadData() {
-      const currentUser = await getCurrentUser()
-      if (!currentUser) {
+      try {
+        // Fetch current user from API
+        const userRes = await fetch('/api/auth/me')
+        if (!userRes.ok) {
+          redirect('/')
+          return
+        }
+
+        const userData = await userRes.json()
+        if (!userData.success) {
+          redirect('/')
+          return
+        }
+
+        setUser(userData.user)
+
+        // Fetch Farcaster profile
+        const name = await getDisplayName(userData.user.walletAddress)
+        const avatar = await getAvatarUrl(userData.user.walletAddress)
+        setDisplayName(name || 'User')
+        setAvatarUrl(avatar || '/default-avatar.png')
+
+        // Get user's game statistics
+        const gamesRes = await fetch(`/api/games/my-games?wallet=${encodeURIComponent(userData.user.walletAddress)}&limit=100`)
+        if (gamesRes.ok) {
+          const gamesData = await gamesRes.json()
+          setUserGames(gamesData.data?.games || [])
+        }
+
+        setLoading(false)
+      } catch (error) {
+        console.error('Profile load error:', error)
         redirect('/')
-        return
       }
-      setUser(currentUser)
-      
-      // Fetch Farcaster profile
-      const name = await getDisplayName(currentUser.walletAddress)
-      const avatar = await getAvatarUrl(currentUser.walletAddress)
-      setDisplayName(name || 'User')
-      setAvatarUrl(avatar || '/default-avatar.png')
-      
-      // Get user's game statistics
-      const games = await GameDatabaseService.getUserGames(currentUser.id, 100)
-      setUserGames(games)
-      
-      setLoading(false)
     }
     loadData()
   }, [])
@@ -99,7 +133,7 @@ export default function ProfilePage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Games Created</span>
-                    <span className="font-medium">{userGames.games.length}</span>
+                    <span className="font-medium">{userGames.length}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">AI Model</span>
@@ -114,16 +148,16 @@ export default function ProfilePage() {
               <div className="mb-6">
                 <h2 className="text-2xl font-semibold mb-2">Your Games</h2>
                 <p className="text-gray-400">
-                  {userGames.games.length === 0
+                  {userGames.length === 0
                     ? "You haven't created any games yet. Start creating!"
-                    : `You've created ${userGames.games.length} game${userGames.games.length === 1 ? '' : 's'}`
+                    : `You've created ${userGames.length} game${userGames.length === 1 ? '' : 's'}`
                   }
                 </p>
               </div>
 
-              {userGames.games.length > 0 ? (
+              {userGames.length > 0 ? (
                 <div className="space-y-6">
-                  {userGames.games.map((game: any) => (
+                  {userGames.map((game) => (
                     <div
                       key={game.id}
                       className="bg-gray-800/50 rounded-lg border border-gray-700 p-6"
