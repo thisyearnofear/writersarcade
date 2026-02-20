@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useRef } from 'react'
-import { motion, useMotionValue, useSpring, useTransform, MotionValue } from 'framer-motion'
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { useReducedMotion } from 'framer-motion'
 import { Game } from '../types'
 import { Play, Zap, Crown, Trash2, Eye, EyeOff, Settings } from 'lucide-react'

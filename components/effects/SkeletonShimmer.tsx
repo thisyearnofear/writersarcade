@@ -14,8 +14,6 @@ export function SkeletonShimmer({
   lines = 3,
   showAvatar = true,
 }: SkeletonShimmerProps) {
-  const prefersReducedMotion = useReducedMotion()
-
   return (
     <div className={`space-y-3 ${className}`}>
       {showAvatar && (
@@ -122,7 +120,6 @@ export function GridSkeleton({
   className = '',
 }: GridSkeletonProps) {
   const prefersReducedMotion = useReducedMotion()
-
   const gridCols = {
     1: 'grid-cols-1',
     2: 'grid-cols-1 sm:grid-cols-2',

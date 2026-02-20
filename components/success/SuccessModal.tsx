@@ -10,9 +10,11 @@ interface SuccessModalProps {
   isOpen: boolean
   onClose: () => void
   title: string
-  description: string
+  description?: string
+  _description?: string
   gameSlug?: string
   transactionHash?: string
+  _transactionHash?: string
   action: 'mint' | 'generate'
   genre?: string
   authorName?: string
@@ -22,9 +24,9 @@ export function SuccessModal({
   isOpen,
   onClose,
   title,
-  description,
+  _description,
   gameSlug,
-  transactionHash,
+  _transactionHash,
   action,
   genre = 'Adventure',
   authorName,

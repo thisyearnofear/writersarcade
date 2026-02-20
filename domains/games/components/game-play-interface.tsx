@@ -80,7 +80,7 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
   const [userChoices, setUserChoices] = useState<Array<{ panelIndex: number; choice: string; timestamp: string }>>([])
   const [regeneratingMessageId, setRegeneratingMessageId] = useState<string | null>(null) // Track which panel is regenerating
   const [showPreview, setShowPreview] = useState(false) // NEW: Preview modal state
-  const [editedPanels, setEditedPanels] = useState<Record<string, string>>({}) // Track edited panel text
+  const [editedPanels, _setEditedPanels] = useState<Record<string, string>>({}) // Track edited panel text
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const assistantMessageCount = messages.filter(m => m.role === 'assistant').length
@@ -688,7 +688,7 @@ export function GamePlayInterface({ game }: GamePlayInterfaceProps) {
       })
 
       // Track edit for potential future use
-      setEditedPanels(prev => ({
+      _setEditedPanels((prev: Record<string, string>) => ({
         ...prev,
         [targetMessage.id]: newText
       }))

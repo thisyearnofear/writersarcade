@@ -7,6 +7,7 @@ import { DifficultySelector, type GameDifficulty } from '@/components/game/Diffi
 import { CostPreview } from '@/components/game/CostPreview'
 import { PaymentFlow } from '@/components/game/PaymentFlow'
 import { PaymentCostService } from '@/domains/payments/services/payment-cost.service'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface GameCustomizerProps {
   writerCoin: WriterCoin
@@ -32,8 +33,6 @@ export function GameCustomizer({ writerCoin, articleUrl, onBack, onGameGenerated
   const handlePaymentSuccess = async (_transactionHash: string) => {
     setPaymentApproved(true)
     setError(null)
-
-    // After payment succeeds, generate the game
     await generateGame()
   }
 
@@ -81,131 +80,175 @@ export function GameCustomizer({ writerCoin, articleUrl, onBack, onGameGenerated
     }
   }
 
-  // Prevent scroll when generating
-  if (typeof document !== 'undefined') {
-    document.documentElement.style.overflow = isGenerating ? 'hidden' : ''
-  }
-
   return (
-    <div>
-      {/* Generation Loading Overlay */}
-      {isGenerating && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[9999]">
-          <div className="text-center space-y-4">
-            <div className="flex justify-center mb-4">
-              <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-purple-400 border-t-transparent"></div>
+    <div className="space-y-6">
+      {/* Immersive Loading Overlay */}
+      <AnimatePresence>
+        {isGenerating && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[10000] flex items-center justify-center bg-[#0a0a14]/90 backdrop-blur-2xl"
+          >
+            <div className="relative flex flex-col items-center">
+              {/* Animated Rings */}
+              <div className="relative h-32 w-32">
+                <motion.div 
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                  className="absolute inset-0 rounded-full border-4 border-purple-500/20 border-t-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.4)]"
+                />
+                <motion.div 
+                  animate={{ rotate: -360 }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                  className="absolute inset-4 rounded-full border-4 border-indigo-500/20 border-b-indigo-500"
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-2xl font-black italic text-white animate-pulse">AI</span>
+                </div>
+              </div>
+
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="mt-12 text-center"
+              >
+                <h3 className="text-2xl font-black uppercase italic tracking-tighter text-white">Synthesizing Experience</h3>
+                <div className="mt-4 flex items-center justify-center space-x-2">
+                    <span className="h-1 w-12 rounded-full bg-purple-500/20 overflow-hidden">
+                        <motion.div 
+                            animate={{ x: [-48, 48] }}
+                            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                            className="h-full w-full bg-purple-500"
+                        />
+                    </span>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-purple-400/80 italic">Neural Engine Active</p>
+                    <span className="h-1 w-12 rounded-full bg-purple-500/20 overflow-hidden">
+                        <motion.div 
+                            animate={{ x: [48, -48] }}
+                            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                            className="h-full w-full bg-purple-500"
+                        />
+                    </span>
+                </div>
+                <p className="mt-6 max-w-xs text-xs leading-relaxed text-purple-200/40 font-medium">
+                  Transforming static content into interactive protocol buffers...
+                </p>
+              </motion.div>
             </div>
-            <h3 className="text-xl font-semibold text-white">Generating Your Game</h3>
-            <p className="text-purple-200 text-sm max-w-xs">
-              Our AI is analyzing the article and creating an interactive experience just for you...
-            </p>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <button
         onClick={onBack}
-        className="mb-4 flex items-center space-x-2 text-purple-300 hover:text-purple-200"
+        className="group flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest text-purple-400 transition-colors hover:text-purple-300"
         disabled={isGenerating}
       >
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        <svg className="h-3 w-3 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
         </svg>
-        <span>Back</span>
+        <span>Back to Loader</span>
       </button>
 
-      <h2 className="mb-2 text-2xl font-bold text-white">Customize Your Game</h2>
-      <p className="mb-6 text-purple-200">Choose game type, then (optionally) genre and difficulty.</p>
+      <div className="space-y-1">
+        <h2 className="text-2xl font-black text-white uppercase italic tracking-tight">Configure Build</h2>
+        <p className="text-sm text-purple-300/80">Customize the parameters of your generated experience</p>
+      </div>
 
       <div className="space-y-6">
-        {/* Game Type Toggle */}
-        <div className="flex flex-col gap-2">
-          <div className="inline-flex rounded-md bg-purple-950/60 border border-purple-700 p-1 w-fit">
+        {/* Mode Selector */}
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-1 flex">
             <button
-              type="button"
-              onClick={() => setMode('story')}
-              className={`px-3 py-1.5 text-xs rounded-md font-medium transition-colors ${
-                mode === 'story' ? 'bg-purple-600 text-white' : 'text-purple-200 hover:text-white'
-              }`}
+                onClick={() => setMode('story')}
+                className={`flex-1 rounded-xl py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${
+                    mode === 'story' 
+                    ? 'bg-purple-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]' 
+                    : 'text-purple-400/60 hover:text-purple-300'
+                }`}
             >
-              Story (5-panel)
+                Story Mode
             </button>
             <button
-              type="button"
-              onClick={() => {
-                setMode('wordle')
-                setPaymentApproved(false)
-              }}
-              className={`ml-1 px-3 py-1.5 text-xs rounded-md font-medium transition-colors ${
-                mode === 'wordle' ? 'bg-purple-600 text-white' : 'text-purple-200 hover:text-white'
-              }`}
+                onClick={() => setMode('wordle')}
+                className={`flex-1 rounded-xl py-2.5 text-[10px] font-black uppercase tracking-widest transition-all ${
+                    mode === 'wordle' 
+                    ? 'bg-purple-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]' 
+                    : 'text-purple-400/60 hover:text-purple-300'
+                }`}
             >
-              <span className="font-semibold">Wordle (beta, free)</span>
+                Puzzle Mode (Beta)
             </button>
-          </div>
-          <p className="text-xs text-purple-200">
-            Story uses writer coins for customization. Wordle is a free article-derived word puzzle during beta.
-          </p>
         </div>
 
-        {/* Genre & Difficulty Selection (story mode only) */}
-        {isStoryMode && (
-          <>
-            <GenreSelector value={genre} onChange={setGenre} disabled={isGenerating} />
+        <div className="space-y-6 rounded-2xl border border-white/5 bg-white/[0.02] p-5">
+            {isStoryMode ? (
+                <>
+                    <div className="space-y-4">
+                        <GenreSelector value={genre} onChange={setGenre} disabled={isGenerating} />
+                        <DifficultySelector value={difficulty} onChange={setDifficulty} disabled={isGenerating} />
+                    </div>
 
-            {/* Difficulty Selection */}
-            <DifficultySelector value={difficulty} onChange={setDifficulty} disabled={isGenerating} />
+                    <div className="pt-4 border-t border-white/5">
+                        <CostPreview writerCoin={writerCoin} action="generate-game" showBreakdown />
+                    </div>
+                </>
+            ) : (
+                <div className="py-8 text-center space-y-4">
+                    <div className="mx-auto h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center border border-green-500/20">
+                        <span className="text-green-400 font-black italic">!</span>
+                    </div>
+                    <div>
+                        <h4 className="text-sm font-bold text-white uppercase tracking-tight">Free Generation Active</h4>
+                        <p className="mt-1 text-[10px] text-purple-300/40 uppercase tracking-widest leading-relaxed">
+                            Puzzle mode is currently available without writer coin authorization during our Farcaster beta phase.
+                        </p>
+                    </div>
+                </div>
+            )}
+        </div>
 
-            {/* Cost Preview */}
-            <CostPreview writerCoin={writerCoin} action="generate-game" showBreakdown />
-          </>
-        )}
-
-        {/* Error Message */}
         {error && (
-          <div className="rounded-lg border border-red-500/50 bg-red-500/20 p-4">
-            <p className="text-sm text-red-200">{error}</p>
-          </div>
+            <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-4">
+                <div className="flex items-center space-x-3">
+                    <span className="text-red-400 font-bold">FAULT:</span>
+                    <p className="text-xs text-red-200/80">{error}</p>
+                </div>
+            </div>
         )}
 
-        {/* Payment & Generation (story mode) */}
-        {isStoryMode && (
+        {isStoryMode ? (
           !paymentApproved ? (
-            <PaymentFlow
-              writerCoin={writerCoin}
-              action="generate-game"
-              costFormatted={cost.amountFormatted}
-              onPaymentSuccess={handlePaymentSuccess}
-              onPaymentError={(err) => setError(err)}
-              disabled={isGenerating}
-            />
+            <div className="pt-2">
+                <PaymentFlow
+                    writerCoin={writerCoin}
+                    action="generate-game"
+                    costFormatted={cost.amountFormatted}
+                    onPaymentSuccess={handlePaymentSuccess}
+                    onPaymentError={(err) => setError(err)}
+                    disabled={isGenerating}
+                />
+            </div>
           ) : (
-            <div className="rounded-lg border border-green-500/50 bg-green-500/20 p-4">
-              <p className="text-sm text-green-200">✅ Payment confirmed! Generating your game...</p>
+            <div className="rounded-2xl border border-green-500/20 bg-green-500/5 p-4 flex items-center justify-center space-x-3">
+              <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+              <p className="text-xs font-black uppercase tracking-widest text-green-400">Authorization Confirmed</p>
             </div>
           )
-        )}
-
-        {/* Wordle generation (free) */}
-        {!isStoryMode && (
+        ) : (
           <button
             type="button"
             onClick={generateGame}
             disabled={isGenerating}
-            className="w-full rounded-lg bg-purple-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-purple-500 disabled:opacity-50"
+            className="w-full rounded-2xl bg-purple-600 py-4 text-sm font-black uppercase tracking-[0.2em] italic text-white shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all hover:bg-purple-500 hover:shadow-[0_0_25px_rgba(168,85,247,0.5)] active:scale-[0.98] disabled:opacity-50"
           >
-            {isGenerating ? 'Creating Wordle…' : 'Create Wordle Game'}
+            Synthesize Experience
           </button>
         )}
-
-        {/* Info */}
-        <div className="rounded-lg bg-purple-900/30 p-4">
-          <p className="text-xs text-purple-300">
-            💡 <span className="font-semibold">What happens next:</span> We'll analyze the article and
-            generate an interactive game using AI. You can then mint it as an NFT on Base.
-          </p>
-        </div>
       </div>
     </div>
   )
 }
+

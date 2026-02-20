@@ -1164,7 +1164,6 @@ export function ComicBookFinale({
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
             <div className="w-full max-w-lg">
               <PostGameFeedback
-                gameId={gameTitle}
                 onSubmit={async (feedback) => {
                   try {
                     // Determine the slug from the current location or pass it properly

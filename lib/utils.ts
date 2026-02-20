@@ -32,27 +32,53 @@ export function isMobileDevice(): boolean {
   if (typeof navigator !== 'undefined') {
     const userAgent = navigator.userAgent.toLowerCase()
     const mobileKeywords = ['android', 'webos', 'iphone', 'ipad', 'ipod', 'blackberry', 'windows phone']
-    
+
     if (mobileKeywords.some(keyword => userAgent.includes(keyword))) {
       return true
     }
   }
-  
+
   // Fallback to screen size check
   if (typeof window !== 'undefined') {
     return window.innerWidth <= 768
   }
-  
+
   return false
 }
 
 /**
- * Touch device detection - AGGRESSIVE CONSOLIDATION
- * Consolidates various touch detection methods into single utility
+ * Touch device detection utility
+ * Detects if current device supports touch input
  */
 export function isTouchDevice(): boolean {
   if (typeof window !== 'undefined') {
     return 'ontouchstart' in window || navigator.maxTouchPoints > 0
   }
   return false
+}
+
+/**
+ * Haptic feedback utility for mobile devices
+ * Provides tactile response for arcade-like feel
+ */
+export function triggerHaptic(style: 'light' | 'medium' | 'heavy' | 'success' | 'error' = 'medium') {
+  if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+    switch (style) {
+      case 'light':
+        navigator.vibrate(10);
+        break;
+      case 'medium':
+        navigator.vibrate(20);
+        break;
+      case 'heavy':
+        navigator.vibrate(50);
+        break;
+      case 'success':
+        navigator.vibrate([20, 30, 20]);
+        break;
+      case 'error':
+        navigator.vibrate([50, 50, 50]);
+        break;
+    }
+  }
 }

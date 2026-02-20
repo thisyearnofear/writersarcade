@@ -7,37 +7,58 @@
  * - Social features (sharing, wallet)
  */
 
+export interface FarcasterUser {
+    fid: number
+    username?: string
+    displayName?: string
+    pfpUrl?: string
+    location?: {
+        placeId: string
+        description: string
+    }
+}
+
+export interface FarcasterContext {
+    user: FarcasterUser
+    client: {
+        added: boolean
+        safeAreaInsets?: {
+            top: number
+            bottom: number
+            left: number
+            right: number
+        }
+    }
+}
+
 interface FarcasterSdk {
-  context: {
-    user?: {
-      fid?: number
-      username?: string
-      displayName?: string
-      bio?: string
-      pfpUrl?: string
-    }
-    client?: {
-      fid?: number
-      username?: string
-    }
-  } | null
+  context: Promise<FarcasterContext | null>
   actions: {
     ready: () => Promise<void>
     composeCast: (params: { text: string; embeds?: string[] }) => Promise<void>
     openUrl: (url: string) => Promise<void>
+    close: () => void
   }
 }
 
-// Lazy load SDK to avoid SSR issues with ox package compatibility
+// Lazy load SDK to avoid SSR issues
 let sdk: FarcasterSdk | null = null
 const getSdk = async (): Promise<FarcasterSdk> => {
     if (typeof window === 'undefined') {
         // Return mock SDK for server-side rendering
-        return { context: null, actions: { ready: async () => {}, composeCast: async () => {}, openUrl: async () => {} } }
+        return { 
+            context: Promise.resolve(null), 
+            actions: { 
+                ready: async () => {}, 
+                composeCast: async () => {}, 
+                openUrl: async () => {},
+                close: () => {}
+            } 
+        }
     }
     if (!sdk) {
         const { sdk: farcasterSdk } = await import('@farcaster/miniapp-sdk')
-        sdk = farcasterSdk as FarcasterSdk
+        sdk = farcasterSdk as unknown as FarcasterSdk
     }
     return sdk
 }
@@ -55,11 +76,10 @@ export interface FarcasterProfile {
  * Get Farcaster context for current user
  * Returns user info, client data, etc.
  */
-export async function getFarcasterContext(): Promise<FarcasterSdk['context']> {
+export async function getFarcasterContext(): Promise<FarcasterContext | null> {
     try {
         const farcasterSdk = await getSdk()
         const context = await farcasterSdk.context
-        console.log('Farcaster context loaded:', context)
         return context
     } catch (error) {
         console.error('Failed to load Farcaster context:', error)
@@ -87,7 +107,8 @@ export async function isInFarcasterContext(): Promise<boolean> {
     try {
         if (typeof window === 'undefined') return false
         const farcasterSdk = await getSdk()
-        return farcasterSdk.context !== null
+        const context = await farcasterSdk.context
+        return context !== null
     } catch {
         return false
     }
@@ -155,6 +176,7 @@ export async function composeCast(params: {
         const farcasterSdk = await getSdk()
         await farcasterSdk.actions.composeCast({
             text: params.text,
+            embeds: params.embeds,
         })
         return true
     } catch (error) {
@@ -179,6 +201,18 @@ export async function openUrl(url: string): Promise<boolean> {
     } catch (error) {
         console.error('Error opening URL:', error)
         return false
+    }
+}
+
+/**
+ * Close the mini app
+ */
+export async function closeMiniApp(): Promise<void> {
+    try {
+        const farcasterSdk = await getSdk()
+        farcasterSdk.actions.close()
+    } catch (error) {
+        console.error('Error closing mini app:', error)
     }
 }
 
@@ -213,3 +247,4 @@ export async function getAvatarUrl(walletAddress: string): Promise<string> {
     // Fallback to generated avatar (e.g., from wallet address)
     return `https://api.dicebear.com/7.x/identicon/svg?seed=${walletAddress}`
 }
+

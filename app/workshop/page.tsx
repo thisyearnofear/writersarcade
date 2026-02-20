@@ -517,9 +517,6 @@ export default function WorkshopPage() {
                         {/* Asset Canvas Grid with Hover Provider */}
                         <AssetHoverProvider
                             relationships={relationships}
-                            characters={assets.characters}
-                            mechanics={assets.gameMechanics}
-                            storyBeats={assets.storyBeats}
                         >
                         <div className="space-y-12">
 
@@ -677,7 +674,6 @@ export default function WorkshopPage() {
                         authorWalletAddress: address,
                     }}
                     onClose={() => setIsIPRegistrationModalOpen(false)}
-                    onSuccess={handleIPRegistrationSuccess}
                 />
             )}
             </div>{/* end p-4 sm:p-6 lg:p-12 */}

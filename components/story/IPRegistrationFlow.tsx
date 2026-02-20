@@ -31,6 +31,7 @@ interface IPRegistrationFlowProps {
   context: RegistrationFlowContext;
   onClose: () => void;
   onSuccess?: (result: IPRegistrationResult) => void;
+  _onSuccess?: (result: IPRegistrationResult) => void;
 }
 
 /**
@@ -47,7 +48,7 @@ export function IPRegistrationFlow({
   isOpen,
   context,
   onClose,
-  onSuccess,
+  _onSuccess,
 }: IPRegistrationFlowProps) {
   const flow = useStoryProtocolFlow(context);
   const [copiedField, setCopiedField] = useState<string | null>(null);

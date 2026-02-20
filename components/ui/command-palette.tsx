@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, Command, X, Sparkles, Gamepad2, Wallet, Settings } from 'lucide-react'
+import { Search, X, Sparkles, Gamepad2, Wallet, Settings } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface CommandItem {

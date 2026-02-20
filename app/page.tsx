@@ -10,7 +10,6 @@ import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
 import { OnboardingModal } from '@/components/onboarding/OnboardingModal'
 import { useOnboarding } from '@/hooks/useOnboarding'
 import { useScrollReveal } from '@/hooks/useScrollReveal'
-import { animationConfig } from '@/lib/animations'
 import { AnimatedBackground, FloatingElement, GradientText, StaggerContainer, StaggerItem, FadeIn } from '@/components/effects'
 import { Sparkles, Gamepad2, Coins, ChevronDown } from 'lucide-react'
 
@@ -33,7 +32,7 @@ const steps = [
 ]
 
 function HowItWorksSection() {
-  const { ref, isVisible } = useScrollReveal()
+  const { ref } = useScrollReveal()
 
   return (
     <section className="py-16 px-4 relative overflow-hidden" ref={ref}>

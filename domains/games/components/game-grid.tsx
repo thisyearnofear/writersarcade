@@ -58,15 +58,15 @@ export function GameGrid({ limit = 25, search, genre, page = 1, featured, onLoad
 
     fetchGames()
   // onLoad intentionally omitted — use onLoadRef.current inside instead
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [limit, search, genre, page, featured])
 
   if (loading) {
     // Cap skeletons to avoid huge layout shift — never render more than 6
-    const SKELETON_COUNT = Math.min(limit, 6)
+    const skeletonCount = Math.min(limit, 6)
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
+        {Array.from({ length: skeletonCount }).map((_, i) => (
           <CardSkeleton key={i} />
         ))}
       </div>
@@ -115,28 +115,5 @@ export function GameGrid({ limit = 25, search, genre, page = 1, featured, onLoad
         </motion.div>
       ))}
     </motion.div>
-  )
-}
-
-function GameCardSkeleton() {
-  return (
-    <div className="bg-gray-800/50 rounded-lg border border-gray-700 overflow-hidden animate-pulse">
-      <div className="p-6">
-        <div className="flex items-start justify-between mb-3">
-          <div className="h-5 w-16 bg-gray-600 rounded-full"></div>
-        </div>
-
-        <div className="h-6 bg-gray-600 rounded mb-2"></div>
-        <div className="h-4 bg-gray-600 rounded mb-1 w-3/4"></div>
-        <div className="h-4 bg-gray-600 rounded mb-4 w-1/2"></div>
-
-        <div className="h-4 bg-gray-600 rounded mb-4 w-5/6"></div>
-
-        <div className="flex items-center justify-between">
-          <div className="h-3 bg-gray-600 rounded w-20"></div>
-          <div className="h-3 bg-gray-600 rounded w-16"></div>
-        </div>
-      </div>
-    </div>
   )
 }

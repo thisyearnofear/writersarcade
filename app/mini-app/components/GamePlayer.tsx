@@ -1,9 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { PaymentButton } from "./PaymentButton";
 import { type WriterCoin } from "@/lib/writerCoins";
 import type { Game } from "@/domains/games/types";
+import { motion, AnimatePresence } from "framer-motion";
+import { triggerHaptic } from "@/lib/utils";
+import { composeCast } from "@/lib/farcaster";
+import { Share2, ExternalLink, ShieldCheck, Trophy } from "lucide-react";
 
 interface GamePlayerProps {
   game: Game;
@@ -28,6 +32,7 @@ export function GamePlayer({ game, onBack, writerCoin }: GamePlayerProps) {
     storyIpId?: string;
   } | null>(null);
   const [isMinting, setIsMinting] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Start the game
   useEffect(() => {
@@ -77,9 +82,11 @@ export function GamePlayer({ game, onBack, writerCoin }: GamePlayerProps) {
         }
 
         setGameHistory([{ role: "assistant", content: currentContent }]);
+        triggerHaptic('light');
       } catch (error) {
         console.error("Error starting game:", error);
-        setGameContent("Failed to start game. Please try again.");
+        setGameContent("FATAL ERROR: Failed to initialize experience buffer.");
+        triggerHaptic('error');
       } finally {
         setIsLoading(false);
       }
@@ -88,29 +95,43 @@ export function GamePlayer({ game, onBack, writerCoin }: GamePlayerProps) {
     startGame();
   }, [game.slug, sessionId]);
 
-  // Prevent scroll when showing modals
-  if (typeof document !== 'undefined') {
-    document.documentElement.style.overflow = (showMintDialog || showSuccessDialog) ? 'hidden' : ''
-  }
+  // Auto-scroll to bottom
+  useEffect(() => {
+    if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [gameContent, options, isLoading]);
 
   const handleMintSuccess = async (transactionHash: string, storyIPAssetId?: string) => {
+    triggerHaptic('success');
     setShowMintDialog(false);
     setIsMinting(false);
     setMintResult({ txHash: transactionHash, storyIpId: storyIPAssetId });
     setShowSuccessDialog(true);
   };
 
+  const handleShare = async () => {
+    triggerHaptic('medium');
+    const text = `I just minted "${game.title}" on WritArcade! 🎮\n\nGenerated from a Paragraph article and archived on @base. Play it here:`;
+    const url = `${window.location.origin}/games/${game.slug}`;
+    await composeCast({
+        text: text,
+        embeds: [url]
+    });
+  };
+
   const handleChoice = async (option: { id: number; text: string }) => {
     if (isLoading) return;
 
+    triggerHaptic('light');
     setIsLoading(true);
     try {
-      // Add user choice to history
       const newHistory = [
         ...gameHistory,
         { role: "user" as const, content: option.text },
       ];
       setGameHistory(newHistory);
+      setGameContent((prev) => prev + `\n\n> ${option.text}\n\n`);
 
       const response = await fetch("/api/games/chat", {
         method: "POST",
@@ -164,12 +185,13 @@ export function GamePlayer({ game, onBack, writerCoin }: GamePlayerProps) {
         ...newHistory,
         { role: "assistant", content: currentContent },
       ]);
-      setGameContent((prev) => prev + "\n\n" + currentContent);
+      triggerHaptic('light');
     } catch (error) {
       console.error("Error continuing game:", error);
       setGameContent(
-        (prev) => prev + "\n\nFailed to continue game. Please try again."
+        (prev) => prev + "\n\nSYSTEM ERROR: Connection interrupted."
       );
+      triggerHaptic('error');
     } finally {
       setIsLoading(false);
     }
@@ -177,260 +199,235 @@ export function GamePlayer({ game, onBack, writerCoin }: GamePlayerProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* HUD Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-white">{game.title}</h2>
-          <p className="text-sm text-purple-300">
-            {game.genre} • {game.subgenre}
-          </p>
+        <div className="space-y-1">
+            <div className="flex items-center space-x-2">
+                <span className="text-[10px] font-black uppercase tracking-widest text-purple-400/60 italic">Arena Active</span>
+                <span className="h-1 w-1 rounded-full bg-purple-500 animate-pulse"></span>
+            </div>
+            <h2 className="text-xl font-black text-white uppercase italic tracking-tight">{game.title}</h2>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-purple-300/40">
+                {game.genre} // {game.subgenre}
+            </p>
         </div>
         <button
-          onClick={onBack}
-          className="flex items-center space-x-2 text-purple-300 hover:text-purple-200"
+          onClick={() => { triggerHaptic('medium'); onBack(); }}
+          className="group flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 transition-all hover:border-red-500/50 hover:bg-red-500/10"
         >
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
+          <svg className="h-4 w-4 text-purple-400 group-hover:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
           </svg>
-          <span>Back</span>
         </button>
       </div>
 
-      {/* Game Description and Metadata */}
-      <div className="rounded-lg bg-purple-900/30 p-4 space-y-6">
-        <div>
-          <h3 className="text-lg font-semibold text-white mb-2">
-            Game Description
-          </h3>
-          <p className="text-sm text-purple-200">{game.description}</p>
+      {/* Terminal Display */}
+      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-black/40 backdrop-blur-xl shadow-2xl">
+        {/* Terminal Scanline Effect */}
+        <div className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.03),rgba(0,255,0,0.01),rgba(0,0,128,0.03))] bg-[length:100%_4px,3px_100%]"></div>
+        
+        {/* Terminal Header */}
+        <div className="flex items-center justify-between bg-white/5 px-4 py-2 border-b border-white/5">
+            <div className="flex space-x-1.5">
+                <div className="h-2 w-2 rounded-full bg-red-500/40"></div>
+                <div className="h-2 w-2 rounded-full bg-yellow-500/40"></div>
+                <div className="h-2 w-2 rounded-full bg-green-500/40"></div>
+            </div>
+            <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-white/20">Experience_Buffer_v1.0.4</span>
         </div>
 
-        <div>
-          <h3 className="text-lg font-semibold text-white mb-2">
-            Article Metadata
-          </h3>
-          <ul className="space-y-2 text-sm text-purple-200">
-            <li>
-              <span className="font-medium text-purple-100">Publication:</span>{" "}
-              {game.publicationName || "Unknown"}
-              {game.publicationSummary && (
-                <p className="text-xs text-purple-300 mt-1">
-                  {game.publicationSummary}
-                </p>
-              )}
-            </li>
-            <li>
-              <span className="font-medium text-purple-100">Subscribers:</span>{" "}
-              {game.subscriberCount?.toLocaleString() || "0"}
-            </li>
-            <li>
-              <span className="font-medium text-purple-100">Author:</span>{" "}
-              {game.authorParagraphUsername || "Unknown"} (Wallet: {game.authorWallet || "N/A"})
-            </li>
-            <li>
-              <span className="font-medium text-purple-100">Published:</span>{" "}
-              {game.articlePublishedAt
-                ? new Date(game.articlePublishedAt).toLocaleDateString()
-                : "Unknown"}
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      {/* Game Content */}
-      <div className="rounded-lg bg-purple-950/50 border border-purple-700/50 p-6">
-        <div className="space-y-4">
-          <div className="prose prose-invert max-w-none text-purple-50">
-            <p className="whitespace-pre-wrap leading-relaxed">{gameContent}</p>
+        <div 
+            ref={scrollRef}
+            className="h-[400px] overflow-y-auto p-6 font-mono text-sm leading-relaxed scrollbar-hide"
+        >
+          <div className="prose prose-invert max-w-none prose-sm">
+            <p className="whitespace-pre-wrap text-purple-100/90 [text-shadow:0_0_8px_rgba(168,85,247,0.4)]">
+                {gameContent}
+                {isLoading && (
+                    <span className="inline-block h-4 w-2 bg-purple-500 animate-pulse ml-1 align-middle"></span>
+                )}
+            </p>
           </div>
 
-          {isLoading && (
-            <div className="flex items-center justify-center py-4">
-              <div className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-purple-400 border-t-transparent"></div>
-            </div>
-          )}
-
-          {/* Game Options */}
-          {options.length > 0 && !isLoading && (
-            <div className="space-y-2 pt-4">
-              <p className="text-xs uppercase tracking-wider text-purple-400">
-                Choose your action:
-              </p>
-              {options.map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => handleChoice(option)}
-                  disabled={isLoading}
-                  className="w-full rounded-lg border border-purple-500/50 bg-purple-900/30 px-4 py-3 text-left text-sm text-purple-200 transition-all hover:border-purple-400 hover:bg-purple-900/50 disabled:opacity-50"
+          <AnimatePresence>
+              {options.length > 0 && !isLoading && (
+                <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-8 space-y-3"
                 >
-                  <span className="font-medium">{option.id}.</span>{" "}
-                  {option.text}
-                </button>
-              ))}
-            </div>
-          )}
+                  <div className="flex items-center space-x-2 py-2">
+                    <span className="h-px flex-1 bg-white/5"></span>
+                    <span className="text-[9px] font-black uppercase tracking-widest text-purple-400/40 italic">System Input Required</span>
+                    <span className="h-px flex-1 bg-white/5"></span>
+                  </div>
+                  {options.map((option, idx) => (
+                    <motion.button
+                      key={option.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.1 }}
+                      onClick={() => handleChoice(option)}
+                      disabled={isLoading}
+                      className="group flex w-full items-start space-x-3 rounded-xl border border-white/5 bg-white/5 p-4 text-left transition-all hover:border-purple-500/50 hover:bg-purple-500/10 active:scale-[0.98]"
+                    >
+                      <span className="text-[10px] font-black text-purple-400 group-hover:text-purple-300">0{option.id}</span>
+                      <span className="text-xs font-medium text-white/80 group-hover:text-white transition-colors">{option.text}</span>
+                    </motion.button>
+                  ))}
+                </motion.div>
+              )}
+          </AnimatePresence>
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex gap-3">
+      {/* Action Footer */}
+      <div className="grid grid-cols-2 gap-4">
         <button
-          onClick={onBack}
-          className="flex-1 rounded-lg border border-purple-500/50 px-4 py-3 font-medium text-purple-300 transition-colors hover:border-purple-400 hover:bg-white/5"
+          onClick={() => { triggerHaptic('medium'); onBack(); }}
+          className="rounded-2xl border border-white/10 bg-white/5 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-purple-400/60 transition-all hover:bg-white/10 hover:text-purple-300"
         >
-          Exit Game
+          Terminate
         </button>
         <button
-          onClick={() => setShowMintDialog(true)}
+          onClick={() => { triggerHaptic('heavy'); setShowMintDialog(true); }}
           disabled={isMinting}
-          className="flex-1 rounded-lg bg-green-600 px-4 py-3 font-medium text-white transition-colors hover:bg-green-500 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-2xl bg-green-500 py-4 text-[10px] font-black uppercase tracking-[0.2em] italic text-black shadow-[0_0_20px_rgba(34,197,94,0.3)] transition-all hover:bg-green-400 hover:shadow-[0_0_25px_rgba(34,197,94,0.5)] active:scale-[0.98] disabled:opacity-50"
         >
-          Mint as NFT
+          Archive NFT
         </button>
       </div>
+
+      {/* Success Dialog */}
+      <AnimatePresence>
+        {showSuccessDialog && mintResult && (
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[10000] flex items-center justify-center bg-[#0a0a14]/95 backdrop-blur-3xl px-4"
+            >
+                <motion.div 
+                    initial={{ scale: 0.9, y: 30 }}
+                    animate={{ scale: 1, y: 0 }}
+                    className="w-full max-w-sm overflow-hidden rounded-[32px] border border-green-500/30 bg-green-500/5 shadow-[0_0_50px_rgba(34,197,94,0.2)]"
+                >
+                    <div className="relative p-8 text-center">
+                        <div className="mb-6 flex justify-center">
+                            <motion.div 
+                                initial={{ rotate: -15, scale: 0 }}
+                                animate={{ rotate: 0, scale: 1 }}
+                                transition={{ type: "spring", bounce: 0.5 }}
+                                className="h-20 w-20 rounded-full bg-green-500 flex items-center justify-center shadow-[0_0_30px_rgba(34,197,94,0.6)]"
+                            >
+                                <Trophy className="h-10 w-10 text-black" />
+                            </motion.div>
+                        </div>
+
+                        <h3 className="text-3xl font-black uppercase italic tracking-tighter text-white">Experience Archived</h3>
+                        <p className="mt-2 text-sm text-green-400/80 font-bold uppercase tracking-widest">Protocol Success</p>
+                        
+                        <div className="mt-8 space-y-3">
+                            <button
+                                onClick={handleShare}
+                                className="group flex w-full items-center justify-center space-x-3 rounded-2xl bg-white py-4 text-sm font-black uppercase tracking-widest text-black transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xl"
+                            >
+                                <Share2 className="h-4 w-4" />
+                                <span>Share to Feed</span>
+                            </button>
+
+                            <div className="grid grid-cols-2 gap-2">
+                                <a
+                                    href={`https://sepolia.basescan.org/tx/${mintResult.txHash}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex flex-col items-center justify-center rounded-xl bg-white/5 border border-white/10 p-3 hover:bg-white/10 transition-colors"
+                                >
+                                    <ShieldCheck className="h-4 w-4 text-purple-400 mb-1" />
+                                    <span className="text-[9px] font-black uppercase text-white/60 tracking-widest">BaseScan</span>
+                                </a>
+                                {mintResult.storyIpId && (
+                                    <a
+                                        href={`https://aeneid-testnet-explorer.story.foundation/ipa/${mintResult.storyIpId}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex flex-col items-center justify-center rounded-xl bg-white/5 border border-white/10 p-3 hover:bg-white/10 transition-colors"
+                                    >
+                                        <ExternalLink className="h-4 w-4 text-indigo-400 mb-1" />
+                                        <span className="text-[9px] font-black uppercase text-white/60 tracking-widest">IP Explorer</span>
+                                    </a>
+                                )}
+                            </div>
+
+                            <button
+                                onClick={() => setShowSuccessDialog(false)}
+                                className="w-full py-4 text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-white transition-colors"
+                            >
+                                Return to Arena
+                            </button>
+                        </div>
+                    </div>
+                </motion.div>
+            </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Mint Dialog */}
-      {showMintDialog && writerCoin && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md">
-          <div className="mx-4 w-full max-w-md rounded-lg bg-purple-900/95 p-6 shadow-2xl">
-            <h3 className="mb-4 text-xl font-bold text-white">
-              Mint Game as NFT
-            </h3>
-            <p className="mb-6 text-purple-200">
-              Mint this game as an NFT on Base to prove ownership and share it
-              on Farcaster.
-            </p>
-
-            <div className="mb-6 rounded-lg bg-purple-800/50 p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-purple-300">Mint Cost:</span>
-                <span className="font-semibold text-white">
-                  {(
-                    Number(writerCoin.mintCost) /
-                    10 ** writerCoin.decimals
-                  ).toFixed(0)}{" "}
-                  {writerCoin.symbol}
-                </span>
-              </div>
-            </div>
-
-            <div className="mb-6">
-              <PaymentButton
-                writerCoin={writerCoin}
-                action="mint-nft"
-                gameId={game.id}
-                onPaymentSuccess={(txHash, storyIpId) => {
-                  handleMintSuccess(txHash, storyIpId)
-                }}
-                onPaymentError={() => setShowMintDialog(false)}
-                disabled={isMinting}
-              />
-            </div>
-
-            <button
-              onClick={() => setShowMintDialog(false)}
-              disabled={isMinting}
-              className="w-full rounded-lg border border-purple-500/50 px-4 py-2 font-medium text-purple-300 transition-colors hover:border-purple-400 hover:bg-white/5 disabled:opacity-50"
+      <AnimatePresence>
+        {showMintDialog && writerCoin && (
+            <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[10000] flex items-center justify-center bg-[#0a0a14]/90 backdrop-blur-2xl px-4"
             >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-      {showSuccessDialog && mintResult && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-md">
-          <div className="mx-4 w-full max-w-md rounded-lg bg-green-900/95 p-6 shadow-2xl border border-green-500/50">
-            <div className="flex justify-center mb-4">
-              <div className="h-16 w-16 rounded-full bg-green-500/20 flex items-center justify-center">
-                <svg className="h-10 w-10 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-            </div>
-
-            <h3 className="mb-2 text-xl font-bold text-center text-white">Minting Complete!</h3>
-            <p className="mb-6 text-center text-green-100">
-              Your game has been permanently recorded.
-            </p>
-
-            <div className="space-y-3 mb-6">
-              <a
-                href={`https://sepolia.basescan.org/tx/${mintResult.txHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-between p-3 rounded-lg bg-black/20 hover:bg-black/30 transition-colors group"
-              >
-                <span className="flex items-center gap-2 text-white">
-                  <span className="h-2 w-2 rounded-full bg-blue-500"></span>
-                  Base Network (NFT)
-                </span>
-                <span className="text-xs text-green-300 group-hover:text-green-200">View ↗</span>
-              </a>
-
-              {/* Story Protocol Opt-In */}
-              {mintResult.storyIpId ? (
-                <a
-                  href={`https://aeneid-testnet-explorer.story.foundation/ipa/${mintResult.storyIpId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between p-3 rounded-lg bg-black/20 hover:bg-black/30 transition-colors group"
+                <motion.div 
+                    initial={{ scale: 0.9, y: 20 }}
+                    animate={{ scale: 1, y: 0 }}
+                    exit={{ scale: 0.9, y: 20 }}
+                    className="w-full max-w-sm rounded-[32px] border border-white/10 bg-white/[0.03] p-1 shadow-2xl"
                 >
-                  <span className="flex items-center gap-2 text-white">
-                    <span className="h-2 w-2 rounded-full bg-purple-500"></span>
-                    Story Protocol (IP)
-                  </span>
-                  <span className="text-xs text-green-300 group-hover:text-green-200">View ↗</span>
-                </a>
-              ) : (
-                <div className="p-4 rounded-lg bg-purple-900/40 border border-purple-500/30">
-                  <h4 className="text-sm font-semibold text-purple-200 mb-2">Maximize Your Value</h4>
-                  <p className="text-xs text-purple-300 mb-3">
-                    Register your game's IP rights on Story Protocol to earn royalties from any future remixes.
-                  </p>
-                  <button
-                    onClick={async () => {
-                      try {
-                        // Call the new opt-in endpoint
-                        const response = await fetch('/api/story/register', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ gameId: game.id, userAddress: mintResult.txHash }) // Ideally pass address
-                        });
-                        const data = await response.json();
-                        if (data.storyIPAssetId) {
-                          setMintResult(prev => prev ? ({ ...prev, storyIpId: data.storyIPAssetId }) : null);
-                        }
-                      } catch (e) {
-                        console.error("Registration failed", e);
-                      }
-                    }}
-                    className="w-full py-2 rounded bg-purple-600 hover:bg-purple-500 text-xs font-bold text-white transition-colors"
-                  >
-                    Register IP Rights (Free)
-                  </button>
-                </div>
-              )}
-            </div>
+                    <div className="rounded-[28px] bg-gradient-to-br from-white/[0.05] to-transparent p-8">
+                        <div className="mb-6 text-center space-y-2">
+                            <h3 className="text-2xl font-black uppercase italic tracking-tighter text-white">Permanence Protocol</h3>
+                            <p className="text-xs text-purple-200/40 font-medium">Archive your experience on the Base network</p>
+                        </div>
 
-            <button
-              onClick={() => setShowSuccessDialog(false)}
-              className="w-full rounded-lg bg-white/10 px-4 py-2 font-medium text-white transition-colors hover:bg-white/20"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+                        <div className="mb-8 rounded-2xl bg-purple-500/5 p-4 border border-purple-500/10">
+                            <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-purple-400/60">Mint Cost</span>
+                                <div className="flex items-center space-x-2">
+                                    <span className="font-mono text-lg font-black text-white">
+                                        {(Number(writerCoin.mintCost) / 10 ** writerCoin.decimals).toFixed(0)}
+                                    </span>
+                                    <span className="text-[10px] font-black text-purple-400">{writerCoin.symbol}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-3">
+                            <PaymentButton
+                                writerCoin={writerCoin}
+                                action="mint-nft"
+                                gameId={game.id}
+                                onPaymentSuccess={handleMintSuccess}
+                                onPaymentError={() => setShowMintDialog(false)}
+                                disabled={isMinting}
+                            />
+                            <button
+                                onClick={() => { triggerHaptic('medium'); setShowMintDialog(false); }}
+                                disabled={isMinting}
+                                className="w-full py-4 text-[10px] font-black uppercase tracking-widest text-purple-400/40 transition-colors hover:text-purple-300 disabled:opacity-50"
+                            >
+                                Cancel ARCHIVE
+                            </button>
+                        </div>
+                    </div>
+                </motion.div>
+            </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
+

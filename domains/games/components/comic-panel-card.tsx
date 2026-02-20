@@ -19,7 +19,8 @@ interface ImageVersion {
 interface ComicPanelCardProps {
   messageId: string
   narrativeText: string
-  genre: string
+  genre?: string
+  _genre?: string
   primaryColor: string
   options: GameplayOption[]
   onOptionSelect: (option: GameplayOption) => void
@@ -27,6 +28,7 @@ interface ComicPanelCardProps {
   onImageGenerated?: (result: ImageGenerationResult) => void
   onImageRating?: (rating: number) => void
   onImagesReady?: () => void
+  _onImagesReady?: () => void
   onImageRegenerate?: (narrativeText: string, customPrompt?: string) => Promise<void>
   pendingOptionId?: number | null
   responseReady?: { text: boolean; images: boolean }
@@ -54,13 +56,13 @@ interface ComicPanelCardProps {
 export function ComicPanelCard({
   messageId,
   narrativeText,
-  genre,
+  _genre,
   primaryColor,
   options,
   onOptionSelect,
   isWaiting,
   onImageRating,
-  onImagesReady,
+  _onImagesReady,
   onImageRegenerate,
   pendingOptionId,
   narrativeImage,
