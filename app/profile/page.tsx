@@ -10,8 +10,6 @@ import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { AISettingsWrapper } from '@/components/settings/AISettingsWrapper'
 
-export const dynamic = 'force-dynamic'
-
 export default function ProfilePage() {
   const [user, setUser] = useState<any>(null)
   const [userGames, setUserGames] = useState<any>({ games: [] })
@@ -173,9 +171,4 @@ export default function ProfilePage() {
       <Footer />
     </div>
   )
-}
-
-export const metadata = {
-  title: 'Profile - writersarcade',
-  description: 'Manage your writersarcade profile and settings',
 }
