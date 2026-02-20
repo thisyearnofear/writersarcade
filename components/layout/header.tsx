@@ -112,7 +112,7 @@ export function Header() {
         <Link href="/" className="flex items-center space-x-2" onClick={closeMobileMenu}>
           <motion.img 
             src="/logo.png" 
-            alt="WritArcade" 
+            alt="writersarcade" 
             className="h-8 w-auto"
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}

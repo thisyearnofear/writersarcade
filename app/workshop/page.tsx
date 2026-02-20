@@ -347,7 +347,7 @@ export default function WorkshopPage() {
 
             <div className="p-4 sm:p-6 lg:p-12">
             <header className="mb-8 max-w-4xl mx-auto animate-slide-in">
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-writarcade-primary to-writarcade-accent bg-clip-text text-transparent mb-2">
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-writersarcade-primary to-writersarcade-accent bg-clip-text text-transparent mb-2">
                     Asset Workshop
                 </h1>
                 <p className="text-gray-400">
@@ -369,7 +369,7 @@ export default function WorkshopPage() {
                             <button
                                 onClick={handleDecompose}
                                 disabled={!url}
-                                className="px-6 py-3 bg-writarcade-primary hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-bold transition-colors btn-enhanced mobile"
+                                className="px-6 py-3 bg-writersarcade-primary hover:bg-opacity-90 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-bold transition-colors btn-enhanced mobile"
                             >
                                 Decompose
                             </button>

@@ -42,7 +42,7 @@ export function SuccessModal({
     genre,
     panelCount: 5, // Default for generated games
     title,
-    text: `Just ${action === 'mint' ? 'minted' : 'created'} "${title}" on WritArcade!`,
+    text: `Just ${action === 'mint' ? 'minted' : 'created'} "${title}" on writersarcade!`,
     url: gameUrl || window.location.href,
     twist: twist.trim() || undefined,
     author: authorName,

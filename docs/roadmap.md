@@ -1,4 +1,4 @@
-# WritArcade Roadmap & Status
+# writersarcade Roadmap & Status
 
 **Last Updated:** December 25, 2025
 **Status:** Phase 8 - Quality & UX Features (Complete)
@@ -17,7 +17,7 @@
 **Track**: Creative Front-End ($5,000 prize)
 > "Create intuitive, aesthetic, and user-friendly front-ends for popular IP x AI use cases—seamlessly integrated with the Story SDK and IP registration flows."
 
-WritArcade delivers:
+writersarcade delivers:
 - Web/mobile app optimized for easy IP Registration ✅
 - AI-powered content generation with Story Protocol integration ✅
 - User personalization at every step of the creative flow ⬅️ **BUILDING NOW**

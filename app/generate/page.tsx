@@ -1,3 +1,5 @@
+'use client'
+
 import { GameGeneratorForm as GameGenerator } from '@/domains/games/components/game-generator-form'
 import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
 import { Header } from '@/components/layout/header'

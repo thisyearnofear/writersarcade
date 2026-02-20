@@ -35,7 +35,7 @@ export async function uploadToIPFS(metadata: object): Promise<string> {
       body: JSON.stringify({
         pinataContent: metadata,
         pinataMetadata: {
-          name: `WritArcade Asset ${Date.now()}`,
+          name: `writersarcade Asset ${Date.now()}`,
           keyvalues: {
             type: "asset-metadata",
             timestamp: new Date().toISOString(),

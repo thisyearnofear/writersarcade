@@ -16,7 +16,7 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
   
   const steps = [
     {
-      title: "Welcome to WritArcade",
+      title: "Welcome to writersarcade",
       description: "Turn any article into an interactive, mintable game powered by AI",
       visual: <Sparkles className="w-12 h-12 text-purple-400" />,
       content: "Your creative playground for game creation",

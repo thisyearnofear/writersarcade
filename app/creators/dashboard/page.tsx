@@ -21,7 +21,7 @@ export default async function CreatorDashboard() {
                 <div className="container mx-auto px-6 py-4 flex justify-between items-center">
                     <div className="flex items-center gap-3">
                         <div className="h-8 w-8 bg-purple-600 rounded-lg flex items-center justify-center font-bold">W</div>
-                        <span className="font-bold text-lg">WritArcade <span className="text-gray-400 font-normal">| Creators</span></span>
+                        <span className="font-bold text-lg">writersarcade <span className="text-gray-400 font-normal">| Creators</span></span>
                     </div>
                     <div className="flex items-center gap-4">
                         <span className="text-sm text-gray-400">Connected as</span>

@@ -18,11 +18,11 @@ const Card = React.forwardRef<
   const cardClasses = [];
   
   if (typewriter) {
-    cardClasses.push('border-gray-700', 'bg-gray-900/50', 'text-white', 'shadow-sm', 'writarcade-paper');
+    cardClasses.push('border-gray-700', 'bg-gray-900/50', 'text-white', 'shadow-sm', 'writersarcade-paper');
   } else if (enhanced) {
     cardClasses.push('card-enhanced');
   } else if (arcade) {
-    cardClasses.push('bg-writarcade-primary', 'text-white', 'border-writarcade-primary', 'shadow-lg');
+    cardClasses.push('bg-writersarcade-primary', 'text-white', 'border-writersarcade-primary', 'shadow-lg');
   } else {
     cardClasses.push('border-gray-700', 'bg-gray-900/50', 'text-white', 'shadow-sm');
   }

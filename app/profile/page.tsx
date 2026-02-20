@@ -1,4 +1,7 @@
+'use client'
+
 import { redirect } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import { getCurrentUser } from '@/lib/auth'
 import { getDisplayName, getAvatarUrl } from '@/lib/farcaster'
 import { GameDatabaseService } from '@/domains/games/services/game-database.service'
@@ -9,19 +12,48 @@ import { AISettingsWrapper } from '@/components/settings/AISettingsWrapper'
 
 export const dynamic = 'force-dynamic'
 
-export default async function ProfilePage() {
-  const user = await getCurrentUser()
+export default function ProfilePage() {
+  const [user, setUser] = useState<any>(null)
+  const [userGames, setUserGames] = useState<any>({ games: [] })
+  const [displayName, setDisplayName] = useState<string>('User')
+  const [avatarUrl, setAvatarUrl] = useState<string>('/default-avatar.png')
+  const [loading, setLoading] = useState(true)
 
-  if (!user) {
-    redirect('/') // Redirect to home, wallet connect will be shown
+  useEffect(() => {
+    async function loadData() {
+      const currentUser = await getCurrentUser()
+      if (!currentUser) {
+        redirect('/')
+        return
+      }
+      setUser(currentUser)
+      
+      // Fetch Farcaster profile
+      const name = await getDisplayName(currentUser.walletAddress)
+      const avatar = await getAvatarUrl(currentUser.walletAddress)
+      setDisplayName(name || 'User')
+      setAvatarUrl(avatar || '/default-avatar.png')
+      
+      // Get user's game statistics
+      const games = await GameDatabaseService.getUserGames(currentUser.id, 100)
+      setUserGames(games)
+      
+      setLoading(false)
+    }
+    loadData()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-400">Loading...</div>
+      </div>
+    )
   }
 
-  // Get user's game statistics
-  const userGames = await GameDatabaseService.getUserGames(user.id, 100)
-
-  // Fetch Farcaster profile
-  const displayName = await getDisplayName(user.walletAddress)
-  const avatarUrl = await getAvatarUrl(user.walletAddress)
+  if (!user) {
+    redirect('/')
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -93,7 +125,7 @@ export default async function ProfilePage() {
 
               {userGames.games.length > 0 ? (
                 <div className="space-y-6">
-                  {userGames.games.map((game) => (
+                  {userGames.games.map((game: any) => (
                     <div
                       key={game.id}
                       className="bg-gray-800/50 rounded-lg border border-gray-700 p-6"
@@ -144,6 +176,6 @@ export default async function ProfilePage() {
 }
 
 export const metadata = {
-  title: 'Profile - WritArcade',
-  description: 'Manage your WritArcade profile and settings',
+  title: 'Profile - writersarcade',
+  description: 'Manage your writersarcade profile and settings',
 }

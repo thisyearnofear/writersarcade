@@ -1,11 +1,11 @@
-# WritArcade Architecture
+# writersarcade Architecture
 
 **Last Updated:** December 13, 2025
 **Status:** Phase 7 - Customization MVP (Surreal World Assets Buildathon) - Production Ready
 
 ## Overview
 
-WritArcade is a **dual-loop platform** designed to maximize the value of content:
+writersarcade is a **dual-loop platform** designed to maximize the value of content:
 
 1.  **The Attention Loop (Base Chain)**:
     *   **User Action**: "I like this article. Generate a game."

@@ -42,7 +42,7 @@ function HowItWorksSection() {
       <div className="max-w-4xl mx-auto relative z-10">
         <FadeIn direction="up" className="text-center mb-12">
           <GradientText className="text-3xl font-bold" colors={['#8b5cf6', '#ec4899', '#8b5cf6']}>
-            How WritArcade Works
+            How writersarcade Works
           </GradientText>
         </FadeIn>
 
@@ -96,10 +96,10 @@ export default function HomePage() {
 
         <main className="flex-1">
           {/* Hero Section with Thematic Styling */}
-          <section className="relative py-20 px-4 overflow-hidden writarcade-theme">
+          <section className="relative py-20 px-4 overflow-hidden writersarcade-theme">
             {/* Enhanced animated background */}
             <AnimatedBackground variant="gradient" className="-z-10" />
-            
+
             {/* Floating decorative elements */}
             <div className="absolute inset-0 -z-5 pointer-events-none overflow-hidden">
               <FloatingElement delay={0} distance={15} duration={6} className="absolute top-20 left-[10%]">
@@ -113,7 +113,7 @@ export default function HomePage() {
               </FloatingElement>
             </div>
 
-            <div className="max-w-4xl mx-auto text-center relative z-10 writarcade-paper">
+            <div className="max-w-4xl mx-auto text-center relative z-10 writersarcade-paper">
               {/* Kinetic title with gradient animation */}
               <motion.h1 
                 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 typewriter-font"
@@ -127,7 +127,7 @@ export default function HomePage() {
                 }}
               >
                 <GradientText colors={['#8b5cf6', '#ec4899', '#3b82f6', '#8b5cf6']}>
-                  WritArcade
+                  writersarcade
                 </GradientText>
               </motion.h1>
 

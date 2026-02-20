@@ -87,7 +87,7 @@ export function Footer() {
               className="text-white font-semibold mb-2"
               whileHover={{ scale: 1.02 }}
             >
-              WritArcade
+              writersarcade
             </motion.p>
             <p className="text-gray-400 text-sm leading-relaxed">
               Turn articles into playable, mintable games with on-chain IP and revenue splits.
@@ -141,7 +141,7 @@ export function Footer() {
 
         {/* Bottom bar */}
         <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
-          <span>© {new Date().getFullYear()} WritArcade. Built on Base · Story Protocol.</span>
+          <span>© {new Date().getFullYear()} writersarcade. Built on Base · Story Protocol.</span>
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" aria-hidden="true" />

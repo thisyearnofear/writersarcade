@@ -24,7 +24,7 @@ export interface WriterCoin {
     revenueDistribution: {
         writer: number // % to writer's treasury
         creator: number // % to game creator
-        platform: number // % to WritArcade
+        platform: number // % to writersarcade
         burn: number // % token burn (deflationary)
     }
 }
@@ -55,7 +55,7 @@ export const WRITER_COINS: WriterCoin[] = [
             writer: 60, // 60% to writer treasury (on-chain configurable)
             creator: 20, // 20% to creator pool (on-chain configurable)
             burn: 0, // 0% burn (no on-chain burn in WriterCoinPayment)
-            platform: 20, // 20% to WritArcade (on-chain configurable)
+            platform: 20, // 20% to writersarcade (on-chain configurable)
         },
     },
 ]

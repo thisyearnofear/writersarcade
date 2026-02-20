@@ -184,7 +184,7 @@ Key shared infrastructure lives under `lib/`:
 
 - `prisma/schema.prisma` defines all persisted models (User, Game, Session, Chat, Article, Order, Payment, ContentSource, ProcessedArticle, and the Asset Marketplace models such as Asset/GameFromAsset/AssetRevenue).
 - The schema is Postgres-specific (`provider = "postgresql"`, `DATABASE_URL` env var) and is the single source of truth for the database shape.
-- WritArcade uses Prisma’s client (`lib/prisma.ts` / `lib/database.ts`) to access the database across domain services and API routes.
+- writersarcade uses Prisma's client (`lib/prisma.ts` / `lib/database.ts`) to access the database across domain services and API routes.
 - Payments and NFT minting are fully tracked in the database (including token IDs, transaction hashes, and verification timestamps) so backend and UI can rely on DB state instead of the chain for normal reads.
 
 ### Smart contracts (`contracts/`)

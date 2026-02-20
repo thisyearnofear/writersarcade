@@ -20,27 +20,27 @@
 @tailwind components;
 @tailwind utilities;
 
-/* WritArcade Brand Theme Variables */
+/* writersarcade Brand Theme Variables */
 :root {
   /* Brand colors - will be overridden by ThemeWrapper for dynamic theming */
-  --writarcade-primary: #6366f1;      /* Indigo - main brand color */
-  --writarcade-secondary: #8b5cf6;    /* Purple - secondary brand color */
-  --writarcade-accent: #ec4899;       /* Pink - accent color */
-  --writarcade-success: #10b981;      /* Green - success states */
-  --writarcade-warning: #f59e0b;      /* Amber - warning states */
-  --writarcade-error: #ef4444;        /* Red - error states */
-  --writarcade-info: #3b82f6;         /* Blue - info states */
+  --writersarcade-primary: #6366f1;      /* Indigo - main brand color */
+  --writersarcade-secondary: #8b5cf6;    /* Purple - secondary brand color */
+  --writersarcade-accent: #ec4899;       /* Pink - accent color */
+  --writersarcade-success: #10b981;      /* Green - success states */
+  --writersarcade-warning: #f59e0b;      /* Amber - warning states */
+  --writersarcade-error: #ef4444;        /* Red - error states */
+  --writersarcade-info: #3b82f6;         /* Blue - info states */
 }
 
 .dark {
   /* Dark mode brand colors */
-  --writarcade-primary: #818cf8;      /* Lighter indigo for visibility */
-  --writarcade-secondary: #a78bfa;    /* Lighter purple */
-  --writarcade-accent: #f472b6;       /* Lighter pink */
-  --writarcade-success: #34d399;      /* Lighter green */
-  --writarcade-warning: #fbbf24;      /* Lighter amber */
-  --writarcade-error: #f87171;        /* Lighter red */
-  --writarcade-info: #60a5fa;         /* Lighter blue */
+  --writersarcade-primary: #818cf8;      /* Lighter indigo for visibility */
+  --writersarcade-secondary: #a78bfa;    /* Lighter purple */
+  --writersarcade-accent: #f472b6;       /* Lighter pink */
+  --writersarcade-success: #34d399;      /* Lighter green */
+  --writersarcade-warning: #fbbf24;      /* Lighter amber */
+  --writersarcade-error: #f87171;        /* Lighter red */
+  --writersarcade-info: #60a5fa;         /* Lighter blue */
 }
 
 /* ─── CSS Variable Colour Tokens ───────────────────────────────────────────
@@ -155,29 +155,29 @@
   @apply bg-gray-800/50 border-l-4 border-purple-500;
 }
 
-/* WritArcade Thematic Enhancements - Typewriter + Arcade Hybrid */
-.writarcade-theme {
+/* writersarcade Thematic Enhancements - Typewriter + Arcade Hybrid */
+.writersarcade-theme {
   /* Vintage paper texture background */
   background: #F5F5DC url('/images/textures/paper-texture.png') repeat;
   /* Typewriter paper lines */
   background-size: auto, 100% 25px;
 }
 
-/* Dark mode version of writarcade theme */
-.dark .writarcade-theme {
+/* Dark mode version of writersarcade theme */
+.dark .writersarcade-theme {
   background: #1a1a1a url('/images/textures/paper-texture-dark.png') repeat;
   color: #e0e0e0;
 }
 
 /* Dark mode paper styling */
-.dark .writarcade-paper {
+.dark .writersarcade-paper {
   background: #2a2a2a;
   border: 1px solid #5a5a5a;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
 }
 
 /* Dark mode paper lines */
-.dark .writarcade-paper::before {
+.dark .writersarcade-paper::before {
   background: repeating-linear-gradient(to bottom,
       transparent,
       transparent 24px,
@@ -276,7 +276,7 @@
   background: #3a3a3a !important;
 }
 
-.writarcade-paper {
+.writersarcade-paper {
   background: white;
   border: 1px solid #3A2E1D;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
@@ -285,7 +285,7 @@
 }
 
 /* Typewriter paper lines effect */
-.writarcade-paper::before {
+.writersarcade-paper::before {
   content: "";
   position: absolute;
   top: 0;
@@ -605,19 +605,19 @@
 .dvh-screen { min-height: 100dvh; }
 .h-dvh      { height: 100dvh; }
 
-/* WritArcade Enhanced Utility Classes - Core Principles Edition */
+/* writersarcade Enhanced Utility Classes - Core Principles Edition */
 @layer utilities {
   /* Brand color utilities - ENHANCEMENT FIRST approach */
-  .bg-writarcade-primary {
-    background-color: var(--writarcade-primary);
+  .bg-writersarcade-primary {
+    background-color: var(--writersarcade-primary);
   }
-  
-  .text-writarcade-primary {
-    color: var(--writarcade-primary);
+
+  .text-writersarcade-primary {
+    color: var(--writersarcade-primary);
   }
-  
-  .border-writarcade-primary {
-    border-color: var(--writarcade-primary);
+
+  .border-writersarcade-primary {
+    border-color: var(--writersarcade-primary);
   }
   
   /* Animation utilities - AGGRESSIVE CONSOLIDATION */
@@ -685,44 +685,44 @@
     width: 24px;
     height: 24px;
     border: 3px solid rgba(100, 100, 100, 0.2);
-    border-top-color: var(--writarcade-primary);
+    border-top-color: var(--writersarcade-primary);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
-  
+
   @keyframes spin {
     to { transform: rotate(360deg); }
   }
-  
+
   /* Success checkmark animation - CLEAN separation */
   .success-checkmark {
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: var(--writarcade-success);
+    background: var(--writersarcade-success);
     display: flex;
     align-items: center;
     justify-content: center;
     animation: bounce 0.5s ease;
   }
-  
+
   @keyframes bounce {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.2); }
   }
-  
+
   /* Error state with brand colors */
   .error-state {
-    color: var(--writarcade-error);
+    color: var(--writersarcade-error);
     background: rgba(239, 68, 68, 0.1);
     border: 1px solid rgba(239, 68, 68, 0.2);
     border-radius: 8px;
     padding: 0.75rem;
   }
-  
+
   /* Warning state with brand colors */
   .warning-state {
-    color: var(--writarcade-warning);
+    color: var(--writersarcade-warning);
     background: rgba(245, 158, 11, 0.1);
     border: 1px solid rgba(245, 158, 11, 0.2);
     border-radius: 8px;
@@ -731,7 +731,7 @@
   
   /* Info state with brand colors */
   .info-state {
-    color: var(--writarcade-info);
+    color: var(--writersarcade-info);
     background: rgba(59, 130, 246, 0.1);
     border: 1px solid rgba(59, 130, 246, 0.2);
     border-radius: 8px;

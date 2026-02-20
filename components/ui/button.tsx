@@ -17,9 +17,9 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         // Enhanced variants with brand colors
-        writarcade: "bg-writarcade-primary text-white hover:bg-opacity-90",
-        writarcadeSecondary: "bg-writarcade-secondary text-white hover:bg-opacity-90",
-        writarcadeAccent: "bg-writarcade-accent text-white hover:bg-opacity-90",
+        writarcade: "bg-writersarcade-primary text-white hover:bg-opacity-90",
+        writarcadeSecondary: "bg-writersarcade-secondary text-white hover:bg-opacity-90",
+        writarcadeAccent: "bg-writersarcade-accent text-white hover:bg-opacity-90",
       },
       size: {
         default: "h-10 px-4 py-2",

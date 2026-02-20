@@ -1,5 +1,5 @@
 /**
- * WritArcade Configuration & Feature Flags
+ * writersarcade Configuration & Feature Flags
  * Centralized environment and feature management
  */
 

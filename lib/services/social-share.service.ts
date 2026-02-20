@@ -1,6 +1,6 @@
 /**
  * Social sharing service - Single source of truth for all sharing logic
- * Consolidates share functionality across WritArcade components
+ * Consolidates share functionality across writersarcade components
  */
 
 export interface ShareData {
@@ -36,10 +36,10 @@ export class SocialShareService {
 
     if (data.twist && data.author) {
       // Viral flow format
-      tweetText = `I read ${data.author}'s article, turned it into a ${data.genre} comic about ${data.twist}, and minted it on @StoryProtocol using @WritArcade! 🎮📚\n\nCheck out "${data.gameTitle}" 👇`
+      tweetText = `I read ${data.author}'s article, turned it into a ${data.genre} comic about ${data.twist}, and minted it on @StoryProtocol using @writersarcade! 🎮📚\n\nCheck out "${data.gameTitle}" 👇`
     } else {
       // Standard format
-      tweetText = `Just created "${data.gameTitle}" - an epic ${data.genre} comic with @WritArcade! 🎮📚\n\n✨ ${data.panelCount} panels of interactive storytelling\n🎨 Unique AI-generated visuals\n🎯 My choices shaped the story\n\nThe future of IP is here! 🚀\n\n#WritArcade #StoryProtocol #AIComics`
+      tweetText = `Just created "${data.gameTitle}" - an epic ${data.genre} comic with @writersarcade! 🎮📚\n\n✨ ${data.panelCount} panels of interactive storytelling\n🎨 Unique AI-generated visuals\n🎯 My choices shaped the story\n\nThe future of IP is here! 🚀\n\n#writersarcade #StoryProtocol #AIComics`
     }
 
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(data.url || window.location.href)}`
@@ -54,9 +54,9 @@ export class SocialShareService {
 
     if (data.twist && data.author) {
       // Viral flow format
-      castText = `I read ${data.author}'s article, turned it into a ${data.genre} comic about ${data.twist}, and minted it!\n\nCheck out "${data.gameTitle}" on WritArcade 👇`
+      castText = `I read ${data.author}'s article, turned it into a ${data.genre} comic about ${data.twist}, and minted it!\n\nCheck out "${data.gameTitle}" on writersarcade 👇`
     } else {
-      castText = `Just dropped my new comic "${data.gameTitle}" on WritArcade! 🎮📚\n\n${data.genre} story • ${data.panelCount} interactive panels • AI-generated art\n\nEvery choice I made shaped the narrative. Minted on @StoryProtocol 🚀`
+      castText = `Just dropped my new comic "${data.gameTitle}" on writersarcade! 🎮📚\n\n${data.genre} story • ${data.panelCount} interactive panels • AI-generated art\n\nEvery choice I made shaped the narrative. Minted on @StoryProtocol 🚀`
     }
 
     const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(castText)}&embeds[]=${encodeURIComponent(data.url || window.location.href)}`

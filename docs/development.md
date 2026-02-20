@@ -1,4 +1,4 @@
-# WritArcade Development Guide
+# writersarcade Development Guide
 
 **Last Updated:** December 25, 2025
 **Status:** Phase 8 Complete - Quality & UX Features Integrated

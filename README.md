@@ -1,4 +1,4 @@
-# WritArcade
+# writersarcade
 
 Turn Paragraph.xyz articles into interactive, mintable games. Players pay with writer coins, creators mint and share games, and revenue splits are enforced on-chain.
 
@@ -27,7 +27,7 @@ Turn Paragraph.xyz articles into interactive, mintable games. Players pay with w
 
 ## Story Protocol Integration
 
-WritArcade integrates deeply with Story Protocol (L1 blockchain for IP) to enable:
+writersarcade integrates deeply with Story Protocol (L1 blockchain for IP) to enable:
 
 ### 🔗 IP Registration
 - **User-owned IP**: Users sign transactions with their wallet - they own the IP
@@ -114,4 +114,4 @@ Recommendation: fetch on-chain splits (getRevenueDistribution and mintDistributi
 - Base mainnet: contracts live and verified (see addresses above)
 
 —
-WritArcade: Turn articles into playable, ownable games.
+writersarcade: Turn articles into playable, ownable games.

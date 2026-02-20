@@ -25,9 +25,9 @@ export interface NFTMetadata {
   name: string
   description: string
   image: string // IPFS URI to cover image
-  external_url: string // Link back to WritArcade game
+  external_url: string // Link back to writersarcade game
   
-  // WritArcade-specific attributes
+  // writersarcade-specific attributes
   attributes: Array<{
     trait_type: string
     value: string | number
@@ -120,7 +120,7 @@ export class IPFSMetadataService {
         { trait_type: 'Creator', value: creator.displayName },
         { trait_type: 'Author', value: author.displayName || author.paragraphUsername || 'Unknown Author' },
         { trait_type: 'Source', value: 'Paragraph' },
-        { trait_type: 'Platform', value: 'WritArcade' },
+        { trait_type: 'Platform', value: 'writersarcade' },
         { trait_type: 'Version', value: '1.0' }
       ],
       
@@ -176,7 +176,7 @@ export class IPFSMetadataService {
           pinataMetadata: {
             name: filename,
             keyvalues: {
-              platform: 'WritArcade',
+              platform: 'writersarcade',
               type: filename.includes('nft') ? 'nft-metadata' : 'game-metadata',
               timestamp: new Date().toISOString()
             }

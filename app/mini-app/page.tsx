@@ -85,7 +85,7 @@ export default function MiniAppPage() {
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-600 font-black text-white italic text-lg shadow-[0_0_15px_rgba(168,85,247,0.4)]">
                             W
                         </div>
-                        <h1 className="text-md font-black tracking-tighter text-white uppercase italic hidden sm:block">WritArcade</h1>
+                        <h1 className="text-md font-black tracking-tighter text-white uppercase italic hidden sm:block">writersarcade</h1>
                     </div>
 
                     <div className="flex items-center space-x-3">

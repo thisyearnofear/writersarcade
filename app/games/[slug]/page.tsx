@@ -87,7 +87,7 @@ export default async function GamePage({ params }: GamePageProps) {
 export async function generateMetadata({ params }: GamePageProps) {
   if (!process.env.DATABASE_URL) {
     return {
-      title: 'WritArcade Game',
+      title: 'writersarcade Game',
       description: 'Play interactive games generated from articles',
     }
   }
@@ -102,7 +102,7 @@ export async function generateMetadata({ params }: GamePageProps) {
   }
 
   return {
-    title: `${game.title} - WritArcade`,
+    title: `${game.title} - writersarcade`,
     description: game.description,
     openGraph: {
       title: game.title,

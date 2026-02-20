@@ -112,7 +112,7 @@ export function GamePlayer({ game, onBack, writerCoin }: GamePlayerProps) {
 
   const handleShare = async () => {
     triggerHaptic('medium');
-    const text = `I just minted "${game.title}" on WritArcade! 🎮\n\nGenerated from a Paragraph article and archived on @base. Play it here:`;
+    const text = `I just minted "${game.title}" on writersarcade! 🎮\n\nGenerated from a Paragraph article and archived on @base. Play it here:`;
     const url = `${window.location.origin}/games/${game.slug}`;
     await composeCast({
         text: text,

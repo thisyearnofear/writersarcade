@@ -62,8 +62,8 @@ export function ThemeWrapper({ children, theme = 'default' }: ThemeWrapperProps)
     '--color-text': currentTheme.text,
   } as React.CSSProperties), [currentTheme])
 
-  const themeClasses = theme === 'arcade' 
-    ? 'writarcade-theme min-h-screen' 
+  const themeClasses = theme === 'arcade'
+    ? 'writersarcade-theme min-h-screen'
     : 'bg-black text-white min-h-screen'
 
   return (

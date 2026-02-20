@@ -63,7 +63,7 @@ const recommendedWallets = [
 const otherWallets = [phantomWallet, trustWallet, ledgerWallet, okxWallet];
 
 const config = getDefaultConfig({
-  appName: 'WritArcade',
+  appName: 'writersarcade',
   projectId: WALLET_CONNECT_PROJECT_ID || 'disabled-walletconnect',
   chains: [base, baseSepolia, storyAeneid],
   ssr: true,
@@ -132,7 +132,7 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
           const message = new SiweMessage({
             domain: window.location.host,
             address,
-            statement: 'Sign in to WritArcade.',
+            statement: 'Sign in to writersarcade.',
             uri: window.location.origin,
             version: '1',
             chainId,

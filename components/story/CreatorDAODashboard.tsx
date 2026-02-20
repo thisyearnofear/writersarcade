@@ -37,7 +37,7 @@ interface CreatorDAODashboardProps {
  * Creator DAO Dashboard
  * 
  * Aggregates IP assets and royalty earnings for Paragraph authors
- * who have opted into WritArcade's IP economy.
+ * who have opted into writersarcade's IP economy.
  * 
  * Shows:
  * - Total games created from author's articles
@@ -378,7 +378,7 @@ export function CreatorDAODashboard({ authorUsername, authorWallet }: CreatorDAO
         <CardHeader>
           <CardTitle className="text-lg">Maximize Your Earnings</CardTitle>
           <CardDescription>
-            Share WritArcade with your audience to increase game generation
+            Share writersarcade with your audience to increase game generation
           </CardDescription>
         </CardHeader>
         <CardContent className="flex gap-3">

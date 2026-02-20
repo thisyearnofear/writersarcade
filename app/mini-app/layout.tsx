@@ -1,31 +1,31 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'WritArcade - Turn Articles into Games',
+  title: 'writersarcade - Turn Articles into Games',
   description: 'Generate AI-powered games from articles using writer coins. Play, mint, and earn on Base.',
   openGraph: {
-    title: 'WritArcade',
+    title: 'writersarcade',
     description: 'Turn articles into mintable games',
     images: [
       {
-        url: 'https://writarcade.vercel.app/images/og-image.png',
+        url: 'https://writersarcade.vercel.app/images/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'WritArcade - Article Games',
+        alt: 'writersarcade - Article Games',
       },
     ],
   },
   other: {
     'fc:frame': JSON.stringify({
       version: 'next',
-      imageUrl: 'https://writarcade.vercel.app/images/og-image.png',
+      imageUrl: 'https://writersarcade.vercel.app/images/og-image.png',
       button: {
-        title: 'Launch WritArcade',
+        title: 'Launch writersarcade',
         action: {
           type: 'launch_frame',
-          name: 'WritArcade',
-          url: 'https://writarcade.vercel.app/mini-app',
-          splashImageUrl: 'https://writarcade.vercel.app/android-chrome-192x192.png',
+          name: 'writersarcade',
+          url: 'https://writersarcade.vercel.app/mini-app',
+          splashImageUrl: 'https://writersarcade.vercel.app/android-chrome-192x192.png',
           splashBackgroundColor: '#1a1a2e',
         },
       },

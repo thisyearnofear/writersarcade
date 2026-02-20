@@ -22,26 +22,26 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'WritArcade - Turn Articles into Mintable Games',
+  title: 'writersarcade - Turn Articles into Mintable Games',
   description: 'Generate AI-powered games from articles using writer coins. Play, create, and mint games as NFTs on Base.',
   keywords: ['AI', 'games', 'articles', 'NFT', 'memecoin', 'paragraph', 'farcaster', 'base'],
   openGraph: {
-    title: 'WritArcade - Turn Articles into Games',
+    title: 'writersarcade - Turn Articles into Games',
     description: 'Generate AI-powered games from articles using writer coins. Mint games as NFTs on Base.',
     images: [
       {
-        url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://writarcade.vercel.app'}/api/og-image`,
+        url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://writersarcade.vercel.app'}/api/og-image`,
         width: 1200,
         height: 630,
-        alt: 'WritArcade',
+        alt: 'writersarcade',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'WritArcade - Turn Articles into Games',
+    title: 'writersarcade - Turn Articles into Games',
     description: 'Generate AI-powered games from articles using writer coins. Mint games as NFTs on Base.',
-    images: [`${process.env.NEXT_PUBLIC_SITE_URL || 'https://writarcade.vercel.app'}/api/og-image`],
+    images: [`${process.env.NEXT_PUBLIC_SITE_URL || 'https://writersarcade.vercel.app'}/api/og-image`],
   },
 }
 

@@ -37,7 +37,7 @@ export async function GET() {
               letterSpacing: '-2px',
             }}
           >
-            WritArcade
+            writersarcade
           </h1>
 
           {/* Subtitle */}

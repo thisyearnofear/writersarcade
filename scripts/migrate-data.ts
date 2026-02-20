@@ -18,7 +18,7 @@ async function main() {
   const prisma = new PrismaClient()
   
   try {
-    console.log('🔄 Starting WritArcade data migration...')
+    console.log('🔄 Starting writersarcade data migration...')
     
     // Connect to old database (adjust connection as needed)
     const oldDbConfig = {

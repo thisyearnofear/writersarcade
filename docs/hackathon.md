@@ -1,4 +1,4 @@
-# WritArcade - Story Protocol Hackathon 2025
+# writersarcade - Story Protocol Hackathon 2025
 
 **Event**: Surreal World Assets Hackathon
 **Host**: Story Protocol (L1 blockchain for IP)
@@ -7,10 +7,10 @@
 
 ## Overview
 
-WritArcade participated in the Story Protocol hackathon to integrate IP licensing capabilities into our platform. Our goal was to enable creators to register their AI-generated games as IP assets on Story Protocol, creating a sustainable ecosystem for ongoing royalties and derivative works.
+writersarcade participated in the Story Protocol hackathon to integrate IP licensing capabilities into our platform. Our goal was to enable creators to register their AI-generated games as IP assets on Story Protocol, creating a sustainable ecosystem for ongoing royalties and derivative works.
 
 ## Core Idea: The AI Director
-Unlike legacy interactive fiction tools (e.g., Twine) where creators must manually write every static branch, WritArcade empowers creators to act as **AI Directors**.
+Unlike legacy interactive fiction tools (e.g., Twine) where creators must manually write every static branch, writersarcade empowers creators to act as **AI Directors**.
 
 *   **Beyond "Choose Your Own Adventure"**: We don't build "Fixed Trees". We built a "Dynamic Director Engine".
 *   **The Creator as Curator**: "Papa" (the creator) doesn't write scripts. He defines the **Constraints**, **Context**, and **Aesthetic**. He sets the stage, casts the actors, and locks the "Vibe" (e.g., "1920s Noir," "Ghibli Whimsy").

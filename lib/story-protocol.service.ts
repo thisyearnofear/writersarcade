@@ -1,7 +1,7 @@
 /**
  * Story Protocol Service (Client-Side)
  *
- * Handles IP registration for WritArcade games and assets.
+ * Handles IP registration for writersarcade games and assets.
  * ALL operations use the user's wallet - THEY sign transactions.
  * 
  * This is the single source of truth for Story Protocol interactions.
@@ -92,7 +92,7 @@ export async function registerGameAsIP(
       { key: "Genre", value: input.genre },
       { key: "Difficulty", value: input.difficulty },
       { key: "ArticleURL", value: input.articleUrl },
-      { key: "Platform", value: "WritArcade" },
+      { key: "Platform", value: "writersarcade" },
       { key: "ParentAssets", value: input.parentIpIds?.join(",") || "None" },
     ],
   });
@@ -184,7 +184,7 @@ export async function registerAssetAsIP(
       { key: "Genre", value: input.genre },
       { key: "Tags", value: input.tags.join(",") },
       { key: "Creator", value: input.creatorAddress },
-      { key: "Platform", value: "WritArcade" },
+      { key: "Platform", value: "writersarcade" },
     ],
   });
 

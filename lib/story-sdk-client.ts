@@ -28,7 +28,7 @@ export const STORY_SPG_CONTRACT =
 /**
  * Create a Story Protocol client from user's wallet
  * 
- * This is the ONLY way to interact with Story Protocol in WritArcade.
+ * This is the ONLY way to interact with Story Protocol in writersarcade.
  * The user's wallet signs all transactions = THEY own the IP.
  * 
  * @param walletClient - User's connected wallet from wagmi useWalletClient()

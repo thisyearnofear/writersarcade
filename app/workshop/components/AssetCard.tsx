@@ -57,12 +57,12 @@ export function AssetCard({
             onMouseLeave={() => setHoveredAsset(null)}
             className={`card-enhanced relative group transition-all ${
                 isHovered
-                    ? 'border-writarcade-primary bg-writarcade-primary/10 ring-2 ring-writarcade-primary/30'
+                    ? 'border-writersarcade-primary bg-writersarcade-primary/10 ring-2 ring-writersarcade-primary/30'
                     : isRelated
-                        ? 'border-writarcade-primary/50 bg-writarcade-primary/10'
+                        ? 'border-writersarcade-primary/50 bg-writersarcade-primary/10'
                         : isFaded
                             ? 'border-gray-700/30 bg-gray-800/20 opacity-40'
-                            : 'border-gray-700/50 hover:border-writarcade-primary/30 hover:bg-gray-800/60'
+                            : 'border-gray-700/50 hover:border-writersarcade-primary/30 hover:bg-gray-800/60'
             }`}
         >
             {/* Type Badge */}

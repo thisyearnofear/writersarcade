@@ -47,7 +47,7 @@ export function getStoryNetwork(): StoryNetworkConfig {
 }
 
 /**
- * WritArcade Story Protocol Settings
+ * writersarcade Story Protocol Settings
  */
 export const WRITARCADE_STORY_CONFIG = {
   // Royalty splits (basis points: 10000 = 100%)

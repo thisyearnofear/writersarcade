@@ -98,7 +98,7 @@ export function ComicBookFinale({
     genre,
     panelCount: totalPanels,
     title: gameTitle,
-    text: `Check out my ${genre} comic "${gameTitle}" created with WritArcade! ${totalPanels} panels of interactive storytelling.`,
+    text: `Check out my ${genre} comic "${gameTitle}" created with writersarcade! ${totalPanels} panels of interactive storytelling.`,
     url: typeof window !== 'undefined' ? window.location.href : '',
     author: authorParagraphUsername,
   }
@@ -317,7 +317,7 @@ export function ComicBookFinale({
 
       const gameData = {
         title: gameTitle,
-        description: `Interactive ${genre.toLowerCase()} comic created on WritArcade. ${totalPanels} panels of AI-powered storytelling inspired by "${authorParagraphUsername}"'s work.`,
+        description: `Interactive ${genre.toLowerCase()} comic created on writersarcade. ${totalPanels} panels of AI-powered storytelling inspired by "${authorParagraphUsername}"'s work.`,
         genre: genre.toLowerCase(),
         difficulty: difficulty.toLowerCase(),
         panels,
@@ -398,7 +398,7 @@ export function ComicBookFinale({
 
     ctx.fillStyle = '#AAAAAA';
     ctx.font = '18px Arial';
-    ctx.fillText(`${genre} • ${totalPanels} Panels • WritArcade`, canvasWidth / 2, 100);
+    ctx.fillText(`${genre} • ${totalPanels} Panels • writersarcade`, canvasWidth / 2, 100);
 
     // Center line separator
     ctx.strokeStyle = `${primaryColor}40`;
@@ -930,7 +930,7 @@ export function ComicBookFinale({
                   {/* NFT metadata footer */}
                   <div className="mt-6 pt-4 border-t border-white/20 text-center">
                     <p className="text-xs text-gray-400">
-                      🎨 Generated with WritArcade • Unique Comic NFT
+                      🎨 Generated with writersarcade • Unique Comic NFT
                     </p>
                   </div>
                 </div>
