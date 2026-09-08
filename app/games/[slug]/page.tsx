@@ -77,6 +77,16 @@ export default async function GamePage({ params, searchParams }: GamePageProps) 
     image: game.imageUrl || `${siteUrl}/og`,
   }
 
+  // Cover art is the landing page's primary asset. Kick generation even when
+  // the visitor never enters play mode, otherwise text-only artifacts churn.
+  if (game.mode !== 'wordle' && !game.imageUrl) {
+    ImageGenerationService.generateGameImage(game).then(result => {
+      if (result.imageUrl) {
+        GameDatabaseService.updateGameImage(game.id, result.imageUrl).catch(console.error)
+      }
+    }).catch(console.error)
+  }
+
   if (!isPlayMode && !isUnlockShare) {
     return (
       <ThemeWrapper theme="arcade">
@@ -91,15 +101,6 @@ export default async function GamePage({ params, searchParams }: GamePageProps) 
         </div>
       </ThemeWrapper>
     )
-  }
-
-  // For story games, generate image if not exists (async, non-blocking)
-  if (game.mode !== 'wordle' && !game.imageUrl) {
-    ImageGenerationService.generateGameImage(game).then(result => {
-      if (result.imageUrl) {
-        GameDatabaseService.updateGameImage(game.id, result.imageUrl).catch(console.error)
-      }
-    }).catch(console.error)
   }
 
   // Wordle-mode games render a Wordle interface instead of the comic-story interface

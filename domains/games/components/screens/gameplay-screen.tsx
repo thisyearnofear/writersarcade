@@ -18,9 +18,45 @@ import type { Game, GameplayOption } from '../../types'
 import type { ChatEntry, ChoiceFeedback } from '../../hooks/use-game-session'
 import type { PanelVerdict } from '@/lib/daily-challenge/daily-challenge-client'
 import { trackEvent } from '@/services/analytics'
+import { RelatedPlayStrip } from '../related-play-strip'
 
  
 const MAX_COMIC_PANELS = 5
+
+function PanelBeatMeter({
+  current,
+  total = MAX_COMIC_PANELS,
+  accent,
+}: {
+  current: number
+  total?: number
+  accent: string
+}) {
+  const clamped = Math.min(current, total)
+  return (
+    <div
+      className="flex items-center gap-2"
+      aria-label={`Panel ${clamped} of ${total}`}
+    >
+      <div className="flex gap-1" aria-hidden="true">
+        {Array.from({ length: total }, (_, index) => (
+          <span
+            key={index}
+            className="h-2.5 w-6 rounded-[1px] border"
+            style={{
+              backgroundColor: index < clamped ? accent : 'transparent',
+              borderColor: index < clamped ? accent : 'rgba(255,255,255,0.22)',
+              transform: `rotate(${index % 2 === 0 ? -2 : 2}deg)`,
+            }}
+          />
+        ))}
+      </div>
+      <span className="text-xs tabular-nums text-white/60">
+        {clamped} / {total}
+      </span>
+    </div>
+  )
+}
 
 interface GameplayScreenProps {
   game: Game
@@ -265,11 +301,12 @@ export function GameplayScreen({
       {/* Main Content Area */}
       <div className="flex-1 overflow-y-auto">
         {messages.length === 0 ? (
-          <div className="h-full flex items-center justify-center">
-            <div className="text-center space-y-4">
+          <div className="flex h-full flex-col items-center justify-center px-4">
+            <div className="space-y-4 text-center">
               <div className="loading-spinner mx-auto" />
-              <p className="text-muted-foreground animate-pulse">Generating your story...</p>
+              <p className="animate-pulse text-muted-foreground">Drawing the first panel…</p>
             </div>
+            <RelatedPlayStrip game={game} density="wait" />
           </div>
         ) : (
           <div className="w-full flex flex-col lg:grid lg:grid-cols-[280px_1fr] lg:gap-8 min-h-full p-4 md:p-8 py-6 md:py-8 animate-slide-in">
@@ -334,6 +371,15 @@ export function GameplayScreen({
             </aside>
 
             <main className="flex flex-col items-center w-full lg:col-span-1">
+            <div className="mb-4 flex w-full max-w-5xl items-center justify-between gap-3">
+              <PanelBeatMeter
+                current={assistantMessageCount}
+                accent={game.primaryColor || '#8b5cf6'}
+              />
+              <div className="lg:hidden">
+                <MoodIndicator mood={worldMood} />
+              </div>
+            </div>
             {isDailyActive && (
               <DailyModifierStrip
                 panelIndex={Math.max(0, assistantMessageCount - 1)}
@@ -394,29 +440,8 @@ export function GameplayScreen({
               panelsDone={assistantMessageCount}
               primaryColor={game.primaryColor}
             />
-            {/* Story Progress Bar */}
+            {/* Story Progress Bar — mobile keeps the bar; desktop uses the beat meter + sidebar */}
             <div className="w-full max-w-5xl mb-8 pb-6 border-b border-white/10 lg:hidden">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider font-bold">Story Progress</p>
-                <div className="flex items-center gap-4">
-                  <MoodIndicator mood={worldMood} />
-                  <div
-                    className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold border"
-                    style={{
-                      borderColor: assistantMessageCount >= MAX_COMIC_PANELS
-                        ? '#10b981'
-                        : (game.primaryColor || '#8b5cf6') + '60',
-                      backgroundColor: assistantMessageCount >= MAX_COMIC_PANELS
-                        ? 'rgba(16, 185, 129, 0.15)'
-                        : (game.primaryColor || '#8b5cf6') + '15',
-                      color: assistantMessageCount >= MAX_COMIC_PANELS ? '#10b981' : (game.primaryColor || '#8b5cf6'),
-                    }}
-                  >
-                    {assistantMessageCount >= MAX_COMIC_PANELS ? '✓' : `${assistantMessageCount}/${MAX_COMIC_PANELS}`}
-                    <span>{assistantMessageCount >= MAX_COMIC_PANELS ? 'Story complete' : 'panels'}</span>
-                  </div>
-                </div>
-              </div>
               <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
                 <div
                   className="h-full transition-all duration-500 ease-out"
@@ -491,6 +516,10 @@ export function GameplayScreen({
                 })}
               </div>
 
+            {isWaitingForResponse ? (
+              <RelatedPlayStrip game={game} density="wait" />
+            ) : null}
+
             <div ref={messagesEndRef} className="h-8" />
           </main>
         </div>
@@ -515,11 +544,14 @@ export function GameplayScreen({
             )}
 
           {isGeneratingEpilogue && (
-            <div className="p-5 rounded-xl border-2 text-sm text-center" style={{ backgroundColor: `${game.primaryColor || '#8b5cf6'}10`, borderColor: game.primaryColor || '#8b5cf6' }}>
-              <div className="loading-spinner mx-auto mb-3 w-6 h-6" />
-              <p className="font-semibold text-white">Weaving your story's reflection...</p>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1">Generating epilogue and connecting your choices to the source article.</p>
-            </div>
+            <>
+              <div className="p-5 rounded-xl border-2 text-sm text-center" style={{ backgroundColor: `${game.primaryColor || '#8b5cf6'}10`, borderColor: game.primaryColor || '#8b5cf6' }}>
+                <div className="loading-spinner mx-auto mb-3 w-6 h-6" />
+                <p className="font-semibold text-white">Weaving your story&apos;s reflection...</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">Generating epilogue and connecting your choices to the source article.</p>
+              </div>
+              <RelatedPlayStrip game={game} density="wait" />
+            </>
           )}
 
           {epilogueGenerationFailed && (

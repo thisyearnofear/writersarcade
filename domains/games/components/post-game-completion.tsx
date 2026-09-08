@@ -15,6 +15,7 @@ import { resolveBasePaintDay } from '@/components/basepaint/basepaint-finale-att
 import { DualSourceCredits } from '@/components/basepaint/dual-source-credits'
 import { loadDailyChallengeState } from '@/lib/daily-challenge/daily-challenge-client'
 import { config } from '@/lib/config'
+import { RelatedPlayStrip } from './related-play-strip'
 
 interface PostGameCompletionProps {
   game: Game
@@ -197,6 +198,8 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
       {showEpilogueCta && (
         <SecretEpilogueFinaleCta game={game} nftMinted={Boolean(game.nftTokenId)} className="mb-8" />
       )}
+
+      <RelatedPlayStrip game={game} density="finale" className="mb-8 px-0 py-0" />
 
       {/* Post-completion referral loop: secondary actions stay reachable but
           collapsed, so the completion view leads with one primary action. */}

@@ -133,6 +133,9 @@ export interface SavedGamePanel {
   imageModel?: string
   userChoice?: string
   audioUrl?: string
+  videoUrl?: string
+  videoStillUrl?: string
+  videoDraftUrl?: string
   createdAt: Date
 }
 

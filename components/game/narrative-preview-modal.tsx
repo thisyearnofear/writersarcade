@@ -75,17 +75,21 @@ export function NarrativePreviewModal({
 
               {/* Content */}
               <div className="p-6 space-y-6">
-                {/* Game Description */}
-                <div>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {game.description}
+                {game.tagline ? (
+                  <p className="text-foreground leading-snug">
+                    {game.tagline}
                   </p>
-                  {game.tagline && (
-                    <p className="text-muted-foreground text-sm italic mt-3 border-l-2 border-purple-500 pl-3">
-                      "{game.tagline}"
+                ) : null}
+                {game.description ? (
+                  <details className="group">
+                    <summary className="cursor-pointer list-none text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground [&::-webkit-details-marker]:hidden">
+                      About this story
+                    </summary>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                      {game.description}
                     </p>
-                  )}
-                </div>
+                  </details>
+                ) : null}
 
                 {/* First Panel Preview */}
                 {firstPanelNarrative && (

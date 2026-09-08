@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Loader2, Play, Lightbulb, RefreshCw, Gamepad2 } from 'lucide-react'
 import { NarrativePreviewModal } from '@/components/game/narrative-preview-modal'
+import { RelatedPlayStrip } from '../related-play-strip'
 import type { Game } from '../../types'
 import type { ChatEntry } from '../../hooks/use-game-session'
 
@@ -90,18 +91,14 @@ export function HeroScreen({
               {game.title}
             </h1>
 
-            {/* Tagline with responsive sizing */}
-            <blockquote
-              className="text-base sm:text-lg md:text-2xl italic opacity-90 drop-shadow-md max-w-xl"
-              style={{ color: game.primaryColor || '#8b5cf6' }}
-            >
-              "{game.tagline}"
-            </blockquote>
-
-            {/* Description with responsive sizing */}
-            <p className="text-foreground text-sm sm:text-base md:text-lg max-w-xl drop-shadow-md leading-relaxed">
-              {game.description}
-            </p>
+            {game.tagline ? (
+              <p
+                className="max-w-xl text-base leading-snug opacity-90 drop-shadow-md sm:text-lg md:text-2xl"
+                style={{ color: game.primaryColor || '#8b5cf6' }}
+              >
+                {game.tagline}
+              </p>
+            ) : null}
 
             {startError && !isStarting && (
               <div className="w-full max-w-md rounded-lg border border-amber-500/30 bg-black/60 px-4 py-3 text-left backdrop-blur-sm">
@@ -176,33 +173,33 @@ export function HeroScreen({
 
               {/* Loading Progress Indicators */}
               {isStarting && (
-                <div className="mt-6 flex items-center justify-center gap-3 animate-slide-up">
-                  <div className="space-y-2 w-full max-w-xs">
-                    {/* Story generation */}
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-2 h-2 rounded-full transition-all duration-700 ${loadingProgress.text ? 'bg-green-500' : 'bg-yellow-500 animate-pulse'
-                          }`}
-                      />
-                      <span className="text-xs text-muted-foreground">Crafting narrative</span>
-                      {loadingProgress.text && (
-                        <span className="text-xs text-green-400 ml-auto">✓</span>
-                      )}
-                    </div>
-
-                    {/* Image generation */}
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-2 h-2 rounded-full transition-all duration-700 ${loadingProgress.images ? 'bg-green-500' : 'bg-muted animate-pulse'
-                          }`}
-                      />
-                      <span className="text-xs text-muted-foreground">Generating visuals</span>
-                      {loadingProgress.images && (
-                        <span className="text-xs text-green-400 ml-auto">✓</span>
-                      )}
+                <>
+                  <div className="mt-6 flex items-center justify-center gap-3 animate-slide-up">
+                    <div className="space-y-2 w-full max-w-xs">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-2 h-2 rounded-full transition-all duration-700 ${loadingProgress.text ? 'bg-green-500' : 'bg-yellow-500 animate-pulse'
+                            }`}
+                        />
+                        <span className="text-xs text-muted-foreground">Crafting narrative</span>
+                        {loadingProgress.text && (
+                          <span className="text-xs text-green-400 ml-auto">✓</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-2 h-2 rounded-full transition-all duration-700 ${loadingProgress.images ? 'bg-green-500' : 'bg-muted animate-pulse'
+                            }`}
+                        />
+                        <span className="text-xs text-muted-foreground">Generating visuals</span>
+                        {loadingProgress.images && (
+                          <span className="text-xs text-green-400 ml-auto">✓</span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
+                  <RelatedPlayStrip game={game} density="wait" className="mt-6" />
+                </>
               )}
             </div>
 

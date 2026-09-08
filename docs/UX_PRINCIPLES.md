@@ -37,8 +37,12 @@ compete with the core loop.
 ## Disclosure patterns already in the product
 
 - Footer "More" and contract links in the bottom bar (`components/layout/footer.tsx`)
-- Game metadata "Details" disclosure (`game-artifact-view.tsx`)
-- Game description "Read more" toggle (`game-artifact-view.tsx`)
+- Game landing: cinematic cover + panel strip; synopsis, credits, NFT, and
+  play activity sit in `<details>` (`game-artifact-view.tsx`)
+- Play start screen: tagline only — no synopsis dump (`hero-screen.tsx`)
+- Related plays: same-writer / same-genre covers plus the source essay, shown
+  on the landing, during panel waits, and after the finale — never beside
+  the four choices (`related-play-strip.tsx`)
 - Generate flow: "Advanced payment options" and "Adjust direction" panels
   (`customize-step.tsx`), payment "Details" (`payment-step.tsx`)
 - My Games "Vault & collectibles" progressive tabs (`my-games-client.tsx`)

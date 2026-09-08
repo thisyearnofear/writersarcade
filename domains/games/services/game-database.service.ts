@@ -22,6 +22,9 @@ type GameArtifactPanelSnapshot = {
   imageModel: string | null
   userChoice: string | null
   audioUrl: string | null
+  videoUrl?: string | null
+  videoStillUrl?: string | null
+  videoDraftUrl?: string | null
   createdAt: Date
 }
 
@@ -177,6 +180,9 @@ export class GameDatabaseService {
               imageModel: true,
               userChoice: true,
               audioUrl: true,
+              videoUrl: true,
+              videoStillUrl: true,
+              videoDraftUrl: true,
               createdAt: true,
             },
             orderBy: {
@@ -656,6 +662,9 @@ export class GameDatabaseService {
         imageModel: panel.imageModel || undefined,
         userChoice: panel.userChoice || undefined,
         audioUrl: panel.audioUrl || undefined,
+        videoUrl: panel.videoUrl || undefined,
+        videoStillUrl: panel.videoStillUrl || undefined,
+        videoDraftUrl: panel.videoDraftUrl || undefined,
         createdAt: panel.createdAt,
       }))
   }

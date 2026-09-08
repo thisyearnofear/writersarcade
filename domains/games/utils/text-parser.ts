@@ -36,16 +36,18 @@ function cleanMarkdown(text: string): string {
 
 /**
  * Extract numbered options (1., 2., 3., 4.) from text
- * Handles both "1. Option text" and "1) Option text" formats
+ * Handles both "1. Option text" and "1) Option text" formats, including
+ * inline dumps where the model never inserted newlines between choices.
  */
 function extractOptions(text: string): string[] {
   const options: string[] = []
-  const lines = text.split('\n')
-  
   const optionPattern = /^[-*]?\s*(\d+)[.)]\s+(.+)$/
-  
-  for (const line of lines) {
-    const match = line.trim().match(optionPattern)
+  const chunks = text.includes('\n')
+    ? text.split('\n')
+    : text.split(/\s+(?=[2-4][.)]\s+)/)
+
+  for (const chunk of chunks) {
+    const match = chunk.trim().match(optionPattern)
     if (match?.[2]) {
       const id = parseInt(match[1])
       if (id >= 1 && id <= 4) {
@@ -53,8 +55,32 @@ function extractOptions(text: string): string[] {
       }
     }
   }
-  
+
   return options
+}
+
+function splitNarrativeAndOptions(rawText: string): {
+  narrative: string
+  optionsSection: string | null
+} {
+  const lineMatch = rawText.match(/^[-*]?\s*1[.)]\s+/m)
+  if (lineMatch && lineMatch.index !== undefined) {
+    return {
+      narrative: rawText.substring(0, lineMatch.index).trim(),
+      optionsSection: rawText.substring(lineMatch.index).trim(),
+    }
+  }
+
+  // Inline: "...life. 1. You approach the truck..."
+  const inlineMatch = rawText.match(/(?<=[.!?"'`])\s+1[.)]\s+/)
+  if (inlineMatch && inlineMatch.index !== undefined) {
+    return {
+      narrative: rawText.substring(0, inlineMatch.index).trim(),
+      optionsSection: rawText.substring(inlineMatch.index).trim(),
+    }
+  }
+
+  return { narrative: rawText.trim(), optionsSection: null }
 }
 
 /**
@@ -67,25 +93,21 @@ export function parsePanel(rawText: string): {
   narrative: string
   options: string[]
 } {
-  // Split narrative from options section
-  const optionPattern = /^[-*]?\s*1[.)]\s+/m
-  const match = rawText.match(optionPattern)
-  
-  if (!match || match.index === undefined) {
-    // No options found, treat entire text as narrative
-    return {
-      narrative: cleanMarkdown(rawText),
-      options: []
-    }
-  }
-  
-  const narrativeSection = rawText.substring(0, match.index).trim()
-  const optionsSection = rawText.substring(match.index).trim()
-  
+  const { narrative, optionsSection } = splitNarrativeAndOptions(rawText)
+
   return {
-    narrative: cleanMarkdown(narrativeSection),
-    options: extractOptions(optionsSection)
+    narrative: cleanMarkdown(narrative),
+    options: optionsSection ? extractOptions(optionsSection) : [],
   }
+}
+
+/** First sentence of a panel, clipped for overlays and teaser cells. */
+export function pullQuote(rawText: string, maxChars = 90): string {
+  const { narrative } = parsePanel(rawText)
+  const sentence = narrative.split(/(?<=[.!?])\s+/)[0] || narrative
+  const stripped = sentence.replace(/^["']+|["']+$/g, '').trim()
+  if (stripped.length <= maxChars) return stripped
+  return `${stripped.slice(0, maxChars).replace(/\s+\S*$/, '')}…`
 }
 
 /**
