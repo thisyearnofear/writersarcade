@@ -1,3 +1,4 @@
+import { WalletProviders } from '@/components/providers/WalletProviders'
 import { BasePaintCollectionView } from '@/components/basepaint/basepaint-collection-view'
 
 export const metadata = {
@@ -7,5 +8,9 @@ export const metadata = {
 }
 
 export default function BasePaintCollectionPage() {
-  return <BasePaintCollectionView />
+  return (
+    <WalletProviders fallback={<div className="min-h-screen bg-black" />}>
+      <BasePaintCollectionView />
+    </WalletProviders>
+  )
 }

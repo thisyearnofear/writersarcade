@@ -1,6 +1,7 @@
 import { getCurrentUser } from '@/services/auth'
 import { getCreatorStudioSummary } from '@/domains/creators/stats.service'
 import { DashboardClient } from './DashboardClient'
+import { WalletProviders } from '@/components/providers/WalletProviders'
 import { redirect } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
@@ -20,5 +21,9 @@ export default async function CreatorStudio() {
 
   const summary = await getCreatorStudioSummary(user.id, user.walletAddress)
 
-  return <DashboardClient initialSummary={summary} />
+  return (
+    <WalletProviders fallback={<div className="min-h-screen bg-black" />}>
+      <DashboardClient initialSummary={summary} />
+    </WalletProviders>
+  )
 }

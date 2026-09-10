@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { WalletProviders } from '@/components/providers/WalletProviders'
 import { DailyChallengeView } from '@/components/daily-challenge/daily-challenge-view'
 
 export const metadata: Metadata = {
@@ -13,5 +14,9 @@ export const metadata: Metadata = {
 }
 
 export default function BasePaintPage() {
-  return <DailyChallengeView variant="basepaint" />
+  return (
+    <WalletProviders fallback={<div className="min-h-screen bg-black" />}>
+      <DailyChallengeView variant="basepaint" />
+    </WalletProviders>
+  )
 }
