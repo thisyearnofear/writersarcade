@@ -9,6 +9,11 @@
  * the entry is removed so a future call with the same key starts a fresh
  * request.
  *
+ * **Limitation**: the cache is in-memory and process-local. On serverless
+ * platforms (e.g. Vercel) multiple function instances may run concurrently,
+ * so this does not deduplicate across instances. Use a shared cache (Redis,
+ * Postgres advisory locks, etc.) if cross-instance deduplication is required.
+ *
  * @example
  * ```ts
  * const data = await deduplicate('games:featured', () =>

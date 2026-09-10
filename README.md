@@ -54,7 +54,7 @@ BasePaint constants, canvas/theme URLs, and the day-epoch calculation are in
 - **Daily Challenge**: `/basepaint` (also `/daily`) — dual source (Paragraph featured article + today's BasePaint canvas), encrypted Inco modifier hand, leaderboard
 - **Featured article**: auto-picked daily from writer-coin Paragraph pubs (override via ops API); Create can optionally stage any article in today's canvas
 - **BasePaint docs**: [`docs/BASEPAINT.md`](docs/BASEPAINT.md) — dual-source Daily + Paragraph auto-pick inside writersarcade
-- **Hypercerts Integration**: Auto-created impact certificates certifying creative collaboration
+- **Hypercerts Integration** (deprecated / not actively maintained): Auto-created impact certificates certifying creative collaboration
 - Configurable, on-chain revenue splits for generation and minting
 
 ## Core flow
@@ -103,7 +103,7 @@ See [docs/DEVELOPMENT.md](./docs/DEVELOPMENT.md) for full setup.
 - **AI**: OpenAI/Anthropic (ai-sdk); Venice AI + Modal + Netmind (images); Runware + Luma + fal + Replicate (hero video fallbacks)
 - **IP**: Story Protocol (testnet) + IPFS (Pinata primary, Grove metadata fallback; Pinata binary storage required for durable hero video)
 - **Access Control**: Inco (`@inco/lightning-js` + `@inco/lightning`) — secret panels, Wordle answers, daily challenge sessions
-- **Impact**: Hypercerts (AT Protocol)
+- **Impact**: Hypercerts (AT Protocol) — deprecated / not actively maintained
 
 ## Smart contracts
 
@@ -132,7 +132,9 @@ Revenue splits enforced on-chain, configurable per writer coin.
 
 ---
 
-## Etherfuse Ramp API (Fiat Onramp)
+## Etherfuse Ramp API (Fiat Onramp) — deprecated
+
+> **Status: deprecated / not actively maintained.** The code is preserved for reference but the fiat on-ramp flow is not currently supported.
 
 Let users buy USDC with fiat via Etherfuse to purchase game credits.
 
@@ -171,7 +173,9 @@ See `.env.example` for all variables.
 
 ---
 
-## SuperRare NFT Integration
+## SuperRare NFT Integration — deprecated
+
+> **Status: deprecated / not actively maintained.** This integration was never fully wired into the live product and is preserved for reference only.
 
 Mint game artifacts (character cards, story panels, achievement badges, limited endings) as SuperRare NFTs.
 

@@ -27,7 +27,7 @@ Article URL
 **Mezo**: MUSD (Bitcoin-backed stablecoin) for payments; Mezo Matsnet (testnet)
 **IP**: Story Protocol (testnet) + IPFS (Pinata primary, Grove fallback)
 **Access Control**: Inco confidential compute (on-chain encrypted secret panels via euint256 handles + attested decrypt)
-**Impact**: Hypercerts (AT Protocol impact certificates)
+**Impact**: Hypercerts (AT Protocol impact certificates) — deprecated / not actively maintained
 
 ### Project Structure
 
@@ -56,9 +56,9 @@ writarcade/
 │   ├── contracts.ts        # On-chain contract helpers
 │   ├── daily-challenge/    # Daily Challenge session & modifier logic
 │   ├── integrations/       # Third-party integration modules
-│   │   ├── etherfuse.ts    # Fiat onramp (credits)
-│   │   ├── hypercerts.ts   # Impact certificates
-│   │   ├── superrare.ts    # NFT collectibles
+│   │   ├── etherfuse.ts    # Fiat onramp (credits) — deprecated
+│   │   ├── hypercerts.ts   # Impact certificates — deprecated
+│   │   ├── superrare.ts    # NFT collectibles — deprecated
 │   │   └── tenderly.ts     # Transaction simulation
 │   ├── paragraph-sdk.ts    # Paragraph.xyz article fetching
 │   ├── wallet/             # Wallet abstraction + chain config
@@ -283,7 +283,7 @@ WriterCoin
 - GameNFTMezo (open mint — no role check, users pay only gas)
 - Mint endpoint returns chainId dynamically; frontend auto-switches before mint tx
 
-**Story Protocol** (Chain ID: 1516 testnet)  
+**Story Protocol** (Chain ID: 1315 testnet)  
 - IP Asset Registry, PIL licenses, royalty automation, derivative tracking
 
 ## Key Design Principles

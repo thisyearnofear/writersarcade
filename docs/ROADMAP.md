@@ -4,7 +4,7 @@
 
 **Live**: https://writersarcade.vercel.app/  
 **Contracts**: Base mainnet (see addresses in [docs/FEATURES.md](./FEATURES.md))  
-**Story Protocol**: Aeneid testnet (Chain ID: 1516)
+**Story Protocol**: Aeneid testnet (Chain ID: 1315)
 
 ## Completed Phases
 

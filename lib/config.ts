@@ -36,15 +36,15 @@ function isDailyChallengeEnabled(): boolean {
 export const features = {
   /** Asset Marketplace — compose games from marketplace assets */
   assetMarketplace: process.env.FEATURE_ASSET_MARKETPLACE === 'true',
-  /** Hypercerts / AT Protocol impact certificates */
+  /** Hypercerts / AT Protocol impact certificates — deprecated / not actively maintained */
   hypercerts: process.env.FEATURE_HYPERCERTS === 'true',
   /** Inco — confidential compute for secret panels and Wordle answers */
   inco: process.env.FEATURE_INCO !== 'false', // default ON
   /** Daily Challenge — Inco-powered confidential game sessions + BasePaint crossover */
   dailyChallenge: isDailyChallengeEnabled(),
-  /** SuperRare NFT minting bridge */
+  /** SuperRare NFT minting bridge — deprecated / not actively maintained */
   superrare: process.env.FEATURE_SUPERRARE === 'true',
-  /** Etherfuse fiat on-ramp */
+  /** Etherfuse fiat on-ramp — deprecated / not actively maintained */
   etherfuse: process.env.FEATURE_ETHERFUSE === 'true',
   /** Farcaster mini-app */
   farcasterMiniApp: process.env.FEATURE_FARCASTER_MINI_APP === 'true',

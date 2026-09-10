@@ -182,7 +182,7 @@ self-contained hooks + presentational components so each feature stays testable:
 
 ### Story Protocol (IP Registration)
 
-**Network**: Story Aeneid testnet (Chain ID: 1516)  
+**Network**: Story Aeneid testnet (Chain ID: 1315)  
 **SDK**: `@story-protocol/core-sdk@^1.4.2`  
 **Integration**: Client-side wallet signing (no platform keys)
 
@@ -239,7 +239,9 @@ Client calls attestedDecrypt via @inco/lightning-js → reveals epilogue
 **SDK**: `@inco/lightning-js` + `@inco/lightning` (Solidity, install via Bun)
 **Docs**: https://docs.inco.org
 
-### Hypercerts (Impact Certificates)
+### Hypercerts (Impact Certificates) — deprecated
+
+> **Status: deprecated / not actively maintained.** The Hypercerts flow is preserved for reference but not currently supported.
 
 **Protocol**: AT Protocol (AtpAgent)  
 **PDS**: certified.app
@@ -281,7 +283,7 @@ For the optional hero-video artifact pipeline, Pinata is also required for binar
 | Fred Wilson (AVC) | $AVC | 0x06FC3D5D2369561e28F261148576520F5e49D6ea |
 | Debbie Soon | $DEBBIE | 0x4ea5d3ff9e8295a552903d4bd486ce8cf8291c60 |
 | Blog of Jake | $JAKE | 0xC2E3A4d07fdff60f3CdCb39FD94Fc11F254938B9 |
-| Tso's Thoughts | $TSO | 0x8072FC8Ee6Fd17B913833F2789bC9aa99D21AAeB |
+| Tso's Thoughts | $THOUGHTS | 0x98cacf94eb68ea4c5bdc4d70a1a04c2c2cffde39 |
 | Papa | $PARAPAPA | 0x300efb94e4a7fcf71184eeeb82cb2b7af4a6ea58 |
 
 Writer profiles: https://writersarcade.vercel.app/writers

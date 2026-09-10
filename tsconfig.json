@@ -54,6 +54,7 @@
     ".next",
     "out",
     "dist",
-    "scripts"
+    "scripts",
+    "apps/*"
   ]
 }

@@ -29,7 +29,7 @@ describe('parsePanel', () => {
 
 describe('pullQuote', () => {
   it('returns the first sentence without the choice list', () => {
-    expect(pullQuote(INLINE_PANEL)).toBe(
+    expect(pullQuote(INLINE_PANEL, 200)).toBe(
       'As you step off the subway train at Union Square, the vibrant sounds and smells of New York City envelop you.',
     )
   })

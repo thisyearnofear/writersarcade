@@ -18,7 +18,7 @@ module.exports = [
       'public/client.min.js',
       'lib/openzeppelin-contracts/**',
       'contracts/openzeppelin-contracts/**',
-      'apps/**',
+      // NOTE: apps/writersarcade-api is intentionally linted now.
     ],
   },
   js.configs.recommended,
@@ -45,6 +45,34 @@ module.exports = [
         },
       ],
       'no-undef': 'off',
+    },
+  },
+  // Fastify API and PM2 ecosystem files are plain JS/CJS, not TypeScript.
+  // Give them CommonJS source type and allow require/module.exports.
+  {
+    files: ['apps/writersarcade-api/**/*.js', 'apps/writersarcade-api/**/*.cjs'],
+    languageOptions: {
+      sourceType: 'commonjs',
+      globals: {
+        module: 'writable',
+        exports: 'writable',
+        require: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        Buffer: 'readonly',
+        process: 'readonly',
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+      'no-undef': 'off',
+    },
+  },
+  // Test files in the Fastify API use ESM imports.
+  {
+    files: ['apps/writersarcade-api/**/*.test.js'],
+    languageOptions: {
+      sourceType: 'module',
     },
   },
 ];
