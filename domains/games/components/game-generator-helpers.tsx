@@ -95,15 +95,38 @@ export function paymentExplorerUrl(path: PaymentPath, hash: string): string {
 
 export async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: number): Promise<Response> {
   const controller = new AbortController()
-  const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs)
+  let didTimeout = false
+  const timeoutId = window.setTimeout(() => {
+    didTimeout = true
+    controller.abort()
+  }, timeoutMs)
+
+  const externalSignal = init.signal
+  let onExternalAbort: (() => void) | null = null
+  if (externalSignal) {
+    if (externalSignal.aborted) {
+      window.clearTimeout(timeoutId)
+      throw new Error('Request was cancelled.')
+    }
+    onExternalAbort = () => controller.abort()
+    externalSignal.addEventListener('abort', onExternalAbort, { once: true })
+  }
 
   try {
     return await fetch(url, {
       ...init,
       signal: controller.signal,
     })
+  } catch (err) {
+    if (didTimeout) {
+      throw new Error('The request timed out. Please try again.')
+    }
+    throw err
   } finally {
     window.clearTimeout(timeoutId)
+    if (externalSignal && onExternalAbort) {
+      externalSignal.removeEventListener('abort', onExternalAbort)
+    }
   }
 }
 

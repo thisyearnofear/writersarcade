@@ -73,6 +73,8 @@ export function useGameGenerator({
   const paymentPathExposureRef = useRef<string | null>(null)
   const previewTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const stagingOptOutRef = useRef(false)
+  const abortControllerRef = useRef<AbortController | null>(null)
+  const cancelledByUserRef = useRef(false)
 
   // ── Media query ──────────────────────────────────────────────────────
   const isDesktop = useMediaQuery('(min-width: 768px)')
@@ -498,10 +500,15 @@ export function useGameGenerator({
 
       const result = await retryWithBackoff(
         async () => {
+          if (cancelledByUserRef.current) {
+            throw new Error('You cancelled generation.')
+          }
           attempt++
+          abortControllerRef.current = new AbortController()
           const response = await fetchWithTimeout('/api/games/generate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            signal: abortControllerRef.current.signal,
             body: JSON.stringify({
               ...(store.dailyFlow
                 ? store.dailyFlow.sourceType === 'dual' && store.dailyFlow.articleUrl
@@ -619,6 +626,11 @@ export function useGameGenerator({
           : `/games/${result.data.slug}?welcome=1`
       )
     } catch (err) {
+      if (cancelledByUserRef.current) {
+        cancelledByUserRef.current = false
+        store.setError(null)
+        return
+      }
       const message = isAbortError(err)
         ? 'Game generation timed out before the server returned a result.'
         : err instanceof Error ? err.message : 'An unexpected error occurred'
@@ -637,6 +649,8 @@ export function useGameGenerator({
       }
       console.error('Error generating game:', err)
     } finally {
+      abortControllerRef.current = null
+      cancelledByUserRef.current = false
       store.setLoadingStep(null)
       store.setIsGenerating(false)
     }
@@ -657,6 +671,14 @@ export function useGameGenerator({
     store.setError(null)
     await generateGame(payment.transactionHash)
   }
+
+  // ── Cancel generation (user clicked Cancel on the overlay) ────────────
+  const handleCancel = useCallback(() => {
+    cancelledByUserRef.current = true
+    abortControllerRef.current?.abort()
+    store.setIsGenerating(false)
+    store.setLoadingStep(null)
+  }, [store])
 
   // ── Submit handler ──────────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
@@ -914,6 +936,7 @@ export function useGameGenerator({
     handlePaymentStart,
     handlePaymentSuccess,
     handlePaymentError,
+    handleCancel,
     handleStepBack,
     handleStepForward,
     generateGame,

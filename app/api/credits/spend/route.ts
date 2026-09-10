@@ -1,9 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { randomBytes } from 'crypto'
 import { prisma } from '@/lib/prisma'
 import { CREDITS_CONFIG } from '@/lib/writer-coins'
 import { getActor } from '@/services/auth'
 import { z } from 'zod'
+import { ok, fail } from '@/lib/api-response'
 
 const spendSchema = z.object({
   action: z.enum(['generate-game', 'mint-nft', 'play-wordle', 'video-upsell', 'video-montage', 'agent-panel']),
@@ -22,28 +23,22 @@ export async function POST(request: NextRequest) {
     // Identity comes from the signed session cookie, never the request body.
     const actor = await getActor()
     if (!actor) {
-      return NextResponse.json(
-        { error: 'Sign in to spend credits.' },
-        { status: 401 }
-      )
+      return fail('Sign in to spend credits.', 401)
     }
     const user = actor.user
 
     const cost = CREDITS_CONFIG.cost[action]
     if (!cost) {
-      return NextResponse.json(
-        { error: `Unknown action: ${action}` },
-        { status: 400 }
-      )
+      return fail(`Unknown action: ${action}`, 400, { code: 'INVALID_ACTION' })
     }
 
     // Fast-fail for an obviously insufficient balance (keeps the 402 contract).
     // The atomic guard below is what prevents concurrent overspend.
     if (user.credits < cost) {
-      return NextResponse.json(
-        { error: `Insufficient credits. You need ${cost} credits but have ${user.credits}.`, credits: user.credits, required: cost },
-        { status: 402 }
-      )
+      return fail(`Insufficient credits. You need ${cost} credits but have ${user.credits}.`, 402, {
+        code: 'INSUFFICIENT_CREDITS',
+        details: [`credits:${user.credits}`, `required:${cost}`],
+      })
     }
 
     // Sentinel hash: never collides with real 0x tx hashes, satisfies the
@@ -97,39 +92,29 @@ export async function POST(request: NextRequest) {
       })
     } catch (txError) {
       if (txError === SPEND_CONFLICT) {
-        return NextResponse.json(
-          {
-            error: `Insufficient credits. You need ${cost} credits but your balance was already consumed.`,
-            credits: user.credits,
-            required: cost,
-          },
-          { status: 409 }
+        return fail(
+          `Insufficient credits. You need ${cost} credits but your balance was already consumed.`,
+          409,
+          { code: 'SPEND_CONFLICT' }
         )
       }
       throw txError
     }
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        creditsRemaining: result.updatedUser.credits,
-        cost,
-        action,
-        paymentId: result.payment.id,
-        message: `Paid ${cost} credits for ${action}`,
-      },
+    return ok({
+      creditsRemaining: result.updatedUser.credits,
+      cost,
+      action,
+      paymentId: result.payment.id,
+      message: `Paid ${cost} credits for ${action}`,
     })
   } catch (error) {
     console.error('[Credits Spend] Error:', error)
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Invalid request', details: error.errors },
-        { status: 400 }
-      )
+      return fail('Invalid request', 400, {
+        details: error.errors.map((e) => `${e.path.join('.')}: ${e.message}`),
+      })
     }
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to spend credits' },
-      { status: 500 }
-    )
+    return fail(error instanceof Error ? error.message : 'Failed to spend credits', 500)
   }
 }

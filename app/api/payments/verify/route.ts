@@ -5,6 +5,7 @@ import { getActor } from '@/services/auth'
 import { logger } from '@/lib/config'
 import { reportServerError } from '@/services/error-reporting'
 import { verifyOnChainPayment } from '@/services/payments/payment-verifier'
+import { fail } from '@/lib/api-response'
 
 /**
  * Unified Payment Verification Endpoint
@@ -52,14 +53,14 @@ export async function POST(request: NextRequest) {
     const actor = await getActor()
     const actorWallet = actor?.identity === 'wallet' ? actor.user.walletAddress?.toLowerCase() : null
     if (!actor || !actorWallet) {
-      return NextResponse.json({ error: 'Wallet authentication is required' }, { status: 401 })
+      return fail('Wallet authentication is required', 401, { code: 'UNAUTHORIZED' })
     }
 
     const body = await request.json()
     const validatedData = verifyPaymentSchema.parse(body)
 
     if (validatedData.userAddress.toLowerCase() !== actorWallet) {
-      return NextResponse.json({ error: 'Authenticated wallet does not match userAddress' }, { status: 403 })
+      return fail('Authenticated wallet does not match userAddress', 403, { code: 'WALLET_MISMATCH' })
     }
 
     // Immutability: inspect any existing record for this tx hash before touching it.
@@ -96,9 +97,10 @@ export async function POST(request: NextRequest) {
           })
         }
       } else {
-        return NextResponse.json(
-          { error: 'This transaction hash is already registered for a different payment' },
-          { status: 409 }
+        return fail(
+          'This transaction hash is already registered for a different payment',
+          409,
+          { code: 'PAYMENT_HASH_CONFLICT' }
         )
       }
     }
@@ -149,20 +151,16 @@ export async function POST(request: NextRequest) {
     reportServerError(error, { route: '/api/payments/verify' })
 
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          error: 'Invalid request data',
-          details: error.errors.map((e) => `${e.path.join('.')}: ${e.message}`),
-        },
-        { status: 400 }
-      )
+      return fail('Invalid request data', 400, {
+        details: error.errors.map((e) => `${e.path.join('.')}: ${e.message}`),
+      })
     }
 
     if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 400 })
+      return fail(error.message, 400)
     }
 
-    return NextResponse.json({ error: 'Failed to verify payment' }, { status: 500 })
+    return fail('Failed to verify payment', 500)
   }
 }
 
@@ -177,10 +175,7 @@ export async function GET(request: NextRequest) {
     const transactionHash = searchParams.get('transactionHash')
 
     if (!paymentId && !transactionHash) {
-      return NextResponse.json(
-        { error: 'Either paymentId or transactionHash is required' },
-        { status: 400 }
-      )
+      return fail('Either paymentId or transactionHash is required', 400, { code: 'MISSING_PARAMS' })
     }
 
     const payment = await prisma.payment.findFirst({
@@ -188,7 +183,7 @@ export async function GET(request: NextRequest) {
     })
 
     if (!payment) {
-      return NextResponse.json({ error: 'Payment not found' }, { status: 404 })
+      return fail('Payment not found', 404, { code: 'PAYMENT_NOT_FOUND' })
     }
 
     if (payment.status === 'verified') {
@@ -218,7 +213,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     logger.error('[Payment Status] Error', error)
     reportServerError(error, { route: '/api/payments/verify (status)' })
-    return NextResponse.json({ error: 'Failed to check payment status' }, { status: 500 })
+    return fail('Failed to check payment status', 500)
   }
 }
 

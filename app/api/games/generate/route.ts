@@ -361,20 +361,20 @@ Your game MUST authentically interpret this article's core themes. Players shoul
       }
 
       // Generate game using consolidated AI service with user preferences
-      // Request deduplication: concurrent identical requests share one in-flight promise
+      // Request deduplication: concurrent identical requests share one in-flight promise across instances.
       console.log('Calling GameAIService.generateGame with prompt length:', gameRequest.promptText?.length)
-      const cacheKey = validatedData.url
-        ? buildGenerationCacheKey({
-            url: validatedData.url,
-            genre: validatedData.customization?.genre,
-            difficulty: validatedData.customization?.difficulty,
-            mode: 'story',
-          })
-        : undefined
+      const cacheKey = buildGenerationCacheKey({
+        url: validatedData.url,
+        genre: validatedData.customization?.genre,
+        difficulty: validatedData.customization?.difficulty,
+        mode: 'story',
+        actorId: actor?.user.id,
+        paymentId: fundingContext?.paymentId || validatedData.payment?.paymentId,
+      })
 
-      const aiGameData = await (cacheKey
-        ? deduplicateGeneration(cacheKey, () => GameAIService.generateGame(gameRequest, 0, userPreferences))
-        : GameAIService.generateGame(gameRequest, 0, userPreferences))
+      const aiGameData = await deduplicateGeneration(cacheKey, () =>
+        GameAIService.generateGame(gameRequest, 0, userPreferences)
+      )
 
       console.log('AI generation successful:', { title: aiGameData.title, genre: aiGameData.genre })
 

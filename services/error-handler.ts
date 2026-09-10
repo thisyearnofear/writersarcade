@@ -2,10 +2,11 @@
  * Comprehensive error handling and user-friendly error messages
  */
 
-export type ErrorType = 
+export type ErrorType =
   | 'VALIDATION_ERROR'
   | 'NETWORK_ERROR'
   | 'TIMEOUT_ERROR'
+  | 'ABORT_ERROR'
   | 'PAYMENT_ERROR'
   | 'WALLET_ERROR'
   | 'GENERATION_ERROR'
@@ -135,6 +136,16 @@ function categorizeError(message: string, context?: string): ErrorInfo {
       userMessage:
         'The request took too long. This might be a temporary issue. Please try again.',
       retryable: true,
+    }
+  }
+
+  // User cancellation / aborted fetch (non-retryable)
+  if (lowerMessage.includes('aborted')) {
+    return {
+      type: 'ABORT_ERROR',
+      message,
+      userMessage: 'The request was cancelled.',
+      retryable: false,
     }
   }
 

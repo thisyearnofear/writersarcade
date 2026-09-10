@@ -168,6 +168,7 @@ export function GameGeneratorForm({
         stepStatuses={g.stepStatuses}
         genre={g.genre}
         difficulty={g.difficulty}
+        onCancel={g.handleCancel}
       />
 
       {/* Mobile bottom nav — back button + step dots */}

@@ -715,3 +715,20 @@ model DailyChallengeSession {
   @@index([challengeId, score(sort: Desc)])
   @@map("daily_challenge_sessions")
 }
+
+// Cross-instance generation lock / idempotency guard.
+// One record per in-flight or completed generation keyed by user + inputs (or payment).
+// Prevents duplicate AI work and duplicate paid game creation across Vercel instances.
+model GenerationLock {
+  id         String   @id @default(cuid())
+  key        String   @unique
+  status     String   @default("pending") // 'pending' | 'completed' | 'failed'
+  resultData Json? // stores the successful generation result for returning to waiters
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([status, expiresAt])
+  @@index([key, status])
+  @@map("generation_locks")
+}

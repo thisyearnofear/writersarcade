@@ -17,7 +17,8 @@ interface GameGenerationOverlayProps {
   onCancel?: () => void
 }
 
-const ABORT_AFTER_MS = 90_000
+const SLOW_WARNING_MS = 45_000
+const STALL_WARNING_MS = 90_000
 
 const stepConfig = {
   payment: { label: 'Payment Verified', icon: '💳' },
@@ -65,7 +66,10 @@ export function GameGenerationOverlay({
   const progress = currentStep ? ((currentStepIndex + 1) / steps.length) * 100 : 0
 
   const [tipIndex, setTipIndex] = useState(0)
-  const abortTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [showSlowWarning, setShowSlowWarning] = useState(false)
+  const [showStallWarning, setShowStallWarning] = useState(false)
+  const slowTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const stallTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const backgroundParticles = useMemo(() => {
     let seed = 67890
@@ -94,13 +98,13 @@ export function GameGenerationOverlay({
   }, [isOpen])
 
   useEffect(() => {
-    if (isOpen) {
-      abortTimerRef.current = setTimeout(() => onCancel?.(), ABORT_AFTER_MS)
-    }
+    slowTimerRef.current = setTimeout(() => setShowSlowWarning(true), SLOW_WARNING_MS)
+    stallTimerRef.current = setTimeout(() => setShowStallWarning(true), STALL_WARNING_MS)
     return () => {
-      if (abortTimerRef.current) clearTimeout(abortTimerRef.current)
+      if (slowTimerRef.current) clearTimeout(slowTimerRef.current)
+      if (stallTimerRef.current) clearTimeout(stallTimerRef.current)
     }
-  }, [isOpen, onCancel])
+  }, [])
 
   return (
     <AnimatePresence>
@@ -233,9 +237,46 @@ export function GameGenerationOverlay({
                 </AnimatePresence>
               </div>
 
+              {/* Slow / stall warnings */}
+              <AnimatePresence>
+                {showStallWarning && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    className="rounded-lg border border-yellow-500/30 bg-yellow-950/30 p-3"
+                  >
+                    <p className="text-sm text-yellow-200/90 mb-2">
+                      This is taking longer than usual. The AI is still working, but you can stop it and try again.
+                    </p>
+                    <div className="flex items-center justify-center gap-3">
+                      {onCancel && (
+                        <button
+                          onClick={onCancel}
+                          className="inline-flex items-center gap-1 rounded-md bg-yellow-500/20 px-3 py-1.5 text-xs font-medium text-yellow-200 hover:bg-yellow-500/30 transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                          Cancel
+                        </button>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+                {showSlowWarning && !showStallWarning && (
+                  <motion.p
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    className="text-center text-xs text-purple-300/80"
+                  >
+                    Still crafting your game… this can take up to two minutes for longer articles.
+                  </motion.p>
+                )}
+              </AnimatePresence>
+
               {/* Cancel link */}
               <div className="flex justify-center">
-                {onCancel && (
+                {onCancel && !showStallWarning && (
                   <button
                     onClick={onCancel}
                     className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
