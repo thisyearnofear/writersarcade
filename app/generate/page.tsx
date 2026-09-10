@@ -12,6 +12,7 @@ import { CardSkeleton } from '@/components/effects'
 import { DailyChallengeSubnav } from '@/components/daily-challenge/daily-challenge-subnav'
 import { BasePaintTrack } from '@/components/basepaint/basepaint-track'
 import { WalletProviders } from '@/components/providers/WalletProviders'
+import { WalletLoadingFallback } from '@/components/providers/WalletLoadingFallback'
 import { GAME_MODE_EXPLOAINER } from '@/lib/game-mode-labels'
 import { getBasePaintDay } from '@/lib/daily-challenge/daily-challenge-ui'
 import { Sparkles, ArrowLeft } from 'lucide-react'
@@ -98,7 +99,7 @@ function GeneratePageContent() {
           </>
         )}
 
-        <WalletProviders fallback={<div className="mx-auto max-w-4xl px-4 py-12"><CardSkeleton /><CardSkeleton /></div>}>
+        <WalletProviders fallback={<WalletLoadingFallback showHeader={false} className="min-h-[50vh] py-12"><CardSkeleton /><CardSkeleton /></WalletLoadingFallback>}>
           <GameGenerator
             initialUrl={urlParam || undefined}
             initialPaymentPath={payParam}

@@ -1,4 +1,5 @@
 import { WalletProviders } from '@/components/providers/WalletProviders'
+import { WalletLoadingFallback } from '@/components/providers/WalletLoadingFallback'
 import { MyGamesClient } from './my-games-client'
 
 export const metadata = {
@@ -9,7 +10,7 @@ export const metadata = {
 
 export default function MyGamesPage() {
   return (
-    <WalletProviders fallback={<div className="min-h-screen bg-black" />}>
+    <WalletProviders fallback={<WalletLoadingFallback />}>
       <MyGamesClient />
     </WalletProviders>
   )

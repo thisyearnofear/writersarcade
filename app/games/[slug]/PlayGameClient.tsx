@@ -3,8 +3,8 @@
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
 import { WalletProviders } from '@/components/providers/WalletProviders'
+import { WalletLoadingFallback } from '@/components/providers/WalletLoadingFallback'
 import { Game } from '@/domains/games/types'
-import { WordleService } from '@/domains/games/services/wordle.service'
 
 const GamePlayInterface = dynamic(
   () => import('@/domains/games/components/game-play-interface').then(m => m.GamePlayInterface),
@@ -23,9 +23,10 @@ interface PlayGameClientProps {
 }
 
 export function PlayGameClient({ game, isOwner, maxAttempts }: PlayGameClientProps) {
+  const fallback = <WalletLoadingFallback showHeader={false} className="py-12" message="Loading game…" />
   return (
-    <WalletProviders fallback={<div className="mx-auto max-w-4xl px-4 py-12 text-center text-muted-foreground">Loading game…</div>}>
-      <Suspense fallback={<div className="mx-auto max-w-4xl px-4 py-12 text-center text-muted-foreground">Loading game…</div>}>
+    <WalletProviders fallback={fallback}>
+      <Suspense fallback={fallback}>
         {game.mode === 'wordle' ? (
           <WordleGameInterface game={game} maxAttempts={maxAttempts} />
         ) : (
