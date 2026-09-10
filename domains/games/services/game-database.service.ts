@@ -122,6 +122,22 @@ export class GameDatabaseService {
       return this.mapPrismaGameToGame(game)
 
     } catch (error) {
+      // If another instance already saved a game for this payment, return it.
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        const target = error.meta?.target
+        const targetName = Array.isArray(target) ? target.join(' ') : String(target ?? '')
+        if (targetName.includes('paymentId')) {
+          const paymentId = miniAppData?.paymentId || gameData.paymentId
+          if (paymentId) {
+            const existing = await prisma.game.findUnique({ where: { paymentId } })
+            if (existing) return this.mapPrismaGameToGame(existing)
+          }
+        }
+      }
+
       console.error('Failed to create game:', error)
       console.error('Game creation error details:', {
         message: error instanceof Error ? error.message : 'Unknown error',

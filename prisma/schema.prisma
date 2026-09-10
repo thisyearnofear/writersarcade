@@ -192,6 +192,8 @@ model Game {
 
   dailyChallengeSessions DailyChallengeSession[]
 
+  // One paid game per payment; NULLs are not distinct, so free generations still work.
+  @@unique([paymentId])
   @@map("games")
 }
 
