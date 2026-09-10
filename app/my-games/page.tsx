@@ -1,3 +1,4 @@
+import { WalletProviders } from '@/components/providers/WalletProviders'
 import { MyGamesClient } from './my-games-client'
 
 export const metadata = {
@@ -7,5 +8,9 @@ export const metadata = {
 }
 
 export default function MyGamesPage() {
-  return <MyGamesClient />
+  return (
+    <WalletProviders fallback={<div className="min-h-screen bg-black" />}>
+      <MyGamesClient />
+    </WalletProviders>
+  )
 }

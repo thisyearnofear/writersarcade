@@ -1,8 +1,6 @@
 import { notFound } from 'next/navigation'
 import { GameDatabaseService } from '@/domains/games/services/game-database.service'
-import { GamePlayInterface } from '@/domains/games/components/game-play-interface'
 import { GameArtifactView } from '@/domains/games/components/game-artifact-view'
-import { WordleGameInterface } from '@/domains/games/components/wordle-game-interface'
 import { ImageGenerationService } from '@/domains/games/services/image-generation.service'
 import { WordleService } from '@/domains/games/services/wordle.service'
 import { IPAttribution } from '@/domains/games/components/ip-attribution'
@@ -13,6 +11,7 @@ import { ErrorBoundary } from '@/components/error/ErrorBoundary'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
+import { PlayGameClient } from './PlayGameClient'
 import { getActor } from '@/services/auth'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/config'
@@ -88,12 +87,14 @@ export default async function GamePage({ params, searchParams }: GamePageProps) 
     }).catch((err) => logger.error('Cover image generation failed', err, { gameSlug: game.slug }))
   }
 
+  const currentUserWallet = actor?.user.walletAddress ?? undefined
+
   if (!isPlayMode && !isUnlockShare) {
     return (
       <ThemeWrapper theme="arcade">
         <div className="min-h-screen bg-black">
           <Header />
-          <GameArtifactView game={game} />
+          <GameArtifactView game={game} currentUserWallet={currentUserWallet} />
           <Footer />
           <script
             type="application/ld+json"
@@ -112,7 +113,7 @@ export default async function GamePage({ params, searchParams }: GamePageProps) 
         <div className="mx-auto max-w-4xl px-4 pt-6">
           <GameOwnershipProgress game={game} variant="strip" />
         </div>
-        <WordleGameInterface game={game} maxAttempts={WordleService.DEFAULT_MAX_ATTEMPTS} />
+        <PlayGameClient game={game} isOwner={viewerIsOwner} maxAttempts={WordleService.DEFAULT_MAX_ATTEMPTS} />
       </div>
     )
   }
@@ -155,7 +156,7 @@ export default async function GamePage({ params, searchParams }: GamePageProps) 
       </div>
       <PlayWelcomeCoach gameSlug={game.slug} />
       <ErrorBoundary>
-        <GamePlayInterface game={game} isOwner={viewerIsOwner} />
+        <PlayGameClient game={game} isOwner={viewerIsOwner} maxAttempts={WordleService.DEFAULT_MAX_ATTEMPTS} />
       </ErrorBoundary>
       <script
         type="application/ld+json"

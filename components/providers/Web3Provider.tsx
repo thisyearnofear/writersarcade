@@ -113,6 +113,7 @@ import {
   AuthenticationStatus,
 } from '@rainbow-me/rainbowkit';
 import { SiweMessage } from 'siwe';
+import { logger } from '@/lib/config';
 
 interface Web3AuthContextType {
   status: AuthenticationStatus;
@@ -133,16 +134,16 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
       try {
         const response = await fetch('/api/auth/nonce');
         const data = await response.json();
-        console.log('[SIWE] Nonce fetched:', data.nonce);
+        logger.info('[SIWE] Nonce fetched:', { nonce: data.nonce });
         return data.nonce;
       } catch (e) {
-        console.error('[SIWE] Failed to fetch nonce:', e);
+        logger.error('[SIWE] Failed to fetch nonce:', e);
         throw e;
       }
     },
 
     createMessage: ({ nonce, address, chainId }) => {
-      console.log('[SIWE] Creating message for:', { address, chainId, nonce });
+      logger.info('[SIWE] Creating message for:', { address, chainId, nonce });
       const domain = typeof window !== 'undefined' ? window.location.host : '';
       const origin = typeof window !== 'undefined' ? window.location.origin : '';
       const message = new SiweMessage({
@@ -158,7 +159,7 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
     },
 
     verify: async ({ message, signature }) => {
-      console.log('[SIWE] Verifying signature...');
+      logger.info('[SIWE] Verifying signature...');
       try {
         const messageContent = typeof message === 'object' && message !== null && 'prepareMessage' in message && typeof (message as { prepareMessage?: () => string }).prepareMessage === 'function'
           ? (message as { prepareMessage?: () => string }).prepareMessage?.()
@@ -171,14 +172,14 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
         });
 
         const success = verifyRes.ok;
-        console.log('[SIWE] Verification result:', success);
+        logger.info('[SIWE] Verification result:', { success });
 
         if (success) {
           setAuthStatus('authenticated');
         }
         return success;
       } catch (e) {
-        console.error('[SIWE] Verification error:', e);
+        logger.error('[SIWE] Verification error:', e);
         return false;
       }
     },

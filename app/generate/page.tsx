@@ -11,6 +11,7 @@ import { ErrorBoundary } from '@/components/error/ErrorBoundary'
 import { CardSkeleton } from '@/components/effects'
 import { DailyChallengeSubnav } from '@/components/daily-challenge/daily-challenge-subnav'
 import { BasePaintTrack } from '@/components/basepaint/basepaint-track'
+import { WalletProviders } from '@/components/providers/WalletProviders'
 import { GAME_MODE_EXPLOAINER } from '@/lib/game-mode-labels'
 import { getBasePaintDay } from '@/lib/daily-challenge/daily-challenge-ui'
 import { Sparkles, ArrowLeft } from 'lucide-react'
@@ -97,13 +98,15 @@ function GeneratePageContent() {
           </>
         )}
 
-        <GameGenerator
-          initialUrl={urlParam || undefined}
-          initialPaymentPath={payParam}
-          initialMode={isWordleMode ? 'wordle' : undefined}
-          initialBasePaintDay={isBasePaintSource && basePaintDay && !Number.isNaN(basePaintDay) ? basePaintDay : undefined}
-          initialDailyChallenge={isDailyChallenge}
-        />
+        <WalletProviders fallback={<div className="mx-auto max-w-4xl px-4 py-12"><CardSkeleton /><CardSkeleton /></div>}>
+          <GameGenerator
+            initialUrl={urlParam || undefined}
+            initialPaymentPath={payParam}
+            initialMode={isWordleMode ? 'wordle' : undefined}
+            initialBasePaintDay={isBasePaintSource && basePaintDay && !Number.isNaN(basePaintDay) ? basePaintDay : undefined}
+            initialDailyChallenge={isDailyChallenge}
+          />
+        </WalletProviders>
       </div>
     </ErrorBoundary>
   )

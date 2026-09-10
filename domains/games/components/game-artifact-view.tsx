@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
-import { useAccount } from 'wagmi'
 import { useReducedMotion } from 'framer-motion'
 import {
   ArrowLeft,
@@ -34,6 +33,7 @@ import { RelatedPlayStrip } from './related-play-strip'
 
 interface GameArtifactViewProps {
   game: Game
+  currentUserWallet?: string
 }
 
 function shortAddress(value?: string | null) {
@@ -167,11 +167,10 @@ function PanelCell({
   )
 }
 
-export function GameArtifactView({ game }: GameArtifactViewProps) {
-  const { address } = useAccount()
+export function GameArtifactView({ game, currentUserWallet }: GameArtifactViewProps) {
   const reduceMotion = Boolean(useReducedMotion())
   const ownerAddress = game.ownerWallet || game.creatorWallet
-  const isOwner = Boolean(address && ownerAddress && address.toLowerCase() === ownerAddress.toLowerCase())
+  const isOwner = Boolean(currentUserWallet && ownerAddress && currentUserWallet.toLowerCase() === ownerAddress.toLowerCase())
   const tokenLabel = getTokenLabel(game)
   const hasMintRecord = Boolean(game.nftTokenId || game.nftTransactionHash || game.nftMintedAt)
   const hasSuperRareRecord = Boolean(game.superrareTokenId || game.superrareMintedAt)
@@ -189,14 +188,14 @@ export function GameArtifactView({ game }: GameArtifactViewProps) {
   const selectedParsed = selectedPanel ? parsePanel(selectedPanel.narrativeText) : null
 
   const handleSuperrareMint = async () => {
-    if (!address) return
+    if (!currentUserWallet) return
     setSuperrareMinting(true)
     setSuperrareError(null)
     try {
       const res = await fetch('/api/superrare/mint', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gameId: game.id, wallet: address }),
+        body: JSON.stringify({ gameId: game.id, wallet: currentUserWallet }),
       })
       const data = await res.json()
       if (!data.success) throw new Error(data.error)

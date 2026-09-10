@@ -1,9 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { UserMenu } from '@/domains/users/components/user-menu'
-import { BalanceDisplay } from '@/components/ui/balance-display'
-import { BuyCreditsWrapper } from '@/components/ui/buy-credits-wrapper'
+import dynamic from 'next/dynamic'
 import { PenLine, Sun, Moon } from 'lucide-react'
 
 import { motion, useReducedMotion } from 'framer-motion'
@@ -11,6 +9,8 @@ import { useIsActive } from '@/hooks/useIsActive'
 import { useDarkMode } from '@/components/providers/DarkModeProvider'
 import { config } from '@/lib/config'
 import { Button } from '@/components/ui/button'
+
+const WalletHeader = dynamic(() => import('./WalletHeader').then(m => m.WalletHeader), { ssr: false })
 
 function ThemeToggle() {
   const { isDarkMode, toggleDarkMode } = useDarkMode()
@@ -111,17 +111,13 @@ export function Header() {
             <AnimatedNavLink key={href} href={href} label={label} title={title} isActive={isActive(href)} />
           ))}
 
-          <BuyCreditsWrapper />
-          <BalanceDisplay />
-          <UserMenu />
+          <WalletHeader />
         </nav>
 
         {/* Mobile Actions */}
         <div className="flex md:hidden items-center space-x-3">
           <ThemeToggle />
-          <BalanceDisplay />
-          <BuyCreditsWrapper />
-          <UserMenu mobileLayout />
+          <WalletHeader mobileLayout />
         </div>
       </div>
 
