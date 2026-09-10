@@ -6,6 +6,7 @@ import { ImageGenerationService } from '@/domains/games/services/image-generatio
 import { ContentProcessorService } from '@/domains/content/services/content-processor.service'
 import { UserAIPreferenceService } from '@/lib/user-ai-preferences.service'
 import { reportServerError } from '@/services/error-reporting'
+import { logger } from '@/lib/config'
 
 const requestSchema = z.object({
   url: z.string().url(),
@@ -101,7 +102,7 @@ ${tone ? `\nTONE / MOOD REQUEST: ${tone}` : ''}`
           await GameDatabaseService.updateGameImage(savedGame.id, result.imageUrl)
         }
       } catch (err) {
-        console.error('iMessage game cover image failed:', err)
+        logger.error('iMessage game cover image failed:', err)
       }
     })
 
@@ -117,7 +118,7 @@ ${tone ? `\nTONE / MOOD REQUEST: ${tone}` : ''}`
       },
     })
   } catch (error) {
-    console.error('/api/imessage/generate error:', error)
+    logger.error('/api/imessage/generate error:', error)
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(

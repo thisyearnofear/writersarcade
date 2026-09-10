@@ -4,7 +4,7 @@ import { GameAIService } from '@/domains/games/services/game-ai.service'
 import { prisma } from '@/lib/database'
 import { z } from 'zod'
 import { UserAIPreferenceService } from '@/lib/user-ai-preferences.service'
-import { isFeatureEnabled } from '@/lib/config'
+import { isFeatureEnabled, logger } from '@/lib/config'
 import { Prisma } from '@prisma/client'
 
 const startGameSchema = z.object({
@@ -66,7 +66,7 @@ export async function POST(
         })
       }
     } catch (eventError) {
-      console.error('Start event write failed (non-blocking):', eventError)
+      logger.error('Start event write failed (non-blocking):', eventError)
     }
     
     // Create system message for game start
@@ -127,11 +127,11 @@ export async function POST(
                     data: { agentTraces: [...existing, ...panel.traces] as Prisma.InputJsonValue },
                   })
                 } catch (traceError) {
-                  console.error('agentTraces persist failed (non-blocking):', traceError)
+                  logger.error('agentTraces persist failed (non-blocking):', traceError)
                 }
               }
             } catch (agentError) {
-              console.error('Agentic opening panel failed, falling back:', agentError)
+              logger.error('Agentic opening panel failed, falling back:', agentError)
             }
           }
 
@@ -215,7 +215,7 @@ export async function POST(
           
           controller.close()
         } catch (error) {
-          console.error('Game start streaming error:', error)
+          logger.error('Game start streaming error:', error)
           const errorData = `data: ${JSON.stringify({
             type: 'error',
             error: 'Failed to start game'
@@ -235,7 +235,7 @@ export async function POST(
     })
     
   } catch (error) {
-    console.error('Game start error:', error)
+    logger.error('Game start error:', error)
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(

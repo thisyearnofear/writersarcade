@@ -1,7 +1,7 @@
 import { ToolLoopAgent, isStepCount, type StopCondition } from 'ai'
 import { z } from 'zod'
 import { getModel } from '@/lib/ai-model-compatibility'
-import { isFeatureEnabled } from '@/lib/config'
+import { isFeatureEnabled, logger } from '@/lib/config'
 import type { StoryPlan } from './story-planner.service'
 import { ContentProcessorService } from '@/domains/content/services/content-processor.service'
 import { ImageGenerationService, type ImageGenerationResult } from './image-generation.service'
@@ -306,7 +306,7 @@ export async function generatePanelAgentic(
           })
           pass = { ...pass, image: newImage }
         } catch (e) {
-          console.error('revise_image_prompt image regen failed (keeping prior art):', e)
+          logger.error('revise_image_prompt image regen failed (keeping prior art):', e)
         }
         continue
       }
@@ -388,7 +388,7 @@ export async function chargeAgentPanel(params: {
     if (!ok) return null
     return { paymentRef: sentinelHash, cost, userId: params.userId as string, slug: params.slug, gameId: params.gameId }
   } catch (e) {
-    console.error('Agent panel charge failed:', e)
+    logger.error('Agent panel charge failed:', e)
     return null
   }
 }
@@ -435,7 +435,7 @@ export async function refundAgentMediaCharge(charge: {
       return true
     })
   } catch (e) {
-    console.error('Agent media refund failed:', e)
+    logger.error('Agent media refund failed:', e)
     return false
   }
 }

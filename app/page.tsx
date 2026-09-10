@@ -29,7 +29,7 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { GridSkeleton } from '@/components/effects'
-import { WRITER_COINS } from '@/lib/writer-coins'
+import { WRITER_COINS, CREDITS_CONFIG } from '@/lib/writer-coins'
 import { config } from '@/lib/config'
 import { ConceptTerm } from '@/lib/concept-definitions'
 
@@ -320,7 +320,7 @@ export default function HomePage() {
                     <div>
                       <p className="text-xs font-bold uppercase tracking-widest text-primary">Make your own</p>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        Turn an article into a 5-panel interactive comic. Your first story is free; public games are always free to play.
+                        Turn an article into a 5-panel interactive comic. Public games are always free to play; generating your own costs {CREDITS_CONFIG.cost['generate-game']} credits (~${(CREDITS_CONFIG.cost['generate-game'] * 0.1).toFixed(2)}).
                       </p>
                     </div>
 

@@ -240,9 +240,11 @@ export const logger = {
    */
   info: (message: string, context?: LogContext) => {
     if (config.isProduction) {
-      console.log(`[INFO] ${message}`, context)
+      if (context) console.log(`[INFO] ${message}`, context)
+      else console.log(`[INFO] ${message}`)
     } else {
-      console.log(`ℹ️  ${message}`, context)
+      if (context) console.log(`ℹ️  ${message}`, context)
+      else console.log(`ℹ️  ${message}`)
     }
   },
 
@@ -251,9 +253,11 @@ export const logger = {
    */
   warn: (message: string, context?: LogContext) => {
     if (config.isProduction) {
-      console.warn(`[WARN] ${message}`, context)
+      if (context) console.warn(`[WARN] ${message}`, context)
+      else console.warn(`[WARN] ${message}`)
     } else {
-      console.warn(`⚠️  ${message}`, context)
+      if (context) console.warn(`⚠️  ${message}`, context)
+      else console.warn(`⚠️  ${message}`)
     }
   },
 
@@ -262,9 +266,13 @@ export const logger = {
    */
   error: (message: string, error?: unknown, context?: LogContext) => {
     if (config.isProduction) {
-      console.error(`[ERROR] ${message}`, error, context)
+      if (error !== undefined && context) console.error(`[ERROR] ${message}`, error, context)
+      else if (error !== undefined) console.error(`[ERROR] ${message}`, error)
+      else console.error(`[ERROR] ${message}`)
     } else {
-      console.error(`❌ ${message}`, error, context)
+      if (error !== undefined && context) console.error(`❌ ${message}`, error, context)
+      else if (error !== undefined) console.error(`❌ ${message}`, error)
+      else console.error(`❌ ${message}`)
     }
   },
 
@@ -273,7 +281,8 @@ export const logger = {
    */
   debug: (message: string, data?: unknown) => {
     if (!config.isProduction) {
-      console.log(`🔍 ${message}`, data)
+      if (data !== undefined) console.log(`🔍 ${message}`, data)
+      else console.log(`🔍 ${message}`)
     }
   },
 

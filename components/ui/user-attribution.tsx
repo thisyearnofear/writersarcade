@@ -9,6 +9,7 @@
 import { useState, useEffect } from 'react'
 import { ExternalLink, User } from 'lucide-react'
 import { userIdentityService } from '@/lib/services/user-identity.service'
+import { logger } from '@/lib/config'
 import type { GameCreator, GameAuthor } from '@/lib/services/ipfs-metadata.service'
 
 interface UserAttributionProps {
@@ -44,7 +45,7 @@ export function UserAttribution({
           setUserData(author)
         }
       } catch (error) {
-        console.error('Error loading user data:', error)
+        logger.error('Error loading user data:', error)
       } finally {
         setIsLoading(false)
       }
@@ -96,6 +97,8 @@ export function UserAttribution({
           <img 
             src={userData.avatar} 
             alt={userData.displayName}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover"
             onError={(e) => {
               // Fallback to identicon if image fails

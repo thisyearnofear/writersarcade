@@ -292,7 +292,7 @@ export function VideoShowcase({
               aria-current={idx === currentIndex ? 'true' : undefined}
             >
               {panel.imageUrl ? (
-                <img src={panel.imageUrl} alt={`Panel ${idx + 1}`} className="h-16 w-24 object-cover" />
+                <img src={panel.imageUrl} alt={`Panel ${idx + 1}`} loading="lazy" decoding="async" className="h-16 w-24 object-cover" />
               ) : (
                 <div className="flex h-16 w-24 items-center justify-center bg-muted text-[10px] text-muted-foreground">
                   Panel {idx + 1}

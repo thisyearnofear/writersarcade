@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAccount } from 'wagmi'
-import { type WriterCoin, WRITER_COINS, validateArticleUrl } from '@/lib/writer-coins'
+import { type WriterCoin, WRITER_COINS, validateArticleUrl, CREDITS_CONFIG } from '@/lib/writer-coins'
 import { detectWriterCoinFromUrl } from '@/lib/payment-path-resolver'
 import { retryWithBackoff } from '@/services/error-handler'
 import { useWriterCoinBalance } from '@/hooks/useWriterCoinBalance'
@@ -29,7 +29,7 @@ import {
   generationError,
 } from './game-generator-helpers'
 import { useGameGeneratorStore } from '@/lib/stores'
-import { config } from '@/lib/config'
+import { config, logger } from '@/lib/config'
 import { getBasePaintDay } from '@/lib/basepaint/day'
 
 const DEFAULT_WRITER_COIN = WRITER_COINS[0]
@@ -114,6 +114,11 @@ export function useGameGenerator({
     return Number(writerCoin.gameGenerationCost) / 10 ** writerCoin.decimals
   }, [isMusdPath, writerCoin])
 
+  const generationCost = useMemo(() => {
+    if (!isStoryMode) return 0
+    return CREDITS_CONFIG.cost['generate-game']
+  }, [isStoryMode])
+
   const { balance, isLoading: isLoadingBalance } = useWriterCoinBalance(writerCoin.id)
 
   const userBalance = useMemo(() => {
@@ -178,7 +183,7 @@ export function useGameGenerator({
           store.setMobileStep('customize')
         }
       } catch (err) {
-        console.error('Failed to load daily BasePaint source:', err)
+        logger.error('Failed to load daily BasePaint source:', err)
       }
     }
 
@@ -218,7 +223,7 @@ export function useGameGenerator({
           store.setStageWithBasePaint(true)
         }
       } catch (err) {
-        console.error('Failed to load BasePaint stage preview:', err)
+        logger.error('Failed to load BasePaint stage preview:', err)
         if (!cancelled) {
           store.setBasePaintStage(null)
           store.setStageWithBasePaint(false)
@@ -589,7 +594,7 @@ export function useGameGenerator({
 
             lastError = new Error(errorMsg)
             if (response.status === 400) {
-              console.warn(`Attempt ${attempt}/${maxAttempts} failed with validation error:`, errorMsg)
+              logger.warn(`Attempt ${attempt}/${maxAttempts} failed with validation error:`, { errorMsg })
             }
             throw lastError
           }
@@ -647,7 +652,7 @@ export function useGameGenerator({
       if (store.loadingStep) {
         store.setStepStatus(store.loadingStep, 'error')
       }
-      console.error('Error generating game:', err)
+      logger.error('Error generating game:', err)
     } finally {
       abortControllerRef.current = null
       cancelledByUserRef.current = false
@@ -913,6 +918,7 @@ export function useGameGenerator({
     canGoForward,
     forwardLabel,
     requiredAmount,
+    generationCost,
     balance,
     isLoadingBalance,
     userBalance,

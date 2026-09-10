@@ -2,6 +2,7 @@ import type { PaymentStrategy, ExecutePaymentParams, PaymentResult } from './pay
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { getPaymentTokenConfig } from '@/lib/writer-coins'
 import { BASE_MAINNET_CHAIN_ID } from '@/lib/wallet/chains'
+import { logger } from '@/lib/config'
 
 export class WriterCoinStrategy implements PaymentStrategy {
   id = 'writercoin'
@@ -63,7 +64,7 @@ export class WriterCoinStrategy implements PaymentStrategy {
       account: userAddress as `0x${string}`,
       chain: null
     })
-    console.log('[WriterCoinStrategy] Approval transaction sent:', approvalTx)
+    logger.info('[WriterCoinStrategy] Approval transaction sent:', { approvalTx })
 
     // 3. Execute Payment Contract
     step('Step 2 of 2: Confirm payment in your wallet…')
@@ -93,7 +94,7 @@ export class WriterCoinStrategy implements PaymentStrategy {
       chain: null
     })
 
-    console.log('[WriterCoinStrategy] Transaction sent:', txHash)
+    logger.info('[WriterCoinStrategy] Transaction sent:', { txHash })
 
     // 4. Verify via backend (with retry — receipt may not be indexed immediately)
     step('Verifying on-chain…')
@@ -127,7 +128,7 @@ export class WriterCoinStrategy implements PaymentStrategy {
         const isReceiptError = (errorData.error || '').toLowerCase().includes('receipt')
           || (errorData.error || '').toLowerCase().includes('could not be found')
         if (isReceiptError) {
-          console.log(`[WriterCoinStrategy] Receipt not found yet, retrying (${attempt}/${MAX_VERIFY_ATTEMPTS})…`)
+          logger.info(`[WriterCoinStrategy] Receipt not found yet, retrying (${attempt}/${MAX_VERIFY_ATTEMPTS})…`)
           step(`Waiting for confirmation (${attempt}/${MAX_VERIFY_ATTEMPTS})…`)
           continue
         }

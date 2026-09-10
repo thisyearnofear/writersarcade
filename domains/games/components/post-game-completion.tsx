@@ -14,7 +14,7 @@ import { useVideoStatus } from '../hooks/use-video-status'
 import { resolveBasePaintDay } from '@/components/basepaint/basepaint-finale-attribution'
 import { DualSourceCredits } from '@/components/basepaint/dual-source-credits'
 import { loadDailyChallengeState } from '@/lib/daily-challenge/daily-challenge-client'
-import { config } from '@/lib/config'
+import { config, logger } from '@/lib/config'
 import { RelatedPlayStrip } from './related-play-strip'
 
 interface PostGameCompletionProps {
@@ -61,7 +61,7 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
       link.remove()
       window.URL.revokeObjectURL(url)
     } catch (err) {
-      console.error('PDF export failed:', err)
+      logger.error('PDF export failed:', err)
       toast({
         title: 'PDF export failed',
         description: 'Could not generate the PDF. Please try again.',

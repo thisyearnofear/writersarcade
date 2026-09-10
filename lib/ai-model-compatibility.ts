@@ -3,6 +3,7 @@ import { createOpenAI, openai } from '@ai-sdk/openai';
 import { anthropic } from '@ai-sdk/anthropic';
 import type { UserAIPreferences } from '@/lib/user-ai-preferences.service';
 import type { LanguageModel } from 'ai';
+import { logger } from '@/lib/config';
 
 // Define a consistent interface for all AI models
 export type CompatibleLanguageModel = LanguageModel;
@@ -109,7 +110,7 @@ export function getModel(modelName: string, userPreferences?: UserAIPreferences)
     }
     // Gemini requested but not configured - fall back to Venice if available
     if (hasVeniceConfiguration()) {
-      console.log(`Gemini not configured, falling back to Venice for model: ${modelName}`);
+      logger.info(`Gemini not configured, falling back to Venice for model: ${modelName}`);
       return getCompatibleVeniceModel(VENICE_DEFAULT_MODEL);
     }
   }
@@ -118,7 +119,7 @@ export function getModel(modelName: string, userPreferences?: UserAIPreferences)
   if (modelName.startsWith('gpt')) {
     // If Venice is available, use it instead of OpenAI to avoid quota issues
     if (hasVeniceConfiguration()) {
-      console.log(`Using Venice instead of OpenAI (${modelName}) to avoid quota issues`);
+      logger.info(`Using Venice instead of OpenAI (${modelName}) to avoid quota issues`);
       return getCompatibleVeniceModel(VENICE_DEFAULT_MODEL);
     }
     return getCompatibleOpenAIModel(modelName);

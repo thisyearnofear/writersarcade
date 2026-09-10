@@ -146,6 +146,7 @@ export function GameGeneratorForm({
                 genre={g.genre}
                 url={g.url}
                 isDailyFlow={g.isDailyFlow}
+                generationCost={g.generationCost}
               />
             )}
           </div>

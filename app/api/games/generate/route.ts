@@ -1,4 +1,6 @@
-import { NextRequest, NextResponse, after } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { after } from 'next/server'
+import { ok, fail } from '@/lib/api-response'
 import { GameAIService } from '@/domains/games/services/game-ai.service'
 import { GameDatabaseService } from '@/domains/games/services/game-database.service'
 import { ImageGenerationService } from '@/domains/games/services/image-generation.service'
@@ -67,10 +69,10 @@ const generateGameSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('Game generation request received')
+    logger.info('Game generation request received')
 
     const body = await request.json()
-    console.log('Request body received:', { hasUrl: !!body.url, hasPromptText: !!body.promptText, mode: body.mode })
+    logger.info('Request body received:', { hasUrl: !!body.url, hasPromptText: !!body.promptText, mode: body.mode })
 
     // Validate request
     const validatedData = generateGameSchema.parse(body)
@@ -79,11 +81,11 @@ export async function POST(request: NextRequest) {
     // Resolve current actor (wallet, email, or guest — all optional)
     const actor = await getActor()
     const user = actor?.user ?? null
-    console.log('User auth result:', { userId: user?.id, identity: actor?.identity, userWallet: user?.walletAddress })
+    logger.info('User auth result:', { userId: user?.id, identity: actor?.identity, userWallet: user?.walletAddress })
 
     // Get user AI preferences
     const userPreferences = await UserAIPreferenceService.getUserPreferences()
-    console.log('User AI preferences:', { geminiEnabled: userPreferences.geminiEnabled, preferGemini: userPreferences.preferGemini })
+    logger.info('User AI preferences:', { geminiEnabled: userPreferences.geminiEnabled, preferGemini: userPreferences.preferGemini })
 
     const fundingLookup = validatedData.payment?.paymentId
       ? { paymentId: validatedData.payment.paymentId } as const
@@ -109,14 +111,7 @@ export async function POST(request: NextRequest) {
         (await DemoEntitlementService.canGenerateFreeGame(actor.user.id))
 
       if (!entitled) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'Story mode requires payment. Complete payment before generating.',
-            code: 'PAYMENT_REQUIRED',
-          },
-          { status: 402 }
-        )
+        return fail('Story mode requires payment. Complete payment before generating.', 402, { code: 'PAYMENT_REQUIRED' })
       }
       isFreeDemo = true
     }
@@ -129,10 +124,7 @@ export async function POST(request: NextRequest) {
       : null
 
     if (fundingLookup && !fundingContext) {
-      return NextResponse.json(
-        { success: false, error: 'Verified generation payment not found.', code: 'PAYMENT_NOT_VERIFIED' },
-        { status: 400 }
-      )
+      return fail('Verified generation payment not found.', 400, { code: 'PAYMENT_NOT_VERIFIED' })
     }
 
     if (
@@ -140,13 +132,10 @@ export async function POST(request: NextRequest) {
       validatedData.payment?.writerCoinId &&
       fundingContext.writerCoinId !== validatedData.payment.writerCoinId
     ) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `Payment coin mismatch: verified payment used ${fundingContext.writerCoinId}, not ${validatedData.payment.writerCoinId}.`,
-          code: 'PAYMENT_COIN_MISMATCH',
-        },
-        { status: 400 }
+      return fail(
+        `Payment coin mismatch: verified payment used ${fundingContext.writerCoinId}, not ${validatedData.payment.writerCoinId}.`,
+        400,
+        { code: 'PAYMENT_COIN_MISMATCH' }
       )
     }
 
@@ -161,16 +150,12 @@ export async function POST(request: NextRequest) {
       !validateArticleUrl(validatedData.url, canonicalWriterCoinId)
     ) {
       const detectedWriterCoin = getWriterCoinByArticleUrl(validatedData.url)
-      return NextResponse.json(
-        {
-          success: false,
-          error: detectedWriterCoin
-            ? `Payment coin mismatch: this article belongs to ${detectedWriterCoin.name}. Use ${detectedWriterCoin.symbol}, or switch to MUSD for any public Paragraph article.`
-            : 'Payment coin mismatch: this article does not match the selected writer coin. Switch to MUSD for any public Paragraph article.',
-          code: 'ARTICLE_WRITER_MISMATCH',
-          detectedWriterCoinId: detectedWriterCoin?.id,
-        },
-        { status: 400 }
+      return fail(
+        detectedWriterCoin
+          ? `Payment coin mismatch: this article belongs to ${detectedWriterCoin.name}. Use ${detectedWriterCoin.symbol}, or switch to MUSD for any public Paragraph article.`
+          : 'Payment coin mismatch: this article does not match the selected writer coin. Switch to MUSD for any public Paragraph article.',
+        400,
+        { code: 'ARTICLE_WRITER_MISMATCH', details: detectedWriterCoin?.id ? [`detectedWriterCoinId:${detectedWriterCoin.id}`] : undefined }
       )
     }
 
@@ -181,12 +166,8 @@ export async function POST(request: NextRequest) {
         select: { id: true, slug: true, title: true, description: true, imageUrl: true },
       })
       if (existingGame) {
-        console.log('[Generate] Idempotency hit — returning existing game for payment:', fundingContext.paymentId)
-        return NextResponse.json({
-          success: true,
-          data: existingGame,
-          idempotent: true,
-        })
+        logger.info('[Generate] Idempotency hit — returning existing game for payment:', { paymentId: fundingContext.paymentId })
+        return ok({ ...existingGame, idempotent: true })
       }
     }
 
@@ -223,14 +204,7 @@ export async function POST(request: NextRequest) {
       const articleUrl =
         validatedData.url || config.dailyChallenge.featuredArticleUrl || undefined
       if (!articleUrl || !ContentProcessorService.isValidUrl(articleUrl)) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'Dual-source generation requires a featured article URL.',
-            code: 'DUAL_ARTICLE_REQUIRED',
-          },
-          { status: 400 }
-        )
+        return fail('Dual-source generation requires a featured article URL.', 400, { code: 'DUAL_ARTICLE_REQUIRED' })
       }
 
       try {
@@ -253,7 +227,7 @@ export async function POST(request: NextRequest) {
         basePaintPalette = source.palette ?? validatedData.palette
         processedPrompt = source.promptText
       } catch (error) {
-        console.error('Dual-source content processing failed:', error)
+        logger.error('Dual-source content processing failed:', error)
         const message = error instanceof Error ? error.message : 'Failed to process dual source'
         throw new Error(`Dual-source processing failed: ${message}`)
       }
@@ -292,7 +266,7 @@ DESIGN IMPERATIVE:
 Your game MUST authentically interpret this article's core themes. Players should play this game and think differently about the concepts ${processedContent.author || 'the author'} presents. This game is a derivative work that honors the original author's ideas while offering a unique, interactive interpretation.`
         }
       } catch (error) {
-        console.error('Content processing failed:', error)
+        logger.error('Content processing failed:', error)
         // Re-throw with better message
         const message = error instanceof Error ? error.message : 'Failed to process URL'
         throw new Error(`URL processing failed: ${message}`)
@@ -301,13 +275,7 @@ Your game MUST authentically interpret this article's core themes. Players shoul
 
     // In Wordle mode we require a URL so we can derive the puzzle from the article
     if (mode === 'wordle' && !validatedData.url) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Wordle mode requires an article URL.',
-        },
-        { status: 400 }
-      )
+      return fail('Wordle mode requires an article URL.', 400)
     }
 
     let gameData: GameGenerationResponse
@@ -344,7 +312,7 @@ Your game MUST authentically interpret this article's core themes. Players shoul
         wordleAnswerVaultUuid,
       }
 
-      console.log('Wordle game generated from article:', {
+      logger.info('Wordle game generated from article:', {
         title: gameData.title,
         answerLength: answer.length,
       })
@@ -362,7 +330,7 @@ Your game MUST authentically interpret this article's core themes. Players shoul
 
       // Generate game using consolidated AI service with user preferences
       // Request deduplication: concurrent identical requests share one in-flight promise across instances.
-      console.log('Calling GameAIService.generateGame with prompt length:', gameRequest.promptText?.length)
+      logger.info('Calling GameAIService.generateGame with prompt length:', { promptLength: gameRequest.promptText?.length })
       const cacheKey = buildGenerationCacheKey({
         url: validatedData.url,
         genre: validatedData.customization?.genre,
@@ -376,7 +344,7 @@ Your game MUST authentically interpret this article's core themes. Players shoul
         GameAIService.generateGame(gameRequest, 0, userPreferences)
       )
 
-      console.log('AI generation successful:', { title: aiGameData.title, genre: aiGameData.genre })
+      logger.info('AI generation successful:', { title: aiGameData.title, genre: aiGameData.genre })
 
       gameData = {
         ...aiGameData,
@@ -483,7 +451,7 @@ Your game MUST authentically interpret this article's core themes. Players shoul
       ...ownership,
     }
 
-    console.log('About to save game to database:', {
+    logger.info('About to save game to database:', {
       title: enhancedGameData.title,
       hasUserId: !!user?.id,
       hasMiniAppData: !!miniAppData,
@@ -494,7 +462,7 @@ Your game MUST authentically interpret this article's core themes. Players shoul
       savedGame = await GameDatabaseService.createGame(enhancedGameData, user?.id, miniAppData, validatedData.assetIds)
     } catch (dbError) {
       // Fallback: preserve core game generation even if optional article metadata is malformed
-      console.warn('Primary game save failed, retrying without optional article metadata:', {
+      logger.warn('Primary game save failed, retrying without optional article metadata:', {
         message: dbError instanceof Error ? dbError.message : 'Unknown error',
       })
       try {
@@ -514,7 +482,7 @@ Your game MUST authentically interpret this article's core themes. Players shoul
         throw new Error(`DB_SAVE_FAILED: ${fallbackMessage}`)
       }
     }
-    console.log('Game saved successfully:', { id: savedGame.id, slug: savedGame.slug })
+    logger.info('Game saved successfully:', { id: savedGame.id, slug: savedGame.slug })
 
     // Generate cover image eagerly (non-blocking — saves to DB when ready)
     const coverImagePromise = savedGame.mode !== 'wordle'
@@ -525,7 +493,7 @@ Your game MUST authentically interpret this article's core themes. Players shoul
           }
           return null
         }).catch((err) => {
-          console.error('Cover image generation failed:', err)
+          logger.error('Cover image generation failed:', err)
           return null
         })
       : Promise.resolve(null)
@@ -546,37 +514,27 @@ Your game MUST authentically interpret this article's core themes. Players shoul
 
     const coverImageUrl = await coverImagePromise
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        ...gameData,
-        id: savedGame.id,
-        slug: savedGame.slug,
-        createdAt: savedGame.createdAt,
-        authorParagraphUsername: savedGame.authorParagraphUsername,
-        authorWallet: savedGame.authorWallet,
-        creatorWallet: savedGame.creatorWallet,
-        ownerWallet: savedGame.ownerWallet,
-        ownershipSource: savedGame.ownershipSource,
-        paymentId: savedGame.paymentId,
-        writerCoinId: savedGame.writerCoinId,
-        imageUrl: coverImageUrl,
-      },
+    return ok({
+      ...gameData,
+      id: savedGame.id,
+      slug: savedGame.slug,
+      createdAt: savedGame.createdAt,
+      authorParagraphUsername: savedGame.authorParagraphUsername,
+      authorWallet: savedGame.authorWallet,
+      creatorWallet: savedGame.creatorWallet,
+      ownerWallet: savedGame.ownerWallet,
+      ownershipSource: savedGame.ownershipSource,
+      paymentId: savedGame.paymentId,
+      writerCoinId: savedGame.writerCoinId,
+      imageUrl: coverImageUrl,
     })
 
   } catch (error) {
-    console.error('Game generation error:', error)
+    logger.error('Game generation error:', error)
     reportServerError(error, { route: '/api/games/generate' })
 
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid request data',
-          details: error.errors
-        },
-        { status: 400 }
-      )
+      return fail('Invalid request data', 400, { details: error.errors.map((e) => `${e.path.join('.')}: ${e.message}`) })
     }
 
     const message = error instanceof Error ? error.message : 'Unknown error'
@@ -591,14 +549,7 @@ Your game MUST authentically interpret this article's core themes. Players shoul
           ? 'DB_SAVE_FAILED'
           : 'GAME_GENERATION_FAILED'
 
-    return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to generate game. Please try again.',
-        code: errorCode,
-      },
-      { status: 500 }
-    )
+    return fail(error instanceof Error ? error.message : 'Failed to generate game. Please try again.', 500, { code: errorCode })
   }
 }
 

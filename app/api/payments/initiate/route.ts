@@ -3,6 +3,7 @@ import { getWriterCoinById } from '@/lib/writer-coins'
 import { fetchCoinConfigOnChain } from '@/lib/contracts'
 import { PaymentCostService } from '@/domains/payments/services/payment-cost.service'
 import { fail } from '@/lib/api-response'
+import { logger } from '@/lib/config'
 import type { PaymentInitiateRequest, PaymentInfo } from '@/domains/payments/types'
 import { z } from 'zod'
 
@@ -44,7 +45,7 @@ export async function POST(request: NextRequest) {
         return fail(`${writerCoin.symbol} is not whitelisted by the Base payment contract yet. Use MUSD on Mezo for this article.`)
       }
     } catch (error) {
-      console.warn('[Payment Initiate] Skipping on-chain whitelist check:', {
+      logger.warn('[Payment Initiate] Skipping on-chain whitelist check:', {
         writerCoinId: writerCoin.id,
         message: error instanceof Error ? error.message : 'Unknown error',
       })
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(paymentInfo)
   } catch (error) {
-    console.error('[Payment Initiate] Error:', error)
+    logger.error('[Payment Initiate] Error:', error)
 
     if (error instanceof z.ZodError) {
       return fail('Invalid request data', 400, { details: error.errors.map((e) => `${e.path.join('.')}: ${e.message}`) })

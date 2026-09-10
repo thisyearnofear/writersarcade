@@ -62,7 +62,7 @@ function GameTile({
         className={`group relative block ${tileSize(density)} overflow-hidden rounded-sm border border-white/15 bg-zinc-950 shadow-lg transition-transform hover:-translate-y-1 hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white`}
       >
         {tile.imageUrl ? (
-          <img src={tile.imageUrl} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          <img src={tile.imageUrl} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
         ) : (
           <div className={`flex h-full w-full items-end bg-gradient-to-br ${wash} p-2`}>
             <span className="font-serif text-[11px] leading-4 text-white/80 line-clamp-3">{tile.title}</span>

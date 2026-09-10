@@ -1,6 +1,7 @@
 import type { PaymentStrategy, ExecutePaymentParams, PaymentResult } from './payment-strategy'
 import { getPaymentTokenConfig } from '@/lib/writer-coins'
 import { MEZO_TESTNET_CHAIN_ID } from '@/lib/wallet/chains'
+import { logger } from '@/lib/config'
 
 const ERC20_APPROVE_ABI = [{
   name: 'approve',
@@ -103,7 +104,7 @@ export class MUSDStrategy implements PaymentStrategy {
       account: sender,
       chain: null,
     })
-    console.log('[MUSDStrategy] Approval tx:', approvalTx)
+    logger.info('[MUSDStrategy] Approval tx:', { approvalTx })
 
     // 2. Execute splitter call
     // For both generate-game and mint-nft, use payAndMintGame since the
@@ -129,7 +130,7 @@ export class MUSDStrategy implements PaymentStrategy {
       account: sender,
       chain: null,
     })
-    console.log(`[MUSDStrategy] payAndMintGame (${action}) tx:`, txHash)
+    logger.info(`[MUSDStrategy] payAndMintGame (${action}) tx:`, { txHash })
 
     // Verify via backend (with retry — Mezo blocks may not be indexed immediately)
     step('Verifying on-chain…')
@@ -161,7 +162,7 @@ export class MUSDStrategy implements PaymentStrategy {
         const isReceiptError = (errorData.error || '').toLowerCase().includes('receipt')
           || (errorData.error || '').toLowerCase().includes('could not be found')
         if (isReceiptError) {
-          console.log(`[MUSDStrategy] Receipt not found yet, retrying (${attempt}/${MAX_VERIFY_ATTEMPTS})…`)
+          logger.info(`[MUSDStrategy] Receipt not found yet, retrying (${attempt}/${MAX_VERIFY_ATTEMPTS})…`)
           step(`Waiting for confirmation (${attempt}/${MAX_VERIFY_ATTEMPTS})…`)
           continue
         }

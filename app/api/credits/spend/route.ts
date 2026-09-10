@@ -5,6 +5,7 @@ import { CREDITS_CONFIG } from '@/lib/writer-coins'
 import { getActor } from '@/services/auth'
 import { z } from 'zod'
 import { ok, fail } from '@/lib/api-response'
+import { logger } from '@/lib/config'
 
 const spendSchema = z.object({
   action: z.enum(['generate-game', 'mint-nft', 'play-wordle', 'video-upsell', 'video-montage', 'agent-panel']),
@@ -109,7 +110,7 @@ export async function POST(request: NextRequest) {
       message: `Paid ${cost} credits for ${action}`,
     })
   } catch (error) {
-    console.error('[Credits Spend] Error:', error)
+    logger.error('[Credits Spend] Error:', error)
     if (error instanceof z.ZodError) {
       return fail('Invalid request', 400, {
         details: error.errors.map((e) => `${e.path.join('.')}: ${e.message}`),

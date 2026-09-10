@@ -14,6 +14,7 @@ interface GenerateStepProps {
   genre: GameGenre
   url: string
   isDailyFlow?: boolean
+  generationCost?: number
 }
 
 /**
@@ -33,6 +34,7 @@ export function GenerateStep({
   genre,
   url,
   isDailyFlow = false,
+  generationCost = 0,
 }: GenerateStepProps) {
   return (
     <motion.div whileTap={{ scale: 0.98 }}>
@@ -82,6 +84,11 @@ export function GenerateStep({
           </>
         )}
       </Button>
+      <p className="mt-2 text-xs text-center text-muted-foreground">
+        {generationCost > 0
+          ? `Story generation costs ${generationCost} credits (~$${(generationCost * 0.1).toFixed(2)}).`
+          : 'Free to generate.'}
+      </p>
     </motion.div>
   )
 }

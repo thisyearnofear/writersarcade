@@ -9,7 +9,7 @@ import type {
 } from '../types'
 import type { UserAIPreferences } from '@/lib/user-ai-preferences.service'
 import { getModel, hasGeminiConfiguration, hasVeniceConfiguration } from '@/lib/ai-model-compatibility'
-import { isFeatureEnabled } from '@/lib/config'
+import { isFeatureEnabled, logger } from '@/lib/config'
 import { StoryPlannerService } from './story-planner.service'
 import type { StoryPlan } from './story-planner.service'
 
@@ -99,7 +99,7 @@ export class GameAIService {
 
     const prompt = this.buildGenerationPrompt(promptText, request.customization)
     
-    console.log('GameAIService.generateGame called:', {
+    logger.info('GameAIService.generateGame called:', {
       retryCount,
       modelName: request.model,
       hasCustomization: !!request.customization,
@@ -108,13 +108,13 @@ export class GameAIService {
 
     try {
       const model = getModel(request.model || '', userPreferences)
-      console.log('Calling generateObject with model...')
+      logger.info('Calling generateObject with model...')
       const { object: game } = await generateObject({
         model,
         schema: gameGenerationSchema,
         prompt,
       })
-      console.log('generateObject returned:', { title: game.title, genre: game.genre })
+      logger.info('generateObject returned:', { title: game.title, genre: game.genre })
 
       // Validate customization constraints
       if (request.customization?.genre) {
@@ -123,7 +123,7 @@ export class GameAIService {
 
         // Check if generated genre roughly matches requested genre
         if (!generatedGenre.includes(requestedGenre) && !requestedGenre.includes(generatedGenre)) {
-          console.warn(
+          logger.warn(
             `Genre mismatch: requested "${requestedGenre}", got "${generatedGenre}". Retrying with stricter prompt.`
           )
 
@@ -166,18 +166,18 @@ export class GameAIService {
           )
           response.agentPlan = plan
         } catch (planError) {
-          console.error('Story plan generation failed (non-blocking):', planError)
+          logger.error('Story plan generation failed (non-blocking):', planError)
         }
       }
 
       return response
     } catch (error) {
-      console.error('Game generation error:', error)
+      logger.error('Game generation error:', error)
       const errorMessage = error instanceof Error ? error.message : 'Unknown AI generation error'
 
       // If this is a validation/schema error and we have retries left, retry
       if (retryCount < maxRetries && error instanceof Error && error.message.includes('schema')) {
-        console.warn(`Schema validation failed. Retrying (${retryCount + 1}/${maxRetries})`)
+        logger.warn(`Schema validation failed. Retrying (${retryCount + 1}/${maxRetries})`)
 
         // Add stricter instructions
         const stricterRequest = {
@@ -193,7 +193,7 @@ export class GameAIService {
         request.model?.startsWith('venice') &&
         hasGeminiConfiguration(userPreferences)
       ) {
-        console.warn(`Venice failed. Retrying with Gemini fallback (${retryCount + 1}/${maxRetries})`)
+        logger.warn(`Venice failed. Retrying with Gemini fallback (${retryCount + 1}/${maxRetries})`)
         return this.generateGame({ ...request, model: 'gemini-3.1-flash-preview' }, retryCount + 1, {
           geminiEnabled: true,
           googleApiKey: userPreferences?.googleApiKey,
@@ -208,7 +208,7 @@ export class GameAIService {
         request.model?.startsWith('gemini') &&
         !request.model?.startsWith('venice')
       ) {
-        console.warn(`Gemini failed. Retrying with OpenAI fallback (${retryCount + 1}/${maxRetries})`)
+        logger.warn(`Gemini failed. Retrying with OpenAI fallback (${retryCount + 1}/${maxRetries})`)
         return this.generateGame({ ...request, model: 'gpt-4o-mini' }, retryCount + 1, {
           geminiEnabled: userPreferences?.geminiEnabled ?? false,
           googleApiKey: userPreferences?.googleApiKey,
@@ -224,7 +224,7 @@ export class GameAIService {
         hasVeniceConfiguration() &&
         !request.model?.startsWith('venice')
       ) {
-        console.warn(`Gemini failed/refused. Retrying with Venice fallback (${retryCount + 1}/${maxRetries})`)
+        logger.warn(`Gemini failed/refused. Retrying with Venice fallback (${retryCount + 1}/${maxRetries})`)
         return this.generateGame({ ...request, model: 'llama-3.3-70b' }, retryCount + 1, {
           ...userPreferences,
           preferGemini: false,
@@ -239,7 +239,7 @@ export class GameAIService {
         !request.model?.startsWith('llama') &&
         this.isLikelyProviderFailure(error.message)
       ) {
-        console.warn(`Provider request failed. Retrying with Venice (${retryCount + 1}/${maxRetries})`)
+        logger.warn(`Provider request failed. Retrying with Venice (${retryCount + 1}/${maxRetries})`)
         return this.generateGame({ ...request, model: 'llama-3.3-70b' }, retryCount + 1, userPreferences)
       }
 
@@ -297,11 +297,11 @@ export class GameAIService {
         visualGuidelines: assets.visualGuidelines!,
       } as AssetGenerationResponse
     } catch (error) {
-      console.error('Asset generation error:', error)
+      logger.error('Asset generation error:', error)
 
       // If this is a validation error and we have retries left, retry with stricter prompt
       if (retryCount < maxRetries && error instanceof Error) {
-        console.warn(`Asset generation validation failed. Retrying (${retryCount + 1}/${maxRetries})`)
+        logger.warn(`Asset generation validation failed. Retrying (${retryCount + 1}/${maxRetries})`)
 
         // Add stricter instructions
         const stricterRequest = {
@@ -366,7 +366,7 @@ export class GameAIService {
       }
 
     } catch (error) {
-      console.error('Game start error:', error)
+      logger.error('Game start error:', error)
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       // Yield error event so client can display it
       yield {
@@ -441,7 +441,7 @@ export class GameAIService {
       
       if (trimmedContent !== content) {
         const wordCount = trimmedContent.split(/\s+/).filter(w => w.length > 0).length
-        console.log(`[Panel ${currentPanel}/${maxPanels}] Word count enforced: ${wordCount} words`)
+        logger.info(`[Panel ${currentPanel}/${maxPanels}] Word count enforced: ${wordCount} words`)
       }
 
       // Parse options from response
@@ -459,7 +459,7 @@ export class GameAIService {
       }
 
     } catch (error) {
-      console.error('Game chat error:', error)
+      logger.error('Game chat error:', error)
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       yield {
         type: 'error' as const,
@@ -913,7 +913,7 @@ Respond in JSON:
         imagePrompt: result.imagePrompt,
       }
     } catch (error) {
-      console.error('Secret panel generation failed:', error)
+      logger.error('Secret panel generation failed:', error)
       // Graceful fallback — game still works without the secret panel
       return {
         narrative: `The story continues beyond what you've seen... Some truths reveal themselves only to those who truly own the experience.`,
@@ -1026,7 +1026,7 @@ ${panelIndex + 1 === maxPanels
       }
       yield { type: 'end' }
     } catch (error) {
-      console.error(`[Modifier Panel ${panelIndex + 1}] Generation failed:`, error)
+      logger.error(`[Modifier Panel ${panelIndex + 1}] Generation failed:`, error)
       yield {
         type: 'content',
         content: 'The story takes an unexpected turn...',

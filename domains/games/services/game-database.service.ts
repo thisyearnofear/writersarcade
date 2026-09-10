@@ -3,6 +3,7 @@ import { createSlug } from '@/lib/utils'
 import type { Game, GameGenerationResponse, GameMode, SavedGamePanel } from '../types'
 import type { StoryPlan } from './story-planner.service'
 import { Prisma, Game as PrismaGameModel } from '@prisma/client'
+import { logger } from '@/lib/config'
 
 type GameChatSnapshot = {
   id: string
@@ -118,7 +119,7 @@ export class GameDatabaseService {
 
       const game = await prisma.game.create({ data: gameCreateData })
 
-      console.log('Game created successfully:', { id: game.id, slug: game.slug })
+      logger.info('Game created successfully:', { id: game.id, slug: game.slug })
       return this.mapPrismaGameToGame(game)
 
     } catch (error) {
@@ -138,8 +139,8 @@ export class GameDatabaseService {
         }
       }
 
-      console.error('Failed to create game:', error)
-      console.error('Game creation error details:', {
+      logger.error('Failed to create game:', error)
+      logger.error('Game creation error details:', {
         message: error instanceof Error ? error.message : 'Unknown error',
         code: (error as { code?: string }).code,
         meta: (error as { meta?: Record<string, unknown> }).meta,
@@ -221,7 +222,7 @@ export class GameDatabaseService {
       return game ? this.mapPrismaGameToGame(game) : null
 
     } catch (error) {
-      console.error('Failed to get game by slug:', error)
+      logger.error('Failed to get game by slug:', error)
       return null
     }
   }
@@ -262,7 +263,7 @@ export class GameDatabaseService {
         .filter((g): g is typeof games[0] => Boolean(g))
         .map(this.mapPrismaGameToGame.bind(this))
     } catch (error) {
-      console.error('Failed to get games by slugs:', error)
+      logger.error('Failed to get games by slugs:', error)
       return []
     }
   }
@@ -386,7 +387,7 @@ export class GameDatabaseService {
       }
 
     } catch (error) {
-      console.error('Failed to get games:', error)
+      logger.error('Failed to get games:', error)
       // Return empty result instead of throwing on database errors
       return {
         games: [],
@@ -428,7 +429,7 @@ export class GameDatabaseService {
       return this.mapPrismaGameToGame(game)
 
     } catch (error) {
-      console.error('Failed to update game:', error)
+      logger.error('Failed to update game:', error)
       return null
     }
   }
@@ -446,7 +447,7 @@ export class GameDatabaseService {
       return this.mapPrismaGameToGame(game)
 
     } catch (error) {
-      console.error('Failed to update game image:', error)
+      logger.error('Failed to update game image:', error)
       return null
     }
   }
@@ -466,7 +467,7 @@ export class GameDatabaseService {
       return true
 
     } catch (error) {
-      console.error('Failed to delete game:', error)
+      logger.error('Failed to delete game:', error)
       return false
     }
   }
@@ -530,7 +531,7 @@ export class GameDatabaseService {
       }
 
     } catch (error) {
-      console.error('Failed to get game stats:', error)
+      logger.error('Failed to get game stats:', error)
       return {
         totalGames: 0,
         publicGames: 0,
@@ -580,7 +581,7 @@ export class GameDatabaseService {
 
       return trends
     } catch (error) {
-      console.error('Failed to get game play trends:', error)
+      logger.error('Failed to get game play trends:', error)
       return []
     }
   }
@@ -771,7 +772,7 @@ export class GameDatabaseService {
       })
       return asset
     } catch (error) {
-      console.error('Failed to save asset pack:', error)
+      logger.error('Failed to save asset pack:', error)
       throw new Error('Failed to save asset pack')
     }
   }
@@ -820,7 +821,7 @@ export class GameDatabaseService {
         hasMore: offset + limit < total
       }
     } catch (error) {
-      console.error('Failed to get asset packs:', error)
+      logger.error('Failed to get asset packs:', error)
       return { packs: [], total: 0, hasMore: false }
     }
   }
@@ -838,7 +839,7 @@ export class GameDatabaseService {
         content: JSON.parse(asset.content)
       }
     } catch (error) {
-      console.error('Failed to get asset pack:', error)
+      logger.error('Failed to get asset pack:', error)
       return null
     }
   }
@@ -890,7 +891,7 @@ export class GameDatabaseService {
         hasMore: offset + limit < total
       }
     } catch (error) {
-      console.error('Failed to get marketplace assets:', error)
+      logger.error('Failed to get marketplace assets:', error)
       return { assets: [], total: 0, hasMore: false }
     }
   }
@@ -946,7 +947,7 @@ export class GameDatabaseService {
 
       return savedIds
     } catch (error) {
-      console.error('Failed to extract game assets:', error)
+      logger.error('Failed to extract game assets:', error)
       return []
     }
   }

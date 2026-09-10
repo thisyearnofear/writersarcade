@@ -5,6 +5,7 @@ import {
   verifyWebhookSignature,
 } from '@/lib/integrations/etherfuse'
 import { reportServerError } from '@/services/error-reporting'
+import { logger } from '@/lib/config'
 
 export async function POST(request: NextRequest) {
   try {
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
         }),
       ])
 
-      console.log(
+      logger.info(
         `[Ramp Webhook] Credited ${transaction.creditAmount} to user ${transaction.userId}`
       )
     } else if (payload.event === 'order.failed') {
@@ -64,14 +65,14 @@ export async function POST(request: NextRequest) {
         data: { status: 'failed' },
       })
 
-      console.warn(
+      logger.warn(
         `[Ramp Webhook] Order ${payload.orderId} failed`
       )
     }
 
     return NextResponse.json({ received: true })
   } catch (error) {
-    console.error('[Ramp Webhook] Error:', error)
+    logger.error('[Ramp Webhook] Error:', error)
     reportServerError(error, { route: '/api/ramp/webhook' })
     return NextResponse.json(
       { error: 'Webhook processing failed' },

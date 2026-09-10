@@ -15,6 +15,7 @@ import { Footer } from '@/components/layout/footer'
 import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
 import { getActor } from '@/services/auth'
 import { prisma } from '@/lib/prisma'
+import { logger } from '@/lib/config'
 
 // Play mode includes viewer-specific ownership and insights capabilities, so
 // avoid caching one visitor's owner state for other visitors. Read-only
@@ -82,9 +83,9 @@ export default async function GamePage({ params, searchParams }: GamePageProps) 
   if (game.mode !== 'wordle' && !game.imageUrl) {
     ImageGenerationService.generateGameImage(game).then(result => {
       if (result.imageUrl) {
-        GameDatabaseService.updateGameImage(game.id, result.imageUrl).catch(console.error)
+        GameDatabaseService.updateGameImage(game.id, result.imageUrl).catch((err) => logger.error('Failed to update game image', err, { gameId: game.id }))
       }
-    }).catch(console.error)
+    }).catch((err) => logger.error('Cover image generation failed', err, { gameSlug: game.slug }))
   }
 
   if (!isPlayMode && !isUnlockShare) {

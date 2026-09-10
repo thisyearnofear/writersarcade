@@ -53,7 +53,7 @@ export function GameCard({ slug, title, description, genre, imageUrl, primaryCol
     >
       <div className="relative aspect-video overflow-hidden">
         {imageUrl ? (
-          <img src={imageUrl} alt={title} className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-105" />
+          <img src={imageUrl} alt={title} loading="lazy" decoding="async" className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-105" />
         ) : (
           <div className={`w-full h-full bg-gradient-to-br ${genreStyle.gradient} flex flex-col items-center justify-center gap-2`}>
             <GenreIcon className="w-10 h-10 text-white/30" />
