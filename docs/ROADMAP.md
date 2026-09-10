@@ -208,11 +208,31 @@ The first-run creation flow follows the [Creation UX Contract](./CREATION_UX.md)
 - [ ] Test demand for alternate endings before building a full ending editor
 - [ ] Promote Workshop/Creator Studio as refinement, not a prerequisite for first play
 
+## Phase 22: Generation UX & Payment Reliability (September 2026)
+
+### Delivered: Generation Timeout & Cancellation
+- [x] `GameGenerationOverlay` shows a slow warning at 45s and a stall warning at 90s with an explicit Cancel action
+- [x] Generation fetch is wired to an `AbortController`; user cancellation stops the active HTTP request
+- [x] `fetchWithTimeout` distinguishes timeout aborts (retryable) from user cancel aborts
+- [x] `services/error-handler.ts` classifies `AbortError` so deliberate cancellation does not surface as a generic failure
+
+### Delivered: Money-Moving API Response Standardization
+- [x] `POST /api/credits/spend` returns `ok()` / `fail()` from `lib/api-response.ts` with stable codes (`SPEND_CONFLICT`, etc.)
+- [x] `POST /api/payments/verify` returns structured errors for unauthorized, wallet mismatch, hash conflicts, missing payments, and validation failures
+- [x] Credit spend uses an atomic Prisma update to prevent concurrent double-spend on the same balance
+
+### Delivered: Cross-Instance Duplicate Generation Guard
+- [x] Added `GenerationLock` Prisma model with `key (unique)`, `status`, `resultData`, and `expiresAt`
+- [x] Added `lib/generation-lock.ts` `withSharedGenerationLock()` for Postgres-backed shared locking across Vercel instances
+- [x] Updated `lib/ai-cache.ts` so `buildGenerationCacheKey()` includes `actorId` / `paymentId` and `deduplicateGeneration()` uses the shared lock
+- [x] Added `@@unique([paymentId])` to `Game` and updated `GameDatabaseService.createGame()` to return the existing game on a payment-id unique violation
+- [x] Added `tests/generation-lock.test.ts` covering owner, waiter, stale-lock takeover, and failure paths
+
 ## Platform Maturity
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| Game Generation | ✅ Production | Multi-model AI pipeline |
+| Game Generation | ✅ Production | Multi-model AI pipeline; cross-instance `GenerationLock` dedup; `paymentId` unique per game |
 | Asset Workshop | ✅ Production | Full WYSIWYG editor |
 | NFT Minting | ✅ Production | Base mainnet |
 | Story Protocol IP | ✅ Testnet | Aeneid (not yet on Base mainnet) |
@@ -220,7 +240,7 @@ The first-run creation flow follows the [Creation UX Contract](./CREATION_UX.md)
 | Story CDR | ✅ Hackathon-ready | Vaulted Wordle answers + token-gated secret panels |
 | Hypercerts | ✅ Production | Impact certificates |
 | Image Generation | ✅ Production | Multi-provider fallback |
-| Payments | ✅ Production | 5 writer coins |
+| Payments | ✅ Production | 5 writer coins; standardized `/api/credits/spend` and `/api/payments/verify` responses |
 | Marketplace | ✅ Production | Browse + compose |
 | Panel Narration | ✅ Shipped | ElevenLabs TTS with auto-play (`useNarration`) |
 | Panel Animation (I2V) | ✅ Shipped | Luma/Fal/Replicate registry (`useVideoMotion`), 50-credit upsell |
@@ -265,10 +285,12 @@ The first-run creation flow follows the [Creation UX Contract](./CREATION_UX.md)
 | Risk | Mitigation |
 |------|------------|
 | AI generation failures | Retry logic, multiple model fallbacks |
+| Duplicate paid generations | `GenerationLock` (Postgres) + `@@unique([paymentId])` on `Game` |
 | Story Protocol testnet issues | Mock mode for demos, graceful degradation |
 | Image generation slow | Parallel generation, optimistic UI |
 | Network dependency | Multi-provider fallback chain |
 | User confusion | Progress indicators, tooltips, empty states |
+| Inconsistent API errors | `lib/api-response.ts` standard; money-moving routes migrated |
 
 ## Collaboration Model
 

@@ -79,7 +79,7 @@ writarcade/
 
 ### API Response Standardization
 
-All API routes should use the helpers from `lib/api-response.ts`:
+API routes use `lib/api-response.ts` helpers (`ok`, `fail`, `notFound`, `unauthorized`, `paginated`, `forbidden`, `serverError`) for consistent JSON contracts. Money-moving routes (`/api/credits/spend`, `/api/payments/verify`) have been migrated to these helpers and return stable machine-readable `code` values (e.g. `SPEND_CONFLICT`, `PAYMENT_HASH_CONFLICT`). Remaining routes are being migrated incrementally.
 
 ```ts
 import { ok, fail, notFound, unauthorized, paginated } from '@/lib/api-response'
@@ -87,8 +87,8 @@ import { ok, fail, notFound, unauthorized, paginated } from '@/lib/api-response'
 // Success
 return ok({ gameId: '...' })
 
-// Error with status
-return fail('Game not found', 404)
+// Error with status and machine-readable code
+return fail('Insufficient credits', 402, { code: 'INSUFFICIENT_CREDITS' })
 
 // Paginated list
 return paginated(items, total, { limit, offset })
@@ -96,7 +96,7 @@ return paginated(items, total, { limit, offset })
 
 ### Request Deduplication
 
-`lib/request-dedup.ts` prevents concurrent duplicate API calls:
+`lib/request-dedup.ts` provides in-process promise sharing for single-instance routes:
 
 ```ts
 const data = await deduplicate('games:featured', () =>
@@ -104,12 +104,25 @@ const data = await deduplicate('games:featured', () =>
 )
 ```
 
+For serverless environments where multiple Vercel instances may process the same paid generation concurrently, `lib/generation-lock.ts` adds a **Postgres-backed shared lock** (`GenerationLock`):
+
+```ts
+import { withSharedGenerationLock } from '@/lib/generation-lock'
+
+const gameData = await withSharedGenerationLock(lockKey, () => GameAIService.generateGame(...))
+```
+
+- Deterministic lock key per request (mode, URL, genre, difficulty, actor, payment id)
+- Waiters poll until the owner completes or the lease expires
+- Completed results are retained for 24h, so duplicate requests return the cached result without re-running AI
+- Expired or failed locks can be safely taken over by a new request
+
 ### AI Generation Caching + Dedup
 
 `lib/ai-cache.ts` provides:
-- `buildGenerationCacheKey()` — deterministic key from URL + genre + difficulty + mode
-- `getCachedGeneration()` / `setCachedGeneration()` — 24h TTL cache via shared `lib/cache.ts`
-- `deduplicateGeneration()` — wraps in-flight promise sharing so concurrent identical AI calls share one request
+- `buildGenerationCacheKey()` — deterministic key from URL + genre + difficulty + mode, scoped to `actorId` or a specific `paymentId` so paid generations cannot collide or duplicate
+- `getCachedGeneration()` / `setCachedGeneration()` — 24h TTL in-process cache via shared `lib/cache.ts`
+- `deduplicateGeneration()` — cross-instance deduplication using `withSharedGenerationLock`, so concurrent identical requests across Vercel instances share one AI generation
 
 ### Latency Monitoring
 
@@ -192,11 +205,19 @@ User
 
 Game
 ├─ id, userId, articleUrl, title, genre, difficulty
+├─ paymentId (nullable, unique) — one paid game per verified payment
 ├─ gameState (JSON), nftId (optional)
 ├─ secretPanelCiphertext (pre-encryption JSON; cleared after on-chain store)
 ├─ promptVaultUuid ("inco:<tokenId>" after mint)
 ├─ hypercertUri, hypercertCid
 └─ createdAt
+
+GenerationLock
+├─ key (unique) — deterministic generation request key
+├─ status: pending | completed | failed
+├─ resultData (JSON) — cached generation result for duplicate/waiting requests
+├─ expiresAt — lease expiration; can be taken over when stale
+└─ createdAt, updatedAt
 
 DailyChallenge
 ├─ id, day (unique), sourceType ("dual" | "basepaint" | …)

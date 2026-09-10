@@ -160,8 +160,9 @@ services/               # Domain-adjacent services (from lib/ split)
 lib/                    # Cross-cutting infrastructure
 ├── wallet/             # Runtime wallet abstraction
 ├── api-response.ts     # Standardized API responses
-├── request-dedup.ts    # In-flight request deduplication
-├── ai-cache.ts         # AI generation caching
+├── request-dedup.ts    # In-process in-flight request deduplication
+├── generation-lock.ts  # Cross-instance Postgres-backed generation lock
+├── ai-cache.ts         # AI generation caching + cross-instance dedup
 ├── latency-monitor.ts  # P95 latency monitoring
 ├── story-protocol.*    # Story Protocol SDK
 ├── inco.ts             # Inco confidential compute (secret panels)
