@@ -17,6 +17,14 @@ const nextConfig = {
   // non-linux variants, the Prisma schema/migration engine, CLI engines).
   // Prisma 6.x runs engine-free (queryCompiler + Neon driver adapter), so the
   // ~19MB native libquery_engine binary is dead weight in every function.
+  // The client engine needs query_compiler_bg.wasm (~2MB) which it loads via
+  // dynamic fs paths the nft tracer can't follow — include it explicitly.
+  outputFileTracingIncludes: {
+    '*': [
+      'node_modules/.pnpm/@prisma+client*/node_modules/.prisma/client/query_compiler_bg.*',
+      'node_modules/.prisma/client/query_compiler_bg.*',
+    ],
+  },
   outputFileTracingExcludes: {
     '*': [
       'node_modules/.pnpm/@prisma+client*/node_modules/.prisma/client/libquery_engine-*',
