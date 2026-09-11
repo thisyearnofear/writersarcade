@@ -20,6 +20,7 @@ export interface UseVideoStatusResult {
   enabled: boolean
   status: 'idle' | 'pending' | 'completed' | 'failed'
   panels: VideoPanelStatus[]
+  montageVideoUrl: string | null
   isLoading: boolean
   error: string | null
   mutate: () => Promise<void>
@@ -31,6 +32,7 @@ export function useVideoStatus(
 ): UseVideoStatusResult {
   const [status, setStatus] = useState<UseVideoStatusResult['status']>('idle')
   const [panels, setPanels] = useState<VideoPanelStatus[]>([])
+  const [montageVideoUrl, setMontageVideoUrl] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -39,7 +41,7 @@ export function useVideoStatus(
     const response = await fetch(`/api/games/${slug}/video/status`)
     const json = (await response.json()) as {
       success: boolean
-      data?: { status: UseVideoStatusResult['status']; mode?: 'hero' | 'full'; heroPanelId?: string | null; panels: VideoPanelStatus[] }
+      data?: { status: UseVideoStatusResult['status']; mode?: 'hero' | 'full'; heroPanelId?: string | null; montageVideoUrl?: string | null; panels: VideoPanelStatus[] }
       error?: string
     }
 
@@ -49,6 +51,7 @@ export function useVideoStatus(
 
     setStatus(json.data?.status ?? 'idle')
     setPanels(json.data?.panels ?? [])
+    if (json.data?.montageVideoUrl) setMontageVideoUrl(json.data.montageVideoUrl)
   }, [slug])
 
   const mutate = useCallback(async () => {
@@ -78,10 +81,19 @@ export function useVideoStatus(
 
   // Poll only while generation is in flight — once the status reaches a
   // terminal state (idle/completed/failed), further polling is pure waste.
+  // Exception: when every clip just completed, the montage film is assembling
+  // server-side — keep polling briefly (bounded) so the film URL arrives.
+  const montageWaitPolls = useRef(0)
   useEffect(() => {
-    if (!enabled || status !== 'pending') return
+    if (!enabled) return
+    const allClipsReady = panels.length >= 2 && panels.every((p) => p.videoUrl)
+    const awaitingMontage =
+      status === 'completed' && allClipsReady && !montageVideoUrl && montageWaitPolls.current < 8
+    if (status !== 'pending' && !awaitingMontage) return
+    if (status === 'pending') montageWaitPolls.current = 0
 
     intervalRef.current = setInterval(() => {
+      montageWaitPolls.current += 1
       void fetchStatus()
     }, 5000)
 
@@ -91,7 +103,7 @@ export function useVideoStatus(
         intervalRef.current = null
       }
     }
-  }, [enabled, status, fetchStatus])
+  }, [enabled, status, panels, montageVideoUrl, fetchStatus])
 
-  return { enabled, status, panels, isLoading, error, mutate }
+  return { enabled, status, panels, montageVideoUrl, isLoading, error, mutate }
 }

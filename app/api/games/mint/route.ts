@@ -127,13 +127,20 @@ export async function POST(request: NextRequest) {
       description: game.description || `A ${game.genre} game generated from an article`,
       image: game.imageUrl || '',
       external_url: `${process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://writersarcade.vercel.app'}/games/${game.slug}`,
-      animation_url: game.gameMetadataUri || game.artifactManifestUri || undefined,
+      // The montage film is the richest media when it exists — marketplaces
+      // render animation_url as the NFT's playable media.
+      animation_url:
+        (game.montageVideoUrl?.startsWith('http') ? game.montageVideoUrl : undefined) ||
+        game.gameMetadataUri ||
+        game.artifactManifestUri ||
+        undefined,
       attributes: [
         { trait_type: 'genre', value: game.genre },
         { trait_type: 'difficulty', value: game.difficulty },
         { trait_type: 'creator', value: actorWallet },
         { trait_type: 'created_at', value: new Date(game.createdAt).toISOString() },
         ...(game.artifactManifestUri ? [{ trait_type: 'artifact_manifest', value: game.artifactManifestUri }] : []),
+        ...(game.montageVideoUrl?.startsWith('http') ? [{ trait_type: 'film', value: game.montageVideoUrl }] : []),
       ],
     }
     const tokenURI = game.nftMetadataUri || `data:application/json;base64,${Buffer.from(JSON.stringify(metadata)).toString('base64')}`

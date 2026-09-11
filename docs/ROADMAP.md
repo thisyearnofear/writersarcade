@@ -265,6 +265,7 @@ The first-run creation flow follows the [Creation UX Contract](./CREATION_UX.md)
 - **H3-era video tiers** (fal MiniMax H3, faster-than-playback generation):
   - ~~Per-panel "animate this panel" micro-upsell (10 credits, mid-session)~~ — shipped
   - ~~Montage as continuous film — `end_image_url` chaining + VPS ffmpeg concat → `montageVideoUrl`~~ — shipped
+  - ~~Auto-film on run completion (subsidized, `AUTO_FILM_DAILY_CAP`) + "claim your film" mint path (`animation_url`) + honest ending-path rarity on the share card~~ — shipped
   - Directed cut — player-prompted clip over their own panel stills (`reference-to-video`)
   - Animated BasePaint canvas for Daily Challenge
   - See `docs/VIDEO_ARTIFACT_PIPELINE.md` → "H3-era economics"

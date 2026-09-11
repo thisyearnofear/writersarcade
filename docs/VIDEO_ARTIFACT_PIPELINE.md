@@ -31,7 +31,11 @@ tier margins on the non-promo rate, not the launch price.
    generic animation.
 3. **Montage as the mintable film** — `end_image_url` chaining turns the five
    panels into one continuous ~25s recording of *the player's actual choices*;
-   the NFT-grade artifact, not just an upsell.
+   the NFT-grade artifact, not just an upsell. **Shipped, and now subsidized:**
+   completing a run auto-queues the film (`filmAutoQueuedAt`, daily cap via
+   `AUTO_FILM_DAILY_CAP`, default 20; games with paid video activity are
+   skipped). The share artifact is free — monetization sits on claiming it
+   (mint ships the film as `animation_url`).
 4. **Animated Daily Challenge canvas** — animate today's BasePaint canvas once;
    one generation serves all players as the day's visual anchor.
 5. **fal $250k builder credits** — H3 Max Director program; building the

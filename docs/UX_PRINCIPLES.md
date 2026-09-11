@@ -83,3 +83,24 @@ to joy beats a tidy step sequence.
 - Showing payment, IP, or contract details before the user has reached that step.
 - Three equally-weighted CTAs in a row (equal weight = no priority).
 - Long paragraphs in heroes or cards; full articles belong on the source page.
+
+## Behavioral design — honest levers only
+
+We use behavioral economics to make the real product feel as good as it is —
+never to manufacture false urgency. Rules:
+
+1. **Only true claims.** Scarcity, rarity, and social proof must be derived
+   from real data (e.g. ending-path rarity comes from actual choice-path
+   signatures across sessions). No fake countdowns, no "3 left!", no invented
+   demand.
+2. **Gift the artifact, charge for ownership.** The peak-end artifact (the
+   montage film of a run) is produced automatically after a completed run —
+   watching and sharing are free; monetization sits on *claiming* it (mint).
+   Endowment effect applied honestly: the thing already exists.
+3. **Rarity over pressure.** "You're the only player who took this path" beats
+   "buy now." Uniqueness is the shareable claim.
+4. **Completion earns.** A finished run is the unlock condition for the free
+   film — effort → reward, not checkout → reward.
+5. **Show progress, don't nag.** Unfinished runs, streaks, and "your credits
+   can still make one more story" are informational surfaces, not dark
+   patterns.

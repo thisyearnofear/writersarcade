@@ -84,6 +84,7 @@ export function GamePlayInterface({ game, isOwner = false }: GamePlayInterfacePr
 
   // 3. UI Local State
   const [showComicFinale, setShowComicFinale] = useState(false)
+  const [endingStats, setEndingStats] = useState<{ totalRuns: number; samePathRuns: number; uniquePath: boolean } | null>(null)
   const [showPreview, setShowPreview] = useState(false)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -186,14 +187,22 @@ export function GamePlayInterface({ game, isOwner = false }: GamePlayInterfacePr
       epilogueGenerated: !!session.epilogueReflection,
     })
 
-    // Increment play count on the server
+    // Increment play count on the server; the response carries this run's
+    // ending-path rarity (derived from every session's choice signature) for
+    // the share card.
     fetch(`/api/games/${liveGame.slug}/play`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId: session.sessionId }),
-    }).catch(() => {
-      // Non-critical — don't block the user if this fails
     })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => {
+        const stats = json?.data?.endingStats
+        if (stats && typeof stats.totalRuns === 'number') setEndingStats(stats)
+      })
+      .catch(() => {
+        // Non-critical — don't block the user if this fails
+      })
 
     // Track in localStorage for the "Continue playing" homepage section
     trackPlay(liveGame.slug, liveGame.title)
@@ -241,6 +250,7 @@ export function GamePlayInterface({ game, isOwner = false }: GamePlayInterfacePr
           setShowComicFinale={setShowComicFinale}
           isMinting={blockchain.isMinting}
           handleMintComic={blockchain.handleMintComic}
+          endingStats={endingStats}
           onArtifactSaved={(updates) => {
             setLiveGame((current) => ({ ...current, ...updates }))
           }}

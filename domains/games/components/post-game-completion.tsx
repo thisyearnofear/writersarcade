@@ -7,6 +7,7 @@ import { Gamepad2, Sparkles, Trophy, BarChart3, ExternalLink, FileText, Image as
 import { QRCodeSVG } from 'qrcode.react'
 import type { Game } from '../types'
 import type { ChatEntry } from '../hooks/use-game-session'
+import type { ComicBookFinalePanelData } from './comic-book-finale'
 import { ShareDropdown } from '@/components/ui/share-dropdown'
 import { useToast } from '@/components/ui/use-toast'
 import { SecretEpilogueFinaleCta } from '@/components/game/secret-epilogue-finale-cta'
@@ -22,15 +23,18 @@ interface PostGameCompletionProps {
   messages: ChatEntry[]
   userChoices: Array<{ panelIndex: number; choice: string; timestamp: string }>
   showEpilogueCta?: boolean
+  endingStats?: { totalRuns: number; samePathRuns: number; uniquePath: boolean } | null
+  onClaimFilm?: (panelData?: ComicBookFinalePanelData[]) => void | Promise<void>
+  isClaimingFilm?: boolean
 }
 
-export function PostGameCompletion({ game, messages, userChoices, showEpilogueCta = true }: PostGameCompletionProps) {
+export function PostGameCompletion({ game, messages, userChoices, showEpilogueCta = true, endingStats, onClaimFilm, isClaimingFilm }: PostGameCompletionProps) {
   const { toast } = useToast()
   const [playCount, setPlayCount] = useState<number | null>(null)
   const [copiedFormat, setCopiedFormat] = useState<string | null>(null)
   const [showQr, setShowQr] = useState(false)
   const [pdfLoading, setPdfLoading] = useState(false)
-  const { panels: videoPanels } = useVideoStatus(game.slug)
+  const { panels: videoPanels, montageVideoUrl, status: videoStatus } = useVideoStatus(game.slug)
 
   const copyWithFeedback = async (text: string, format: string) => {
     try {
@@ -125,13 +129,31 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
   const endingText = truncatedChoice
     ? `I made a choice that changed "${game.title}": ${truncatedChoice}`
     : `I just finished "${game.title}" on WritersArcade`
+
+  // Honest rarity — only claimed when there's a real base of runs to compare.
+  // Unique path needs ≥3 runs; a percentage claim needs ≥5.
+  const rarityText = useMemo(() => {
+    if (!endingStats) return null
+    const { totalRuns, samePathRuns, uniquePath } = endingStats
+    if (uniquePath && totalRuns >= 3) {
+      return `You're the only player who's taken this exact path — 1 of ${totalRuns} runs.`
+    }
+    if (totalRuns >= 5) {
+      const pct = Math.round((samePathRuns / totalRuns) * 100)
+      if (pct <= 30) return `Only ${pct}% of players found this ending.`
+    }
+    return null
+  }, [endingStats])
+
   const referralText = `Play "${game.title}" and make your own choices — every run can end differently.`
-  const heroVideoUrl = videoPanels.find((panel) => panel.videoUrl)?.videoUrl ?? null
+  const filmUrl = montageVideoUrl ?? (game.montageVideoUrl?.startsWith('http') ? game.montageVideoUrl : null)
+  const filmRendering = !filmUrl && (videoStatus === 'pending' || (videoStatus === 'completed' && videoPanels.length >= 2 && videoPanels.every((p) => p.videoUrl)))
+  const heroVideoUrl = filmUrl ?? videoPanels.find((panel) => panel.videoUrl)?.videoUrl ?? null
 
   const shareData = useMemo(
     () => ({
       title: game.title,
-      text: `${endingText} ${referralText}`,
+      text: `${endingText} ${rarityText ?? referralText}`,
       url: gameUrl,
       genre: game.genre,
       panelCount,
@@ -139,7 +161,7 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
       author: game.authorParagraphUsername || undefined,
       videoUrl: heroVideoUrl,
     }),
-    [game.title, game.genre, game.authorParagraphUsername, endingText, referralText, gameUrl, panelCount, heroVideoUrl]
+    [game.title, game.genre, game.authorParagraphUsername, endingText, rarityText, referralText, gameUrl, panelCount, heroVideoUrl]
   )
 
   return (
@@ -186,6 +208,9 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
             <p className="text-xs text-muted-foreground leading-relaxed">
               {endingText}
             </p>
+            {rarityText && (
+              <p className="mt-2 text-xs font-bold text-amber-300">{rarityText}</p>
+            )}
             <p className="mt-2 text-xs font-medium text-purple-200/80">{referralText}</p>
           </div>
           <ShareDropdown
@@ -197,6 +222,67 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
           />
         </div>
       </motion.div>
+
+      {/* The film: the run's peak-end artifact. Auto-generated after a
+          completed run — free to watch and share; claiming = minting the game
+          (the film ships as the NFT's animation_url). */}
+      {(filmUrl || filmRendering) && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.38, duration: 0.4 }}
+          className="rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 p-5 mb-8"
+        >
+          <div className="flex items-start gap-4">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-sm font-bold text-white mb-1">
+                {filmUrl ? 'Your film is ready' : 'Your film is rendering'}
+              </h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {filmUrl
+                  ? 'Your run as a continuous film — every scene resolves into the next.'
+                  : 'We\'re turning your run into a continuous film — it lands here shortly.'}
+              </p>
+            </div>
+            {filmUrl && (
+              <div className="flex shrink-0 flex-col gap-2">
+                <Link
+                  href={`/games/${game.slug}?watch=1`}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-white px-3 py-2 text-xs font-bold text-black transition-colors hover:bg-white/90"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Watch it
+                </Link>
+                {!game.nftTokenId && onClaimFilm && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void onClaimFilm(
+                        messages
+                          .filter((m) => m.role === 'assistant' && !m.id.startsWith('epilogue'))
+                          .map((m, i) => ({
+                            id: m.id,
+                            narrativeText: m.content,
+                            imageUrl: m.narrativeImage ?? null,
+                            imageModel: m.imageModel ?? 'unknown',
+                            userChoice: userChoices.find((c) => c.panelIndex === i + 1)?.choice,
+                            audioUrl: null,
+                          }))
+                      )
+                    }
+                    disabled={isClaimingFilm}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-cyan-400/40 bg-cyan-500/10 px-3 py-2 text-xs font-bold text-cyan-200 transition-colors hover:bg-cyan-500/20 disabled:opacity-50"
+                  >
+                    {isClaimingFilm ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trophy className="h-3.5 w-3.5" />}
+                    {isClaimingFilm ? 'Claiming…' : 'Claim your film'}
+                  </button>
+                )}
+              </div>
+            )}
+            {filmRendering && <Loader2 className="h-5 w-5 shrink-0 animate-spin text-cyan-300" />}
+          </div>
+        </motion.div>
+      )}
 
       {showEpilogueCta && (
         <SecretEpilogueFinaleCta game={game} nftMinted={Boolean(game.nftTokenId)} className="mb-8" />

@@ -150,6 +150,9 @@ model Game {
   // ownershipSource (how the creator proved ownership) with WHERE the game
   // was generated from, for channel attribution + agent budget caps.
   createdVia String?
+  // Subsidized auto-film: set when the montage pipeline was queued for free
+  // after a completed run. Idempotency marker + daily budget counter.
+  filmAutoQueuedAt DateTime?
 
   // Play tracking — incremented each time a game session completes
   playCount    Int      @default(0)

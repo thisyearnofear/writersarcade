@@ -44,6 +44,7 @@ interface ComicFinaleScreenProps {
   isRegisteringDerivative: boolean
   epilogueReflection?: string | null
   isOwner?: boolean
+  endingStats?: { totalRuns: number; samePathRuns: number; uniquePath: boolean } | null
 }
 
 export function ComicFinaleScreen({
@@ -68,6 +69,7 @@ export function ComicFinaleScreen({
   isRegisteringDerivative,
   epilogueReflection,
   isOwner: isOwnerFromSession = false,
+  endingStats,
 }: ComicFinaleScreenProps) {
   const router = useRouter()
   const { address: userAddress } = useAccount()
@@ -371,6 +373,9 @@ export function ComicFinaleScreen({
           game={game}
           messages={messages}
           userChoices={userChoices}
+          endingStats={endingStats}
+          onClaimFilm={handleMintComic ? (panels) => handleMintComic(panels ?? []) : undefined}
+          isClaimingFilm={isMinting}
         />
       </div>
     </div>

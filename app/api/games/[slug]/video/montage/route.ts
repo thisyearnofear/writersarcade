@@ -4,16 +4,14 @@ import { prisma } from '@/lib/prisma'
 import { getActor } from '@/services/auth'
 import { checkRateLimit } from '@/services/rate-limit'
 import {
-  VideoGenerationService,
   type VideoStyle,
   VIDEO_STYLE_LABELS,
   getVideoDurationSeconds,
 } from '@/domains/games/services/video-generation.service'
 import { CREDITS_CONFIG } from '@/lib/writer-coins'
 import { config } from '@/lib/config'
-import { persistMediaUrl } from '@/domains/story/services/media-upload'
 import { refundVideoCharge } from '@/domains/games/services/video-charge.service'
-import { generateHeroStill } from '@/domains/games/services/video-hero-still.service'
+import { runPanelClipGeneration } from '@/domains/games/services/montage-generation.service'
 
 /**
  * Stage 3 — PAID "Animate the whole comic" montage.
@@ -44,6 +42,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const panels = game.artifactPanels
   if (!panels.length) return NextResponse.json({ error: 'No saved panels to animate. Finish the comic first.' }, { status: 400 })
+
+  // If the assembled film already exists (e.g. an auto-film ran after a
+  // completed run), don't charge — return it. Paid montage only makes sense
+  // before the film exists.
+  if (game.montageVideoUrl?.startsWith('http')) {
+    return NextResponse.json({
+      success: true,
+      data: { gameId: game.id, status: 'completed', mode: 'montage', montageVideoUrl: game.montageVideoUrl, panels },
+    })
+  }
 
   const burst = checkRateLimit(`video:${actor.user.id}`)
   if (!burst.allowed) {
@@ -98,115 +106,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     throw error
   }
 
-  let attempted = 0
-  let anyCompleted = false
-  let anyPending = false
-  const panelResults: Array<{ id: string; panelIndex: number; status: string; videoUrl: string | null }> = []
+  const { attempted, anyCompleted, anyPending, overallStatus, panelResults } =
+    await runPanelClipGeneration({ game, panels, slug, style })
 
-  for (const panel of panels) {
-    // Idempotent: already has a final clip.
-    if (panel.videoUrl) {
-      panelResults.push({ id: panel.id, panelIndex: panel.panelIndex, status: panel.videoStatus ?? 'completed', videoUrl: panel.videoUrl })
-      anyCompleted = true
-      continue
-    }
-    // In-flight on a previous attempt.
-    if (panel.videoStatus === 'pending' && panel.videoJobId) {
-      panelResults.push({ id: panel.id, panelIndex: panel.panelIndex, status: 'pending', videoUrl: null })
-      anyPending = true
-      continue
-    }
-
-    const jobKey = `montage-${randomBytes(6).toString('hex')}`
-    const reserved = await prisma.gameArtifactPanel.updateMany({
-      where: { id: panel.id, videoStatus: { in: ['idle', 'failed'] } },
-      data: { videoStatus: 'pending', videoJobId: jobKey, videoProvider: null, videoModel: null, videoError: null, videoPolledAt: null },
-    })
-    if (reserved.count !== 1) {
-      panelResults.push({ id: panel.id, panelIndex: panel.panelIndex, status: panel.videoStatus ?? 'pending', videoUrl: panel.videoUrl })
-      if (panel.videoStatus === 'pending') anyPending = true
-      continue
-    }
-
-    attempted += 1
-    // Prefer a locked still (Stage 1); fall back to the frozen comic panel.
-    let motionFrameUrl = panel.videoStillUrl ?? panel.imageUrl
-    let panelStillUrl: string | null = panel.videoStillUrl
-    if (!motionFrameUrl && process.env.VIDEO_PRE_PRODUCTION_STILL !== 'false') {
-      try {
-        const still = await generateHeroStill({ narrative: panel.narrativeText ?? '', genre: game.genre, primaryColor: game.primaryColor ?? undefined })
-        if (still.imageUrl) {
-          motionFrameUrl = still.imageUrl
-          panelStillUrl = (await persistMediaUrl(still.imageUrl, `writersarcade-${slug}-panel${panel.panelIndex}.mp4-still.jpg`)) ?? still.imageUrl
-        }
-      } catch (error) {
-        console.warn('[Video Montage] still pre-production failed for a panel; using comic frame', { error: error instanceof Error ? error.message : 'Unknown error' })
-      }
-    }
-    if (!motionFrameUrl) {
-      await prisma.gameArtifactPanel.update({ where: { id: panel.id }, data: { videoStatus: 'failed', videoJobId: null, videoError: 'No source frame to animate.' } })
-      panelResults.push({ id: panel.id, panelIndex: panel.panelIndex, status: 'failed', videoUrl: null })
-      continue
-    }
-
-    let result
-    try {
-      // Continuous-film chaining: this clip resolves into the next panel's
-      // still (H3 end_image_url), so the sequence hands off seamlessly.
-      const nextPanel = panels[panels.indexOf(panel) + 1]
-      const endImageUrl = nextPanel
-        ? (nextPanel.videoStillUrl ?? nextPanel.imageUrl ?? undefined)
-        : undefined
-
-      result = await VideoGenerationService.generate({
-        imageUrl: motionFrameUrl,
-        endImageUrl,
-        narrative: panel.narrativeText ?? '',
-        genre: game.genre,
-        panelIndex: panel.panelIndex,
-        primaryColor: game.primaryColor ?? undefined,
-        style,
-        aspectRatio: '9:16',
-      })
-    } catch (error) {
-      await prisma.gameArtifactPanel.update({
-        where: { id: panel.id },
-        data: { videoStatus: 'failed', videoJobId: null, videoError: error instanceof Error ? error.message : 'Panel animation error' },
-      })
-      panelResults.push({ id: panel.id, panelIndex: panel.panelIndex, status: 'failed', videoUrl: null })
-      continue
-    }
-
-    const persistenceFailed = result.status === 'completed' && !result.videoUrl
-    const effectiveResult = persistenceFailed
-      ? { ...result, status: 'failed' as const, videoUrl: null, error: 'Durable media storage is not configured.' }
-      : result
-    const persistentUrl = effectiveResult.status === 'completed' && effectiveResult.videoUrl
-      ? await persistMediaUrl(effectiveResult.videoUrl, `writersarcade-${slug}-panel${panel.panelIndex}.mp4`)
-      : null
-
-    await prisma.gameArtifactPanel.update({
-      where: { id: panel.id },
-      data: {
-        videoStatus: effectiveResult.status,
-        videoProvider: effectiveResult.provider,
-        videoModel: effectiveResult.model,
-        videoJobId: effectiveResult.providerJobId,
-        videoStyle: style,
-        videoError: effectiveResult.error ?? null,
-        videoUrl: persistentUrl ?? effectiveResult.videoUrl ?? null,
-        videoStillUrl: panelStillUrl,
-        videoPolledAt: null,
-      },
-    })
-
-    if (effectiveResult.status === 'completed') anyCompleted = true
-    else if (effectiveResult.status === 'pending') anyPending = true
-
-    panelResults.push({ id: panel.id, panelIndex: panel.panelIndex, status: effectiveResult.status, videoUrl: persistentUrl ?? effectiveResult.videoUrl ?? null })
-  }
-
-  const overallStatus = anyCompleted ? 'completed' : anyPending ? 'pending' : attempted ? 'failed' : 'idle'
   await prisma.game.update({ where: { id: game.id }, data: { videoUpsellStatus: overallStatus } })
 
   // Refund only on total failure: at least one panel attempted, none completed and none in flight.
