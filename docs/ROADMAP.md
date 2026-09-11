@@ -243,13 +243,19 @@ The first-run creation flow follows the [Creation UX Contract](./CREATION_UX.md)
 | Payments | ✅ Production | 5 writer coins; standardized `/api/credits/spend` and `/api/payments/verify` responses |
 | Marketplace | ✅ Production | Browse + compose |
 | Panel Narration | ✅ Shipped | ElevenLabs TTS with auto-play (`useNarration`) |
-| Panel Animation (I2V) | ✅ Shipped | Luma/Fal/Replicate registry (`useVideoMotion`), 50-credit upsell |
+| Panel Animation (I2V) | ✅ Shipped | Runware/Luma/Fal/Replicate registry (`useVideoMotion`), 50-credit upsell; fal MiniMax H3 family available (see VIDEO_ARTIFACT_PIPELINE.md) |
 
 ## Future Roadmap
 
 ### Phase 13: Media Expansion
 - ~~ElevenLabs audio narration for panels~~ (shipped — `useNarration` + `NarrationControls`)
 - ~~Video export of comics~~ (shipped — per-panel I2V animation via `useVideoMotion`; full-game trailer fusing panels remains)
+- **H3-era video tiers** (fal MiniMax H3, faster-than-playback generation):
+  - Per-panel "animate this panel" micro-upsell (5–10 credits, mid-session)
+  - Directed cut — player-prompted clip over their own panel stills (`reference-to-video`)
+  - Montage as continuous film via `end_image_url` chaining (the mintable playthrough artifact)
+  - Animated BasePaint canvas for Daily Challenge
+  - See `docs/VIDEO_ARTIFACT_PIPELINE.md` → "H3-era economics"
 - Social sharing integrations
 - Animated panel transitions
 

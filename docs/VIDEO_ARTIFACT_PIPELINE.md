@@ -1,5 +1,57 @@
 # Video Artifact Pipeline
 
+## H3-era economics (Sept 2026 reassessment)
+
+The original pipeline was designed around **slow, expensive** video: async jobs,
+30s–3min latency, ~$0.10–0.50 per clip. That assumption no longer holds on fal:
+
+- **MiniMax H3 Max Turbo** — ~2× H3 Max speed, **$0.01/s at 768p** (promo).
+- **MiniMax H3 Max** — $0.05/s @480p, $0.08/s @768p; `text-to-video`,
+  `image-to-video`, `reference-to-video` (up to 12 reference inputs), and
+  `multi-angle` (keyframe camera orbit/elevation control).
+- **MiniMax H3 (base)** — up to $0.16/s @4K; `end_image_url` gives
+  frame-to-frame continuity for chaining panels into one continuous film.
+- All endpoints: 5–15s clips, 24 FPS, **native audio** generation.
+
+Faster-than-playback inference (Sol-H3 stack: 5s of 768p in ~1.7s on 8×B300)
+means video can sit **inside the play session** — a clip is ready before the
+player finishes reading a panel. This opens just-in-time panel animation, not
+just post-hoc artifacts.
+
+**Pricing caveat:** promo rates expire (H3 Max returns to $0.08/s @768p). Size
+tier margins on the non-promo rate, not the launch price.
+
+### Product opportunities this unlocks (video stays an upsell)
+
+1. **Per-panel micro-upsell ("animate this panel")** — I2V on the panel still,
+   ~$0.05–0.40 cost → 5–10 credit tier ($0.50–1.00). Highest-converting surface
+   because it sells mid-session.
+2. **Directed cut** — `reference-to-video` lets the player rewrite a scene
+   prompt over their own panel stills; a personalized hero clip rather than
+   generic animation.
+3. **Montage as the mintable film** — `end_image_url` chaining turns the five
+   panels into one continuous ~25s recording of *the player's actual choices*;
+   the NFT-grade artifact, not just an upsell.
+4. **Animated Daily Challenge canvas** — animate today's BasePaint canvas once;
+   one generation serves all players as the day's visual anchor.
+5. **fal $250k builder credits** — H3 Max Director program; building the
+   comic→film pipeline and tagging @fal earns credits + distribution.
+
+### Architecture direction
+
+fal is a queue API (submit → poll), so the current Next.js status-polling works.
+For montage assembly (ffmpeg concatenation) and any continuous/long-form work,
+the Fastify VPS backend (`apps/writersarcade-api/`) is the right home: a
+persistent worker keeps provider connections warm, holds a real job queue, and
+keeps heavy media deps out of the per-deployment Vercel function bundles
+(function storage is cumulative across all deployments — media offload is the
+biggest lever).
+
+Longer-horizon: faster-than-playback inference makes "choice-as-director"
+feasible — the player picks an option and the *next video segment* generates
+from the last frame, turning the 5-panel comic into a steered continuous film.
+Every step above (panel animation, frame chaining, montage) builds toward it.
+
 ## Product contract
 
 Animation is an optional post-completion upgrade. The launch path creates one **hero ending reveal** from the final comic panel rather than rendering every panel up front.
@@ -49,7 +101,7 @@ The server selects providers in this order unless `VIDEO_PROVIDER` is set:
 
 1. Runware (`RUNWARE_API_KEY`) — preferred unified image-to-video backend.
 2. Luma (`LUMA_API_KEY`).
-3. fal.ai (`FAL_KEY` or `FAL_API_KEY`).
+3. fal.ai (`FAL_KEY` or `FAL_API_KEY`) — hosts the MiniMax H3 family; set `FAL_VIDEO_MODEL` to `minimax/h3-max-turbo/image-to-video` for the current best price/latency point (see "H3-era economics" above).
 4. Replicate (`REPLICATE_API_TOKEN`).
 5. Mock provider in development/no-key environments.
 
