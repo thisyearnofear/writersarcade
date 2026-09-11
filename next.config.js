@@ -13,6 +13,42 @@ const { withSentryConfig } = require('@sentry/nextjs');
 
 const nextConfig = {
   output: 'standalone',
+  // Function-storage diet: Prisma runs through the Neon driver adapter
+  // (lib/database.ts), so the ~17MB native query-engine binary must not be
+  // traced into every DB-touching function. Same for sharp's non-linux
+  // binaries and other dead weight.
+  outputFileTracingExcludes: {
+    '*': [
+      'node_modules/.pnpm/@prisma+client*/node_modules/.prisma/client/libquery_engine-*',
+      'node_modules/.pnpm/@prisma+client*/node_modules/.prisma/client/schema-engine-*',
+      'node_modules/.prisma/client/libquery_engine-*',
+      'node_modules/.prisma/client/schema-engine-*',
+      'node_modules/.pnpm/@prisma+engines*/node_modules/@prisma/engines/**',
+      'node_modules/@img/*darwin*/**',
+      'node_modules/@img/*win32*/**',
+      'node_modules/@img/*musl*/**',
+      'node_modules/@img/*-arm64*/**',
+      'node_modules/@img/*-s390x*/**',
+      'node_modules/@img/*-ppc64*/**',
+      'node_modules/.pnpm/@img+sharp-darwin*/**',
+      'node_modules/.pnpm/@img+sharp-win32*/**',
+      'node_modules/.pnpm/@img+sharp-libvips-darwin*/**',
+      'node_modules/.pnpm/@img+sharp-libvips-win32*/**',
+      'node_modules/.pnpm/@img+sharp-libvips-linuxmusl*/**',
+      'node_modules/.pnpm/@img+sharp-libvips-linux-arm*/**',
+      'node_modules/.pnpm/@img+sharp-linuxmusl*/**',
+      'node_modules/.pnpm/@img+sharp-linux-arm*/**',
+      'apps/writersarcade-api/**',
+      'apps/imessage-agent/**',
+      'docs/**',
+      'prisma/migrations/**',
+      'scripts/**',
+      '**/*.test.ts',
+      '**/*.test.tsx',
+      '**/*.test.js',
+      '**/__tests__/**',
+    ],
+  },
   // ── Mezo Passport compatibility ──────────────────────────────────────────
   // The Mezo Passport ecosystem ships some packages with raw, untranspiled
   // TypeScript (`main: "index.ts"`).  `transpilePackages` tells Next/SWC to

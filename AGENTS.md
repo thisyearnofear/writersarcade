@@ -19,6 +19,19 @@ This is a **monorepo with two deploy surfaces and one database**:
 > Before assuming where a change deploys, confirm which surface owns the code. Do
 > **not** run `deploy:api` for Next.js `app/` changes (that ships the Fastify backend).
 
+## 🗄️ Prisma runs on the Neon driver adapter — no query-engine binary
+
+- `lib/database.ts` builds `PrismaClient` with `@prisma/adapter-neon`
+  (`previewFeatures = ["driverAdapters"]` in `prisma/schema.prisma`). Queries go
+  through the Neon JS driver over WebSocket (`ws`), not the native engine.
+- This exists for **Vercel function storage**: the ~17MB engine binary was
+  being traced into every DB-touching function (~1.4GB/deployment). Engine
+  binaries and non-Linux sharp binaries are excluded via
+  `outputFileTracingExcludes` in `next.config.js` — do not remove those globs.
+- `prisma migrate deploy`/`dev` are unaffected (the CLI uses its own engines).
+- If `DATABASE_URL` is unset the client falls back to the engine — only
+  relevant for exotic build-time envs; every real env is Neon.
+
 ## 🗄️ CREDITS & user data are Postgres-persistent — treat the DB as the source of truth
 
 - `User.credits`, `totalCreditsPurchased`, and every `CreditTransaction` / `Payment`
