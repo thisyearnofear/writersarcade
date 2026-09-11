@@ -31,6 +31,12 @@ export interface VideoGenerationRequest {
   /** Per-request duration override (seconds). Draft/preview clips use a short
    *  3s window so motion can be validated cheaply before the final commit. */
   durationSeconds?: number
+  /**
+   * H3 `end_image_url`: the still this clip resolves to. Montage chaining
+   * passes the NEXT panel's still here so consecutive clips hand off
+   * continuously — the run reads as one film, not N disconnected clips.
+   */
+  endImageUrl?: string
 }
 
 export type VideoStyle = 'cinematic' | 'loop' | 'subtle' | 'dynamic'

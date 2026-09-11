@@ -142,6 +142,9 @@ model Game {
   videoPaymentRef String? // Internal credit-payment reference for safe refunds
   videoPaymentUserId String? // User charged for the animation
   videoChargeRefundedAt DateTime?
+  // Concatenated montage film — assembled on the VPS once every panel clip
+  // lands (H3 end_image_url chaining makes it read as one continuous run).
+  montageVideoUrl String?
 
   // Play tracking — incremented each time a game session completes
   playCount    Int      @default(0)

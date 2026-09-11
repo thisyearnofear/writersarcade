@@ -86,6 +86,8 @@ export interface Game {
   /** 'generating' | 'ready' | 'failed' — record-first generation pipeline. */
   generationStatus?: string
   generationError?: string
+  /** Concatenated continuous montage film (VPS ffmpeg assembly). */
+  montageVideoUrl?: string
   userId?: string
   paymentId?: string
 

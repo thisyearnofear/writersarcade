@@ -364,6 +364,9 @@ export class FalProvider implements VideoProvider {
     if (this.isH3Model()) {
       return {
         image_url: req.imageUrl,
+        // Montage chaining: clip resolves into the next panel's still so the
+        // sequence plays as one continuous film (H3 honors end frames).
+        ...(req.endImageUrl ? { end_image_url: req.endImageUrl } : {}),
         prompt: buildMotionPrompt(req),
         prompt_expansion_mode: process.env.FAL_H3_PROMPT_EXPANSION ?? 'balanced',
         duration: getVideoDurationSeconds(),

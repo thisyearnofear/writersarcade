@@ -71,7 +71,12 @@ export default async function GamePage({ params, searchParams }: GamePageProps) 
       orderBy: { panelIndex: 'asc' },
       select: { videoUrl: true, panelIndex: true },
     })
-    const videoUrls = videoPanels.map(p => p.videoUrl!).filter(Boolean)
+    const clipUrls = videoPanels.map(p => p.videoUrl!).filter(Boolean)
+    // Prefer the assembled continuous film; fall back to sequential clips.
+    const videoUrls =
+      game.montageVideoUrl?.startsWith('http')
+        ? [game.montageVideoUrl]
+        : clipUrls
     if (videoUrls.length > 0) {
       return (
         <ThemeWrapper theme="arcade">

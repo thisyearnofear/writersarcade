@@ -151,8 +151,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     let result
     try {
+      // Continuous-film chaining: this clip resolves into the next panel's
+      // still (H3 end_image_url), so the sequence hands off seamlessly.
+      const nextPanel = panels[panels.indexOf(panel) + 1]
+      const endImageUrl = nextPanel
+        ? (nextPanel.videoStillUrl ?? nextPanel.imageUrl ?? undefined)
+        : undefined
+
       result = await VideoGenerationService.generate({
         imageUrl: motionFrameUrl,
+        endImageUrl,
         narrative: panel.narrativeText ?? '',
         genre: game.genre,
         panelIndex: panel.panelIndex,

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { after } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getActor } from '@/services/auth'
 import { VideoGenerationService, type VideoProviderName } from '@/domains/games/services/video-generation.service'
@@ -6,6 +7,7 @@ import { persistMediaUrl } from '@/domains/story/services/media-upload'
 import { refundPanelCharge, refundVideoCharge } from '@/domains/games/services/video-charge.service'
 import { CREDITS_CONFIG } from '@/lib/writer-coins'
 import { config } from '@/lib/config'
+import { assembleMontageFilm } from '@/domains/games/services/montage-film.service'
 
 const STATUS_POLL_MIN_INTERVAL_MS = 25_000
 
@@ -341,6 +343,22 @@ export async function GET(
       })
     }
 
+    // Continuous-film montage: once every panel clip has landed, assemble the
+    // single MP4 on the VPS (ffmpeg) in the background and store the durable
+    // URL. The 'pending' sentinel in montageVideoUrl makes this idempotent.
+    const allClipsReady =
+      refreshedPanels.length >= 2 &&
+      refreshedPanels.every((panel) => panel.videoUrl)
+    if (allClipsReady && !game.montageVideoUrl) {
+      after(async () => {
+        try {
+          await assembleMontageFilm(game.id, slug)
+        } catch (err) {
+          console.error('[Video Status] montage assembly failed:', err)
+        }
+      })
+    }
+
     return NextResponse.json({
       success: true,
       data: {
@@ -348,6 +366,7 @@ export async function GET(
         status: overallStatus,
         mode: 'hero',
         heroPanelId: refreshedPanels.find((panel) => panel.videoUrl)?.id ?? pendingPanel?.id ?? null,
+        montageVideoUrl: game.montageVideoUrl?.startsWith('http') ? game.montageVideoUrl : null,
         panels: refreshedPanels,
       },
     })

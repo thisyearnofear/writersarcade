@@ -4,6 +4,10 @@ const cors = require('@fastify/cors')
 const rateLimit = require('@fastify/rate-limit')
 const { createPublicClient, http } = require('viem')
 const { base } = require('viem/chains')
+const { execFile } = require('node:child_process')
+const { mkdtemp, writeFile, readFile, rm } = require('node:fs/promises')
+const { tmpdir } = require('node:os')
+const { join } = require('node:path')
 
 const PORT = Number(process.env.PORT || 3800)
 const ALLOWED_ORIGINS = [
@@ -458,6 +462,83 @@ async function buildApp(opts = {}) {
         audioUrl: null,
         error: error instanceof Error ? error.message : 'Unknown error',
       })
+    }
+  })
+
+  /**
+   * Montage assembly — concatenates a game's ordered panel clips into one
+   * continuous MP4 via ffmpeg's concat demuxer. Runs here (not on Vercel)
+   * because ffmpeg belongs on a persistent process, not a function bundle.
+   *
+   * Request:  { clips: string[] }   — ordered video URLs (2..12)
+   * Response: video/mp4 bytes
+   */
+  app.post('/api/montage/concat', async (request, reply) => {
+    const body = request.body || {}
+    const isSafeClipUrl = (u) => {
+      if (typeof u !== 'string' || !/^https:\/\//.test(u)) return false
+      try {
+        const host = new URL(u).hostname.toLowerCase()
+        return !/^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|0\.|::1)/.test(host)
+          && !host.endsWith('.internal') && !host.endsWith('.local')
+      } catch {
+        return false
+      }
+    }
+    const clips = Array.isArray(body.clips) ? body.clips.filter(isSafeClipUrl) : []
+    if (clips.length < 2 || clips.length > 12) {
+      return reply.code(400).send({ error: 'clips must be 2-12 https URLs' })
+    }
+
+    const dir = await mkdtemp(join(tmpdir(), 'montage-'))
+    try {
+      // Download each clip in order
+      const files = []
+      for (let i = 0; i < clips.length; i++) {
+        const controller = new AbortController()
+        const t = setTimeout(() => controller.abort(), 60_000)
+        const res = await fetch(clips[i], { signal: controller.signal })
+        clearTimeout(t)
+        if (!res.ok) throw new Error(`clip ${i} download failed: ${res.status}`)
+        const buf = Buffer.from(await res.arrayBuffer())
+        if (buf.byteLength > 100 * 1024 * 1024) throw new Error(`clip ${i} exceeds 100MB`)
+        const file = join(dir, `clip-${String(i).padStart(2, '0')}.mp4`)
+        await writeFile(file, buf)
+        files.push(file)
+      }
+
+      const listPath = join(dir, 'list.txt')
+      await writeFile(listPath, files.map((f) => `file '${f}'`).join('\n'))
+      const outPath = join(dir, 'montage.mp4')
+
+      const runFfmpeg = (args) => new Promise((resolve, reject) => {
+        execFile('ffmpeg', ['-y', ...args], { timeout: 120_000 }, (err, _stdout, stderr) => {
+          if (err) reject(new Error(`ffmpeg failed: ${(stderr || '').slice(-500) || err.message}`))
+          else resolve()
+        })
+      })
+
+      // Stream-copy concat is instant when codecs match; fall back to a
+      // re-encode for mixed inputs (e.g. clips from different providers).
+      try {
+        await runFfmpeg(['-f', 'concat', '-safe', '0', '-i', listPath, '-c', 'copy', '-movflags', '+faststart', outPath])
+      } catch {
+        await runFfmpeg([
+          '-f', 'concat', '-safe', '0', '-i', listPath,
+          '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23',
+          '-c:a', 'aac', '-b:a', '128k', '-movflags', '+faststart', outPath,
+        ])
+      }
+
+      const mp4 = await readFile(outPath)
+      return reply
+        .header('Content-Type', 'video/mp4')
+        .header('Content-Length', mp4.byteLength)
+        .send(mp4)
+    } catch (error) {
+      return reply.code(500).send({ error: error instanceof Error ? error.message : 'Montage assembly failed' })
+    } finally {
+      rm(dir, { recursive: true, force: true }).catch(() => {})
     }
   })
 
