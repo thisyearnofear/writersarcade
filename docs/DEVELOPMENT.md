@@ -3,16 +3,16 @@
 ## Quick Start
 
 ```bash
-# Use the supported runtime (Node 20.x) — pinned in .nvmrc, enforced in CI
+# Use the supported runtime (Node 24) — pinned in .nvmrc, enforced in CI
 nvm use
 
 # Install dependencies
 pnpm install
 ```
 
-> **Runtime:** the project pins Node 20 (`engines` in `package.json`, `.nvmrc`, and CI).
+> **Runtime:** the project pins Node 24 (`engines` in `package.json`, `.nvmrc`, and CI).
 > On other major versions pnpm prints an `Unsupported engine` warning; install
-> Node 20 (e.g. `nvm install 20 && nvm use`) to avoid subtle toolchain drift.
+> Node 24 (e.g. `nvm install 24 && nvm use`) to avoid subtle toolchain drift.
 
 # Copy environment template
 cp .env.example .env.local

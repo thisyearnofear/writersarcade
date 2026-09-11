@@ -24,7 +24,7 @@ export async function GET(
 
     const game = await prisma.game.findUnique({
       where: { slug },
-      select: { id: true, userId: true, ownerWallet: true, creatorWallet: true },
+      select: { id: true, slug: true, userId: true, ownerWallet: true, creatorWallet: true },
     })
 
     if (!game) {
@@ -48,7 +48,7 @@ export async function GET(
       )
     }
 
-    const insights = await GameInsightsService.getGameInsights(game.id)
+    const insights = await GameInsightsService.getGameInsights(game.id, game.slug)
 
     return NextResponse.json({ success: true, data: insights })
   } catch (error) {

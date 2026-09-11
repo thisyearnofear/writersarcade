@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 const mockGroupBy = vi.fn()
 const mockFindMany = vi.fn()
 const mockCount = vi.fn()
+const mockAnalyticsCount = vi.fn()
 
 vi.mock('@/lib/database', () => ({
   prisma: {
@@ -10,6 +11,9 @@ vi.mock('@/lib/database', () => ({
       groupBy: (...args: unknown[]) => mockGroupBy(...args),
       findMany: (...args: unknown[]) => mockFindMany(...args),
       count: (...args: unknown[]) => mockCount(...args),
+    },
+    productAnalyticsEvent: {
+      count: (...args: unknown[]) => mockAnalyticsCount(...args),
     },
   },
 }))
@@ -22,6 +26,8 @@ function setupPrisma({
   choiceLabels = [] as Array<{ panelIndex: number; choiceIndex: number; choiceText: string | null }>,
   referrerGroups = [] as Array<{ referrer: string | null; _count: { _all: number } }>,
   embeddedStarts = 0,
+  views = 0,
+  shares = 0,
 }) {
   mockGroupBy.mockImplementation((args: { by: string[] }) => {
     if (args.by.includes('type')) return Promise.resolve(typeCounts)
@@ -31,6 +37,11 @@ function setupPrisma({
   })
   mockFindMany.mockResolvedValue(choiceLabels)
   mockCount.mockResolvedValue(embeddedStarts)
+  mockAnalyticsCount.mockImplementation((args: { where: { event: string } }) => {
+    if (args.where.event === 'game_viewed') return Promise.resolve(views)
+    if (args.where.event === 'share_clicked') return Promise.resolve(shares)
+    return Promise.resolve(0)
+  })
 }
 
 describe('GameInsightsService.getGameInsights', () => {
@@ -59,15 +70,19 @@ describe('GameInsightsService.getGameInsights', () => {
         { referrer: null, _count: { _all: 3 } },
       ],
       embeddedStarts: 6,
+      views: 12,
+      shares: 3,
     })
 
     const { GameInsightsService } = await import('@/domains/games/services/game-insights.service')
-    const insights = await GameInsightsService.getGameInsights('game-1')
+    const insights = await GameInsightsService.getGameInsights('game-1', 'test-slug')
 
     expect(insights.starts).toBe(10)
     expect(insights.completions).toBe(4)
     expect(insights.resonance).toBeCloseTo(0.4)
     expect(insights.embeddedStarts).toBe(6)
+    expect(insights.views).toBe(12)
+    expect(insights.shares).toBe(3)
 
     // Funnel: panel 1 = 9 choices, panel 2 = 5, panels 3-5 = 0
     expect(insights.panelFunnel).toHaveLength(5)
@@ -98,7 +113,7 @@ describe('GameInsightsService.getGameInsights', () => {
     })
 
     const { GameInsightsService } = await import('@/domains/games/services/game-insights.service')
-    const insights = await GameInsightsService.getGameInsights('game-1')
+    const insights = await GameInsightsService.getGameInsights('game-1', 'test-slug')
 
     expect(insights.starts).toBe(4)
     expect(insights.resonance).toBeNull()
@@ -108,7 +123,7 @@ describe('GameInsightsService.getGameInsights', () => {
     setupPrisma({})
 
     const { GameInsightsService } = await import('@/domains/games/services/game-insights.service')
-    const insights = await GameInsightsService.getGameInsights('game-1')
+    const insights = await GameInsightsService.getGameInsights('game-1', 'test-slug')
 
     expect(insights.starts).toBe(0)
     expect(insights.completions).toBe(0)
@@ -116,6 +131,8 @@ describe('GameInsightsService.getGameInsights', () => {
     expect(insights.embeddedStarts).toBe(0)
     expect(insights.panelFunnel.every((step) => step.choices === 0)).toBe(true)
     expect(insights.referrers).toEqual([])
+    expect(insights.views).toBe(0)
+    expect(insights.shares).toBe(0)
   })
 
   it('resonance appears at exactly 5 starts', async () => {
@@ -127,7 +144,7 @@ describe('GameInsightsService.getGameInsights', () => {
     })
 
     const { GameInsightsService } = await import('@/domains/games/services/game-insights.service')
-    const insights = await GameInsightsService.getGameInsights('game-1')
+    const insights = await GameInsightsService.getGameInsights('game-1', 'test-slug')
 
     expect(insights.resonance).toBeCloseTo(0.2)
   })

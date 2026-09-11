@@ -1,10 +1,11 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
 import { WalletProviders } from '@/components/providers/WalletProviders'
 import { WalletLoadingFallback } from '@/components/providers/WalletLoadingFallback'
 import { Game } from '@/domains/games/types'
+import { trackEvent } from '@/services/analytics'
 
 const GamePlayInterface = dynamic(
   () => import('@/domains/games/components/game-play-interface').then(m => m.GamePlayInterface),
@@ -24,6 +25,10 @@ interface PlayGameClientProps {
 
 export function PlayGameClient({ game, isOwner, maxAttempts }: PlayGameClientProps) {
   const fallback = <WalletLoadingFallback showHeader={false} className="py-12" message="Loading game…" />
+
+  useEffect(() => {
+    trackEvent('game_viewed', { gameSlug: game.slug, mode: game.mode })
+  }, [game.slug, game.mode])
   return (
     <WalletProviders fallback={fallback}>
       <Suspense fallback={fallback}>

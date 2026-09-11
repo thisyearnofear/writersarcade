@@ -16,6 +16,7 @@ import { VideoShowcase } from './video-showcase'
 import { CreatorStats } from './creator-stats'
 import type { VideoMotion, VideoMotionProps } from './finale-video-motion'
 import type { VideoStyle } from '../services/video-generation.types'
+import type { GameInsights } from '../hooks/use-game-insights'
 
 /* ─── Video upsell CTA (Animate / Animated button + error) ─────────────── */
 
@@ -342,7 +343,7 @@ export function FinaleCinematicView({
   primaryColor: string
   gameTitle: string
   genre: string
-  gameInsights: { starts: number; completions: number } | null
+  gameInsights: GameInsights | null
   insightsLoading: boolean
   slug: string
 }) {
@@ -394,8 +395,8 @@ export function FinaleCinematicView({
         totalPanels={panels.length}
         hasAnimation={video.status === 'completed'}
         playCount={gameInsights?.starts ?? 0}
-        viewCount={0}
-        shareCount={0}
+        viewCount={gameInsights?.views ?? 0}
+        shareCount={gameInsights?.shares ?? 0}
         milestones={creatorMilestones}
         isLoading={insightsLoading}
       />

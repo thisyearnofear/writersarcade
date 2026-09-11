@@ -25,14 +25,18 @@ export interface GameInsights {
   embeddedStarts: number
   panelFunnel: PanelFunnelStep[]
   referrers: ReferrerStat[]
+  /** Artifact page views logged via `game_viewed` analytics events */
+  views: number
+  /** Share clicks tied to this game (post-play card + finale + game card) */
+  shares: number
 }
 
 const MIN_STARTS_FOR_RESONANCE = 5
 const MAX_PANELS = 5
 
 export class GameInsightsService {
-  static async getGameInsights(gameId: string): Promise<GameInsights> {
-    const [typeCounts, choiceGroups, choiceLabels, referrerGroups, embeddedStarts] =
+  static async getGameInsights(gameId: string, slug: string): Promise<GameInsights> {
+    const [typeCounts, choiceGroups, choiceLabels, referrerGroups, embeddedStarts, viewCount, shareCount] =
       await Promise.all([
         prisma.gamePlayEvent.groupBy({
           by: ['type'],
@@ -56,6 +60,21 @@ export class GameInsightsService {
         }),
         prisma.gamePlayEvent.count({
           where: { gameId, type: 'started', embedded: true },
+        }),
+        prisma.productAnalyticsEvent.count({
+          where: {
+            event: 'game_viewed',
+            path: `/games/${slug}`,
+          },
+        }),
+        prisma.productAnalyticsEvent.count({
+          where: {
+            event: 'share_clicked',
+            OR: [
+              { path: `/games/${slug}` },
+              { properties: { path: ['gameSlug'], equals: slug } },
+            ],
+          },
         }),
       ])
 
@@ -91,6 +110,6 @@ export class GameInsightsService {
       .map((row) => ({ referrer: row.referrer, starts: row._count._all }))
       .sort((a, b) => b.starts - a.starts)
 
-    return { starts, completions, resonance, embeddedStarts, panelFunnel, referrers }
+    return { starts, completions, resonance, embeddedStarts, panelFunnel, referrers, views: viewCount, shares: shareCount }
   }
 }

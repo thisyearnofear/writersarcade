@@ -27,9 +27,9 @@ export function CreatorStats({
   isLoading = false,
 }: CreatorStatsProps) {
   const stats = [
-    { label: 'Views', value: viewCount, icon: Eye, tracked: false },
+    { label: 'Views', value: viewCount, icon: Eye, tracked: true },
     { label: 'Plays', value: playCount, icon: Trophy, tracked: true },
-    { label: 'Shares', value: shareCount, icon: Sparkles, tracked: false },
+    { label: 'Shares', value: shareCount, icon: Sparkles, tracked: true },
   ]
 
   return (

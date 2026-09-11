@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useReducedMotion } from 'framer-motion'
 import {
   ArrowLeft,
@@ -30,6 +30,7 @@ import { getWriterCoinById, MUSD_CONFIG } from '@/lib/writer-coins'
 import { parsePanel, pullQuote } from '../utils/text-parser'
 import { coverFocalClass, getPanelMedia } from '../utils/artifact-media'
 import { RelatedPlayStrip } from './related-play-strip'
+import { trackEvent } from '@/services/analytics'
 
 interface GameArtifactViewProps {
   game: Game
@@ -171,6 +172,11 @@ export function GameArtifactView({ game, currentUserWallet }: GameArtifactViewPr
   const reduceMotion = Boolean(useReducedMotion())
   const ownerAddress = game.ownerWallet || game.creatorWallet
   const isOwner = Boolean(currentUserWallet && ownerAddress && currentUserWallet.toLowerCase() === ownerAddress.toLowerCase())
+
+  // Count artifact page views so creator stats reflect real reach.
+  useEffect(() => {
+    trackEvent('game_viewed', { gameSlug: game.slug })
+  }, [game.slug])
   const tokenLabel = getTokenLabel(game)
   const hasMintRecord = Boolean(game.nftTokenId || game.nftTransactionHash || game.nftMintedAt)
   const hasSuperRareRecord = Boolean(game.superrareTokenId || game.superrareMintedAt)

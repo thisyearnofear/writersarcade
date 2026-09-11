@@ -7,6 +7,8 @@ export interface GameInsights {
   completions: number
   resonance: number | null
   embeddedStarts: number
+  views: number
+  shares: number
 }
 
 export interface UseGameInsightsResult {

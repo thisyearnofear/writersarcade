@@ -21,6 +21,7 @@ export const ANALYTICS_EVENT_NAMES = [
   'payment_failed',
   'game_generated',
   'game_generation_failed',
+  'game_viewed',
   'play_clicked',
   'panel_completed',
   'choice_made',
