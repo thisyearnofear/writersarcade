@@ -175,6 +175,9 @@ The all-panel montage is now implemented as the paid 100-credit tier (`POST /api
 - **Charging:** atomic debit + `payment` row (`action:'video-montage'`) mirror the hero upsell. Refunded on **total failure** only.
 - **Still first:** each panel reuses its locked still (`videoStillUrl`) when present, otherwise best-effort produces one; falling back to the frozen comic panel keeps flow/cost/refund semantics unchanged.
 - **Reservation:** shares the single-per-game video reservation with the hero upsell, so hero + montage are mutually exclusive. The `video-montage` payment action is a plain `String`, so no schema migration is required for this tier.
+- **Continuous-film chaining (shipped):** with `FAL_VIDEO_MODEL=minimax/h3-max-turbo/*`, each panel clip is generated with `end_image_url` = the **next** panel's still (`videoStillUrl ?? imageUrl`). H3 honors end frames, so sequential playback hands off seamlessly — the run reads as one film.
+- **Single-MP4 assembly (shipped):** once every panel has a `videoUrl`, the `/video/status` route fires `after()` → `assembleMontageFilm` (`montage-film.service.ts`): ordered clip URLs → `POST {API_BACKEND_URL}/api/montage/concat` on the VPS (ffmpeg concat demuxer, stream-copy with re-encode fallback) → MP4 bytes → `persistMediaBuffer` (Pinata) → `game.montageVideoUrl`. The `montageVideoUrl: 'pending'` sentinel makes assembly idempotent; failures clear it for retry. ffmpeg stays on the persistent VPS process — it is deliberately not traced into a Vercel function bundle.
+- **Watch landing:** `?watch=1` (`GameWatchView`) plays `montageVideoUrl` as a single film when present, else the panel clips sequentially; share URLs switch to `?watch=1` whenever a video exists.
 
 ## Per-panel micro-tier ("animate-panel") — shipped
 

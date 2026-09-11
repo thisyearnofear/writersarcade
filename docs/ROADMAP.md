@@ -255,11 +255,13 @@ The first-run creation flow follows the [Creation UX Contract](./CREATION_UX.md)
   - ~~Try-free-first generation (demo entitlement attempted before payment UI)~~ — shipped
   - ~~Post-generate lands in play mode; share links land playable~~ — shipped
   - ~~Panel image starts at stream 'options' event (overlaps stream tail)~~ — shipped
-  - Next: record-first generation (create shell → navigate → panels stream live), per-panel prefetch hints, replayable-run landing for montage shares
+  - ~~Record-first generation (stub → navigate → async finalize, `generationStatus` + retry surface)~~ — shipped
+  - ~~Replayable-run landing (`?watch=1` plays the run's clips/film before the play CTA)~~ — shipped
+  - Next: per-panel prefetch hints
 - **H3-era video tiers** (fal MiniMax H3, faster-than-playback generation):
-  - Per-panel "animate this panel" micro-upsell (5–10 credits, mid-session)
+  - ~~Per-panel "animate this panel" micro-upsell (10 credits, mid-session)~~ — shipped
+  - ~~Montage as continuous film — `end_image_url` chaining + VPS ffmpeg concat → `montageVideoUrl`~~ — shipped
   - Directed cut — player-prompted clip over their own panel stills (`reference-to-video`)
-  - Montage as continuous film via `end_image_url` chaining (the mintable playthrough artifact)
   - Animated BasePaint canvas for Daily Challenge
   - See `docs/VIDEO_ARTIFACT_PIPELINE.md` → "H3-era economics"
 - Social sharing integrations
