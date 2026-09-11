@@ -1,7 +1,6 @@
 import type { NextRequest } from 'next/server'
 import { after } from 'next/server'
 import { ok, fail } from '@/lib/api-response'
-import { GameAIService } from '@/domains/games/services/game-ai.service'
 import { GameDatabaseService } from '@/domains/games/services/game-database.service'
 import { ImageGenerationService } from '@/domains/games/services/image-generation.service'
 import { ContentProcessorService } from '@/domains/content/services/content-processor.service'
@@ -16,14 +15,15 @@ import { prisma } from '@/lib/prisma'
 import { getWriterCoinByArticleUrl, validateArticleUrl } from '@/lib/writer-coins'
 import { GameFundingService } from '@/domains/payments/services/game-funding.service'
 import { buildMarketingCopyPrompt } from '@/domains/games/services/generation-prompts'
-import { deduplicateGeneration, buildGenerationCacheKey } from '@/lib/ai-cache'
+import { buildGenerationCacheKey } from '@/lib/ai-cache'
+import { runStoryGeneration, enrichGameInBackground } from '@/domains/games/services/story-generation.service'
+import { createSlug } from '@/lib/utils'
 import { reportServerError } from '@/services/error-reporting'
 import {
   getBasePaintDay,
   getBasePaintDailySource,
   getDualDailySource,
   getBasePaintCanvasDescription,
-  pickAccentColor,
 } from '@/lib/daily-challenge'
 import { buildBasePaintSourceUrl, buildDualSourceUrl } from '@/lib/basepaint/source-url'
 
@@ -282,96 +282,6 @@ Your game MUST authentically interpret this article's core themes. Players shoul
       return fail('Wordle mode requires an article URL.', 400)
     }
 
-    let gameData: GameGenerationResponse
-
-    if (mode === 'wordle') {
-      if (!processedContent) {
-        throw new Error('Failed to process article content for Wordle mode')
-      }
-
-      // Enhanced: Use user-specific seed for randomness to avoid predictability
-      // Combine article URL and current date for varied but reproducible results
-      const randomSeed = validatedData.url ? `${validatedData.url}-${new Date().toISOString().split('T')[0]}` : new Date().toISOString()
-      const answer = WordleService.deriveAnswerFromText(processedContent.text, undefined, randomSeed)
-
-      // Inco: answer is encrypted on-chain at mint time via SecretPanelVault
-      const wordleAnswerVaultUuid = 'inco-pending'
-
-      gameData = {
-        title: processedContent.title
-          ? `Wordle: ${processedContent.title}`
-          : 'Article Wordle',
-        description:
-          'A Wordle-style puzzle derived from the core language of this article. Guess the key word inspired by the source material.',
-        tagline: processedContent.title
-          ? `Guess a key word inspired by "${processedContent.title}"`
-          : 'Guess a key word inspired by this article.',
-        genre: 'Wordle',
-        subgenre: 'Puzzle',
-        primaryColor: '#fbbf24', // Amber, distinct from core horror/comedy/mystery palette
-        promptModel: 'wordle-engine',
-        promptName: 'Wordle-Article-v1',
-        promptText: `Article-derived Wordle answer of length ${answer.length}.`,
-        mode: 'wordle',
-        wordleAnswerVaultUuid,
-      }
-
-      logger.info('Wordle game generated from article:', {
-        title: gameData.title,
-        answerLength: answer.length,
-      })
-    } else {
-      // Build game generation request with optional customization
-      const gameRequest = {
-        promptText: processedPrompt,
-        url: validatedData.url,
-        customization: validatedData.customization,
-        model: validatedData.model,
-        promptName: validatedData.promptName,
-        private: validatedData.private,
-        payment: validatedData.payment,
-      }
-
-      // Generate game using consolidated AI service with user preferences
-      // Request deduplication: concurrent identical requests share one in-flight promise across instances.
-      logger.info('Calling GameAIService.generateGame with prompt length:', { promptLength: gameRequest.promptText?.length })
-      const cacheKey = buildGenerationCacheKey({
-        url: validatedData.url,
-        // Prompt hash keeps daily/BasePaint generations keyed to their actual
-        // day + theme (the URL field is empty for those flows), and prevents a
-        // yesterday's-cached-result collision across days.
-        prompt: processedPrompt,
-        genre: validatedData.customization?.genre,
-        difficulty: validatedData.customization?.difficulty,
-        mode: 'story',
-        // Fall back to the wallet address so unauthenticated-but-connected
-        // users don't share one anonymous key.
-        actorId: actor?.user.id || validatedData.wallet,
-        paymentId: fundingContext?.paymentId || validatedData.payment?.paymentId,
-      })
-
-      const aiGameData = await deduplicateGeneration(cacheKey, () =>
-        GameAIService.generateGame(gameRequest, 0, userPreferences)
-      )
-
-      logger.info('AI generation successful:', { title: aiGameData.title, genre: aiGameData.genre })
-
-      gameData = {
-        ...aiGameData,
-        mode: 'story' as const,
-      }
-
-      // Ground the game's visual identity in today's canvas palette — the
-      // play UI (background gradient, progress bars, accents) keys off this.
-      if (
-        validatedData.contentType === 'basepaint' ||
-        validatedData.contentType === 'dual'
-      ) {
-        const accent = pickAccentColor(basePaintPalette)
-        if (accent) gameData.primaryColor = accent
-      }
-    }
-
     // Normalize optional metadata to avoid persistence failures from malformed upstream values
     const normalizePublishedAt = (value: unknown): Date | undefined => {
       if (!value) return undefined
@@ -412,7 +322,7 @@ Your game MUST authentically interpret this article's core themes. Players shoul
             articleUrl: buildDualSourceUrl(basePaintDay, dualArticleUrl),
             difficulty: validatedData.customization?.difficulty,
             writerCoinId: canonicalWriterCoinId,
-            wordleAnswerVaultUuid: gameData.wordleAnswerVaultUuid,
+            wordleAnswerVaultUuid: mode === 'wordle' ? 'inco-pending' : undefined,
             authorWallet: processedContent.authorWallet,
             authorParagraphUsername: processedContent.author,
             publicationName: processedContent.publicationName || 'Daily Challenge',
@@ -429,7 +339,7 @@ Your game MUST authentically interpret this article's core themes. Players shoul
               articleUrl: validatedData.url,
               difficulty: validatedData.customization?.difficulty,
               writerCoinId: canonicalWriterCoinId,
-              wordleAnswerVaultUuid: gameData.wordleAnswerVaultUuid,
+              wordleAnswerVaultUuid: mode === 'wordle' ? 'inco-pending' : undefined,
               authorWallet: processedContent.authorWallet,
               authorParagraphUsername: processedContent.author,
               publicationName: processedContent.publicationName,
@@ -454,6 +364,114 @@ Your game MUST authentically interpret this article's core themes. Players shoul
                 articleContext: processedPrompt.substring(0, 1200),
               }
             : undefined
+
+    // ── Story mode: record-first generation ────────────────────────────────
+    // Create the Game row now, return the slug immediately, and finish the AI
+    // pipeline in after(). The player navigates to a "writing your story" view
+    // that polls until generationStatus flips to 'ready'.
+    if (mode === 'story') {
+      const gameRequest = {
+        promptText: processedPrompt,
+        url: validatedData.url,
+        customization: validatedData.customization,
+        model: validatedData.model,
+        promptName: validatedData.promptName,
+        private: validatedData.private,
+        payment: validatedData.payment,
+      }
+
+      const cacheKey = buildGenerationCacheKey({
+        url: validatedData.url,
+        prompt: processedPrompt,
+        genre: validatedData.customization?.genre,
+        difficulty: validatedData.customization?.difficulty,
+        mode: 'story',
+        actorId: actor?.user.id || validatedData.wallet,
+        paymentId: fundingContext?.paymentId || validatedData.payment?.paymentId,
+      })
+
+      const titleBase =
+        processedContent?.title ||
+        (basePaintDay ? `BasePaint Day ${basePaintDay}` : 'Untitled story')
+
+      const stub = await createGeneratingStub({
+        titleBase,
+        processedPrompt,
+        validatedData,
+        ownership,
+        miniAppData,
+        canonicalWriterCoinId,
+        userId: user?.id,
+      })
+
+      logger.info('Story stub created — finishing generation async:', { gameId: stub.id, slug: stub.slug })
+
+      after(async () => {
+        await runStoryGeneration({
+          gameId: stub.id,
+          slug: stub.slug,
+          gameRequest,
+          cacheKey,
+          userPreferences,
+          basePaintPalette:
+            validatedData.contentType === 'basepaint' || validatedData.contentType === 'dual'
+              ? basePaintPalette
+              : undefined,
+          articleText: processedContent?.text,
+          canonicalWriterCoinId,
+          targetPrivate: validatedData.private ?? false,
+        })
+      })
+
+      return ok({
+        id: stub.id,
+        slug: stub.slug,
+        title: stub.title,
+        generating: true,
+      })
+    }
+
+    // Story mode returned above; only wordle reaches this point, so the
+    // branch below always assigns gameData.
+    let gameData!: GameGenerationResponse
+
+    if (mode === 'wordle') {
+      if (!processedContent) {
+        throw new Error('Failed to process article content for Wordle mode')
+      }
+
+      // Enhanced: Use user-specific seed for randomness to avoid predictability
+      // Combine article URL and current date for varied but reproducible results
+      const randomSeed = validatedData.url ? `${validatedData.url}-${new Date().toISOString().split('T')[0]}` : new Date().toISOString()
+      const answer = WordleService.deriveAnswerFromText(processedContent.text, undefined, randomSeed)
+
+      // Inco: answer is encrypted on-chain at mint time via SecretPanelVault
+      const wordleAnswerVaultUuid = 'inco-pending'
+
+      gameData = {
+        title: processedContent.title
+          ? `Wordle: ${processedContent.title}`
+          : 'Article Wordle',
+        description:
+          'A Wordle-style puzzle derived from the core language of this article. Guess the key word inspired by the source material.',
+        tagline: processedContent.title
+          ? `Guess a key word inspired by "${processedContent.title}"`
+          : 'Guess a key word inspired by this article.',
+        genre: 'Wordle',
+        subgenre: 'Puzzle',
+        primaryColor: '#fbbf24', // Amber, distinct from core horror/comedy/mystery palette
+        promptModel: 'wordle-engine',
+        promptName: 'Wordle-Article-v1',
+        promptText: `Article-derived Wordle answer of length ${answer.length}.`,
+        mode: 'wordle',
+        wordleAnswerVaultUuid,
+      }
+
+      logger.info('Wordle game generated from article:', {
+        title: gameData.title,
+        answerLength: answer.length,
+      })
+    }
 
     // Enhance game data with attribution
     const enhancedGameData = {
@@ -522,6 +540,9 @@ Your game MUST authentically interpret this article's core themes. Players shoul
       }
     })
 
+    // Record-first note: story mode returns from the stub branch above; this
+    // tail only runs for wordle (synchronous, no AI call).
+
     const coverImageUrl = await coverImagePromise
 
     return ok({
@@ -568,91 +589,86 @@ Your game MUST authentically interpret this article's core themes. Players shoul
 // Keeping this comment so future contributors don't re-add the duplicate.
 
 /**
- * Background enrichment: generate secret panel + hypercert after game creation.
- * Non-blocking — failures do not affect the game generation response.
- *
- * ENHANCEMENT FIRST: Wraps both integrations in a single function to avoid
- * duplicating error handling and DB update logic.
+ * Create the 'generating' stub row for record-first story generation. The row
+ * carries everything needed to finish the pipeline async (promptText, article
+ * metadata, ownership) and stays `private` until generationStatus flips to
+ * 'ready' — stubs never appear in listings.
  */
-async function enrichGameInBackground(
-  gameId: string,
-  gameSlug: string,
-  gameData: GameGenerationResponse,
-  articleText?: string,
-  _writerCoinId?: string
-): Promise<void> {
-  // Generate secret panel and store it for Inco on-chain encryption at mint time.
-  try {
-    const { GameAIService } = await import('@/domains/games/services/game-ai.service')
+async function createGeneratingStub(args: {
+  titleBase: string
+  processedPrompt: string
+  validatedData: z.infer<typeof generateGameSchema>
+  ownership: ReturnType<typeof GameFundingService.buildOwnership>
+  miniAppData?: {
+    articleUrl?: string
+    writerCoinId?: string
+    difficulty?: string
+    articleContext?: string
+    wordleAnswerVaultUuid?: string
+    authorParagraphUsername?: string
+    authorWallet?: string
+    publicationName?: string
+    publicationSummary?: string
+    subscriberCount?: number
+    articlePublishedAt?: Date
+    ownerWallet?: string
+    ownershipSource?: string
+    paymentId?: string
+  }
+  canonicalWriterCoinId?: string
+  userId?: string
+}) {
+  const { titleBase, processedPrompt, validatedData, ownership, miniAppData, canonicalWriterCoinId, userId } = args
 
-    const secretPanel = await GameAIService.generateSecretPanel(
-      {
-        title: gameData.title,
-        description: gameData.description,
-        genre: gameData.genre,
-        tagline: gameData.tagline,
-      },
-      articleText?.substring(0, 800)
-    )
-
-    const secretPanelJson = JSON.stringify(secretPanel)
-
-    // Store the plaintext temporarily in the DB.
-    // It will be encrypted on-chain via SecretPanelVault.storeSecretPanel()
-    // when the game is minted (tokenId becomes available).
-    await prisma.game.update({
-      where: { id: gameId },
-      data: {
-        secretPanelCiphertext: secretPanelJson,
-        secretPanelImagePrompt: secretPanel.imagePrompt,
-        secretPanelGenerated: true,
-      },
-    })
-
-    logger.info('Secret panel generated for Inco encryption at mint time', {
-      gameId,
-      encryption: 'inco',
-    })
-  } catch (err) {
-    logger.error('Secret panel generation failed', err, { gameId })
+  let slug = createSlug(titleBase || 'untitled-story')
+  if (await prisma.game.findUnique({ where: { slug }, select: { id: true } })) {
+    slug = `${slug}-${Date.now().toString(36)}`
   }
 
-  // Create hypercert impact certificate
-  try {
-    if (config.hypercerts.enabled) {
-      const {
-        createGameHypercert,
-        buildGameHypercertInput,
-      } = await import('@/lib/integrations/hypercerts')
-
-      const hypercertInput = buildGameHypercertInput({
-        gameTitle: gameData.title,
-        gameDescription: gameData.description,
-        genre: gameData.genre,
-        articleTitle: articleText ? 'Source Article' : undefined,
-      })
-
-      const result = await createGameHypercert(hypercertInput)
-
-      if (result) {
-        await prisma.game.update({
-          where: { id: gameId },
-          data: {
-            hypercertUri: result.uri,
-            hypercertCid: result.cid,
-          },
-        })
-
-        logger.hypercerts('Hypercert created and linked', {
-          gameId,
-          slug: gameSlug,
-          uri: result.uri,
-        })
-      }
-    }
-  } catch (err) {
-    logger.error('Hypercert creation failed (non-blocking)', err, {
-      gameId,
-    })
-  }
+  return prisma.game.create({
+    data: {
+      title: titleBase,
+      slug,
+      // Placeholder copy — the async pipeline overwrites all of these when
+      // generationStatus flips to 'ready'. Required non-null columns.
+      description: 'Your story is being written…',
+      tagline: 'A story is being generated from the source material.',
+      genre: validatedData.customization?.genre ?? 'story',
+      subgenre: '',
+      mode: 'story',
+      promptText: processedPrompt,
+      promptModel: 'pending',
+      difficulty: validatedData.customization?.difficulty ?? miniAppData?.difficulty,
+      articleUrl: miniAppData?.articleUrl,
+      articleContext: miniAppData?.articleContext,
+      writerCoinId: miniAppData?.writerCoinId ?? canonicalWriterCoinId,
+      authorParagraphUsername: miniAppData?.authorParagraphUsername,
+      authorWallet: miniAppData?.authorWallet,
+      publicationName: miniAppData?.publicationName,
+      publicationSummary: miniAppData?.publicationSummary,
+      subscriberCount: miniAppData?.subscriberCount,
+      articlePublishedAt: miniAppData?.articlePublishedAt,
+      ownerWallet: miniAppData?.ownerWallet ?? ownership.ownerWallet,
+      ownershipSource: miniAppData?.ownershipSource ?? ownership.ownershipSource,
+      creatorWallet: ownership.creatorWallet,
+      paymentId: miniAppData?.paymentId ?? ownership.paymentId,
+      private: true,
+      generationStatus: 'generating',
+      generationTargetPrivate: validatedData.private ?? false,
+      userId: userId ?? null,
+      ...(validatedData.assetIds?.length
+        ? {
+            gamesFromAssets: {
+              create: validatedData.assetIds.map((assetId) => ({
+                asset: { connect: { id: assetId } },
+                userId: userId || 'anonymous',
+                compositionPrompt: 'Workshop Compilation',
+                tokensSpent: 0,
+              })),
+            },
+          }
+        : {}),
+    },
+    select: { id: true, slug: true, title: true },
+  })
 }

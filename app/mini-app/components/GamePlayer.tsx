@@ -41,6 +41,18 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
     const startGame = async () => {
       setIsLoading(true);
       try {
+        // Record-first generation: a fresh game may still be 'generating' —
+        // poll the lightweight status route until the async pipeline lands.
+        for (let i = 0; i < 45; i++) {
+          const statusRes = await fetch(`/api/games/${game.slug}/status`, { cache: 'no-store' });
+          if (!statusRes.ok) break;
+          const s = await statusRes.json().catch(() => null);
+          const status = s?.data?.generationStatus;
+          if (!status || status === 'ready') break;
+          if (status === 'failed') throw new Error(s?.data?.generationError || 'Generation failed');
+          await new Promise((r) => setTimeout(r, 2000));
+        }
+
         const response = await fetch(`/api/games/${game.slug}/start`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },

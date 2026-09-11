@@ -474,7 +474,11 @@ export function ComicBookFinale({
                   data={{
                     title: gameTitle,
                     text: `I animated the final panel of "${gameTitle}" — what ending would you get?`,
-                    url: typeof window !== 'undefined' ? `${window.location.origin}/games/${gameSlug}?play=1` : `/games/${gameSlug}?play=1`,
+                    // Video shares land on the watch surface (replayable run),
+                    // not straight into play.
+                    url: typeof window !== 'undefined'
+                      ? `${window.location.origin}/games/${gameSlug}?${video.firstVideoUrl ? 'watch=1' : 'play=1'}`
+                      : `/games/${gameSlug}?${video.firstVideoUrl ? 'watch=1' : 'play=1'}`,
                     genre,
                     panelCount: totalPanels,
                     gameTitle,

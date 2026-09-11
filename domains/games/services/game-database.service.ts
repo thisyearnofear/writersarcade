@@ -655,6 +655,8 @@ export class GameDatabaseService {
       wordleAnswerVaultUuid: prismaGame.wordleAnswerVaultUuid || undefined,
       promptVaultUuid: (prismaGame as { promptVaultUuid?: string }).promptVaultUuid || undefined,
       private: prismaGame.private,
+      generationStatus: (prismaGame as { generationStatus?: string }).generationStatus || 'ready',
+      generationError: (prismaGame as { generationError?: string | null }).generationError || undefined,
       userId: prismaGame.userId || undefined,
       paymentId: (prismaGame as { paymentId?: string | null }).paymentId || undefined,
       // Cast to any because Prisma types are not yet updated in the running process

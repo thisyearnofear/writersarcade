@@ -11,6 +11,8 @@ import { ErrorBoundary } from '@/components/error/ErrorBoundary'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
+import { GameGeneratingView } from '@/domains/games/components/game-generating-view'
+import { GameWatchView } from '@/domains/games/components/game-watch-view'
 import { PlayGameClient } from './PlayGameClient'
 import { getActor } from '@/services/auth'
 import { prisma } from '@/lib/prisma'
@@ -27,6 +29,7 @@ interface GamePageProps {
   }>
   searchParams?: Promise<{
     play?: string
+    watch?: string
     unlocked?: string
   }>
 }
@@ -35,11 +38,49 @@ export default async function GamePage({ params, searchParams }: GamePageProps) 
   const { slug } = await params
   const query = await searchParams
   const isPlayMode = query?.play === '1'
+  const isWatchMode = query?.watch === '1'
   const isUnlockShare = Boolean(query?.unlocked)
   const game = await GameDatabaseService.getGameBySlug(slug)
 
   if (!game) {
     notFound()
+  }
+
+  // Record-first generation: the row exists before the AI pipeline finishes.
+  // Show the "writing your story" view — it polls /status and refreshes into
+  // the real page when ready, or surfaces retry on failure.
+  if (game.generationStatus !== 'ready') {
+    return (
+      <ThemeWrapper theme="arcade">
+        <GameGeneratingView
+          slug={game.slug}
+          title={game.title}
+          initialStatus={game.generationStatus}
+          initialError={game.generationError}
+        />
+      </ThemeWrapper>
+    )
+  }
+
+  // Watch mode: a shared-run landing that plays the game's generated panel
+  // videos full-bleed before offering play. Falls through to the normal
+  // artifact/play views when no video exists yet.
+  if (isWatchMode) {
+    const videoPanels = await prisma.gameArtifactPanel.findMany({
+      where: { gameId: game.id, videoUrl: { not: null } },
+      orderBy: { panelIndex: 'asc' },
+      select: { videoUrl: true, panelIndex: true },
+    })
+    const videoUrls = videoPanels.map(p => p.videoUrl!).filter(Boolean)
+    if (videoUrls.length > 0) {
+      return (
+        <ThemeWrapper theme="arcade">
+          <div className="min-h-screen bg-black">
+            <GameWatchView slug={game.slug} title={game.title} videoUrls={videoUrls} coverUrl={game.imageUrl} />
+          </div>
+        </ThemeWrapper>
+      )
+    }
   }
 
   const actor = await getActor()

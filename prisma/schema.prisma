@@ -150,6 +150,15 @@ model Game {
   // Access control
   private Boolean @default(false)
 
+  // Record-first generation: the row is created before the AI pipeline
+  // finishes so the player can navigate immediately ('generating' → 'ready').
+  // 'failed' rows keep the error for the retry surface. Wordle and legacy
+  // rows are 'ready' by default.
+  generationStatus String @default("ready") // 'generating' | 'ready' | 'failed'
+  generationError  String? @db.Text
+  // Stubs are created private; this is the visibility to apply on 'ready'.
+  generationTargetPrivate Boolean @default(false)
+
   // NEW: Approval workflow & quality metrics
   approvalStatus String @default("pending") // 'pending' | 'approved' | 'rejected'
   articleFidelityScore Float? // 0-100 semantic match (how well game matches article themes)

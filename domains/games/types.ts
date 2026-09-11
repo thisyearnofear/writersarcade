@@ -83,6 +83,9 @@ export interface Game {
 
   // Access control
   private: boolean
+  /** 'generating' | 'ready' | 'failed' — record-first generation pipeline. */
+  generationStatus?: string
+  generationError?: string
   userId?: string
   paymentId?: string
 

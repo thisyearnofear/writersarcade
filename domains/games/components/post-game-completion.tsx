@@ -97,7 +97,10 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
     (typeof window !== 'undefined'
       ? window.location.origin
       : process.env.NEXT_PUBLIC_SITE_URL) || `https://writersarcade.vercel.app`
-  const gameUrl = `${baseUrl}/games/${game.slug}?play=1`
+  // When a panel clip exists, share lands on the watch surface (the run
+  // replays as video, then hands off to play). Otherwise straight to play.
+  const hasVideo = videoPanels.some((p) => Boolean(p.videoUrl))
+  const gameUrl = `${baseUrl}/games/${game.slug}?${hasVideo ? 'watch=1' : 'play=1'}`
 
   const markdownStory = useMemo(() => {
     let md = `# ${game.title}\n\n_${game.description}_\n\n`
