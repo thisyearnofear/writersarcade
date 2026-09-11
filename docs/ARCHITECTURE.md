@@ -24,9 +24,8 @@ Article URL
 **Web3**: wagmi + viem + RainbowKit / WalletConnect  
 **Backend**: Next.js API routes + Prisma + PostgreSQL  
 **AI**: OpenAI/Anthropic (ai-sdk); Venice AI + Modal + Netmind (image generation)  
-**Mezo**: MUSD (Bitcoin-backed stablecoin) — archived hackathon track, see `docs/HACKATHONS_ARCHIVE.md`
-**IP**: Story Protocol (testnet) + IPFS (Pinata primary, Grove fallback)
-**Access Control**: Inco confidential compute (on-chain encrypted secret panels via euint256 handles + attested decrypt)
+**IP**: Story Protocol (testnet) + IPFS (Pinata primary, Grove metadata fallback)  
+**Access Control**: Inco confidential compute (on-chain encrypted secret panels via euint256 handles + attested decrypt)  
 **Impact**: Hypercerts (AT Protocol impact certificates) — deprecated / not actively maintained
 
 ### Project Structure
@@ -41,7 +40,7 @@ writarcade/
 ├── contracts/              # Solidity contracts (Foundry)
 │   └── openzeppelin-contracts/  # Vendored OpenZeppelin source (build artifact)
 ├── docs/                   # Architecture, features, roadmap
-│   └── plans/              # Roadmap & reflection plans
+
 ├── domains/                # Business logic by domain
 │   ├── games/              # Game generation & management
 │   ├── assets/             # Asset creation & marketplace
@@ -193,6 +192,21 @@ const gameData = await withSharedGenerationLock(lockKey, () => GameAIService.gen
 - MezoPaymentSplitter configuration (Mezo)
 - Uses shared `cacheGet`/`cacheSet` from `lib/cache.ts` (consolidated, no duplicate `__splitCache`)
 
+## Image Generation System
+
+Multi-provider fallback chain ensures reliability:
+
+| Provider | Status | Model | Env Var | Notes |
+|----------|--------|-------|---------|-------|
+| **Venice AI** | Primary | SD 3.5 | `VENICE_API_KEY` | 1024×1024, best quality |
+| **Modal** | Fallback 1 | SDXL Turbo | `MODAL_IMAGE_GEN_URL` | Self-hosted, pay-per-use GPU |
+| **Netmind** | Fallback 2 | FLUX.1-schnell | `NETMIND_API_KEY` | OpenAI-compatible API |
+| **Pollinations** | Free tier | Flux | none | No key required, used as emergency fallback |
+
+Endpoint: `POST /api/generate-image`. Timeout: 50s per provider, 60s total. Average 3–5s on primary.
+
+Historical: HuggingFace (`api-inference.huggingface.co`) returned 410 in 2026; new router endpoint is chat-only. Lit Protocol `@lit-protocol/*` deps fully removed (superseded by Inco vaults).
+
 ## Data Models
 
 ```
@@ -272,6 +286,25 @@ WriterCoin
 - Base mainnet (v3 — per-panel FHE verdicts, gradient scoring, 2026-08-12): [`0xcc271a53e4286012f3289273fdaa32f66fa64a33`](https://basescan.org/address/0xcc271a53e4286012f3289273fdaa32f66fa64a33)
 - Shared shuffled modifier deck, per-player sessions, encrypted scoring, self-reshuffling before deck exhaustion
 - `narrativeOperator` = server wallet (decrypts cards for AI only); `SESSION_MANAGER_ROLE` on server wallet
+
+### Inco Confidential Compute — Technical Reference
+
+Two contracts power encrypted game mechanics on Base mainnet:
+
+| Contract | Role |
+|----------|------|
+| `DailyChallengeVault` | Encrypted 52-card modifier deck, per-player sessions, gradient FHE scoring (10 \| 6 \| 3 \| 1 per panel), on-chain reveal |
+| `SecretPanelVault` | Multi-chunk encrypted epilogue content, NFT-gated decryption |
+
+**How it works:**
+
+1. **Verifiably Fair Deck Shuffle** — `elist deck = e.shuffledRange(1, uint16(DECK_SIZE + 1), ETypes.Uint256)` creates an encrypted permutation of 52 cards whose order is hidden from everyone including the deployer.
+2. **Private Hand Dealing** — `startSession(day)` deals 5 cards sequentially: `card.allow(msg.sender)` + `card.allow(narrativeOperator)`. Only the player and backend can decrypt.
+3. **FHE Gradient Scoring** — Each choice scores against the hidden optimal via branch-free ring distance: `euint256 verdict = e.select(isHit, 10, e.select(distance == 1, 6, e.select(distance == 2, 3, 1)))`. Running total stays ciphertext; each panel's verdict is `allow()`-ed to the player for UI feedback.
+4. **Player-Initiated Reveal** — `completeAndReveal(sessionId)` transitions all encrypted values to public state on-chain.
+5. **NFT-Gated Secret Epilogues** — `SecretPanelVault` stores multi-chunk `euint256` handles; client-side `attestedDecrypt` proves ownership before releasing plaintext.
+
+Without Inco these mechanics are impossible on a transparent blockchain (deck order, hidden hands, secret scoring, gated content). Full file map and Solidity excerpts are embedded above in this doc.
 
 ### Mezo Matsnet (Chain ID: 31611) — archived hackathon track
 

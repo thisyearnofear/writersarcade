@@ -25,7 +25,7 @@ export interface VideoGenerationRequest {
   /**
    * Native output ratio. Video must be composited at its native ratio — never
    * crop a wide clip for Stories (the object gets cut). Defaults to vertical
-   * 9:16 for the social hero clip. See docs/VIDEO_ARTIFACT_PIPELINE.md.
+   * 9:16 for the social hero clip. See docs/FEATURES.md (Video Artifact Pipeline section).
    */
   aspectRatio?: VideoAspectRatio
   /** Per-request duration override (seconds). Draft/preview clips use a short

@@ -2,7 +2,7 @@
  * Video pre-production: build a locked, type-free "real scene" still from the
  * comic's ending beat, plus a 3×3 storyboard grid as the visual DNA.
  *
- * Rationale (see docs/VIDEO_ARTIFACT_PIPELINE.md and the 2026 playbook):
+ * Rationale (see docs/FEATURES.md (Video Artifact Pipeline section) and the 2026 playbook):
  * - DO NOT feed the comic page itself to I2V — it will "film a comic".
  *   Instead lock ONE photorealistic still (object, light, grade) and let the
  *   motion prompt describe ONLY the real scene's camera move.

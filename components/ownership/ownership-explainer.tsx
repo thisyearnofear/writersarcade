@@ -7,7 +7,7 @@ import { BadgeCheck, Network, Coins, ArrowRight } from 'lucide-react'
  *
  * Full variant renders three benefit-led cards (learn page). Compact variant
  * renders a horizontal strip (finale disclosure, where the money decision
- * happens). Copy stays at two sentences per step — see docs/UX_PRINCIPLES.md.
+ * happens). Copy stays at two sentences per step — see docs/CREATION_UX.md (UX Principles section).
  */
 
 const STEPS = [

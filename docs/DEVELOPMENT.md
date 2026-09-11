@@ -102,9 +102,9 @@ NETMIND_API_KEY="..."             # Secondary image fallback
 BASE_RPC_URL="https://mainnet.base.org"
 STORY_RPC_URL="https://aeneid.storyrpc.io"
 STORY_WALLET_KEY="0x..."          # For server-side Story txs
-PINATA_JWT="pina_..."             # IPFS metadata + durable hero-video bytes; required for shareable video
+PINATA_JWT="pina_..."             # Optional — fallback for durable media bytes (must be a JWT, not an API key)
 IPFS_GATEWAY="https://gateway.pinata.cloud"
-GROVE_CHAIN_ID="8453"             # Metadata fallback only; not currently used for video bytes
+GROVE_CHAIN_ID="8453"             # Grove (Lens storage) — primary for media bytes; mainnet id required for retention
 
 # Hero video artifact pipeline (server-side only)
 RUNWARE_API_KEY="..."             # Preferred image-to-video provider
@@ -260,17 +260,17 @@ Runs `pnpm type-check` before every push. Bypass with `git push --no-verify`.
 The system auto-fallbacks: Venice AI → Modal → Netmind
 
 ### Hero Video Pipeline
-The finale animation is intentionally a post-completion optional upgrade. It generates one short hero reveal from the final panel rather than a five-panel montage. Runware is preferred, followed by Luma, fal, and Replicate when configured. Provider names are hidden from users; they choose a motion style.
+The finale animation is intentionally a post-completion optional upgrade. It generates one short hero reveal from the final panel rather than a five-panel montage. fal (MiniMax H3) is preferred in production (`VIDEO_PROVIDER=fal`), followed by Runware, Luma, and Replicate when configured.
 
 Production requirements:
 
-- Set `PINATA_JWT` before enabling paid animation. Provider-hosted URLs are temporary; if durable upload fails, the animation is marked failed and the credit charge is refunded.
+- Durable upload uses Grove first (keyless, `GROVE_CHAIN_ID` must stay on a mainnet id), then Pinata if `PINATA_JWT` is set. Provider-hosted URLs are temporary; if durable upload fails, the animation is marked failed and the credit charge is refunded.
 - Apply the five committed video/analytics migrations with `pnpm db:deploy` in staging/production before using the new routes. Never use `prisma migrate reset` against a shared or production database.
 - Keep `FEATURE_VIDEO_PIPELINE` and provider secrets server-side. `NEXT_PUBLIC_FEATURE_VIDEO_PIPELINE` is only a client-visible UI flag; never expose provider API keys in `NEXT_PUBLIC_*` variables.
 - The public path is limited to one active hero job per game, two starts per user per minute, and 3–8 second clips (5 seconds by default).
 - A status read coordinates upstream polling and can reclaim stale reservations after 15 minutes. For production scale, add webhook/background reconciliation so recovery does not depend only on a user revisiting the page.
 
-See [Video Artifact Pipeline](./VIDEO_ARTIFACT_PIPELINE.md) for the product contract, provider behavior, credit safety, analytics, and future montage plan.
+See [Video Artifact Pipeline](#video-artifact-pipeline) in FEATURES.md above for the product contract, provider behavior, credit safety, analytics, and future montage plan.
 
 **Modal setup**: See [docs/MODAL_SETUP.md](./MODAL_SETUP.md)
 
@@ -348,3 +348,34 @@ Tests use Vitest with mocked Prisma and fake timers for retry/backoff logic. Tes
 - Keep PRs focused on single features
 - Update docs if changing public APIs
 - Domain services > inline logic in API routes
+
+---
+
+## WARP Guidance
+
+This file provides guidance to WARP (warp.dev) when working with code in this repository.
+
+### High-level architecture
+
+WritArcade is a unified Next.js 16 + TypeScript codebase that serves two closely related products:
+
+1. **Quick Games** – transform a single article into a complete, playable game in ~2 minutes (current MVP).
+2. **Asset Marketplace** – decompose articles into reusable game assets and compose collaborative games from those assets.
+
+Both products share the same infrastructure (wallet abstraction, payment logic, AI services, database) but are kept architecturally separated at the domain and routing level.
+
+### Key project-specific guidelines
+
+- Prefer **enhancing existing services and components** (e.g. `GameAIService`, `ImageGenerationService`, `ContentProcessorService`) over introducing parallel copies for similar behavior.
+- Keep **payments and wallet behavior centralized**:
+  - Use the wallet abstraction in `lib/wallet/` instead of talking directly to specific wallets from components.
+  - Use `domains/payments` for all cost/revenue logic and payment endpoint behavior.
+- Maintain the separation between **Quick Games** (existing game flow under `domains/games` and `app/games`) and the **Asset Marketplace** (under `domains/assets` and `app/assets`), while sharing infrastructure where it's already centralized.
+- For the Mini App, always ensure `sdk.actions.ready()` (via `readyMiniApp()`) is called once the UI is ready, and use the Farcaster SDK helpers from `lib/farcaster.ts` instead of re-implementing protocol calls.
+- When introducing new database fields or models, prefer extending the existing Prisma schema in `prisma/schema.prisma` and using the established migration workflow (Prisma + `pnpm db:*` scripts).
+
+For more detailed design and implementation notes, consult:
+- `README.md` – product overview, core flow, and high-level tech stack.
+- `docs/ARCHITECTURE.md` – system design, tech stack, data models, smart contracts.
+- `docs/FEATURES.md` – platform features, roadmap, integrations.
+- `docs/CREATION_UX.md` – creation UX contract and UX principles.

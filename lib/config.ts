@@ -76,7 +76,8 @@ export const config = {
 
   /**
    * IPFS Configuration
-   * - Production: REQUIRES PINATA_JWT, throws error if missing
+   * - Media persistence: Grove primary (keyless, immutable, GROVE_CHAIN_ID);
+   *   Pinata fallback when PINATA_JWT is set
    * - Development: Uses mock IPFS for faster iteration
    */
   ipfs: {

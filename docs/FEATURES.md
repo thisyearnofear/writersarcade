@@ -30,8 +30,6 @@ See the [Creation UX Contract](./CREATION_UX.md) for the decision record, feedba
 4. **Play / embed**: Try it, share the embed code, or buy credits for more
 5. **Analyze**: Use Resonance insights to see which framings readers choose
 
-This flow is wallet-free for the first story and targets marketers, copywriters, and brand teams who want to test messaging through play.
-
 ## Key Features
 
 ### AI Game Generation
@@ -121,25 +119,6 @@ Owner-gated analytics at `/games/[slug]/insights`:
 - **Marketplace Sidebar**: Inject community assets into games
 - **Database Persistence**: Save drafts, iterate over time
 - Assets typed as: `pack`, `character`, `mechanic`, `plot`
-
-### Image Generation (Multi-Provider)
-Auto-fallback chain ensures reliability:
-
-1. **Venice AI** (Primary) - `venice-sd35`, 1024x1024
-2. **Modal** (Fallback 1) - Self-hosted SD 1.5, 512x512, pay-per-use GPU
-3. **Netmind AI** (Fallback 2) - OpenAI-compatible API
-
-See [scripts/modal/README.md](../scripts/modal/README.md) for Modal deployment.
-
-### Mezo MUSD Payments — archived hackathon track
-History lives in [`docs/HACKATHONS_ARCHIVE.md`](./HACKATHONS_ARCHIVE.md#3-mezo-hackathon-musd-track-aprmay-2026--archived). Code remains for reference (`MUSDStrategy`, `MezoPaymentSplitter`/`MezoBoostedSplitter`, `useMezoBalance`, "MEZO Holder" badge).
-
-- **MUSD Strategy**: Native payment support on Mezo Matsnet (Chain ID 31611).
-- **On-chain Splitter**: Uses `MezoPaymentSplitter` to atomically distribute MUSD to writers, creators, and the platform.
-- **MEZO Holder Perks**:
-    - **Detection**: `useMezoBalance` hook detects MEZO token holders on-chain.
-    - **Badge**: "MEZO Holder" status surfaces in the payment flow for wallets with ≥ 1 MEZO.
-    - **Future-Proof**: Roadmap includes on-chain boosted splits for MEZO holders via `MezoBoostedSplitter`.
 
 ### Creative Control
 - **Image Regeneration**: "New Image" button per panel with loading state
@@ -266,11 +245,12 @@ Game Creation → createGameHypercert() (async, non-blocking)
 
 ### IPFS Storage (Pinata + Grove)
 
-**Primary**: `PINATA_JWT` environment variable
-**Fallback**: Grove immutable upload via `https://api.grove.storage`, using `GROVE_CHAIN_ID` (defaults to Base mainnet `8453`)
-**Usage**: Metadata uploads for Story Protocol IP registration
+**Primary (metadata)**: `PINATA_JWT` environment variable
+**Primary (media bytes)**: Grove immutable upload via `https://api.grove.storage` — keyless, anchored to `GROVE_CHAIN_ID` (Base mainnet `8453`; never a testnet id, which has weaker retention)
+**Fallback**: Grove for metadata, Pinata for media (when `PINATA_JWT` is set)
+**Usage**: Metadata uploads for Story Protocol IP registration; durable persistence for generated video/stills
 
-For the optional hero-video artifact pipeline, Pinata is also required for binary media persistence. Grove currently covers metadata only; a provider-hosted video URL is not treated as durable. See [Video Artifact Pipeline](./VIDEO_ARTIFACT_PIPELINE.md).
+For the optional hero-video artifact pipeline, Grove persists binary media (panel clips, montage films, stills) — a provider-hosted video URL is not treated as durable. See [Video Artifact Pipeline](#video-artifact-pipeline) below.
 
 - Production: Server-side upload route tries Pinata first, then Grove fallback if Pinata is missing or fails
 - Development: Mock IPFS hash generation (for testing)
@@ -327,20 +307,86 @@ Splits fetched live from contract via `fetchGenerationDistributionOnChain()` / `
 - Auto-retry after 2 seconds
 - User-friendly error messages for wallet/chain issues
 
-## Smart Contracts
+## Video Artifact Pipeline
 
-### GameNFT (ERC-721)
-**Address**: `NEXT_PUBLIC_GAME_NFT_MAINNET` (Base Mainnet)
-- Mints games as NFTs on Base mainnet
-- On-chain metadata: creator, article URL, genre, difficulty
-- ERC-2981 royalties and collection metadata
+Animation is an optional post-completion upgrade. The product contract stages three levels:
 
-### WriterCoinPayment
-**Address**: `NEXT_PUBLIC_WRITER_COIN_PAYMENT_MAINNET` (Base Mainnet)
-- Handles writer coin payments for generation + minting
-- Dynamic revenue splits (configurable per coin)
-- SafeERC20 transfers, reentrancy guards, pause control
-- Full mint-cost collection with creator/writer/platform distribution and minter refund
+1. **Preview the look (free)** — `POST /api/games/[slug]/video/preview`: generates a type-free "real scene" locked still (`videoStillUrl`) with no credit charge.
+2. **Check the motion (free)** — `POST /api/games/[slug]/video/draft`: 3-second single-camera draft from the locked still, rate-limited, no charge.
+3. **Animate the whole comic (paid, 100 credits)** — `POST /api/games/[slug]/video/montage`: sequential panel-by-panel rendering reusing locked stills; `end_image_url` chaining produces one continuous film; ffmpeg concat on the VPS → Pinata. Refunded on total failure only.
+4. **Per-panel micro-upsell (10 credits)** — `POST /api/games/[slug]/video/animate-panel`: single-panel I2V, panel-scoped charge tracking, mutually exclusive with hero upsell reservation.
 
-### MezoPaymentSplitter — archived hackathon track
-**Address**: `0x32D0356f533cC429F94Db73f383bBb21a459E16b` (Mezo Matsnet) — see [`docs/HACKATHONS_ARCHIVE.md`](./HACKATHONS_ARCHIVE.md#3-mezo-hackathon-musd-track-aprmay-2026--archived).
+**H3-era economics** (fal MiniMax H3 family): ~$0.01–0.05 per 5s clip at 768p. Faster-than-playback inference enables just-in-time panel animation inside the play session.
+
+**Provider order** (server-side, hidden from users): `VIDEO_PROVIDER=fal` in prod → fal (MiniMax H3) → Runware (kling) → Luma → Replicate → mock. Users choose a motion style, not an infrastructure vendor.
+
+**Production requirements**: Durable storage via Grove needs no credential (`GROVE_CHAIN_ID` defaults to Base mainnet `8453`); `PINATA_JWT` is the optional fallback. `FEATURE_VIDEO_PIPELINE` + `NEXT_PUBLIC_FEATURE_VIDEO_PIPELINE` flags control server and client. One active hero job per game; two starts per user per minute; 3–8 second clips (5s default). Status reads recover stale reservations after 15 minutes.
+
+**Growth metric**: `animation started → hero artifact shared → attributed landing visit → creation started → story completed`
+
+Full spec is embedded in the Video Artifact Pipeline section above.
+
+## Roadmap
+
+### Completed Phases
+
+| Phase | Description | Status |
+|-------|-------------|--------|
+| 1–6 | Foundation & MVP (article→game pipeline, NFT minting, writer coins, smart contracts) | ✅ |
+| 7 | MVP Enhancements (asset preview, image regen, prompt visibility, toast notifications) | ✅ |
+| 8 | Quality & UX (narrative preview, article fidelity review, NPS feedback, ErrorBoundary) | ✅ |
+| 9 | Production Polish (5 writer coins, writer profiles, editorial redesign, IPAttribution bar) | ✅ |
+| 10 | Asset Marketplace (discovery, pagination, genre filtering, create page fix) | ✅ |
+| 11 | Asset Derivation (post-mint extraction, PATCH handler, Story Protocol derivative path) | ✅ |
+| 12 | PL Genesis (Lit Protocol secret panels, NFT-gated UI, Hypercerts background enrichment) | ✅ |
+| 13 | Wordle Revival + Farcaster (Wordle free tier, Farcaster cast sharing, daily homepage section) | ✅ |
+| 18–21 | Identity, Resonance & Embeds (progressive identity, magic link, `/studio` free demo, Resonance dashboard, embed player) | ✅ |
+| 22 | Generation UX & Payment Reliability (generation timeout/cancellation, atomic credit spend, cross-instance dedup lock) | ✅ |
+
+### Current Initiative: Creation UX (August 2026)
+
+The first-run creation flow follows the [Creation UX Contract](./CREATION_UX.md): **Source → Story direction → Generate**. Creation is compact and mobile-first; advanced payment/model controls stay progressively disclosed.
+
+**Delivered:**
+- [x] Compact mobile creation hierarchy, outcome-based labels
+- [x] Non-spoiler five-beat story shape preview
+- [x] Clear post-generation expansion language
+- [x] Instrumented funnel (`ProductAnalyticsEvent` persistence)
+- [x] 390×844 mobile validation checkpoint
+- [x] Admin-only funnel report (`GET /api/admin/analytics/funnel?days=30`)
+
+**Next:**
+- [ ] Retention/cleanup policy for `ProductAnalyticsEvent`
+- [ ] Completion tray as home for share, ownership, reader insights, animation
+- [ ] Test demand for alternate endings before building full editor
+- [ ] Promote Workshop/Creator Studio as refinement, not prerequisite
+
+### Platform Maturity
+
+| Component | Status |
+|-----------|--------|
+| Game Generation | ✅ Production (cross-instance `GenerationLock` dedup, `paymentId` unique) |
+| Asset Workshop | ✅ Production (full WYSIWYG editor) |
+| NFT Minting | ✅ Production (Base mainnet) |
+| Story Protocol IP | ✅ Testnet (Aeneid) |
+| Inco Vault | ✅ Production (encrypted modifier deck + secret panels) |
+| Image Generation | ✅ Production (multi-provider fallback) |
+| Payments | ✅ Production (5 writer coins, standardized credit spend) |
+| Marketplace | ✅ Production (browse + compose) |
+| Panel Narration | ✅ Shipped (ElevenLabs TTS + auto-play) |
+| Panel Animation (I2V) | ✅ Shipped (Runware/Luma/fal/Replicate registry, 50cr upsell) |
+| Hypercerts | ✅ Deprecated (preserved for reference) |
+| Mezo MUSD | 📦 Archived hackathon |
+| Story CDR | 📦 Archived hackathon |
+
+### Future Roadmap
+
+- **Media Expansion**: Directed cut (`reference-to-video`), animated BasePaint canvas for Daily, social sharing integrations, animated panel transitions
+- **Advanced Gameplay**: Branching narratives with consequences, character stats, multiplayer story contributions, persistent game worlds
+- **Farcaster Integration**: Webhook notifications, push notifications for new games from followed writers, `NotificationToken` model
+- **Story Protocol Mainnet**: Deploy when available on Base, multi-asset derivative games, royalty automation, cross-chain IP verification
+- **Platform Scaling**: Redis caching, BullMQ background jobs, database read replicas, CDN for static assets, APM
+
+## Past Hackathons (Archived)
+
+All hackathon history except the live Flynn/Photon iMessage agent lives in [`docs/HACKATHONS_ARCHIVE.md`](./HACKATHONS_ARCHIVE.md): BasePaint (Aug 2026), Inco Summer Game Jam, Mezo MUSD track, CDR, Etherfuse, SuperRare, Arbitrum, Bitso.

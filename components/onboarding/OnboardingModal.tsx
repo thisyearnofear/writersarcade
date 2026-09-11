@@ -16,7 +16,7 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
 
   // Three steps only. The secret-epilogue and daily-challenge concepts are
   // taught in-context (in-game coach, ConceptTooltip, nav) rather than
-  // explained twice up front — see docs/UX_PRINCIPLES.md.
+  // explained twice up front — see docs/CREATION_UX.md (UX Principles section).
   const steps = [
     {
       icon: Gamepad2,

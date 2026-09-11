@@ -1,16 +1,24 @@
 import { config, logger } from '@/lib/config'
 
+const GROVE_API_URL = 'https://api.grove.storage'
+const MAX_MEDIA_BYTES = 100 * 1024 * 1024
+const GROVE_PROPAGATION_ATTEMPTS = 4
+const GROVE_PROPAGATION_DELAY_MS = 2_000
+
 /**
- * Copy a generated media URL to Pinata so temporary provider URLs are not used
- * as permanent public artifacts. Returns null when durable upload is unavailable.
+ * Copy a generated media URL to durable storage so temporary provider URLs are
+ * not used as permanent public artifacts. Returns null when upload fails.
+ *
+ * Primary: Grove (Lens storage) — keyless immutable uploads anchored to
+ * GROVE_CHAIN_ID (Base mainnet 8453 — never a testnet, which has weaker
+ * retention). Fallback: Pinata when PINATA_JWT is configured.
  */
 export function isDurableMediaPersistenceAvailable(): boolean {
-  return Boolean(config.ipfs.pinataJwt)
+  // Grove needs no credential — durable persistence is always available.
+  return true
 }
 
 export async function persistMediaUrl(mediaUrl: string, fileName: string): Promise<string | null> {
-  if (!config.ipfs.pinataJwt) return null
-
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 30_000)
 
@@ -22,16 +30,20 @@ export async function persistMediaUrl(mediaUrl: string, fileName: string): Promi
     if (!mediaResponse.ok) throw new Error(`Media download failed: ${mediaResponse.status}`)
 
     const contentLength = Number(mediaResponse.headers.get('content-length') || 0)
-    if (contentLength > 100 * 1024 * 1024) {
+    if (contentLength > MAX_MEDIA_BYTES) {
       throw new Error('Generated media exceeds the 100MB persistence limit')
     }
 
     const buffer = await mediaResponse.arrayBuffer()
-    if (buffer.byteLength > 100 * 1024 * 1024) {
+    if (buffer.byteLength > MAX_MEDIA_BYTES) {
       throw new Error('Generated media exceeds the 100MB persistence limit')
     }
 
-    return await pinBuffer(buffer, fileName, mediaResponse.headers.get('content-type') || 'video/mp4')
+    return await persistMediaBuffer(
+      buffer,
+      fileName,
+      mediaResponse.headers.get('content-type') || 'video/mp4'
+    )
   } catch (error) {
     logger.warn('Generated media persistence failed; retaining provider URL', {
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -52,20 +64,92 @@ export async function persistMediaBuffer(
   fileName: string,
   contentType = 'video/mp4'
 ): Promise<string | null> {
-  if (!config.ipfs.pinataJwt) return null
-  if (buffer.byteLength > 100 * 1024 * 1024) return null
+  if (buffer.byteLength > MAX_MEDIA_BYTES) return null
   try {
-    return await pinBuffer(buffer, fileName, contentType)
+    const groveUrl = await uploadToGrove(buffer, fileName, contentType)
+    if (groveUrl) return groveUrl
   } catch (error) {
-    logger.warn('Media buffer persistence failed', {
+    logger.warn('Grove media persistence failed; trying Pinata', {
       error: error instanceof Error ? error.message : 'Unknown error',
       type: 'hero-video',
     })
-    return null
   }
+  if (config.ipfs.pinataJwt) {
+    try {
+      return await pinToPinata(buffer, fileName, contentType)
+    } catch (error) {
+      logger.warn('Pinata media persistence failed', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        type: 'hero-video',
+      })
+    }
+  }
+  return null
 }
 
-async function pinBuffer(
+interface GroveUploadResponse {
+  storage_key?: string
+  gateway_url?: string
+  uri?: string
+  status_url?: string
+}
+
+/**
+ * One-step immutable Grove upload: raw bytes POSTed with chain_id selecting the
+ * ACL/retention anchor. No credential required for immutable content.
+ * 202 = accepted, propagating to underlying storage asynchronously — wait
+ * briefly so the returned gateway URL is actually fetchable.
+ */
+async function uploadToGrove(
+  buffer: ArrayBuffer | Uint8Array,
+  fileName: string,
+  contentType: string
+): Promise<string | null> {
+  const chainId = Number.isFinite(config.ipfs.groveChainId) ? config.ipfs.groveChainId : 8453
+  const response = await fetch(`${GROVE_API_URL}/?chain_id=${chainId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': contentType },
+    body: new Uint8Array(buffer),
+  })
+  if (!response.ok && response.status !== 202) {
+    const body = await response.text().catch(() => '')
+    throw new Error(`Grove upload failed: ${response.status}${body ? ` - ${body.slice(0, 200)}` : ''}`)
+  }
+
+  const data = (await response.json()) as GroveUploadResponse | GroveUploadResponse[]
+  const result = Array.isArray(data) ? data[0] : data
+  if (!result?.gateway_url) {
+    throw new Error('Grove upload failed: response did not include gateway_url')
+  }
+
+  if (response.status === 202) {
+    await waitForGrovePropagation(result.gateway_url)
+  }
+
+  logger.ipfs('Persisted generated media', {
+    uri: result.gateway_url,
+    storageKey: result.storage_key,
+    fileName,
+    type: 'hero-video',
+  })
+  return result.gateway_url
+}
+
+async function waitForGrovePropagation(gatewayUrl: string): Promise<void> {
+  for (let attempt = 0; attempt < GROVE_PROPAGATION_ATTEMPTS; attempt++) {
+    try {
+      const probe = await fetch(gatewayUrl, { method: 'HEAD' })
+      if (probe.ok) return
+    } catch {
+      // Propagation in progress; retry.
+    }
+    await new Promise((resolve) => setTimeout(resolve, GROVE_PROPAGATION_DELAY_MS))
+  }
+  // Not fatal — the URL is allocated and will serve once propagation lands.
+  logger.warn('Grove media still propagating; returning gateway URL anyway', { uri: gatewayUrl })
+}
+
+async function pinToPinata(
   buffer: ArrayBuffer | Uint8Array,
   fileName: string,
   contentType: string
