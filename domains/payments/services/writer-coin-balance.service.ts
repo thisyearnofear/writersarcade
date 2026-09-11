@@ -1,6 +1,7 @@
-import { createPublicClient, http } from 'viem'
+import { createPublicClient } from 'viem'
 import { base } from 'viem/chains'
 import { getWriterCoinById } from '@/lib/writer-coins'
+import { baseRpcTransport } from '@/lib/base-rpc'
 
 export interface WriterCoinBalanceResponse {
   success: true
@@ -45,35 +46,10 @@ export async function fetchWriterCoinBalance(wallet: string, coinId = 'avc'): Pr
     return { success: true, data: cached.data }
   }
 
-  const rpcUrls = [
-    process.env.BASE_RPC_URL,
-    'https://mainnet.base.org',
-    'https://base.llamarpc.com',
-    'https://base-mainnet.public.blastapi.io',
-    'https://rpc.ankr.com/base',
-  ].filter(Boolean) as string[]
-
-  let client = null
-  let lastError: unknown
-
-  for (const rpcUrl of rpcUrls) {
-    try {
-      const candidate = createPublicClient({
-        chain: base,
-        transport: http(rpcUrl, { timeout: 8000 }),
-      })
-      await candidate.getChainId()
-      client = candidate
-      break
-    } catch (error) {
-      lastError = error
-      client = null
-    }
-  }
-
-  if (!client) {
-    throw new Error(`All RPC providers failed. Last error: ${lastError instanceof Error ? lastError.message : 'Unknown'}`)
-  }
+  const client = createPublicClient({
+    chain: base,
+    transport: baseRpcTransport(),
+  })
 
   const abi = [{
     name: 'balanceOf',

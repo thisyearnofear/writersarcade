@@ -5,7 +5,6 @@ import { useAccount, useChainId, useSwitchChain, useWalletClient } from 'wagmi'
 import { useGetCurrentAccount } from '@mezo-org/passport'
 import Link from 'next/link'
 import { Header } from '@/components/layout/header'
-import { Footer } from '@/components/layout/footer'
 import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
 import { Badge } from '@/components/ui/badge'
 import { LicenseConfigurator } from './LicenseConfigurator'
@@ -297,7 +296,6 @@ export function DashboardClient({ initialSummary }: DashboardClientProps) {
           </section>
         </main>
 
-        <Footer />
       </div>
     </ThemeWrapper>
   )

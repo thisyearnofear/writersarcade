@@ -71,19 +71,38 @@ export class VoiceNarrationService {
     }
 
     try {
-      const response = await fetch(this.getApiEndpoint(), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: narrativeText, voice }),
-      })
+      let data: { audioUrl: string | null; durationMs?: number | null; error?: string } | null = null
+      let backendFailed = false
+      const endpoint = this.getApiEndpoint()
 
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error('[VoiceNarration] API error:', response.status, errorText)
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: narrativeText, voice }),
+        })
+
+        if (!response.ok) {
+          const errorText = await response.text()
+          console.error('[VoiceNarration] API error:', response.status, errorText)
+          backendFailed = true
+        } else {
+          data = await response.json()
+        }
+      } catch (error) {
+        backendFailed = true
+        console.warn('[VoiceNarration] Endpoint unreachable:', error instanceof Error ? error.message : error)
+      }
+
+      // Server-side fallback: run TTS in-process if the backend route failed.
+      if (backendFailed && typeof window === 'undefined') {
+        const { generateAudio } = await import('@/domains/media/services/audio-generation.service')
+        data = await generateAudio({ text: narrativeText, voice })
+      }
+      if (!data) {
         return this.createFailedResult(voice)
       }
 
-      const data = await response.json()
       const result: VoiceNarrationResult = {
         audioUrl: data.audioUrl || null,
         durationMs: data.durationMs || null,

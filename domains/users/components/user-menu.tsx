@@ -15,8 +15,8 @@ import {
   LayoutDashboard,
   HelpCircle
 } from 'lucide-react'
-import { useAccount, useDisconnect } from 'wagmi'
-import { createPublicClient, http } from 'viem'
+import { useAccount, useDisconnect, useEnsName, useEnsAvatar } from 'wagmi'
+import { normalize } from 'viem/ens'
 import { mainnet } from 'viem/chains'
 import { useAccountModal } from '@rainbow-me/rainbowkit'
 import { WalletConnect } from '@/components/ui/wallet-connect'
@@ -41,9 +41,21 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
   const kebabRef = useRef<HTMLButtonElement | null>(null)
   const [profile, setProfile] = useState<FarcasterProfile | null>(null)
   const [_isLoadingProfile, setIsLoadingProfile] = useState(false)
-  const [ensName, setEnsName] = useState<string | null>(null)
-  const [ensAvatar, setEnsAvatar] = useState<string | null>(null)
   const router = useRouter()
+
+  // ENS name + avatar via wagmi (uses the configured CORS-friendly mainnet transport)
+  const { data: ensNameData } = useEnsName({
+    address,
+    chainId: mainnet.id,
+    query: { enabled: Boolean(address && isConnected) },
+  })
+  const ensName = ensNameData ?? null
+  const { data: ensAvatarData } = useEnsAvatar({
+    name: ensName ? normalize(ensName) : undefined,
+    chainId: mainnet.id,
+    query: { enabled: Boolean(ensName) },
+  })
+  const ensAvatar = ensAvatarData ?? null
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -70,38 +82,6 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
     loadProfile()
   }, [address, isConnected])
 
-  // Fetch ENS name + avatar from Ethereum mainnet
-  useEffect(() => {
-    if (!address || !isConnected) {
-      setEnsName(null)
-      setEnsAvatar(null)
-      return
-    }
-
-    const mainnetClient = createPublicClient({
-      chain: mainnet,
-      transport: http(),
-    })
-
-    let cancelled = false
-    mainnetClient.getEnsName({ address: address as `0x${string}` })
-      .then((name) => {
-        if (cancelled) return
-        setEnsName(name || null)
-        if (!name) return null
-        return mainnetClient.getEnsAvatar({ name })
-      })
-      .then((avatar) => {
-        if (cancelled) return
-        if (avatar) setEnsAvatar(avatar)
-      })
-      .catch(() => {
-        // ENS is a best-effort enhancement; ignore resolution failures.
-      })
-
-    return () => { cancelled = true }
-  }, [address, isConnected])
-
   // Priority: ENS name > Farcaster username > truncated address
   const displayName = ensName
     ? ensName
@@ -112,6 +92,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
         : 'User'
 
   // Priority: ENS avatar > Farcaster PFP > deterministic identicon
+  const hasAvatarImage = Boolean(ensAvatar || profile?.pfpUrl)
   const avatarUrl = ensAvatar || profile?.pfpUrl || `https://api.dicebear.com/7.x/identicon/svg?seed=${address || 'user'}`
 
   const handleLogout = async () => {
@@ -146,7 +127,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
         aria-label="Manage wallet"
         title="Manage wallet"
       >
-        {profile?.pfpUrl ? (
+        {hasAvatarImage ? (
           <img
             src={avatarUrl}
             alt={displayName}
@@ -220,7 +201,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
           >
             <div className="p-4 border-b border-border bg-gradient-to-r from-purple-900/20 to-pink-900/20">
               <div className="flex items-center space-x-3">
-                {profile?.pfpUrl ? (
+                {hasAvatarImage ? (
                   <img
                     src={avatarUrl}
                     alt={displayName}

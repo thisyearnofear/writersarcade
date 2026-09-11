@@ -34,6 +34,55 @@ export class ImageGenerationService {
     const backendUrl = process.env.API_BACKEND_URL || 'https://api.snel.famile.xyz/writersarcade'
     return `${backendUrl}/api/generate-image`
   }
+
+  /** In-process fallback: run the provider chain locally when the backend is unreachable. */
+  private static async callProviderChain(params: {
+    prompt: string
+    model: string
+    provider: string
+  }): Promise<ImageGenerationResult> {
+    const { generateImage: generateImageApi } = await import('@/domains/media/services/image-generation-api.service')
+    const data = await generateImageApi({ prompt: params.prompt, type: 'narrative', model: params.model, provider: params.provider })
+    return {
+      imageUrl: data.imageUrl || null,
+      model: data.model || params.model,
+      provider: (data.provider || 'failed') as ImageProvider,
+      timestamp: Date.now(),
+    }
+  }
+
+  /** Server-side: try the VPS backend first, fall back to the in-process chain. */
+  private static async callBackendOrLocal(params: {
+    prompt: string
+    model: string
+    provider: string
+  }): Promise<ImageGenerationResult> {
+    try {
+      const response = await fetch(this.getApiEndpoint(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: params.prompt,
+          type: 'narrative',
+          model: params.model,
+          provider: params.provider,
+        }),
+      })
+      if (response.ok) {
+        const data = await response.json()
+        return {
+          imageUrl: data.imageUrl || null,
+          model: data.model || params.model,
+          provider: (data.provider || params.provider) as ImageProvider,
+          timestamp: Date.now(),
+        }
+      }
+      console.warn(`[Image] Backend returned ${response.status}; falling back to in-process chain`)
+    } catch (error) {
+      console.warn('[Image] Backend unreachable; falling back to in-process chain:', error instanceof Error ? error.message : error)
+    }
+    return this.callProviderChain(params)
+  }
   private static readonly CACHE = new Map<string, ImageGenerationResult>() // prompt → result with metadata
   
   // Venice AI models (primary provider)
@@ -263,30 +312,33 @@ export class ImageGenerationService {
       const provider = this.selectProvider()
       // Use preferredModel if provided, else random
       const selectedModel = params.preferredModel || this.getRandomModel(provider)
-      
-      const response = await fetch(this.getApiEndpoint(), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: enhancedPrompt,
-          model: selectedModel,
-          type: 'narrative',
-          provider
-        }),
-      })
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-      }
+      const result = typeof window === 'undefined'
+        ? await this.callBackendOrLocal({ prompt: enhancedPrompt, model: selectedModel, provider })
+        : await (async () => {
+            const response = await fetch(this.getApiEndpoint(), {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                prompt: enhancedPrompt,
+                model: selectedModel,
+                type: 'narrative',
+                provider
+              }),
+            })
 
-      const data = await response.json()
-      
-      const result: ImageGenerationResult = {
-        imageUrl: data.imageUrl || null,
-        model: selectedModel,
-        provider: data.provider || provider,
-        timestamp: Date.now(),
-      }
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+            }
+
+            const data = await response.json()
+            return {
+              imageUrl: data.imageUrl || null,
+              model: selectedModel,
+              provider: (data.provider || provider) as ImageProvider,
+              timestamp: Date.now(),
+            } satisfies ImageGenerationResult
+          })()
 
       // Cache the result
       this.CACHE.set(cacheKey, result)
@@ -373,41 +425,21 @@ export class ImageGenerationService {
       return this.CACHE.get(prompt)!
     }
 
-    // If server-side, delegate to the API route which handles the full fallback chain
-    // (modal -> netmind -> venice). This avoids duplicating fallback logic.
+    // Server-side: prefer the VPS backend; fall back to the in-process chain.
     if (typeof window === 'undefined') {
       const provider = this.selectProvider()
       const selectedModel = this.getRandomModel(provider)
-      
-      console.log(`[Image] Attempting ${provider} with model ${selectedModel}`)
-      
-      try {
-        const response = await fetch(this.getApiEndpoint(), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            prompt,
-            type: 'narrative',
-            model: selectedModel,
-            provider,
-          }),
-        })
 
-        if (response.ok) {
-          const data = await response.json()
-          const imageResult: ImageGenerationResult = {
-            imageUrl: data.imageUrl || null,
-            model: data.model || selectedModel,
-            provider: data.provider || provider,
-            timestamp: Date.now(),
-          }
-          if (imageResult.imageUrl) {
-            this.CACHE.set(prompt, imageResult)
-          }
-          return imageResult
+      console.log(`[Image] Attempting ${provider} with model ${selectedModel}`)
+
+      try {
+        const imageResult = await this.callBackendOrLocal({ prompt, model: selectedModel, provider })
+        if (imageResult.imageUrl) {
+          this.CACHE.set(prompt, imageResult)
         }
+        return imageResult
       } catch (error) {
-        console.error('[Image] Server-side fetch failed:', error)
+        console.error('[Image] Server-side generation failed:', error)
       }
 
       return {

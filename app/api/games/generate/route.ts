@@ -27,6 +27,10 @@ import {
 } from '@/lib/daily-challenge'
 import { buildBasePaintSourceUrl, buildDualSourceUrl } from '@/lib/basepaint/source-url'
 
+// Generation = content processing + AI + image + save, and concurrent requests
+// may wait on the shared generation lock. Give the function real headroom.
+export const maxDuration = 300
+
 // Request validation schema
 const generateGameSchema = z.object({
   promptText: z.string().max(20_000).optional(),
@@ -333,10 +337,16 @@ Your game MUST authentically interpret this article's core themes. Players shoul
       logger.info('Calling GameAIService.generateGame with prompt length:', { promptLength: gameRequest.promptText?.length })
       const cacheKey = buildGenerationCacheKey({
         url: validatedData.url,
+        // Prompt hash keeps daily/BasePaint generations keyed to their actual
+        // day + theme (the URL field is empty for those flows), and prevents a
+        // yesterday's-cached-result collision across days.
+        prompt: processedPrompt,
         genre: validatedData.customization?.genre,
         difficulty: validatedData.customization?.difficulty,
         mode: 'story',
-        actorId: actor?.user.id,
+        // Fall back to the wallet address so unauthenticated-but-connected
+        // users don't share one anonymous key.
+        actorId: actor?.user.id || validatedData.wallet,
         paymentId: fundingContext?.paymentId || validatedData.payment?.paymentId,
       })
 

@@ -2,7 +2,6 @@
 
 import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
 import { Header } from '@/components/layout/header'
-import { Footer } from '@/components/layout/footer'
 import { MezoAnalytics } from '@/components/mezo/MezoAnalytics'
 import { Zap } from 'lucide-react'
 
@@ -32,7 +31,6 @@ export function MezoAnalyticsClient() {
             </div>
           </div>
         </main>
-        <Footer />
       </div>
     </ThemeWrapper>
   )

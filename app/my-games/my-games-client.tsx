@@ -4,7 +4,6 @@ import { useMemo, useState, useEffect } from 'react'
 import { useAccount } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { Header } from '@/components/layout/header'
-import { Footer } from '@/components/layout/footer'
 import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
 import { RecoveryPanel } from '@/components/ui/recovery-panel'
 import { GameCardEnhanced } from '@/domains/games/components/game-card-enhanced'
@@ -412,7 +411,6 @@ export function MyGamesClient() {
           <main className="flex flex-1 items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-purple-400" />
           </main>
-          <Footer />
         </div>
       </ThemeWrapper>
     )
@@ -456,7 +454,6 @@ export function MyGamesClient() {
               </div>
             </RecoveryPanel>
           </main>
-          <Footer />
         </div>
       </ThemeWrapper>
     )
@@ -954,7 +951,6 @@ export function MyGamesClient() {
         </section>
       </main>
 
-      <Footer />
       </div>
 
       <Dialog open={!!mintConfirmGame} onOpenChange={(open) => !open && setMintConfirmGame(null)}>

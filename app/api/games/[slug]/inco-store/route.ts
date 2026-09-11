@@ -57,9 +57,10 @@ export async function POST(
 
     // Encrypt the secret panel via Inco SDK
     const { encryptSecretPanel, getVaultAddress, SECRET_PANEL_VAULT_ABI } = await import('@/lib/daily-challenge/inco')
-    const { createWalletClient, http } = await import('viem')
+    const { createWalletClient } = await import('viem')
     const { base } = await import('viem/chains')
     const { privateKeyToAccount } = await import('viem/accounts')
+    const { baseRpcTransport } = await import('@/lib/base-rpc')
 
     const account = privateKeyToAccount(managerPrivateKey as `0x${string}`)
     const vaultContractAddress = getVaultAddress()
@@ -67,7 +68,7 @@ export async function POST(
     const walletClient = createWalletClient({
       account,
       chain: base,
-      transport: http('https://mainnet.base.org'),
+      transport: baseRpcTransport(),
     })
 
     // Encrypt the secret panel JSON into ≤31-byte chunks
@@ -90,7 +91,7 @@ export async function POST(
     const { createPublicClient } = await import('viem')
     const publicClient = createPublicClient({
       chain: base,
-      transport: http('https://mainnet.base.org'),
+      transport: baseRpcTransport(),
     })
     const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
 

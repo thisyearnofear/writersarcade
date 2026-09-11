@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { ArrowLeft, BarChart3, Loader2, Lock, WifiOff, Gamepad2 } from 'lucide-react'
 import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
 import { Header } from '@/components/layout/header'
-import { Footer } from '@/components/layout/footer'
 import { EmbedSnippet } from '@/components/embed/EmbedSnippet'
 import { RecoveryPanel } from '@/components/ui/recovery-panel'
 import type { GameInsights } from '@/domains/games/services/game-insights.service'
@@ -220,7 +219,6 @@ export default function GameInsightsPage() {
             </div>
           )}
         </main>
-        <Footer />
       </div>
     </ThemeWrapper>
   )

@@ -41,10 +41,11 @@ async function executeAsOwner<T>(
     })
     return result
   } catch (err) {
+    const errorMessage = err instanceof Error ? err.message.slice(0, 500) : 'Unknown generation error'
     await prisma.generationLock
       .update({
         where: { id: lockId },
-        data: { status: 'failed', expiresAt: new Date(Date.now() + FAILED_RETRY_MS) },
+        data: { status: 'failed', errorMessage, expiresAt: new Date(Date.now() + FAILED_RETRY_MS) },
       })
       .catch(() => {
         // Best-effort cleanup; the lease will expire naturally if this fails.
@@ -59,6 +60,7 @@ async function waitForLock<T>(
   options: Required<Pick<SharedLockOptions<T>, 'ttlMs' | 'pollMs' | 'waitMs'>> & SharedLockOptions<T>,
 ): Promise<T> {
   const deadline = Date.now() + options.waitMs
+  let lastFailureMessage: string | null = null
   while (Date.now() < deadline) {
     const lock = await prisma.generationLock.findUnique({ where: { key } })
 
@@ -90,8 +92,13 @@ async function waitForLock<T>(
     }
 
     if (lock.status === 'failed' || lock.status === 'pending') {
+      if (lock.status === 'failed' && lock.errorMessage) {
+        lastFailureMessage = lock.errorMessage
+      }
       if (lock.expiresAt < new Date()) {
         // Take over an expired lock by atomically updating only if it is still expired.
+        // Failed leases get a short FAILED_RETRY_MS expiry, so a waiter transparently
+        // retries the generation instead of surfacing "another request held the lock".
         const took = await prisma.generationLock.updateMany({
           where: {
             id: lock.id,
@@ -102,22 +109,23 @@ async function waitForLock<T>(
             status: 'pending',
             expiresAt: new Date(Date.now() + options.ttlMs),
             resultData: Prisma.DbNull,
+            errorMessage: null,
           },
         })
         if (took.count > 0) {
           return executeAsOwner(lock.id, fn, options)
         }
       }
-
-      if (lock.status === 'failed') {
-        throw new Error('Generation failed while another request held the lock')
-      }
     }
 
     await sleep(options.pollMs)
   }
 
-  throw new Error('Generation lock wait timeout')
+  throw new Error(
+    lastFailureMessage
+      ? `Generation failed: ${lastFailureMessage}`
+      : 'Generation lock wait timeout'
+  )
 }
 
 /**

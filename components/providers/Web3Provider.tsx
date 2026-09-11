@@ -20,8 +20,10 @@ import { WagmiProvider } from 'wagmi';
 import {
   base,
   baseSepolia,
+  mainnet,
 } from 'wagmi/chains';
 import { defineChain } from 'viem';
+import { baseRpcTransport } from '@/lib/base-rpc';
 
 import {
   QueryClientProvider,
@@ -65,19 +67,20 @@ function getWagmiConfig() {
     const chains = [
       base,
       baseSepolia,
+      // mainnet is included for ENS name/avatar resolution only — wallets stay on Base.
+      mainnet,
       ...(STORY_WALLET_ENABLED ? [storyAeneid] : []),
       mezoTestnet,
     ] as const;
 
     const transports: Record<number, Transport> = {
-      [base.id]: fallback([
-        http('https://mainnet.base.org'),
-        http('https://base.llamarpc.com'),
-        http('https://base-mainnet.public.blastapi.io'),
-        http('https://rpc.ankr.com/base'),
-        http('https://1rpc.io/base'),
-        http('https://base.drpc.org'),
-        http('https://base-pokt.nodies.app'),
+      [base.id]: baseRpcTransport(),
+      // CORS-friendly mainnet RPCs for ENS resolution — the viem default
+      // (eth.merkle.io) doesn't send Access-Control-Allow-Origin and spams CORS errors.
+      [mainnet.id]: fallback([
+        http('https://ethereum-rpc.publicnode.com'),
+        http('https://eth.drpc.org'),
+        http('https://cloudflare-eth.com'),
       ]),
       [baseSepolia.id]: http(),
       [mezoTestnet.id]: http((mezoTestnet.rpcUrls.default.http as string[])[0]),

@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 
-// Hetzner backend for heavy API routes (image gen, audio gen, balance)
+// Hetzner backend for heavy API routes (image gen, audio gen, balance).
+// Persistent process on the VPS keeps provider connections warm and avoids
+// serverless cold starts/timeouts. If it's unreachable, the local Next.js
+// routes still exist (rewrites shadow them only while the backend answers).
 const API_BACKEND_URL = process.env.API_BACKEND_URL || 'https://api.snel.famile.xyz/writersarcade'
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports

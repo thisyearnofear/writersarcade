@@ -101,17 +101,16 @@ async function verifyNftOwnership(
   try {
     const { createPublicClient, http } = await import('viem')
     const { base } = await import('viem/chains')
+    const { baseRpcTransport } = await import('@/lib/base-rpc')
 
-    const rpcUrl = chainId === 8453
-      ? 'https://mainnet.base.org'
-      : chainId === 31611
-        ? 'https://rpc.test.mezo.org'
-        : 'https://mainnet.base.org'
+    const rpcUrl = chainId === 31611 ? 'https://rpc.test.mezo.org' : null
 
-    const publicClient = createPublicClient({
-      chain: chainId === 8453 ? base : { id: chainId, name: '', nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 }, rpcUrls: { default: { http: [rpcUrl] } } },
-      transport: http(rpcUrl),
-    })
+    const publicClient = chainId === 8453
+      ? createPublicClient({ chain: base, transport: baseRpcTransport() })
+      : createPublicClient({
+          chain: { id: chainId, name: '', nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 }, rpcUrls: { default: { http: [rpcUrl ?? 'https://mainnet.base.org'] } } },
+          transport: http(rpcUrl ?? 'https://mainnet.base.org'),
+        })
 
     const owner = await publicClient.readContract({
       address: contractAddress,
@@ -140,12 +139,13 @@ async function getIncoHandles(
   if (!SECRET_PANEL_VAULT_ADDRESS) return null
 
   try {
-    const { createPublicClient, http } = await import('viem')
+    const { createPublicClient } = await import('viem')
     const { base } = await import('viem/chains')
+    const { baseRpcTransport } = await import('@/lib/base-rpc')
 
     const publicClient = createPublicClient({
       chain: base,
-      transport: http('https://mainnet.base.org'),
+      transport: baseRpcTransport(),
     })
 
     const hasPanel = await publicClient.readContract({

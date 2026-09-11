@@ -268,23 +268,25 @@ async function getSessionManagerAccount() {
 export async function createSessionManagerWalletClient() {
   const account = await getSessionManagerAccount()
 
-  const { createWalletClient, http } = await import('viem')
+  const { createWalletClient } = await import('viem')
   const { base } = await import('viem/chains')
+  const { baseRpcTransport } = await import('@/lib/base-rpc')
 
   return createWalletClient({
     account,
     chain: base,
-    transport: http(process.env.NEXT_PUBLIC_BASE_RPC_URL || 'https://mainnet.base.org'),
+    transport: baseRpcTransport(),
   })
 }
 
 export async function createDailyChallengePublicClient() {
-  const { createPublicClient, http } = await import('viem')
+  const { createPublicClient } = await import('viem')
   const { base } = await import('viem/chains')
+  const { baseRpcTransport } = await import('@/lib/base-rpc')
 
   return createPublicClient({
     chain: base,
-    transport: http(process.env.NEXT_PUBLIC_BASE_RPC_URL || 'https://mainnet.base.org'),
+    transport: baseRpcTransport(),
   })
 }
 
@@ -386,14 +388,15 @@ export async function decryptModifierHandleForAi(handle: string): Promise<number
   try {
     const { getIncoLightning, formatHandle } = await import('./inco')
     const { privateKeyToAccount } = await import('viem/accounts')
-    const { createWalletClient, http } = await import('viem')
+    const { createWalletClient } = await import('viem')
     const { base } = await import('viem/chains')
+    const { baseRpcTransport } = await import('@/lib/base-rpc')
 
     const account = privateKeyToAccount(privateKey)
     const walletClient = createWalletClient({
       account,
       chain: base,
-      transport: http(process.env.NEXT_PUBLIC_BASE_RPC_URL || 'https://mainnet.base.org'),
+      transport: baseRpcTransport(),
     })
 
     const zap = await getIncoLightning()

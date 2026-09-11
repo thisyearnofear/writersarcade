@@ -1,7 +1,9 @@
 import { createPublicClient, http, type Chain, type PublicClient } from 'viem'
 import { decodeFunctionData, decodeEventLog, keccak256, parseAbi, toBytes } from 'viem'
+import { base as baseChain } from 'viem/chains'
 import { getWriterCoinById, MUSD_CONFIG } from '@/lib/writer-coins'
 import { BASE_MAINNET_CHAIN_ID, MEZO_TESTNET_CHAIN_ID } from '@/lib/wallet/chains'
+import { baseRpcTransport } from '@/lib/base-rpc'
 
 export type PaymentAction = 'generate-game' | 'mint-nft'
 
@@ -131,12 +133,14 @@ function toNativeBigInt(value: unknown): bigint {
 }
 
 function getRpcUrl(chainId: number): string | null {
-  if (chainId === BASE_MAINNET_CHAIN_ID) return process.env.BASE_RPC_URL || 'https://mainnet.base.org'
   if (chainId === MEZO_TESTNET_CHAIN_ID) return process.env.NEXT_PUBLIC_MEZO_TESTNET_RPC || 'https://rpc.test.mezo.org'
   return null
 }
 
 export function createReceiptClient(chainId: number): PublicClient | null {
+  if (chainId === BASE_MAINNET_CHAIN_ID) {
+    return createPublicClient({ chain: baseChain, transport: baseRpcTransport() }) as PublicClient
+  }
   const rpcUrl = getRpcUrl(chainId)
   if (!rpcUrl) return null
   const chain = {

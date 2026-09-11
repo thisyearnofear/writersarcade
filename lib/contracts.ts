@@ -6,8 +6,10 @@
  */
 
 import { encodeFunctionData, createPublicClient, http } from 'viem'
+import { base as baseChain } from 'viem/chains'
 import { getWriterCoinById } from '@/lib/writer-coins'
 import { cacheGet, cacheSet } from './cache'
+import { baseRpcTransport } from './base-rpc'
 
 const BASE_MAINNET_PAYMENT_ADDRESS =
   process.env.NEXT_PUBLIC_WRITER_COIN_PAYMENT_MAINNET ||
@@ -174,10 +176,11 @@ export function getDefaultChainId(): number {
 }
 
 export function getPublicClient(chainId: number = getDefaultChainId()) {
+  if (chainId === 8453) {
+    return createPublicClient({ chain: baseChain, transport: baseRpcTransport() })
+  }
   const net = getNetwork(chainId)
-  const rpcUrlOverride = process.env.BASE_RPC_URL && chainId === 8453 ? process.env.BASE_RPC_URL : undefined
-  const rpc = rpcUrlOverride || net.rpcUrl
-  return createPublicClient({ chain: { id: net.id, name: net.name, nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }, rpcUrls: { default: { http: [rpc] } } } as import('viem').Chain, transport: http(rpc) })
+  return createPublicClient({ chain: { id: net.id, name: net.name, nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }, rpcUrls: { default: { http: [net.rpcUrl] } } } as import('viem').Chain, transport: http(net.rpcUrl) })
 }
 
 export function getWriterCoinPaymentAddress(chainId: number = getDefaultChainId()): `0x${string}` {

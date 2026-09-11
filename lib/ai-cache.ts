@@ -11,6 +11,7 @@
  * instances (see `deduplicateGeneration`).
  */
 
+import { createHash } from 'crypto'
 import { cacheGet, cacheSet } from './cache'
 import { withSharedGenerationLock } from './generation-lock'
 
@@ -18,6 +19,9 @@ const GENERATION_CACHE_TTL_MS = 24 * 60 * 60 * 1000 // 24 hours
 
 export interface GenerationCacheKey {
   url?: string
+  /** Raw prompt text — hashed into the key so daily/BasePaint prompts (which
+   *  encode the day + theme) don't collide across days or share stale results. */
+  prompt?: string
   genre?: string
   difficulty?: string
   mode: 'story' | 'wordle'
@@ -37,11 +41,15 @@ export function buildGenerationCacheKey(params: GenerationCacheKey): string {
   if (params.paymentId) {
     return `ai:gen:payment:${params.paymentId}`
   }
+  const promptHash = params.prompt
+    ? createHash('sha256').update(params.prompt).digest('hex').slice(0, 16)
+    : ''
   const parts = [
     'ai:gen',
     params.mode,
     params.actorId || '',
     params.url || '',
+    promptHash,
     params.genre || '',
     params.difficulty || '',
   ]

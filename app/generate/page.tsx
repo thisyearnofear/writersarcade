@@ -6,7 +6,6 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
 import { Header } from '@/components/layout/header'
-import { Footer } from '@/components/layout/footer'
 import { ErrorBoundary } from '@/components/error/ErrorBoundary'
 import { CardSkeleton } from '@/components/effects'
 import { DailyChallengeSubnav } from '@/components/daily-challenge/daily-challenge-subnav'
@@ -126,7 +125,6 @@ function GenerateChrome({ children }: { children: React.ReactNode }) {
       <main id="main-content" className="flex-1 py-8 sm:py-12">
         {children}
       </main>
-      <Footer />
     </>
   )
 }
@@ -145,7 +143,6 @@ export default function GeneratePage() {
                   <CardSkeleton />
                 </div>
               </main>
-              <Footer />
             </>
           }
         >

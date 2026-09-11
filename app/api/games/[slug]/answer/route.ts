@@ -64,12 +64,13 @@ export async function POST(
     // Read the Inco handle from SecretPanelVault on-chain
     if (SECRET_PANEL_VAULT_ADDRESS && game.nftTokenId) {
       try {
-        const { createPublicClient, http } = await import('viem')
+        const { createPublicClient } = await import('viem')
         const { base } = await import('viem/chains')
+        const { baseRpcTransport } = await import('@/lib/base-rpc')
 
         const publicClient = createPublicClient({
           chain: base,
-          transport: http('https://mainnet.base.org'),
+          transport: baseRpcTransport(),
         })
 
         const hasAnswer = await publicClient.readContract({

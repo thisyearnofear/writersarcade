@@ -214,13 +214,13 @@ export const SECRET_PANEL_VAULT_ABI = [
  * Read the current Inco operation fee from the Lightning singleton contract.
  */
 export async function getIncoFee(): Promise<bigint> {
-  const { createPublicClient, http } = await import('viem')
+  const { createPublicClient } = await import('viem')
   const { base } = await import('viem/chains')
+  const { baseRpcTransport } = await import('@/lib/base-rpc')
 
-  const rpcUrl = process.env.NEXT_PUBLIC_BASE_RPC_URL || 'https://mainnet.base.org'
   const publicClient = createPublicClient({
     chain: base,
-    transport: http(rpcUrl),
+    transport: baseRpcTransport(),
   })
 
   return publicClient.readContract({

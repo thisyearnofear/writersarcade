@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { Loader2, Sparkles, Wand2 } from 'lucide-react'
 import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
 import { Header } from '@/components/layout/header'
-import { Footer } from '@/components/layout/footer'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -181,7 +180,6 @@ export default function StudioPage() {
           </div>
         </main>
 
-        <Footer />
       </div>
     </ThemeWrapper>
   )
