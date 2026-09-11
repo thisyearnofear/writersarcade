@@ -8,8 +8,10 @@ import { refundPanelCharge, refundVideoCharge } from '@/domains/games/services/v
 import { CREDITS_CONFIG } from '@/lib/writer-coins'
 import { config } from '@/lib/config'
 import { assembleMontageFilm } from '@/domains/games/services/montage-film.service'
+import { runPanelClipGeneration } from '@/domains/games/services/montage-generation.service'
 
 const STATUS_POLL_MIN_INTERVAL_MS = 25_000
+const AUTO_FILM_RETRY_INTERVAL_MS = 2 * 60 * 1000
 
 export async function GET(
   request: NextRequest,
@@ -357,6 +359,46 @@ export async function GET(
           console.error('[Video Status] montage assembly failed:', err)
         }
       })
+    }
+
+    // Auto-film recovery: a subsidized film has no paying user to retry it, so
+    // failed clips would otherwise sit terminal forever. Re-drive them here on
+    // a throttled atomic lease — runPanelClipGeneration re-claims idle|failed
+    // panels itself, so concurrent re-drives can't double-submit.
+    const autoFilmActive = Boolean(game.filmAutoQueuedAt) && !game.montageVideoUrl && !game.videoUpsoldAt
+    const hasFailedClip = refreshedPanels.some((panel) => panel.videoStatus === 'failed')
+    const hasPendingClip = refreshedPanels.some((panel) => panel.videoStatus === 'pending')
+    if (autoFilmActive && hasFailedClip && !hasPendingClip) {
+      const retryLease = await prisma.game.updateMany({
+        where: {
+          id: game.id,
+          filmAutoQueuedAt: { not: null },
+          montageVideoUrl: null,
+          videoUpsoldAt: null,
+          OR: [
+            { filmAutoRetriedAt: null },
+            { filmAutoRetriedAt: { lt: new Date(Date.now() - AUTO_FILM_RETRY_INTERVAL_MS) } },
+          ],
+        },
+        data: { filmAutoRetriedAt: new Date() },
+      })
+      if (retryLease.count === 1) {
+        after(async () => {
+          try {
+            const fresh = await prisma.game.findUnique({
+              where: { id: game.id },
+              include: { artifactPanels: { orderBy: { panelIndex: 'asc' } } },
+            })
+            if (!fresh) return
+            const result = await runPanelClipGeneration({ game: fresh, panels: fresh.artifactPanels, slug, style: 'cinematic' })
+            const allReady =
+              fresh.artifactPanels.length >= 2 && result.panelResults.every((panel) => panel.videoUrl)
+            if (allReady) await assembleMontageFilm(fresh.id, slug)
+          } catch (err) {
+            console.error('[Video Status] auto-film re-drive failed:', err)
+          }
+        })
+      }
     }
 
     return NextResponse.json({

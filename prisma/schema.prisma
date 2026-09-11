@@ -153,6 +153,7 @@ model Game {
   // Subsidized auto-film: set when the montage pipeline was queued for free
   // after a completed run. Idempotency marker + daily budget counter.
   filmAutoQueuedAt DateTime?
+  filmAutoRetriedAt DateTime?
 
   // Play tracking — incremented each time a game session completes
   playCount    Int      @default(0)
