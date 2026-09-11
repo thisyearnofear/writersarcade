@@ -24,7 +24,7 @@ export interface Game {
   imagePromptModel?: string
   imagePromptName?: string
   imagePromptText?: string
-  imageData?: Buffer
+  imageData?: Uint8Array
 
   // Audio assets
   musicPromptText?: string

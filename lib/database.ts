@@ -1,21 +1,22 @@
 import { PrismaClient } from '@prisma/client'
-import { Pool, neonConfig } from '@neondatabase/serverless'
+import { neonConfig } from '@neondatabase/serverless'
 import { PrismaNeon } from '@prisma/adapter-neon'
 import ws from 'ws'
 
 // Neon serverless driver adapter: the PrismaClient runs queries through the
-// Neon JS driver instead of the native query-engine binary. That binary is
-// ~17MB and was being traced into every DB-touching Vercel function
-// (~80 functions × ~17MB ≈ 1.4GB of function storage per deployment).
-// `driverAdapters` preview feature is enabled in prisma/schema.prisma.
+// Neon JS driver. On Prisma 6.x + queryCompiler this is fully Rust-free —
+// no native query-engine binary is loaded or needed in function bundles.
+// `driverAdapters` + `queryCompiler` preview features are enabled in
+// prisma/schema.prisma.
 neonConfig.webSocketConstructor = ws
 
 function createClient(): PrismaClient {
   const connectionString = process.env.DATABASE_URL
   if (connectionString) {
-    const pool = new Pool({ connectionString })
+    // adapter-neon 6.x: PrismaNeon is a factory taking PoolConfig — it
+    // creates the Pool internally on connect(). Do NOT pass a Pool instance.
     return new PrismaClient({
-      adapter: new PrismaNeon(pool),
+      adapter: new PrismaNeon({ connectionString }),
       log: ['query', 'error', 'warn'],
     })
   }

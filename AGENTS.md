@@ -27,9 +27,14 @@ This is a **monorepo with three deploy surfaces and one database**:
 ## 🗄️ Prisma runs on the Neon driver adapter — no query-engine binary
 
 - `lib/database.ts` builds `PrismaClient` with `@prisma/adapter-neon`
-  (`previewFeatures = ["driverAdapters"]` in `prisma/schema.prisma`). Queries go
-  through the Neon JS driver over WebSocket (`ws`), not the native engine.
-- This exists for **Vercel function storage**: the ~17MB engine binary was
+  (Prisma 6.x — `driverAdapters`/`queryCompiler` are GA, no preview flags).
+  Queries go through the Neon JS driver over WebSocket (`ws`), fully
+  Rust-free — no `libquery_engine` binary is loaded or needed.
+- **`PrismaNeon` is a factory**: pass it a `PoolConfig`
+  (`new PrismaNeon({ connectionString })`) — it creates the Pool itself on
+  `connect()`. Passing a `Pool` instance (the 5.x signature) silently
+  constructs `new Pool(pool)` and queries hit localhost defaults.
+- This exists for **Vercel function storage**: the ~19MB engine binary was
   being traced into every DB-touching function (~1.4GB/deployment). Engine
   binaries and non-Linux sharp binaries are excluded via
   `outputFileTracingExcludes` in `next.config.js` — do not remove those globs.

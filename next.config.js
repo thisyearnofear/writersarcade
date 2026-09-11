@@ -15,12 +15,13 @@ const nextConfig = {
   output: 'standalone',
   // Function-storage diet: drop binaries never needed at runtime (sharp's
   // non-linux variants, the Prisma schema/migration engine, CLI engines).
-  // NOTE: on Prisma 5.22 the Neon driver adapter still executes through
-  // libquery_engine-*.so.node — do NOT exclude libquery_engine until the
-  // client runs engine-free (queryCompiler / engineType:"client", Prisma 6.x+).
+  // Prisma 6.x runs engine-free (queryCompiler + Neon driver adapter), so the
+  // ~19MB native libquery_engine binary is dead weight in every function.
   outputFileTracingExcludes: {
     '*': [
+      'node_modules/.pnpm/@prisma+client*/node_modules/.prisma/client/libquery_engine-*',
       'node_modules/.pnpm/@prisma+client*/node_modules/.prisma/client/schema-engine-*',
+      'node_modules/.prisma/client/libquery_engine-*',
       'node_modules/.prisma/client/schema-engine-*',
       'node_modules/.pnpm/@prisma+engines*/node_modules/@prisma/engines/**',
       'node_modules/@img/*darwin*/**',
