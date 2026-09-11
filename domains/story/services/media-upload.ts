@@ -138,8 +138,9 @@ async function uploadToGrove(
 async function waitForGrovePropagation(gatewayUrl: string): Promise<void> {
   for (let attempt = 0; attempt < GROVE_PROPAGATION_ATTEMPTS; attempt++) {
     try {
-      const probe = await fetch(gatewayUrl, { method: 'HEAD' })
-      if (probe.ok) return
+      // Grove's gateway 404s HEAD — probe with a ranged GET instead.
+      const probe = await fetch(gatewayUrl, { headers: { Range: 'bytes=0-0' } })
+      if (probe.ok || probe.status === 206) return
     } catch {
       // Propagation in progress; retry.
     }
