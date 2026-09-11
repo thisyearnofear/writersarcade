@@ -24,7 +24,7 @@ Article URL
 **Web3**: wagmi + viem + RainbowKit / WalletConnect  
 **Backend**: Next.js API routes + Prisma + PostgreSQL  
 **AI**: OpenAI/Anthropic (ai-sdk); Venice AI + Modal + Netmind (image generation)  
-**Mezo**: MUSD (Bitcoin-backed stablecoin) for payments; Mezo Matsnet (testnet)
+**Mezo**: MUSD (Bitcoin-backed stablecoin) — archived hackathon track, see `docs/HACKATHONS_ARCHIVE.md`
 **IP**: Story Protocol (testnet) + IPFS (Pinata primary, Grove fallback)
 **Access Control**: Inco confidential compute (on-chain encrypted secret panels via euint256 handles + attested decrypt)
 **Impact**: Hypercerts (AT Protocol impact certificates) — deprecated / not actively maintained
@@ -273,7 +273,9 @@ WriterCoin
 - Shared shuffled modifier deck, per-player sessions, encrypted scoring, self-reshuffling before deck exhaustion
 - `narrativeOperator` = server wallet (decrypts cards for AI only); `SESSION_MANAGER_ROLE` on server wallet
 
-### Mezo Matsnet (Chain ID: 31611)
+### Mezo Matsnet (Chain ID: 31611) — archived hackathon track
+
+See [`docs/HACKATHONS_ARCHIVE.md`](./HACKATHONS_ARCHIVE.md#3-mezo-hackathon-musd-track-aprmay-2026--archived) for submission history. Contracts below remain in code for reference.
 
 **MezoPaymentSplitter** (`0x32D0356f533cC429F94Db73f383bBb21a459E16b`)
 - Bitcoin-backed MUSD payments for the Mezo Hackathon
@@ -299,8 +301,8 @@ WriterCoin
 - Writer Coins (ERC-20), GameNFT minting (access-controlled via MINTER_ROLE), revenue distribution
 - WriterCoinPayment contract handles atomic pay + mint
 
-**Mezo Matsnet** (Chain ID: 31611)
-- MUSD payments, MEZO holder perks, Bitcoin-backed economy
+**Mezo Matsnet** (Chain ID: 31611) — archived hackathon track
+- MUSD payments, MEZO holder perks, Bitcoin-backed economy (reference only)
 - GameNFTMezo (open mint — no role check, users pay only gas)
 - Mint endpoint returns chainId dynamically; frontend auto-switches before mint tx
 

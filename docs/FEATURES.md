@@ -131,8 +131,8 @@ Auto-fallback chain ensures reliability:
 
 See [scripts/modal/README.md](../scripts/modal/README.md) for Modal deployment.
 
-### Mezo MUSD Payments (Hackathon Track)
-WritersArcade supports the Mezo ecosystem via a dedicated MUSD payment track:
+### Mezo MUSD Payments — archived hackathon track
+History lives in [`docs/HACKATHONS_ARCHIVE.md`](./HACKATHONS_ARCHIVE.md#3-mezo-hackathon-musd-track-aprmay-2026--archived). Code remains for reference (`MUSDStrategy`, `MezoPaymentSplitter`/`MezoBoostedSplitter`, `useMezoBalance`, "MEZO Holder" badge).
 
 - **MUSD Strategy**: Native payment support on Mezo Matsnet (Chain ID 31611).
 - **On-chain Splitter**: Uses `MezoPaymentSplitter` to atomically distribute MUSD to writers, creators, and the platform.
@@ -342,8 +342,5 @@ Splits fetched live from contract via `fetchGenerationDistributionOnChain()` / `
 - SafeERC20 transfers, reentrancy guards, pause control
 - Full mint-cost collection with creator/writer/platform distribution and minter refund
 
-### MezoPaymentSplitter
-**Address**: `0x32D0356f533cC429F94Db73f383bBb21a459E16b` (Mezo Matsnet)
-- Native MUSD payment handler for Mezo Hackathon.
-- Atomic on-chain splitting of Bitcoin-backed stablecoins.
-- Verified on Mezo Explorer.
+### MezoPaymentSplitter — archived hackathon track
+**Address**: `0x32D0356f533cC429F94Db73f383bBb21a459E16b` (Mezo Matsnet) — see [`docs/HACKATHONS_ARCHIVE.md`](./HACKATHONS_ARCHIVE.md#3-mezo-hackathon-musd-track-aprmay-2026--archived).

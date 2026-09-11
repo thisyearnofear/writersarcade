@@ -154,6 +154,7 @@ model Game {
   // after a completed run. Idempotency marker + daily budget counter.
   filmAutoQueuedAt DateTime?
   filmAutoRetriedAt DateTime?
+  filmAutoRetryCount Int @default(0)
 
   // Play tracking — incremented each time a game session completes
   playCount    Int      @default(0)

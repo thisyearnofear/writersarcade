@@ -12,6 +12,9 @@ import { runPanelClipGeneration } from '@/domains/games/services/montage-generat
 
 const STATUS_POLL_MIN_INTERVAL_MS = 25_000
 const AUTO_FILM_RETRY_INTERVAL_MS = 2 * 60 * 1000
+// Bounded: if clips keep failing (provider outage, broken persistence) the
+// subsidized pipeline must not leak spend by re-driving forever.
+const AUTO_FILM_MAX_RETRIES = 5
 
 export async function GET(
   request: NextRequest,
@@ -375,12 +378,13 @@ export async function GET(
           filmAutoQueuedAt: { not: null },
           montageVideoUrl: null,
           videoUpsoldAt: null,
+          filmAutoRetryCount: { lt: AUTO_FILM_MAX_RETRIES },
           OR: [
             { filmAutoRetriedAt: null },
             { filmAutoRetriedAt: { lt: new Date(Date.now() - AUTO_FILM_RETRY_INTERVAL_MS) } },
           ],
         },
-        data: { filmAutoRetriedAt: new Date() },
+        data: { filmAutoRetriedAt: new Date(), filmAutoRetryCount: { increment: 1 } },
       })
       if (retryLease.count === 1) {
         after(async () => {

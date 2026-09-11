@@ -1,5 +1,7 @@
 # writersarcade × BasePaint
 
+> **Archived hackathon reference.** BasePaint Hackathon (Aug 1–8, 2026) submission history lives in [`docs/HACKATHONS_ARCHIVE.md`](./HACKATHONS_ARCHIVE.md#1-basepaint-hackathon-aug-18-2026--archived). This file is kept for implementation detail (dual-source Daily, `lib/basepaint/`, ops routes). The live Daily Challenge product surface is described in [`docs/FEATURES.md`](./FEATURES.md).
+
 **writersarcade** turns writing into playable games. **Daily Challenge** is the shared daily ritual inside that product. **[BasePaint](https://basepaint.xyz)** supplies today’s collaborative canvas — the shared *world* — while a featured article supplies the *plot*. **Inco** still deals each player a unique encrypted modifier hand on Base.
 
 Product nesting:

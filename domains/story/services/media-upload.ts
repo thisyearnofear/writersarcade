@@ -31,7 +31,7 @@ export async function persistMediaUrl(mediaUrl: string, fileName: string): Promi
       throw new Error('Generated media exceeds the 100MB persistence limit')
     }
 
-    return pinBuffer(buffer, fileName, mediaResponse.headers.get('content-type') || 'video/mp4')
+    return await pinBuffer(buffer, fileName, mediaResponse.headers.get('content-type') || 'video/mp4')
   } catch (error) {
     logger.warn('Generated media persistence failed; retaining provider URL', {
       error: error instanceof Error ? error.message : 'Unknown error',

@@ -2,40 +2,9 @@
 
 Turn Paragraph.xyz articles into interactive, mintable games. Players pay with writer coins, creators mint and share games, and revenue splits are enforced on-chain.
 
-## BasePaint Hackathon submission (Aug 1–8)
+## Daily Challenge (`/basepaint`)
 
-**Category:** Art projects — games and remixes made with BasePaint.
-
-**What it does with BasePaint.** The Daily Challenge (`/basepaint`, also `/daily`) stages a
-featured writer's Paragraph article *inside today's BasePaint canvas*. Everyone plays the same
-world each day; each player is dealt a private hand of five encrypted modifier cards held in
-Inco vaults on Base mainnet, so the same source produces a different story per player. Scores
-compare on a leaderboard. Canvas art is read from BasePaint's own APIs — the theme endpoint for
-the day's palette and prompt, and `api/art/image` for the artwork itself, which is fed to a
-vision model so generated comics are grounded in the actual pixels rather than just the theme
-text.
-
-**Why it's useful to BasePaint.** It gives each daily canvas a second life as something
-playable, and routes readers of writers like Fred Wilson and Debbie Soon into BasePaint art
-they would not otherwise encounter. The daily cadence is the point, not a feature: a new canvas
-becomes a new game every day, on a cron, indefinitely.
-
-**Built during the hackathon window** (42 commits, Aug 4–8):
-
-| Change | Commits |
-|---|---|
-| Dual-source Daily — featured Paragraph article auto-picked from writer-coin publications, staged in today's BasePaint world | `feat(daily): dual-source Daily with Paragraph auto-pick and BasePaint world` |
-| Comics grounded in the real canvas via vision model, not just the theme string | `feat(daily): ground BasePaint comics in the actual canvas` |
-| Encrypted modifier deck + NFT-gated secret panels migrated to on-chain Inco vaults | `feat(inco): migrate secret panels and daily challenge to on-chain vaults` |
-| BasePaint generate flow wired end to end; deck shuffle hardened with fallbacks | `feat(daily): wire BasePaint generate flow and harden deck shuffle`, `feat(daily): add deck shuffle fallbacks for Hobby Vercel cron` |
-| Daily vault redeployed on Base mainnet; VPS daily cron wired | `feat(daily): harden DailyChallenge + redeploy vault on Base mainnet`, `chore: finish lib/scripts reorg and wire VPS daily cron` |
-| Canvas URL fix, Base as default chain, client-bundle feature flag | `fix(daily): repair BasePaint canvas URL and default wallet to Base`, `fix(daily): enable feature flag in client bundle` |
-| Paid-session resume + money-safe onboarding for the Daily path | `fix(daily): resume paid sessions and add money-safe onboarding UX` |
-| Landing page rebuilt around the work: today's canvas rendered in the Daily banner, BasePaint surfaced above the fold, one primary CTA, progressive disclosure | `feat(ux)` series |
-
-Implementation notes and the dual-source design live in [`docs/BASEPAINT.md`](docs/BASEPAINT.md).
-BasePaint constants, canvas/theme URLs, and the day-epoch calculation are in
-[`lib/basepaint/`](lib/basepaint/).
+The shared daily ritual: a featured writer's Paragraph article staged inside today's BasePaint canvas — same world for everyone, unique encrypted Inco modifier hand per player, leaderboard. Implementation notes live in [`docs/BASEPAINT.md`](docs/BASEPAINT.md); hackathon submission history lives in [`docs/HACKATHONS_ARCHIVE.md`](docs/HACKATHONS_ARCHIVE.md).
 
 ## What it does
 
@@ -86,11 +55,12 @@ See [docs/DEVELOPMENT.md](./docs/DEVELOPMENT.md) for full setup.
 | Doc | Purpose |
 |-----|---------|
 | [Architecture](./docs/ARCHITECTURE.md) | System design, tech stack, data models, smart contracts |
-| [Inco Integration](./docs/INCO_INTEGRATION.md) | How Inco powers the game — encrypted deck, FHE scoring, NFT-gated content (Summer Game Jam submission) |
+| [Inco Integration](./docs/INCO_INTEGRATION.md) | Archived hackathon reference — encrypted deck, FHE scoring, NFT-gated content |
+| [Hackathons Archive](./docs/HACKATHONS_ARCHIVE.md) | All past hackathon history except live Flynn (BasePaint, Inco Jam, Mezo, CDR, sponsors) |
 | [Development](./docs/DEVELOPMENT.md) | Setup, commands, environment, API endpoints, troubleshooting |
 | [Features](./docs/FEATURES.md) | Platform features, integrations (Story, Inco, Hypercerts), writer coins |
-| [BasePaint](./docs/BASEPAINT.md) | Dual-source Daily, Paragraph auto-pick, Create staging, Inco |
-| [iMessage Agent (Flynn)](./docs/IMESSAGE_AGENT.md) | Spectrum iMessage agent that turns article links into playable stories |
+| [BasePaint](./docs/BASEPAINT.md) | Archived technical reference — dual-source Daily, Paragraph auto-pick, Create staging |
+| [iMessage Agent (Flynn)](./docs/IMESSAGE_AGENT.md) | **Live** — Spectrum iMessage agent that turns article links into playable stories |
 | [Video Artifact Pipeline](./docs/VIDEO_ARTIFACT_PIPELINE.md) | Hero animation flow, Runware fallbacks, limits, persistence, recovery, and analytics |
 | [Creation UX](./docs/CREATION_UX.md) | Compact mobile-first creation contract, optionality, validation, and success metrics |
 | [Roadmap](./docs/ROADMAP.md) | Completed phases, current status, future plans |
@@ -114,13 +84,7 @@ See [docs/DEVELOPMENT.md](./docs/DEVELOPMENT.md) for full setup.
 - **DailyChallengeVault** (v3 — per-panel FHE verdicts, gradient scoring, 2026-08-12): [`0xcc271a53e4286012f3289273fdaa32f66fa64a33`](https://basescan.org/address/0xcc271a53e4286012f3289273fdaa32f66fa64a33)
 - Deployment guide: [contracts/deploy.md](./contracts/deploy.md)
 
-**Mezo Matsnet (testnet)** — Mezo Hackathon, MUSD track
-- **MezoPaymentSplitter**: [`0x32D0356f533cC429F94Db73f383bBb21a459E16b`](https://explorer.test.mezo.org/address/0x32D0356f533cC429F94Db73f383bBb21a459E16b)
-- **MUSD token**: `0x118917a40FAF1CD7a13dB0Ef56C86De7973Ac503`
-- **MEZO token** (read-only, holder perks): `0x7B7c000000000000000000000000000000000001`
-- Pay 1 MUSD to generate a game; splitter atomically forwards platform / writer / creator shares on-chain.
-- **MezoBoostedSplitter** (v2): [`0x56Ee5A3f122da00B635DdbB319708e24450aEB89`](https://explorer.test.mezo.org/address/0x56Ee5A3f122da00B635DdbB319708e24450aEB89) — deployed May 2026; 10% creator share boost for MEZO holders.
-- MEZO holders see a "MEZO Holder" badge in the payment flow; boosted splits enforced on-chain via MezoBoostedSplitter.
+**Mezo Matsnet (testnet)** — archived hackathon track, see [`docs/HACKATHONS_ARCHIVE.md`](docs/HACKATHONS_ARCHIVE.md#3-mezo-hackathon-musd-track-aprmay-2026--archived). Contracts (`MezoPaymentSplitter`, `MezoBoostedSplitter` v2, `GameNFTMezo`) and MUSD/MEZO config remain in code for reference.
 
 Revenue splits enforced on-chain, configurable per writer coin.
 
@@ -230,16 +194,9 @@ SUPERRARE_CONTRACT_ADDRESS="0xb932a70a57673d89f4acffbe830e8ed7f75fb9e0"
 
 ---
 
-## Hackathon Targets
+## Past hackathons (archived)
 
-| Sponsor | Track | Prize | Implementation |
-|---------|-------|-------|----------------|
-| Etherfuse | General | $1,000 USD | Fiat onramp → game credits (`lib/etherfuse.ts`, `app/api/ramp/*`) |
-| SuperRare | General | $700 USDC | NFT collectibles for game artifacts (`lib/superrare.ts`, `app/api/superrare/mint`) |
-| SuperRare | Startups | $700 USDC | Premium game collectibles |
-| Arbitrum | General | $380 USDC | Base (Arbitrum Nova family) — existing Base integration |
-| Arbitrum | Startups | $650 USDC | Cross-chain DeFi |
-| Bitso | General | $1,100 USDC | Stablecoin payments via Etherfuse USDC on Base |
+All hackathon history except the live Flynn / Photon iMessage agent lives in [`docs/HACKATHONS_ARCHIVE.md`](docs/HACKATHONS_ARCHIVE.md): BasePaint (Aug 2026), Inco Summer Game Jam, Mezo MUSD track, CDR, Etherfuse, SuperRare, Arbitrum, Bitso.
 
 ---
 

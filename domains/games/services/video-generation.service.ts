@@ -345,11 +345,10 @@ function mapLumaState(state: string): VideoGenerationStatus {
  * Fal.ai I2V provider.
  * Docs: https://docs.fal.ai/
  *
- * Default model is `minimax/h3-max-turbo/image-to-video` — ~$0.01/s @768p
- * (promo; $0.04/s list) with generation roughly at playback speed. H3-family
- * payloads differ from legacy fal I2V models: `prompt_expansion_mode` is
- * required, `duration`/`resolution` replace `aspect_ratio`, and the output
- * canvas follows the input image.
+ * Default model is `minimax/h3/image-to-video` — ~$0.06/s @768p with
+ * generation roughly at playback speed. H3-family payloads differ from legacy
+ * fal I2V models: `prompt_expansion_mode` is supported, `duration`/`resolution`
+ * replace `aspect_ratio`, and the output canvas follows the input image.
  */
 export class FalProvider implements VideoProvider {
   readonly name = 'fal' as const
@@ -358,7 +357,7 @@ export class FalProvider implements VideoProvider {
 
   constructor(apiKey?: string, model?: string) {
     this.apiKey = apiKey ?? process.env.FAL_KEY ?? process.env.FAL_API_KEY
-    this.model = model ?? process.env.FAL_VIDEO_MODEL ?? 'minimax/h3-max-turbo/image-to-video'
+    this.model = model ?? process.env.FAL_VIDEO_MODEL ?? 'minimax/h3/image-to-video'
   }
 
   /** MiniMax H3 family needs its own payload shape (no aspect_ratio; the
@@ -376,7 +375,8 @@ export class FalProvider implements VideoProvider {
         ...(req.endImageUrl ? { end_image_url: req.endImageUrl } : {}),
         prompt: buildMotionPrompt(req),
         prompt_expansion_mode: process.env.FAL_H3_PROMPT_EXPANSION ?? 'balanced',
-        duration: getVideoDurationSeconds(),
+        // H3 duration range is 5–15s.
+        duration: Math.min(15, Math.max(5, req.durationSeconds ?? getVideoDurationSeconds())),
         resolution: process.env.FAL_H3_RESOLUTION ?? '768P',
       }
     }
@@ -435,13 +435,32 @@ export class FalProvider implements VideoProvider {
       status: string
       error?: string | null
       video?: { url?: string } | null
+      response_url?: string
+    }
+
+    const status = mapFalState(data.status)
+    let videoUrl = data.video?.url ?? null
+    // The status payload carries state only — on COMPLETED the result
+    // (video.url) lives at the request's response_url.
+    if (status === 'completed' && !videoUrl) {
+      const resultResponse = await fetchWithTimeout(
+        data.response_url ?? `https://queue.fal.run/${this.model}/requests/${jobId}`,
+        {
+          method: 'GET',
+          headers: { Accept: 'application/json', Authorization: `Key ${this.apiKey}` },
+        }
+      )
+      if (resultResponse.ok) {
+        const result = (await resultResponse.json()) as { video?: { url?: string } | null }
+        videoUrl = result.video?.url ?? null
+      }
     }
 
     return {
       provider: 'fal',
       providerJobId: jobId,
-      status: mapFalState(data.status),
-      videoUrl: data.video?.url ?? null,
+      status,
+      videoUrl,
       model: this.model,
       error: data.error ?? undefined,
     }

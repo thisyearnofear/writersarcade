@@ -1,5 +1,7 @@
 # Inco Integration — WritersArcade Summer Game Jam 2026
 
+> **Archived hackathon reference.** Submission history lives in [`docs/HACKATHONS_ARCHIVE.md`](./HACKATHONS_ARCHIVE.md#2-inco-summer-game-jam-2026-inco-prize-track--archived). This file is kept for implementation detail (contracts, FHE mechanics, file map). Live vault addresses are also listed in [`docs/ARCHITECTURE.md`](./ARCHITECTURE.md).
+
 > **Track**: Inco Prize Track  
 > **Chain**: Base mainnet (Chain ID 8453)  
 > **SDK**: `@inco/lightning-js` + Solidity `@inco/lightning`
