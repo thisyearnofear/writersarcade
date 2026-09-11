@@ -18,6 +18,8 @@ interface SinglePanelViewProps {
   onPanelImageChange?: (panelIndex: number, customPrompt?: string) => void
   regeneratingMessageId?: string | null
   getPanelVideo: ReturnType<typeof useVideoMotion>['getPanelVideo']
+  /** Full video-motion object — powers the per-panel "Animate" micro-upsell. */
+  video?: ReturnType<typeof useVideoMotion>
 }
 
 export function SinglePanelView({
@@ -30,6 +32,7 @@ export function SinglePanelView({
   onPanelImageChange,
   regeneratingMessageId,
   getPanelVideo,
+  video,
 }: SinglePanelViewProps) {
   const [isImageExpanded, setIsImageExpanded] = useState(false)
   const [isEditingText, setIsEditingText] = useState(false)
@@ -181,7 +184,33 @@ export function SinglePanelView({
                 </Button>
               </div>
             )}
+            {video?.enabled && currentPanel.imageUrl && (() => {
+              const pv = getPanelVideo(currentPanel.id)
+              if (pv?.videoStatus === 'pending') {
+                return (
+                  <span className="text-[11px] text-muted-foreground shrink-0 animate-pulse">
+                    Animating…
+                  </span>
+                )
+              }
+              if (pv?.videoStatus === 'completed') return null
+              return (
+                <button
+                  type="button"
+                  onClick={() => void video.animatePanel(currentPanelIndex)}
+                  disabled={video.isStarting}
+                  className="text-[11px] font-medium px-2 py-1 rounded shrink-0 transition-colors disabled:opacity-50"
+                  style={{ backgroundColor: `${primaryColor}25`, color: primaryColor }}
+                  title="Animate this panel into a short video clip"
+                >
+                  ▶ Animate · 10cr
+                </button>
+              )
+            })()}
           </div>
+          {video?.error && (
+            <p className="text-[11px] text-red-400">{video.error}</p>
+          )}
           {showCustomPrompt && onPanelImageChange && (
             <div className="space-y-1.5">
               <label className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">

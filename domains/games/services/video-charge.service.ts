@@ -74,3 +74,55 @@ export async function refundVideoCharge(params: {
     return true
   })
 }
+
+/**
+ * Refund a per-panel ("animate-panel") charge at most once. Panel jobs are
+ * tracked on the panel row (videoPaymentRef), not the game-level reservation —
+ * the panel-scoped conditional update is the idempotency gate.
+ */
+export async function refundPanelCharge(params: {
+  panelId: string
+  userId: string | null
+  paymentRef: string | null
+  cost: number
+  slug: string
+  reason: string
+}): Promise<boolean> {
+  if (!params.userId || !params.paymentRef) return false
+  const { userId, paymentRef } = params
+
+  return prisma.$transaction(async (tx) => {
+    const payment = await tx.payment.findUnique({
+      where: { transactionHash: paymentRef },
+      select: { status: true },
+    })
+    // No debit row → nothing to refund.
+    if (!payment || payment.status === 'failed') return false
+
+    const marked = await tx.gameArtifactPanel.updateMany({
+      where: { id: params.panelId, videoPaymentRef: paymentRef },
+      data: { videoPaymentRef: null },
+    })
+    if (marked.count !== 1) return false
+
+    await tx.user.update({
+      where: { id: userId },
+      data: { credits: { increment: params.cost } },
+    })
+    await tx.creditTransaction.create({
+      data: {
+        userId,
+        fiatAmount: 0,
+        creditAmount: params.cost,
+        status: 'refunded',
+        completedAt: new Date(),
+        metadata: { reason: params.reason, gameSlug: params.slug },
+      },
+    })
+    await tx.payment.updateMany({
+      where: { transactionHash: paymentRef },
+      data: { status: 'failed' },
+    })
+    return true
+  })
+}

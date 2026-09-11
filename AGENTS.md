@@ -32,7 +32,7 @@ This is a **monorepo with two deploy surfaces and one database**:
   - Never `prisma db push --accept-data-loss`, wipe tables, or run destructive SQL
     against the Neon DB. If you must change credit data, add a new column / write a
     careful `tsx` migration script and review it.
-  - **`video-montage` and `video-upsell` debit credits directly** in their routes
+  - **`video-montage`, `video-upsell`, and `animate-panel` debit credits directly** in their routes
     (same atomic `updateMany` pattern as `/api/credits/spend`). Only spend actions
     may go through `/api/credits/spend`; the spend zod enum is the whitelist.
   - `CreditTransaction` with `creditAmount < 0` = spend; `> 0` = purchase. Refunds
@@ -61,6 +61,7 @@ single source of spend prices:
 | `play-wordle` | 1 | $0.10 |
 | `video-upsell` (hero) | 50 | $5.00 |
 | `video-montage` (whole comic) | 100 | $10.00 |
+| `animate-panel` (single panel) | 10 | $1.00 |
 
 Margins are strong (≥70%, mostly 85–99%). Update prices in `CREDITS_CONFIG` (plus
 the `cost` map, `videoUpsellCost`/`videoMontageCost` bigints, and the spend zod enum

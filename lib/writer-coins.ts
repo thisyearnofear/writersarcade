@@ -357,12 +357,14 @@ export const CREDITS_CONFIG = {
   mintCost: 5n,            // 5 credits per NFT mint
   videoUpsellCost: 50n,    // 50 credits to animate a completed comic
   videoMontageCost: 100n,  // 100 credits to animate the WHOLE comic (all panels)
+  animatePanelCost: 10n,   // 10 credits to animate a single panel (H3 Turbo ~$0.05-0.40 cost)
   cost: {
     'generate-game': 10,
     'mint-nft': 5,
     'play-wordle': 1,
     'video-upsell': 50,
     'video-montage': 100,
+    'animate-panel': 10,
     'agent-panel': 1,
   } as Record<string, number>,
 } as const

@@ -337,6 +337,12 @@ function mapLumaState(state: string): VideoGenerationStatus {
 /**
  * Fal.ai I2V provider.
  * Docs: https://docs.fal.ai/
+ *
+ * Default model is `minimax/h3-max-turbo/image-to-video` — ~$0.01/s @768p
+ * (promo; $0.04/s list) with generation roughly at playback speed. H3-family
+ * payloads differ from legacy fal I2V models: `prompt_expansion_mode` is
+ * required, `duration`/`resolution` replace `aspect_ratio`, and the output
+ * canvas follows the input image.
  */
 export class FalProvider implements VideoProvider {
   readonly name = 'fal' as const
@@ -345,7 +351,30 @@ export class FalProvider implements VideoProvider {
 
   constructor(apiKey?: string, model?: string) {
     this.apiKey = apiKey ?? process.env.FAL_KEY ?? process.env.FAL_API_KEY
-    this.model = model ?? process.env.FAL_VIDEO_MODEL ?? 'fal-ai/stable-video-diffusion'
+    this.model = model ?? process.env.FAL_VIDEO_MODEL ?? 'minimax/h3-max-turbo/image-to-video'
+  }
+
+  /** MiniMax H3 family needs its own payload shape (no aspect_ratio; the
+   *  output canvas follows `image_url`). */
+  private isH3Model(): boolean {
+    return /minimax\/h3/i.test(this.model)
+  }
+
+  private buildPayload(req: VideoGenerationRequest): Record<string, unknown> {
+    if (this.isH3Model()) {
+      return {
+        image_url: req.imageUrl,
+        prompt: buildMotionPrompt(req),
+        prompt_expansion_mode: process.env.FAL_H3_PROMPT_EXPANSION ?? 'balanced',
+        duration: getVideoDurationSeconds(),
+        resolution: process.env.FAL_H3_RESOLUTION ?? '768P',
+      }
+    }
+    return {
+      image_url: req.imageUrl,
+      prompt: buildMotionPrompt(req),
+      aspect_ratio: resolveAspectRatio(req),
+    }
   }
 
   async createJob(req: VideoGenerationRequest): Promise<VideoGenerationResult> {
@@ -358,11 +387,7 @@ export class FalProvider implements VideoProvider {
         'Content-Type': 'application/json',
         Authorization: `Key ${this.apiKey}`,
       },
-      body: JSON.stringify({
-        image_url: req.imageUrl,
-        prompt: buildMotionPrompt(req),
-        aspect_ratio: resolveAspectRatio(req),
-      }),
+      body: JSON.stringify(this.buildPayload(req)),
     })
 
     if (!response.ok) {

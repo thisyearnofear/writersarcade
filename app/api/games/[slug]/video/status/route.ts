@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getActor } from '@/services/auth'
 import { VideoGenerationService, type VideoProviderName } from '@/domains/games/services/video-generation.service'
 import { persistMediaUrl } from '@/domains/story/services/media-upload'
-import { refundVideoCharge } from '@/domains/games/services/video-charge.service'
+import { refundPanelCharge, refundVideoCharge } from '@/domains/games/services/video-charge.service'
 import { CREDITS_CONFIG } from '@/lib/writer-coins'
 import { config } from '@/lib/config'
 
@@ -131,14 +131,27 @@ export async function GET(
                 },
               })
               if (effectiveResult.status === 'failed') {
-                await refundVideoCharge({
-                  gameId: game.id,
-                  userId: game.videoPaymentUserId,
-                  paymentRef: game.videoPaymentRef,
-                  cost: CREDITS_CONFIG.cost['video-upsell'],
-                  slug,
-                  reason: 'video-generation-terminal-failure',
-                })
+                // Panel-scoped charge (micro tier) refunds its own amount;
+                // the game-level reservation covers hero/montage only.
+                if (panel.videoPaymentRef) {
+                  await refundPanelCharge({
+                    panelId: panel.id,
+                    userId: panel.videoPaymentUserId,
+                    paymentRef: panel.videoPaymentRef,
+                    cost: panel.videoCost ?? CREDITS_CONFIG.cost['animate-panel'],
+                    slug,
+                    reason: 'panel-video-terminal-failure',
+                  })
+                } else {
+                  await refundVideoCharge({
+                    gameId: game.id,
+                    userId: game.videoPaymentUserId,
+                    paymentRef: game.videoPaymentRef,
+                    cost: CREDITS_CONFIG.cost['video-upsell'],
+                    slug,
+                    reason: 'video-generation-terminal-failure',
+                  })
+                }
               }
               return {
                 id: panel.id,

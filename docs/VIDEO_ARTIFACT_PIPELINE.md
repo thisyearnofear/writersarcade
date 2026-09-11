@@ -176,7 +176,30 @@ The all-panel montage is now implemented as the paid 100-credit tier (`POST /api
 - **Still first:** each panel reuses its locked still (`videoStillUrl`) when present, otherwise best-effort produces one; falling back to the frozen comic panel keeps flow/cost/refund semantics unchanged.
 - **Reservation:** shares the single-per-game video reservation with the hero upsell, so hero + montage are mutually exclusive. The `video-montage` payment action is a plain `String`, so no schema migration is required for this tier.
 
+## Per-panel micro-tier ("animate-panel") — shipped
+
+A 10-credit single-panel animation tier (`POST /api/games/[slug]/video/animate-panel`
+with `{ panelIndex, style? }`). Design decisions:
+
+- **Panel-scoped, not game-scoped:** it does NOT use the game-level
+  `videoUpsoldAt` reservation, so panels can be animated independently. The
+  panel's own `videoStatus` is the concurrency guard (conditional `updateMany`
+  on `idle|failed` → `pending`).
+- **Panel-scoped charge tracking:** `game_artifact_panels` gains
+  `videoPaymentRef`/`videoPaymentUserId`/`videoCost` (migration
+  `20260911120000_add_panel_video_payment_tracking`). Terminal-failure refunds
+  go through `refundPanelCharge`, which refunds the micro amount — the status
+  route checks `panel.videoPaymentRef` before falling back to the game-level
+  50-credit refund.
+- **Free-still reuse:** uses `videoStillUrl` when the free "Preview the look"
+  stage locked one, else the comic panel image — keeping the micro tier fast
+  and cheap.
+- **CTA:** the single-panel finale view shows "▶ Animate · 10cr" per panel
+  when `NEXT_PUBLIC_FEATURE_VIDEO_PIPELINE` is on.
+- Provider: fal `minimax/h3-max-turbo/image-to-video` by default (see "H3-era
+  economics"); ~$0.01–0.05 per 5s clip against $1.00 revenue.
+
 ### Deferred visuals (not in this change)
 
-- Per-panel "Preview the look" / "Check the motion" **buttons** in the comic grid/single-panel views still need `panelIndex` threaded into `ComicBookFinalePanelData` plus a small per-panel control strip — mechanical JSX, kept out of the core pipeline change.
+- Per-panel "Preview the look" / "Check the motion" **buttons** in the comic grid view still need a per-panel control strip — mechanical JSX, kept out of the core pipeline change. (Single-panel view has the Animate CTA.)
 - A grid-based shot timeline (`generateShotGrid`) remains available as future visual DNA for a premium montage, but is intentionally not generated in the hero or current montage paths.

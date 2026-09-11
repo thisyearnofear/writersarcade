@@ -48,6 +48,11 @@ export interface VideoMotion {
    * rate-limited; no credit charge.
    */
   draft: (panelIndex?: number) => Promise<boolean>
+  /**
+   * Micro-tier — animate a single panel for `animate-panel` credits. Charges
+   * in-route on the server; the panel's own videoStatus guards concurrency.
+   */
+  animatePanel: (panelIndex: number) => Promise<boolean>
   /** Re-fetch video status (used after starting a companion wide clip). */
   refresh: () => Promise<void>
 }
@@ -169,6 +174,30 @@ export function useVideoMotion(gameSlug: string): VideoMotion {
     }
   }, [gameSlug, mutateVideoStatus])
 
+  const animatePanel = useCallback(async (panelIndex: number) => {
+    setIsStarting(true)
+    setError(null)
+    try {
+      const response = await fetch(`/api/games/${gameSlug}/video/animate-panel`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ panelIndex, style }),
+      })
+      const json = (await response.json()) as { success?: boolean; error?: string; data?: { status: string } }
+      if (!response.ok || !json.success) throw new Error(json.error || 'Could not animate this panel')
+      if (json.data?.status === 'pending' || json.data?.status === 'completed') {
+        trackEvent('animation_started', { surface: 'finale', mode: 'panel', panelIndex, style })
+      }
+      await mutateVideoStatus()
+      return true
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not animate this panel')
+      return false
+    } finally {
+      setIsStarting(false)
+    }
+  }, [gameSlug, mutateVideoStatus, style])
+
   const getPanelVideo = useCallback(
     (panelId: string) => videoStatusByPanel.get(panelId),
     [videoStatusByPanel]
@@ -184,5 +213,5 @@ export function useVideoMotion(gameSlug: string): VideoMotion {
     if (status === 'failed') trackEvent('animation_failed', { surface: 'finale', mode: 'hero' })
   }, [status])
 
-  return { enabled, status, panels: videoPanels, isStarting, error, style, setStyle, firstVideoUrl, getPanelVideo, start, startMontage, preview, draft, refresh: mutateVideoStatus }
+  return { enabled, status, panels: videoPanels, isStarting, error, style, setStyle, firstVideoUrl, getPanelVideo, start, startMontage, preview, draft, animatePanel, refresh: mutateVideoStatus }
 }

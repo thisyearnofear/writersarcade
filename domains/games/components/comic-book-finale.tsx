@@ -371,6 +371,7 @@ export function ComicBookFinale({
                 onPanelImageChange={onPanelImageChange}
                 regeneratingMessageId={regeneratingMessageId}
                 getPanelVideo={getPanelVideo}
+                video={video}
               />
             )}
 

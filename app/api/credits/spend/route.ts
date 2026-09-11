@@ -8,7 +8,7 @@ import { ok, fail } from '@/lib/api-response'
 import { logger } from '@/lib/config'
 
 const spendSchema = z.object({
-  action: z.enum(['generate-game', 'mint-nft', 'play-wordle', 'video-upsell', 'video-montage', 'agent-panel']),
+  action: z.enum(['generate-game', 'mint-nft', 'play-wordle', 'video-upsell', 'video-montage', 'animate-panel', 'agent-panel']),
   gameId: z.string().optional(),
 })
 
