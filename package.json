@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "NODE_OPTIONS=--max-old-space-size=8192 next build --webpack",
+    "build": "prisma generate && NODE_OPTIONS=--max-old-space-size=8192 next build --webpack",
     "start": "next start",
     "lint": "eslint . --fix",
     "type-check": "tsc --noEmit",
