@@ -33,7 +33,7 @@ describe('Play count increment (route handler)', () => {
 
     const request = new Request('http://localhost:3000/api/games/test-game/play', { method: 'PATCH' })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response = await PATCH(request as any, { params: { slug: 'test-game' } })
+    const response = await PATCH(request as any, { params: Promise.resolve({ slug: 'test-game' }) })
     const body = await response.json()
 
     expect(response.status).toBe(200)
@@ -78,7 +78,7 @@ describe('Play count increment (route handler)', () => {
       body: JSON.stringify({ sessionId: 'session-abc' }),
     })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response = await PATCH(request as any, { params: { slug: 'test-game' } })
+    const response = await PATCH(request as any, { params: Promise.resolve({ slug: 'test-game' }) })
 
     expect(response.status).toBe(200)
     expect(mockGamePlayEventCreate).toHaveBeenCalledWith({
@@ -108,7 +108,7 @@ describe('Play count increment (route handler)', () => {
       body: JSON.stringify({ sessionId: 'x'.repeat(100) }),
     })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await PATCH(request as any, { params: { slug: 'test-game' } })
+    await PATCH(request as any, { params: Promise.resolve({ slug: 'test-game' }) })
 
     expect(mockGamePlayEventCreate).toHaveBeenCalledWith({
       data: expect.objectContaining({ sessionId: 'x'.repeat(64) }),
@@ -122,7 +122,7 @@ describe('Play count increment (route handler)', () => {
 
     const request = new Request('http://localhost:3000/api/games/test-game/play', { method: 'PATCH' })
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response = await PATCH(request as any, { params: { slug: 'test-game' } })
+    const response = await PATCH(request as any, { params: Promise.resolve({ slug: 'test-game' }) })
     const body = await response.json()
 
     expect(response.status).toBe(500)

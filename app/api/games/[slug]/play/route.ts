@@ -18,10 +18,10 @@ import { queueAutoFilmIfEligible } from '@/domains/games/services/montage-genera
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  context: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = params
+    const { slug } = await context.params
 
     // Optional sessionId ties the completion to its started/choice events
     const sessionId: string | null = await request
