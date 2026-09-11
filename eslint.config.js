@@ -50,7 +50,11 @@ module.exports = [
   // Fastify API and PM2 ecosystem files are plain JS/CJS, not TypeScript.
   // Give them CommonJS source type and allow require/module.exports.
   {
-    files: ['apps/writersarcade-api/**/*.js', 'apps/writersarcade-api/**/*.cjs'],
+    files: [
+      'apps/writersarcade-api/**/*.js',
+      'apps/writersarcade-api/**/*.cjs',
+      'apps/imessage-agent/**/*.cjs',
+    ],
     languageOptions: {
       sourceType: 'commonjs',
       globals: {

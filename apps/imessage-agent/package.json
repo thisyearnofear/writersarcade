@@ -6,14 +6,16 @@
   "scripts": {
     "dev": "bun run src/index.ts",
     "start": "bun run src/index.ts",
+    "cloud": "tsx src/cloud.ts",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@spectrum-ts/imessage-local": "latest",
     "dotenv": "^16.4.5",
-    "spectrum-ts": "latest"
+    "spectrum-ts": "12.8.0",
+    "tsx": "^4.19.2"
   },
   "devDependencies": {
+    "@spectrum-ts/imessage-local": "latest",
     "@types/node": "^22.8.6",
     "typescript": "^5.6.3"
   }

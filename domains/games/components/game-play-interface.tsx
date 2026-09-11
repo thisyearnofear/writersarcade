@@ -65,7 +65,15 @@ export function GamePlayInterface({ game, isOwner = false }: GamePlayInterfacePr
   }, [isDailyGame])
 
   // 2. Session & Gameplay Logic
-  const session = useGameSession(liveGame, { isDailyActive: isDailyGame })
+  // ?ref= attribution (e.g. Flynn/iMessage shares) — read client-side like the
+  // embed player does; ISR pages can't useSearchParams without a bailout.
+  const [playRef, setPlayRef] = useState<string | undefined>(undefined)
+  useEffect(() => {
+    const ref = new URLSearchParams(window.location.search).get('ref')
+     
+    if (ref) setPlayRef(ref.slice(0, 200))
+  }, [])
+  const session = useGameSession(liveGame, { isDailyActive: isDailyGame, ref: playRef })
 
   // 3. Blockchain & Payment Logic
   const blockchain = useGameBlockchain(liveGame, {

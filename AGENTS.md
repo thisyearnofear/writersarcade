@@ -6,13 +6,18 @@ mutating anything that reaches production.
 
 ## Repo layout (deploy topology — know where your change ships)
 
-This is a **monorepo with two deploy surfaces and one database**:
+This is a **monorepo with three deploy surfaces and one database**:
 
 - **Next.js app (repo root)** — the main product: all `app/`, `domains/`, `lib/`,
   `components/` and `prisma/schema.prisma`. Deploys to **Vercel** (project
   `writersarcade`, git-integration autodeploy on push to `main`).
 - **`apps/writersarcade-api/`** — a separate **Fastify backend**, deployed to the
   VPS (`snel-bot`) via `npm run deploy:api`.
+- **`apps/imessage-agent/`** — Flynn, the iMessage agent (Photon/Spectrum cloud
+  lines). Deployed to the VPS via `npm run deploy:imessage` as PM2 process
+  `flynn-imessage` running `src/cloud.ts`. `src/index.ts` (local Mac + terminal
+  providers) is dev-only — keep `@spectrum-ts/imessage-local` out of the deploy
+  graph (native SQLite dep).
 - **Production Postgres — Neon** (`DATABASE_URL` from the Vercel project env).
   This is the app database. The VPS's local Postgres is **not** WritersArcade's DB.
 

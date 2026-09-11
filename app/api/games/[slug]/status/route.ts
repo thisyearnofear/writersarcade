@@ -19,8 +19,13 @@ export async function GET(
       id: true,
       slug: true,
       title: true,
+      imageUrl: true,
       generationStatus: true,
       generationError: true,
+      montageVideoUrl: true,
+      artifactPanels: {
+        select: { videoUrl: true },
+      },
     },
   })
   if (!game) return fail('Game not found', 404, { code: 'GAME_NOT_FOUND' })
@@ -30,5 +35,9 @@ export async function GET(
     title: game.title,
     generationStatus: game.generationStatus,
     generationError: game.generationError,
+    // Media surface for the watch landing + agents (e.g. Flynn's "film" beat).
+    imageUrl: game.imageUrl,
+    montageVideoUrl: game.montageVideoUrl?.startsWith('http') ? game.montageVideoUrl : null,
+    clipCount: game.artifactPanels.filter((p) => p.videoUrl?.startsWith('http')).length,
   })
 }

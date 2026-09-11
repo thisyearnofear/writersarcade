@@ -22,6 +22,7 @@
     "migrate:data": "tsx scripts/maintenance/migrate-data.ts",
     "repair:game-funding": "node scripts/maintenance/repair-game-funding.mjs",
     "deploy:api": "bash scripts/deploy/deploy-writersarcade-api.sh",
+    "deploy:imessage": "bash scripts/deploy/deploy-imessage-agent.sh",
     "cron:daily-challenge:install": "bash scripts/cron/install-daily-challenge-cron.sh"
   },
   "dependencies": {
