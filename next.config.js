@@ -13,15 +13,14 @@ const { withSentryConfig } = require('@sentry/nextjs');
 
 const nextConfig = {
   output: 'standalone',
-  // Function-storage diet: Prisma runs through the Neon driver adapter
-  // (lib/database.ts), so the ~17MB native query-engine binary must not be
-  // traced into every DB-touching function. Same for sharp's non-linux
-  // binaries and other dead weight.
+  // Function-storage diet: drop binaries never needed at runtime (sharp's
+  // non-linux variants, the Prisma schema/migration engine, CLI engines).
+  // NOTE: on Prisma 5.22 the Neon driver adapter still executes through
+  // libquery_engine-*.so.node — do NOT exclude libquery_engine until the
+  // client runs engine-free (queryCompiler / engineType:"client", Prisma 6.x+).
   outputFileTracingExcludes: {
     '*': [
-      'node_modules/.pnpm/@prisma+client*/node_modules/.prisma/client/libquery_engine-*',
       'node_modules/.pnpm/@prisma+client*/node_modules/.prisma/client/schema-engine-*',
-      'node_modules/.prisma/client/libquery_engine-*',
       'node_modules/.prisma/client/schema-engine-*',
       'node_modules/.pnpm/@prisma+engines*/node_modules/@prisma/engines/**',
       'node_modules/@img/*darwin*/**',
