@@ -56,6 +56,7 @@ export class GameDatabaseService {
       ownerWallet?: string
       ownershipSource?: string
       paymentId?: string
+      createdVia?: string
     },
     assetIds?: string[] // Links to parent assets (Workshop Packs)
   ): Promise<Game> {
@@ -98,6 +99,7 @@ export class GameDatabaseService {
         ownershipSource: miniAppData?.ownershipSource || gameData.ownershipSource,
         creatorWallet: gameData.creatorWallet,
         paymentId: miniAppData?.paymentId || gameData.paymentId,
+        createdVia: miniAppData?.createdVia,
         private: false,
         userId: userId || null,
         wordleAnswerVaultUuid: miniAppData?.wordleAnswerVaultUuid,

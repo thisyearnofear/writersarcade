@@ -332,6 +332,7 @@ Your game MUST authentically interpret this article's core themes. Players shoul
             ownerWallet: ownership.ownerWallet,
             ownershipSource: ownership.ownershipSource,
             paymentId: ownership.paymentId,
+            createdVia: 'web',
             articleContext: processedPrompt.substring(0, 1200),
           }
         : processedContent
@@ -349,6 +350,7 @@ Your game MUST authentically interpret this article's core themes. Players shoul
               ownerWallet: ownership.ownerWallet,
               ownershipSource: ownership.ownershipSource,
               paymentId: ownership.paymentId,
+              createdVia: 'web',
               articleContext: `Article: "${processedContent.title}"\nAuthor: ${processedContent.author || 'Unknown'}\nPublication: ${processedContent.publicationName || 'Unknown'}\n\nCore Themes:\n${ContentProcessorService.extractArticleThemes(processedContent.text, processedContent.title)}\n\nKey excerpt:\n${processedContent.text.substring(0, 800)}...`,
             }
           : basePaintDay
@@ -361,6 +363,7 @@ Your game MUST authentically interpret this article's core themes. Players shoul
                 ownerWallet: ownership.ownerWallet,
                 ownershipSource: ownership.ownershipSource,
                 paymentId: ownership.paymentId,
+                createdVia: 'web',
                 articleContext: processedPrompt.substring(0, 1200),
               }
             : undefined

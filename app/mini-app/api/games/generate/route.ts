@@ -102,6 +102,7 @@ The game should be engaging and interactive with:
         articleUrl: validatedData.articleUrl,
         writerCoinId: validatedData.writerCoinId,
         difficulty: validatedData.difficulty,
+        createdVia: 'miniapp',
         // Include comprehensive article context for authentic game start narrative continuity
         articleContext: processedContent 
           ? `Article: "${processedContent.title}"\nAuthor: ${processedContent.author || 'Unknown'}\nPublication: ${processedContent.publicationName || 'Unknown'}\n\nCore Themes:\n${articleThemes}\n\nKey excerpt:\n${processedContent.text.substring(0, 800)}...`

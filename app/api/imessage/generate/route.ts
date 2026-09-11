@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse, after } from 'next/server'
 import { z } from 'zod'
+import { prisma } from '@/lib/prisma'
 import { GameAIService } from '@/domains/games/services/game-ai.service'
 import { GameDatabaseService } from '@/domains/games/services/game-database.service'
 import { ImageGenerationService } from '@/domains/games/services/image-generation.service'
@@ -30,6 +31,42 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const { url, tone } = requestSchema.parse(body)
+
+    // Budget circuit-breaker — Flynn generations are platform-subsidized
+    // (no wallet, no credits). Cap daily volume so a viral/abused number
+    // can't run unbounded AI spend. Durable across serverless instances.
+    const dailyCap = Number(process.env.IMESSAGE_DAILY_GAME_CAP || 100)
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000)
+    const createdToday = await prisma.game.count({
+      where: { createdVia: 'imessage', createdAt: { gte: since } },
+    })
+    if (createdToday >= dailyCap) {
+      return NextResponse.json(
+        { success: false, error: 'Flynn is resting — too many stories today. Try again tomorrow.' },
+        { status: 429 }
+      )
+    }
+
+    // Same-article dedup: a second request for a URL that already produced a
+    // ready game returns that game — cheaper, and a group chat ends up
+    // sharing one artifact instead of N near-duplicates.
+    const existing = await prisma.game.findFirst({
+      where: {
+        articleUrl: url,
+        mode: 'story',
+        generationStatus: 'ready',
+      },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, slug: true, title: true },
+    })
+    if (existing) {
+      const playUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://writersarcade.vercel.app'}/games/${existing.slug}`
+      return NextResponse.json({
+        success: true,
+        deduplicated: true,
+        data: { id: existing.id, slug: existing.slug, title: existing.title, playUrl },
+      })
+    }
 
     const processedContent = await ContentProcessorService.processUrl(url)
     const articleThemes = ContentProcessorService.extractArticleThemes(
@@ -86,6 +123,7 @@ ${tone ? `\nTONE / MOOD REQUEST: ${tone}` : ''}`
           ownershipSource: 'free_demo' as const,
           paymentId: undefined,
           wordleAnswerVaultUuid: undefined,
+          createdVia: 'imessage' as const,
         }
       : undefined
 
