@@ -53,6 +53,9 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
   const { data: ensAvatarData } = useEnsAvatar({
     name: ensName ? normalize(ensName) : undefined,
     chainId: mainnet.id,
+    // viem defaults to ipfs.io, which no longer serves plain fetches (and has
+    // no CORS headers). Pinata's gateway serves the same content with ACAO:*.
+    assetGatewayUrls: { ipfs: 'https://gateway.pinata.cloud' },
     query: { enabled: Boolean(ensName) },
   })
   const ensAvatar = ensAvatarData ?? null

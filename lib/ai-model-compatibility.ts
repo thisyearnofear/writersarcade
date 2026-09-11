@@ -51,6 +51,12 @@ export function hasGeminiConfiguration(userPreferences?: UserAIPreferences): boo
 // Venice model that supports function calling / tools for generateObject
 export const VENICE_DEFAULT_MODEL = 'llama-3.3-70b';
 
+// Venice model that supports `response_format` (JSON mode) — required for
+// `generateObject`. `llama-3.3-70b` does NOT support it (Venice returns 400
+// "response_format is not supported by this model"). Verified against
+// GET /api/v1/models `supportsResponseSchema` + live generateObject calls.
+export const VENICE_STRUCTURED_MODEL = 'gemini-3-8-flash';
+
 export function getCompatibleVeniceModel(modelName?: string): CompatibleLanguageModel {
   const veniceApiKey = process.env.VENICE_API_KEY;
 
@@ -153,12 +159,41 @@ export function getStructuredOutputModel(userPreferences?: UserAIPreferences): C
       return getCompatibleGoogleModel('gemini-2.0-flash', apiKey);
     }
   }
-  if (hasOpenAIConfiguration()) {
+  // Only treat OPENAI_API_KEY as usable if it looks like a real OpenAI key —
+  // gateway tokens (e.g. `ogw_live_...`) 401 against api.openai.com.
+  if (hasOpenAIConfiguration() && /^sk-/.test(process.env.OPENAI_API_KEY!)) {
     return getCompatibleOpenAIModel('gpt-4o-mini');
   }
-  // No structured-output-capable external provider configured → fall back to Venice.
+  // No structured-output-capable external provider configured → Venice model
+  // that supports response_format (llama-3.3-70b does NOT).
   if (hasVeniceConfiguration()) {
-    return getCompatibleVeniceModel(VENICE_DEFAULT_MODEL);
+    return getCompatibleVeniceModel(VENICE_STRUCTURED_MODEL);
   }
   return getCompatibleOpenAIModel('gpt-4o-mini');
+}
+
+/**
+ * Resolve a model for `generateObject` calls.
+ *
+ * Unlike `getModel`, this never routes to Venice when the request needs
+ * `response_format`/JSON mode — Venice models reject it with a 400
+ * ("response_format is not supported by this model"). Explicit JSON-capable
+ * provider requests (gpt-*, gemini-*, claude-*) are honored directly, without
+ * the Venice redirect `getModel` applies to gpt-*.
+ */
+export function getJsonCapableModel(modelName: string, userPreferences?: UserAIPreferences): CompatibleLanguageModel {
+  if (modelName.startsWith('claude')) {
+    return getCompatibleAnthropicModel(modelName);
+  }
+  if (modelName.startsWith('gemini')) {
+    const apiKey = userPreferences?.googleApiKey || process.env.GOOGLE_API_KEY;
+    if (apiKey) {
+      return getCompatibleGoogleModel(modelName, apiKey);
+    }
+    // Not configured — fall through to the structured-output default.
+  }
+  if (modelName.startsWith('gpt') && hasOpenAIConfiguration()) {
+    return getCompatibleOpenAIModel(modelName);
+  }
+  return getStructuredOutputModel(userPreferences);
 }

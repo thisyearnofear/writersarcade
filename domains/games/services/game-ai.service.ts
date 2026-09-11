@@ -1,4 +1,4 @@
-import { generateObject, streamText } from 'ai'
+import { streamText } from 'ai'
 import { z } from 'zod'
 import type {
   GameGenerationRequest,
@@ -9,6 +9,7 @@ import type {
 } from '../types'
 import type { UserAIPreferences } from '@/lib/user-ai-preferences.service'
 import { getModel, hasGeminiConfiguration, hasVeniceConfiguration } from '@/lib/ai-model-compatibility'
+import { generateStructuredObject } from '@/lib/ai-structured'
 import { isFeatureEnabled, logger } from '@/lib/config'
 import { StoryPlannerService } from './story-planner.service'
 import type { StoryPlan } from './story-planner.service'
@@ -107,14 +108,16 @@ export class GameAIService {
     })
 
     try {
-      const model = getModel(request.model || '', userPreferences)
-      logger.info('Calling generateObject with model...')
-      const { object: game } = await generateObject({
-        model,
+      // generateObject needs JSON mode (response_format) which Venice rejects —
+      // generateStructuredObject falls back to Venice generateText + zod parse.
+      logger.info('Calling structured generation...')
+      const game = await generateStructuredObject({
+        model: request.model || '',
         schema: gameGenerationSchema,
         prompt,
+        userPreferences,
       })
-      logger.info('generateObject returned:', { title: game.title, genre: game.genre })
+      logger.info('Structured generation returned:', { title: game.title, genre: game.genre })
 
       // Validate customization constraints
       if (request.customization?.genre) {
@@ -265,7 +268,6 @@ export class GameAIService {
     retryCount = 0,
     userPreferences?: UserAIPreferences
   ): Promise<AssetGenerationResponse> {
-    const model = getModel(request.model || 'gpt-4o-mini', userPreferences)
     const maxRetries = 2
 
     const promptText = request.promptText || ''
@@ -281,10 +283,11 @@ export class GameAIService {
     const prompt = this.buildAssetGenerationPrompt(promptText, request.genre, articleThemes)
 
     try {
-      const { object: assets } = await generateObject({
-        model,
+      const assets = await generateStructuredObject({
+        model: request.model || 'gpt-4o-mini',
         schema: assetGenerationSchema,
         prompt,
+        userPreferences,
       })
 
       // Type assertion safe: Zod schema enforces all required fields
@@ -873,8 +876,6 @@ CONCLUSION REQUIRED: This is the FINAL panel. You MUST bring the story to a sati
     articleContext?: string,
     userPreferences?: import('@/lib/user-ai-preferences.service').UserAIPreferences
   ): Promise<{ narrative: string; imagePrompt: string }> {
-    const model = getModel('', userPreferences)
-
     const prompt = `You are a narrative designer creating a SECRET EPILOGUE for an interactive comic game.
 
 GAME: "${game.title}" (${game.genre})
@@ -899,13 +900,14 @@ Respond in JSON:
 }`
 
     try {
-      const { object: result } = await generateObject({
-        model,
+      const result = await generateStructuredObject({
+        model: '',
         schema: z.object({
           narrative: z.string().min(20).max(500),
           imagePrompt: z.string().min(10).max(300),
         }),
         prompt,
+        userPreferences,
       })
 
       return {
