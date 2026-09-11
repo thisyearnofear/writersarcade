@@ -2,7 +2,7 @@
 # Deploy Flynn (the iMessage agent) as a long-lived PM2 process.
 #
 # Layout mirrors the writersarcade-api deploy:
-#   /opt/imessage-agent/
+#   ~/imessage-agent/ (REMOTE_ROOT, default /home/deploy/imessage-agent)
 #     shared/.env
 #     shared/logs/
 #     releases/<git-sha>/
@@ -12,14 +12,14 @@
 # connects OUTBOUND to Photon's managed lines, so no inbound ports or health
 # endpoint are involved — deploy verification is "PM2 process online + logs".
 #
-# First run: seed /opt/imessage-agent/shared/.env with the local
+# First run: seed $REMOTE_ROOT/shared/.env with the local
 # apps/imessage-agent/.env (SPECTRUM_PROJECT_ID/SECRET, IMESSAGE_API_SECRET,
 # WRITERSARCADE_API_URL=https://writersarcade.vercel.app).
 
 set -euo pipefail
 
 HOST="${HOST:-snel-bot}"
-REMOTE_ROOT="${REMOTE_ROOT:-/opt/imessage-agent}"
+REMOTE_ROOT="${REMOTE_ROOT:-/home/deploy/imessage-agent}"
 PM2_NAME="${PM2_NAME:-flynn-imessage}"
 KEEP_RELEASES="${KEEP_RELEASES:-3}"
 DRY_RUN=0
@@ -79,16 +79,8 @@ rsync -a \
   --exclude '.DS_Store' \
   "${APP_DIR}/" "${BUILD_DIR}/"
 
-echo "Installing production dependencies locally (omit dev — keeps @spectrum-ts/imessage-local's native deps out)"
-(
-  cd "${BUILD_DIR}"
-  if [[ -f package-lock.json ]]; then
-    npm ci --omit=dev
-  else
-    npm install --omit=dev
-  fi
-)
-
+# Dependencies install on the REMOTE — running npm locally would bake macOS
+# binaries (esbuild via tsx, etc.) into node_modules and crash on the Linux VPS.
 RSYNC_FLAGS=(-az --delete)
 if [[ "${DRY_RUN}" -eq 1 ]]; then
   RSYNC_FLAGS+=(--dry-run)
@@ -128,6 +120,8 @@ ssh "${HOST}" "set -euo pipefail
   fi
   ln -sfn '${REMOTE_ROOT}/shared/.env' '${RELEASE_DIR}/.env'
   ln -sfn '${REMOTE_ROOT}/shared/logs' '${RELEASE_DIR}/logs'
+  cd '${RELEASE_DIR}'
+  if [ -f package-lock.json ]; then npm ci --omit=dev; else npm install --omit=dev; fi
   ln -sfn '${RELEASE_DIR}' '${REMOTE_ROOT}/current'
 "
 
