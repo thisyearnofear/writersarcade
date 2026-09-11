@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
-import { useAccount, useChainId, useSwitchChain } from 'wagmi'
+import { useAccount, useChainId, useSwitchChain, useReadContracts } from 'wagmi'
+import { erc20Abi, formatUnits } from 'viem'
+import { base } from 'viem/chains'
 import { Coins, Loader2, ChevronDown, Sparkles, ArrowRightLeft, Banknote } from 'lucide-react'
 import { WRITER_COINS } from '@/lib/writer-coins'
 import { CopyAddressButton } from '@/components/ui/copy-address-button'
-import { useWriterCoinBalance } from '@/hooks/useWriterCoinBalance'
+import type { BalanceData } from '@/hooks/useWriterCoinBalance'
 import { useMezoBalance } from '@/hooks/useMezoBalance'
 import { getChainInfo, MEZO_TESTNET_CHAIN_ID, type ChainInfo } from '@/lib/wallet/chains'
 
@@ -15,7 +17,7 @@ interface BalanceDisplayProps {
 
 interface CoinBalanceRow {
   coin: typeof WRITER_COINS[number]
-  balance: ReturnType<typeof useWriterCoinBalance>['balance']
+  balance: BalanceData | null
   isLoading: boolean
 }
 
@@ -59,19 +61,42 @@ function useCreditsBalance() {
 }
 
 function useAllWriterCoinBalances(): CoinBalanceRow[] {
-  const avc = useWriterCoinBalance('avc')
-  const debbie = useWriterCoinBalance('debbie')
-  const jake = useWriterCoinBalance('jake')
-  const tso = useWriterCoinBalance('tso')
-  const papa = useWriterCoinBalance('papa')
+  const { address, isConnected } = useAccount()
 
-  return [
-    { coin: WRITER_COINS[0], ...avc },
-    { coin: WRITER_COINS[1], ...debbie },
-    { coin: WRITER_COINS[2], ...jake },
-    { coin: WRITER_COINS[3], ...tso },
-    { coin: WRITER_COINS[4], ...papa },
-  ]
+  const contracts = useMemo(
+    () =>
+      WRITER_COINS.map((coin) => ({
+        chainId: base.id,
+        address: coin.address as `0x${string}`,
+        abi: erc20Abi,
+        functionName: 'balanceOf' as const,
+        args: [address ?? '0x0000000000000000000000000000000000000000'] as [`0x${string}`],
+      })),
+    [address]
+  )
+
+  const { data, isLoading } = useReadContracts({
+    contracts,
+    query: { enabled: isConnected && !!address },
+  })
+
+  return useMemo(
+    () =>
+      WRITER_COINS.map((coin, i) => {
+        const raw = (data?.[i]?.result as bigint | undefined) ?? undefined
+        const balance: BalanceData | null =
+          raw !== undefined
+            ? {
+                balance: raw.toString(),
+                decimals: coin.decimals,
+                symbol: coin.symbol,
+                formattedBalance: formatUnits(raw, coin.decimals),
+              }
+            : null
+        return { coin, balance, isLoading }
+      }),
+    [data, isLoading]
+  )
 }
 
 function toWholeNumber(formatted: string): string {

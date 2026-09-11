@@ -1,141 +1,60 @@
 'use client'
 
-import { useEffect, useState, useCallback, useRef } from 'react'
-import { useAccount } from 'wagmi'
+import { useMemo } from 'react'
+import { useAccount, useReadContract } from 'wagmi'
+import { erc20Abi, formatUnits } from 'viem'
+import { base } from 'viem/chains'
 import { getWriterCoinById } from '@/lib/writer-coins'
 
-interface BalanceData {
+export interface BalanceData {
   balance: string
   decimals: number
   symbol: string
   formattedBalance: string
 }
 
-const BACKEND_URL = typeof window !== 'undefined' 
-  ? (process.env.NEXT_PUBLIC_BACKEND_URL || `${window.location.origin}`)
-  : process.env.NEXT_PUBLIC_BACKEND_URL || 'https://api.snel.famile.xyz/writersarcade'
-
 /**
- * Hook to fetch and cache user's writer coin balance.
- * Uses backend API to avoid exposing contract details to client.
- * Implements intelligent caching to reduce RPC calls.
+ * Read a writer coin ERC-20 balance directly from Base.
+ *
+ * Previously this called the Fastify backend, but that added an extra hop,
+ * required the backend to be healthy, and caused 502s in production. Reading
+ * on-chain from the client removes the dependency and lets wagmi batch/cache.
  */
 export function useWriterCoinBalance(coinId = 'avc') {
   const { address, isConnected } = useAccount()
-  const [balance, setBalance] = useState<BalanceData | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const cacheRef = useRef<Map<string, { data: BalanceData; timestamp: number }>>(new Map())
-  const CACHE_DURATION = 30000 // 30 seconds cache
+  const writerCoin = useMemo(() => getWriterCoinById(coinId), [coinId])
 
-  const fetchBalance = useCallback(async (wallet: string, coin: string) => {
-    const cacheKey = `${wallet}-${coin}`
-    const cached = cacheRef.current.get(cacheKey)
+  const { data, isLoading, error, refetch } = useReadContract({
+    chainId: base.id,
+    address: (writerCoin?.address as `0x${string}`) ?? undefined,
+    abi: erc20Abi,
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+    query: {
+      enabled: isConnected && !!address && !!writerCoin && !!coinId,
+    },
+  })
 
-    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      return cached.data
+  const balance: BalanceData | null = useMemo(() => {
+    if (writerCoin === undefined || data === undefined) return null
+    return {
+      balance: data.toString(),
+      decimals: writerCoin.decimals,
+      symbol: writerCoin.symbol,
+      formattedBalance: formatUnits(data, writerCoin.decimals),
     }
+  }, [data, writerCoin])
 
-    try {
-      const writerCoin = getWriterCoinById(coin)
-      if (!writerCoin) {
-        throw new Error(`Writer coin '${coin}' not configured`)
-      }
-
-      const response = await fetch(
-        `${BACKEND_URL}/api/user/balance?wallet=${encodeURIComponent(wallet)}&coin=${encodeURIComponent(coin)}`,
-        { credentials: 'include' }
-      )
-
-      if (!response.ok) {
-        const errorBody = await response.json().catch(() => null)
-        throw new Error(errorBody?.details || `Failed to fetch balance (${response.status})`)
-      }
-
-      const data = await response.json()
-      if (!data.success || !data.data) {
-        throw new Error('Invalid response format')
-      }
-
-      const balanceData = {
-        balance: data.data.balance,
-        decimals: data.data.decimals || 18,
-        symbol: data.data.symbol || writerCoin.symbol,
-        formattedBalance: data.data.formattedBalance || '0',
-      }
-
-      cacheRef.current.set(cacheKey, { data: balanceData, timestamp: Date.now() })
-
-      return balanceData
-    } catch (err) {
-      console.error('Failed to fetch writer coin balance:', err)
-      throw err
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!address || !isConnected || !coinId) {
-      setBalance(null)
-      setError(null)
-      if (!coinId) cacheRef.current.clear()
-      return
-    }
-
-    const fetchAndCache = async () => {
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        const balanceData = await fetchBalance(address, coinId)
-        setBalance(balanceData)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch balance')
-        setBalance(null)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchAndCache()
-    const interval = setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        fetchBalance(address, coinId)
-      }
-    }, 120000) // Poll every 2 minutes instead of 60 seconds
-
-    return () => clearInterval(interval)
-  }, [address, isConnected, coinId, fetchBalance])
-
-  const refresh = useCallback(async () => {
-    if (!address || !isConnected || !coinId) {
-      setBalance(null)
-      return
-    }
-
-    // Clear cache for this wallet/coin to force fresh fetch
-    cacheRef.current.delete(`${address}-${coinId}`)
-
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const balanceData = await fetchBalance(address, coinId)
-      setBalance(balanceData)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch balance')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [address, isConnected, coinId, fetchBalance])
-
-  // When no coinId (e.g. MUSD payment path), return no-op state.
-  // This must come AFTER all hook calls to satisfy React's Rules of Hooks —
-  // otherwise the number of hooks changes between renders (e.g. when switching
-  // from MUSD to Writer Coin) and React throws "Cannot read properties of
-  // undefined (reading 'length')" in useCallback.
-  if (!coinId) {
+  // When no coinId is provided (e.g. MUSD or credits path) return a no-op shape
+  // without changing hook count.
+  if (!coinId || !writerCoin) {
     return { balance: null, isLoading: false, error: null, refresh: async () => {} }
   }
 
-  return { balance, isLoading, error, refresh }
+  return {
+    balance,
+    isLoading,
+    error: error ? (error instanceof Error ? error.message : 'Failed to fetch balance') : null,
+    refresh: refetch,
+  }
 }

@@ -16,12 +16,15 @@ import {
   HelpCircle
 } from 'lucide-react'
 import { useAccount, useDisconnect } from 'wagmi'
+import { createPublicClient, http } from 'viem'
+import { mainnet } from 'viem/chains'
 import { useAccountModal } from '@rainbow-me/rainbowkit'
 import { WalletConnect } from '@/components/ui/wallet-connect'
 import { getFarcasterProfile } from '@/domains/farcaster/services/farcaster'
 import type { FarcasterProfile } from '@/domains/farcaster/services/farcaster'
 import { useDarkMode } from '@/components/providers/DarkModeProvider'
 import { NetworkIndicatorCompact } from '@/components/layout/NetworkIndicator'
+import { logger } from '@/lib/config'
 
 interface UserMenuProps {
   mobileLayout?: boolean
@@ -38,6 +41,8 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
   const kebabRef = useRef<HTMLButtonElement | null>(null)
   const [profile, setProfile] = useState<FarcasterProfile | null>(null)
   const [_isLoadingProfile, setIsLoadingProfile] = useState(false)
+  const [ensName, setEnsName] = useState<string | null>(null)
+  const [ensAvatar, setEnsAvatar] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => { setMounted(true) }, [])
@@ -55,7 +60,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
         const farcasterProfile = await getFarcasterProfile(address)
         setProfile(farcasterProfile)
       } catch (error) {
-        console.error('Failed to load Farcaster profile:', error)
+        logger.error('Failed to load Farcaster profile:', error)
         setProfile(null)
       } finally {
         setIsLoadingProfile(false)
@@ -65,14 +70,49 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
     loadProfile()
   }, [address, isConnected])
 
-  // Use Farcaster username if available, otherwise wallet address
-  const displayName = profile?.username 
-    ? `@${profile.username}` 
-    : address 
-      ? `${address.slice(0, 6)}...${address.slice(-4)}` 
-      : 'User'
-  
-  const avatarUrl = profile?.pfpUrl || `https://api.dicebear.com/7.x/identicon/svg?seed=${address || 'user'}`
+  // Fetch ENS name + avatar from Ethereum mainnet
+  useEffect(() => {
+    if (!address || !isConnected) {
+      setEnsName(null)
+      setEnsAvatar(null)
+      return
+    }
+
+    const mainnetClient = createPublicClient({
+      chain: mainnet,
+      transport: http(),
+    })
+
+    let cancelled = false
+    mainnetClient.getEnsName({ address: address as `0x${string}` })
+      .then((name) => {
+        if (cancelled) return
+        setEnsName(name || null)
+        if (!name) return null
+        return mainnetClient.getEnsAvatar({ name })
+      })
+      .then((avatar) => {
+        if (cancelled) return
+        if (avatar) setEnsAvatar(avatar)
+      })
+      .catch(() => {
+        // ENS is a best-effort enhancement; ignore resolution failures.
+      })
+
+    return () => { cancelled = true }
+  }, [address, isConnected])
+
+  // Priority: ENS name > Farcaster username > truncated address
+  const displayName = ensName
+    ? ensName
+    : profile?.username
+      ? `@${profile.username}`
+      : address
+        ? `${address.slice(0, 6)}...${address.slice(-4)}`
+        : 'User'
+
+  // Priority: ENS avatar > Farcaster PFP > deterministic identicon
+  const avatarUrl = ensAvatar || profile?.pfpUrl || `https://api.dicebear.com/7.x/identicon/svg?seed=${address || 'user'}`
 
   const handleLogout = async () => {
     disconnect()

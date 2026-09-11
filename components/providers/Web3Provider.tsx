@@ -6,7 +6,8 @@ import {
   RainbowKitProvider,
   darkTheme,
 } from '@rainbow-me/rainbowkit';
-import { http } from 'wagmi';
+import { http, fallback } from 'wagmi';
+import type { Transport } from 'viem';
 import {
   mezoTestnet,
   unisatWalletMezoTestnet,
@@ -68,8 +69,16 @@ function getWagmiConfig() {
       mezoTestnet,
     ] as const;
 
-    const transports: Record<number, ReturnType<typeof http>> = {
-      [base.id]: http(),
+    const transports: Record<number, Transport> = {
+      [base.id]: fallback([
+        http('https://mainnet.base.org'),
+        http('https://base.llamarpc.com'),
+        http('https://base-mainnet.public.blastapi.io'),
+        http('https://rpc.ankr.com/base'),
+        http('https://1rpc.io/base'),
+        http('https://base.drpc.org'),
+        http('https://base-pokt.nodies.app'),
+      ]),
       [baseSepolia.id]: http(),
       [mezoTestnet.id]: http((mezoTestnet.rpcUrls.default.http as string[])[0]),
     }
