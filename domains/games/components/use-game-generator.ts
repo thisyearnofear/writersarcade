@@ -69,6 +69,9 @@ export function useGameGenerator({
   const paymentTxHashRef = useRef<string | undefined>(undefined)
   const paymentIdRef = useRef<string | undefined>(undefined)
   const paymentCompletedRef = useRef(false)
+  // Set when the server answers PAYMENT_REQUIRED — the first story game is
+  // free (demo entitlement), so payment UI only appears after that refusal.
+  const paymentRequiredRef = useRef(false)
   const autoPreviewedUrlRef = useRef<string | null>(null)
   const paymentPathExposureRef = useRef<string | null>(null)
   const previewTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -104,7 +107,7 @@ export function useGameGenerator({
           : false
   )
   const forwardLabel = store.mobileStep === 'customize'
-    ? (isStoryMode && !isDailyFlow ? 'Review payment' : 'Generate')
+    ? 'Generate'
     : store.mobileStep === 'payment'
       ? 'Generate'
       : 'Continue'
@@ -508,6 +511,9 @@ export function useGameGenerator({
           if (cancelledByUserRef.current) {
             throw new Error('You cancelled generation.')
           }
+          if (paymentRequiredRef.current) {
+            throw lastError ?? new Error('PAYMENT_REQUIRED')
+          }
           attempt++
           abortControllerRef.current = new AbortController()
           const response = await fetchWithTimeout('/api/games/generate', {
@@ -573,6 +579,15 @@ export function useGameGenerator({
 
           if (!response.ok) {
             const errorData = await response.json().catch(() => ({} as { error?: string; code?: string }))
+
+            // The server refused an unpaid story generation — the free demo
+            // entitlement is spent (or absent), so surface the payment step.
+            if (response.status === 402 && errorData.code === 'PAYMENT_REQUIRED') {
+              paymentRequiredRef.current = true
+              lastError = new Error('PAYMENT_REQUIRED')
+              throw lastError
+            }
+
             const errorMsg = getGenerationErrorMessage(errorData, response.status, response.statusText)
 
             if (errorData.code === 'PAYMENT_NOT_VERIFIED' && (currentPaymentId || currentPaymentTxHash)) {
@@ -625,15 +640,24 @@ export function useGameGenerator({
       })
 
       onGameGenerated?.(result.data)
-      router.push(
-        isDailyFlow && initialDailyChallenge
-          ? `/games/${result.data.slug}?play=1`
-          : `/games/${result.data.slug}?welcome=1`
-      )
+      // Time-to-joy: land in play mode immediately — the artifact page is for
+      // sharing/minting later, not the first thing a creator should see.
+      router.push(`/games/${result.data.slug}?play=1`)
     } catch (err) {
       if (cancelledByUserRef.current) {
         cancelledByUserRef.current = false
         store.setError(null)
+        return
+      }
+      if (paymentRequiredRef.current) {
+        // Not an error state — the free generation was used, so move the user
+        // to the payment step with context rather than a failure message.
+        store.setIsGenerating(false)
+        store.setLoadingStep(null)
+        store.setMobileStep('payment')
+        store.setError(
+          paymentError('Your free story game has been used. Complete payment to keep generating — or make a free Wordle instead.')
+        )
         return
       }
       const message = isAbortError(err)
@@ -701,10 +725,9 @@ export function useGameGenerator({
       await previewArticle()
       return
     }
-    if (!store.paymentApproved && isStoryMode && !isDailyFlow) {
-      store.setError(paymentError('Story games are paid. Review the generation options below, connect your wallet if needed, and complete payment to generate. You can switch to Wordle for a free article-derived preview.'))
-      return
-    }
+    // Try-free-first: attempt generation even without payment proof — the
+    // first story game is demo-entitled server-side; PAYMENT_REQUIRED sends
+    // the user to the payment step.
     await generateGame(paymentTxHashRef.current)
   }
 
@@ -727,14 +750,22 @@ export function useGameGenerator({
     }
 
     if (store.mobileStep === 'customize') {
-      store.setMobileStep(isStoryMode && !isDailyFlow ? 'payment' : 'generate')
+      // Try-free-first: attempt generation immediately; the first story game
+      // is demo-entitled server-side. Only a PAYMENT_REQUIRED response routes
+      // to the payment step.
+      await generateGame()
+      return
+    }
+
+    if (store.mobileStep === 'generate') {
+      await generateGame(paymentTxHashRef.current)
       return
     }
 
     if (store.mobileStep === 'payment' && store.paymentApproved) {
       await generateGame(paymentTxHashRef.current)
     }
-  }, [generateGame, hasPreviewedCurrentUrl, isDailyFlow, isStoryMode, previewArticle, store])
+  }, [generateGame, hasPreviewedCurrentUrl, previewArticle, store])
 
   // ── URL change handler ─────────────────────────────────────────────
   const handleUrlChange = useCallback((value: string) => {

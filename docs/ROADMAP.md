@@ -250,6 +250,12 @@ The first-run creation flow follows the [Creation UX Contract](./CREATION_UX.md)
 ### Phase 13: Media Expansion
 - ~~ElevenLabs audio narration for panels~~ (shipped — `useNarration` + `NarrationControls`)
 - ~~Video export of comics~~ (shipped — per-panel I2V animation via `useVideoMotion`; full-game trailer fusing panels remains)
+- **Time-to-joy program** (see `docs/UX_PRINCIPLES.md` → "Time to joy"):
+  - ~~Play-first hero CTA (`?play=1`)~~ — shipped
+  - ~~Try-free-first generation (demo entitlement attempted before payment UI)~~ — shipped
+  - ~~Post-generate lands in play mode; share links land playable~~ — shipped
+  - ~~Panel image starts at stream 'options' event (overlaps stream tail)~~ — shipped
+  - Next: record-first generation (create shell → navigate → panels stream live), per-panel prefetch hints, replayable-run landing for montage shares
 - **H3-era video tiers** (fal MiniMax H3, faster-than-playback generation):
   - Per-panel "animate this panel" micro-upsell (5–10 credits, mid-session)
   - Directed cut — player-prompted clip over their own panel stills (`reference-to-video`)

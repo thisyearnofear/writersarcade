@@ -275,11 +275,11 @@ export default function HomePage() {
               >
                 {featuredSample ? (
                   <Link
-                    href={`/games/${featuredSample.slug}`}
+                    href={`/games/${featuredSample.slug}?play=1`}
                     className="inline-flex h-14 w-full max-w-sm items-center justify-center gap-2 rounded-xl bg-foreground px-6 text-sm font-bold uppercase tracking-widest text-background transition-all hover:-translate-y-0.5 hover:opacity-90"
                   >
                     <Sparkles className="h-4 w-4" />
-                    See what an article becomes
+                    Play one now — free
                   </Link>
                 ) : (
                   <button

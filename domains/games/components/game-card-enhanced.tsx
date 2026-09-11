@@ -58,7 +58,9 @@ export function GameCardEnhanced({
 
   const handleShare = async () => {
     trackEvent('share_clicked', { surface: 'game_card', gameSlug: game.slug })
-    const url = `${window.location.origin}/games/${game.slug}`
+    // Share links land in play mode — recipients play immediately rather
+    // than reading a landing page first.
+    const url = `${window.location.origin}/games/${game.slug}?play=1`
     if (navigator.share) {
       await navigator.share({ title: game.title, text: game.tagline, url }).catch(() => {})
       return

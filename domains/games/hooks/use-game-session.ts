@@ -127,6 +127,9 @@ export function useGameSession(game: Game, options?: GameSessionOptions): GameSe
   const [worldMood, setWorldMood] = useState({ tension: 0, chaos: 0, hope: 0 })
   const [lastChoiceFeedback, setLastChoiceFeedback] = useState<ChoiceFeedback | null>(null)
   const decisionStartedAtRef = useRef<number | null>(null)
+  // Image generation fires at the stream's 'options' event (narrative complete)
+  // so it overlaps the stream tail instead of waiting for 'end'.
+  const imageFiredRef = useRef(false)
 
   // Derived state
   const assistantMessageCount = messages.filter(m => m.role === 'assistant').length
@@ -190,6 +193,7 @@ export function useGameSession(game: Game, options?: GameSessionOptions): GameSe
     setIsStarting(true)
     setStartError(null)
     setLoadingProgress({ text: false, images: false })
+    imageFiredRef.current = false
 
     try {
       // Step 1: Create session
@@ -253,6 +257,27 @@ export function useGameSession(game: Game, options?: GameSessionOptions): GameSe
                 currentMessage += data.content
               } else if (data.type === 'options') {
                 currentOptions = data.options || []
+                // The narrative is complete once options arrive — start the
+                // image now so it overlaps the stream tail instead of waiting
+                // for 'end'. The message id is deterministic.
+                if (!imageFiredRef.current) {
+                  imageFiredRef.current = true
+                  const { narrative: firstNarrative } = parsePanel(currentMessage)
+                  ImageGenerationService.generateImage({
+                    prompt: firstNarrative,
+                    genre: game.genre,
+                    style: 'comic_book',
+                    aspectRatio: 'landscape',
+                    preferredModel: preferences?.preferredModel
+                  }).then((result) => {
+                    handleImageGenerated(`initial-${newSessionId}`, result)
+                    setLoadingProgress(prev => ({ ...prev, images: true }))
+                  }).catch(err => {
+                    console.error('Hero screen image preload error:', err)
+                    handleImageGenerated(`initial-${newSessionId}`, { imageUrl: null, model: 'failed', provider: 'failed', timestamp: Date.now() })
+                    setLoadingProgress(prev => ({ ...prev, images: true }))
+                  })
+                }
               } else if (data.type === 'end') {
                 setLoadingProgress(prev => ({ ...prev, text: true }))
 
@@ -279,22 +304,25 @@ export function useGameSession(game: Game, options?: GameSessionOptions): GameSe
 
                 setMessages([finalMessage])
 
-                // Generate initial image
-                const { narrative: firstNarrative } = parsePanel(cleanContent)
-
-                ImageGenerationService.generateImage({
-                  prompt: firstNarrative,
-                  genre: game.genre,
-                  style: 'comic_book',
-                  aspectRatio: 'landscape',
-                  preferredModel: preferences?.preferredModel // Pass preference
-                }).then((result) => {                  handleImageGenerated(finalMessage.id, result)
-                  setLoadingProgress(prev => ({ ...prev, images: true }))
-                }).catch(err => {
-                  console.error('Hero screen image preload error:', err)
-                  handleImageGenerated(finalMessage.id, { imageUrl: null, model: 'failed', provider: 'failed', timestamp: Date.now() })
-                  setLoadingProgress(prev => ({ ...prev, images: true }))
-                })
+                // Streams without an 'options' event still get an image.
+                if (!imageFiredRef.current) {
+                  imageFiredRef.current = true
+                  const { narrative: firstNarrative } = parsePanel(cleanContent)
+                  ImageGenerationService.generateImage({
+                    prompt: firstNarrative,
+                    genre: game.genre,
+                    style: 'comic_book',
+                    aspectRatio: 'landscape',
+                    preferredModel: preferences?.preferredModel
+                  }).then((result) => {
+                    handleImageGenerated(finalMessage.id, result)
+                    setLoadingProgress(prev => ({ ...prev, images: true }))
+                  }).catch(err => {
+                    console.error('Hero screen image preload error:', err)
+                    handleImageGenerated(finalMessage.id, { imageUrl: null, model: 'failed', provider: 'failed', timestamp: Date.now() })
+                    setLoadingProgress(prev => ({ ...prev, images: true }))
+                  })
+                }
               }
             } catch (error) {
               console.error('Error parsing stream data:', error)
@@ -465,6 +493,39 @@ export function useGameSession(game: Game, options?: GameSessionOptions): GameSe
       // generation. React state updaters are not a safe place to capture IDs.
       const assistantMessageId = `assistant-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
+      // Fire image generation the moment the narrative is complete ('options'
+      // event) so it overlaps the stream tail; 'end' is the fallback for
+      // streams that never emit options.
+      let imageFired = false
+      const firePanelImage = (narrativeSource: string) => {
+        if (imageFired) return
+        imageFired = true
+        const { narrative } = parsePanel(narrativeSource)
+        const startTime = Date.now()
+        const moodModifiers = MoodModifierService.getMoodModifiers(worldMood, game.genre)
+        const finalPrompt = moodModifiers ? `${narrative}, ${moodModifiers}` : narrative
+
+        ImageGenerationService.generateImage({
+          prompt: finalPrompt,
+          genre: game.genre,
+          style: 'comic_book',
+          aspectRatio: 'landscape',
+          preferredModel: preferences?.preferredModel
+        }).then((result) => {
+          handleImageGenerated(assistantMessageId, result)
+          const duration = ((Date.now() - startTime) / 1000).toFixed(1)
+          toast({
+            title: '🎨 Visual Ready',
+            description: `Generated using ${result.model} in ~${duration}s`,
+          })
+          setResponseReady(prev => ({ ...prev, images: true }))
+        }).catch(err => {
+          console.error('Image generation error:', err)
+          handleImageGenerated(assistantMessageId, { imageUrl: null, model: 'failed', provider: 'failed', timestamp: Date.now() })
+          setResponseReady(prev => ({ ...prev, images: true }))
+        })
+      }
+
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
@@ -502,8 +563,8 @@ export function useGameSession(game: Game, options?: GameSessionOptions): GameSe
                 })
               } else if (data.type === 'options') {
                 currentOptions = data.options || []
+                firePanelImage(currentMessage)
               } else if (data.type === 'end') {
-                const messageId = assistantMessageId
                 setMessages(prev => {
                   const newMessages = [...prev]
                   const lastMessage = newMessages[newMessages.length - 1]
@@ -529,36 +590,8 @@ export function useGameSession(game: Game, options?: GameSessionOptions): GameSe
                   totalPanels: MAX_COMIC_PANELS,
                 })
 
-                // Generate image for this panel
-                const { narrative } = parsePanel(currentMessage)
-                const startTime = Date.now()
-                const moodModifiers = MoodModifierService.getMoodModifiers(worldMood, game.genre)
-                const finalPrompt = moodModifiers ? `${narrative}, ${moodModifiers}` : narrative
-
-                ImageGenerationService.generateImage({
-                  prompt: finalPrompt,
-                  genre: game.genre,
-                  style: 'comic_book',
-                  aspectRatio: 'landscape',
-                  preferredModel: preferences?.preferredModel
-                }).then((result) => {
-                  if (messageId) {
-                    handleImageGenerated(messageId, result)
-                    const duration = ((Date.now() - startTime) / 1000).toFixed(1)
-                    // Show performance toast
-                    toast({
-                      title: '🎨 Visual Ready',
-                      description: `Generated using ${result.model} in ~${duration}s`,
-                    })
-                  }
-                  setResponseReady(prev => ({ ...prev, images: true }))
-                }).catch(err => {
-                  console.error('Image generation error:', err)
-                  if (messageId) {
-                    handleImageGenerated(messageId, { imageUrl: null, model: 'failed', provider: 'failed', timestamp: Date.now() })
-                  }
-                  setResponseReady(prev => ({ ...prev, images: true }))
-                })
+                // Fallback for streams that never emitted 'options'.
+                firePanelImage(currentMessage)
               } else if (data.type === 'game_complete') {
                 // Game finished - handled by parent component
               }

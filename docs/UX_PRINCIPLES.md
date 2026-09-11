@@ -4,6 +4,33 @@ Guiding standard for WritersArcade interfaces. Keep the product calm: lead with 
 primary action, reveal detail on demand, and never let an advanced or optional feature
 compete with the core loop.
 
+## Time to joy (the governing metric)
+
+The single most important product metric is **time from landing → interacting with
+something delightful**. Every flow is designed against it:
+
+1. **Play before create.** A visitor's first click should reach a playable game —
+   no wallet, no signup, no payment. The hero CTA deep-links into play mode
+   (`/games/[slug]?play=1`), not an artifact page or a form.
+2. **Try before you pay.** The first story generation is free
+   (`DemoEntitlementService` — one per actor). The generate flow must attempt
+   generation *before* showing payment UI; only a `PAYMENT_REQUIRED` response
+   routes the user to the payment step. Never put a payment gate in front of a
+   first-time user who is demo-entitled.
+3. **Generate just ahead of consumption.** Content appears in the order the
+   player reaches it: stream panel text, start its image the moment the
+   narrative portion is complete (don't wait for stream end), and let
+   post-completion work (cover art, secret panel, hypercert) run in the
+   background — never block the player on it.
+4. **Every shared artifact lands playable.** Share links open into the
+   experience (play mode, or an autoplaying run recap), then offer "make yours."
+   The shared object demonstrates the product instead of describing it.
+5. **Waiting is part of the game.** When a wait is unavoidable, show living
+   progress (panel streaming, staged overlays) — never a silent spinner.
+
+These rules rank above Progressive Disclosure when they conflict: a fast path
+to joy beats a tidy step sequence.
+
 ## Core rules
 
 1. **Defaults first, details on demand.**
