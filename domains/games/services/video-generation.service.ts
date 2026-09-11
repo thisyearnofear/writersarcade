@@ -116,7 +116,12 @@ export class RunwareProvider implements VideoProvider {
         taskUUID,
         model: this.model,
         positivePrompt: buildMotionPrompt(req),
-        frameImages: [req.imageUrl],
+        inputs: {
+          frameImages: [
+            { image: req.imageUrl, frame: 'first' },
+            ...(req.endImageUrl ? [{ image: req.endImageUrl, frame: 'last' }] : []),
+          ],
+        },
         deliveryMethod: 'async',
         outputType: 'URL',
         outputFormat: 'MP4',

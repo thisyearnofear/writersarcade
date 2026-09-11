@@ -78,7 +78,7 @@ describe('RunwareProvider', () => {
     expect(result.status).toBe('pending')
     expect(globalThis.fetch).toHaveBeenCalledWith('https://api.runware.ai/v1', expect.objectContaining({
       method: 'POST',
-      body: expect.stringContaining('"frameImages":["https://example.com/image.png"]'),
+      body: expect.stringContaining('"frameImages":[{"image":"https://example.com/image.png","frame":"first"}]'),
     }))
   })
 
