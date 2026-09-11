@@ -86,6 +86,17 @@ function GeneratePageContent() {
                 ? 'Paste a Paragraph article URL to create a free word puzzle. No wallet needed.'
                 : 'Paste a Paragraph article URL. AI turns it into a playable 5-panel comic.'}
             </p>
+            {process.env.NEXT_PUBLIC_FLYNN_IMESSAGE && (
+              <p className="mx-auto mb-2 max-w-md text-center text-xs text-muted-foreground">
+                or{' '}
+                <a
+                  href={`sms:${process.env.NEXT_PUBLIC_FLYNN_IMESSAGE}?&body=${encodeURIComponent('Turn this article into a game: ')}`}
+                  className="underline decoration-dotted underline-offset-2 hover:text-foreground"
+                >
+                  text the link to Flynn on iMessage
+                </a>
+              </p>
+            )}
             {!isWordleMode && (
               <p className="mx-auto mb-6 max-w-lg px-4 text-center text-xs text-muted-foreground sm:mb-8">
                 {GAME_MODE_EXPLOAINER}.{' '}

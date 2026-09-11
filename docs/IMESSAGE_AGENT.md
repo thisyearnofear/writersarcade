@@ -2,6 +2,14 @@
 
 A Spectrum-based iMessage agent that turns a link to prose into a playable story — and, later, hands back the film of the run.
 
+## Status: live
+
+- **Running** as PM2 process `flynn-imessage` on `snel-bot` (`/home/deploy/imessage-agent/current`), connected outbound to Photon's managed iMessage lines via the cloud provider.
+- Deploy: `pnpm deploy:imessage` (first run: `--seed-env`). Dependencies install **on the remote** — do not install locally into the release (darwin binaries crash Linux).
+- Production DB runs Prisma 6.19.3 engine-free (`engineType: "client"` + Neon WS adapter) — no native `libquery_engine` in function bundles.
+- **In-app surface:** set `NEXT_PUBLIC_FLYNN_IMESSAGE` to the managed line's address (phone `+1…` or iMessage email) to light up "text it to Flynn" links on the landing + generate pages (`sms:` deep link with prefilled body). Unset → links hide.
+- Video providers: `VIDEO_PROVIDER=fal` in prod (fal H3 primary, Runware kling secondary).
+
 ## Why it exists (strategy)
 
 Flynn is **distribution built into the product**, not a marketing stunt:

@@ -128,7 +128,9 @@ export class RunwareProvider implements VideoProvider {
         // Draft clips override duration (short = cheap). Clamp to the same
         // 3–8s window as the configured default.
         duration: Math.min(8, Math.max(3, req.durationSeconds ?? this.duration)),
-        aspectRatio: resolveAspectRatio(req),
+        // Kling i2v forbids aspectRatio/width/height — dimensions derive from
+        // the anchor frame; `resolution` is the only valid size knob.
+        resolution: process.env.RUNWARE_VIDEO_RESOLUTION ?? '720p',
         ttl: 604800,
         includeCost: true,
       }]),

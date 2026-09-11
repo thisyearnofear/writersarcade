@@ -261,6 +261,8 @@ The first-run creation flow follows the [Creation UX Contract](./CREATION_UX.md)
 - **Flynn — iMessage distribution** (see `docs/IMESSAGE_AGENT.md` → "Why it exists"):
   - ~~Cloud-only entrypoint (`cloud.ts`) + PM2 deploy (`deploy:imessage`)~~ — shipped
   - ~~Cover-image attachment reveal + "film it" command + `?ref=flynn` attribution~~ — shipped
+  - ~~Live on Photon managed lines (`flynn-imessage` on snel-bot)~~ — deployed
+  - ~~In-app surface: "text it to Flynn" sms: links (gated on `NEXT_PUBLIC_FLYNN_IMESSAGE`)~~ — shipped
   - Next: measure flynn-attributed plays → creates; group-chat demo beat; Photon submission
 - **H3-era video tiers** (fal MiniMax H3, faster-than-playback generation):
   - ~~Per-panel "animate this panel" micro-upsell (10 credits, mid-session)~~ — shipped

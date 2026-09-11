@@ -27,6 +27,7 @@ import {
   ArrowUpRight,
   ChevronDown,
   Sparkles,
+  MessageCircle,
 } from 'lucide-react'
 import { GridSkeleton } from '@/components/effects'
 import { WRITER_COINS, CREDITS_CONFIG } from '@/lib/writer-coins'
@@ -365,6 +366,16 @@ export default function HomePage() {
                   <Gamepad2 className="h-3.5 w-3.5" />
                   Browse the arcade
                 </Link>
+                {process.env.NEXT_PUBLIC_FLYNN_IMESSAGE && (
+                  <a
+                    href={`sms:${process.env.NEXT_PUBLIC_FLYNN_IMESSAGE}?&body=${encodeURIComponent('Turn this article into a game: ')}`}
+                    className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
+                    title="Text an article link to Flynn — he'll send back a playable game"
+                  >
+                    <MessageCircle className="h-3.5 w-3.5" />
+                    Or text it to Flynn
+                  </a>
+                )}
                 {config.features.dailyChallenge && (
                   <Link href="/basepaint" className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
                     <CalendarDays className="h-3.5 w-3.5" />
