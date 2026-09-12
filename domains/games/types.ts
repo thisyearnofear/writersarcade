@@ -88,6 +88,8 @@ export interface Game {
   generationError?: string
   /** Concatenated continuous montage film (VPS ffmpeg assembly). */
   montageVideoUrl?: string
+  /** First landed panel clip — lightweight ambient-media surface (hero backdrop). */
+  clipVideoUrl?: string
   userId?: string
   paymentId?: string
 

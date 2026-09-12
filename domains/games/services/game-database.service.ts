@@ -660,6 +660,10 @@ export class GameDatabaseService {
       generationStatus: (prismaGame as { generationStatus?: string }).generationStatus || 'ready',
       generationError: (prismaGame as { generationError?: string | null }).generationError || undefined,
       montageVideoUrl: (prismaGame as { montageVideoUrl?: string | null }).montageVideoUrl || undefined,
+      clipVideoUrl:
+        (prismaGame as { artifactPanels?: { videoUrl?: string | null }[] }).artifactPanels?.find(
+          (p) => p.videoUrl
+        )?.videoUrl || undefined,
       userId: prismaGame.userId || undefined,
       paymentId: (prismaGame as { paymentId?: string | null }).paymentId || undefined,
       // Cast to any because Prisma types are not yet updated in the running process

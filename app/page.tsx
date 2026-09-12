@@ -7,6 +7,7 @@ import { motion } from 'framer-motion'
 import { GameGrid } from '@/domains/games/components/game-grid'
 import { SimpleGameForm } from '@/domains/games/components/simple-game-form'
 import { HeroGameStrip, type SampleGame } from '@/domains/games/components/hero-game-strip'
+import { HeroBackdrop } from '@/domains/games/components/hero-backdrop'
 import { RecentlyPlayedSection } from '@/domains/games/components/recently-played-section'
 import { DailyChallengeBanner } from '@/components/daily-challenge/daily-challenge-banner'
 import { ErrorBoundary } from '@/components/error/ErrorBoundary'
@@ -217,8 +218,9 @@ export default function HomePage() {
           <div id="main-content" tabIndex={-1} className="sr-only" />
 
           {/* Hero — single clear CTA above the fold. No wallet, no chain, no payment. */}
-          <section className="py-20 sm:py-28 px-4" aria-labelledby="hero-heading">
-            <div className="max-w-2xl mx-auto text-center">
+          <section className="relative overflow-hidden py-20 sm:py-28 px-4" aria-labelledby="hero-heading">
+            <HeroBackdrop games={sampleGames} />
+            <div className="relative z-10 max-w-2xl mx-auto text-center">
               <motion.h1
                 id="hero-heading"
                 className="font-serif text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-foreground mb-5 leading-tight"
