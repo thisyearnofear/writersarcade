@@ -18,16 +18,18 @@ import { GameplayScreen } from './screens/gameplay-screen'
 import { ComicFinaleScreen } from './screens/comic-finale-screen'
 import { GameStatusScreens } from './screens/game-status-screens'
 import { GameEnrichment } from './game-enrichment'
-import { HiddenHandTeaser } from './hidden-hand-teaser'
 
 interface GamePlayInterfaceProps {
   game: Game
   isOwner?: boolean
+  /** Reports when the player is in active decision-play (not hero, not finale)
+   * so page chrome like the ownership rail can hide during play. */
+  onActivePlayChange?: (active: boolean) => void
 }
 
 const MAX_COMIC_PANELS = 5
 
-export function GamePlayInterface({ game, isOwner = false }: GamePlayInterfaceProps) {
+export function GamePlayInterface({ game, isOwner = false, onActivePlayChange }: GamePlayInterfaceProps) {
   const [liveGame, setLiveGame] = useState(game)
   const { trackPlay } = useRecentlyPlayed()
 
@@ -172,6 +174,12 @@ export function GamePlayInterface({ game, isOwner = false }: GamePlayInterfacePr
   const previouslyIncompleteRef = useRef(true)
   const storyComplete = !!session.epilogueReflection || session.assistantMessageCount >= MAX_COMIC_PANELS
 
+  // Page chrome (ownership rail) hides while the player is mid-decision and
+  // returns for hero/finale where ownership actions are actually relevant.
+  useEffect(() => {
+    onActivePlayChange?.(session.isPlaying && !storyComplete && !showComicFinale)
+  }, [session.isPlaying, storyComplete, showComicFinale, onActivePlayChange])
+
   useEffect(() => {
     if (!storyComplete || !previouslyIncompleteRef.current) return
 
@@ -207,10 +215,9 @@ export function GamePlayInterface({ game, isOwner = false }: GamePlayInterfacePr
     // Track in localStorage for the "Continue playing" homepage section
     trackPlay(liveGame.slug, liveGame.title)
   }, [storyComplete, liveGame.slug, liveGame.title, session.assistantMessageCount, session.epilogueReflection, session.sessionId, trackPlay])
-  // During daily play the Hidden Hand lives in the desktop gameplay sidebar
-  // (and as a slim teaser below on other screens) so it never pushes the
-  // story off-screen. The full reveal card appears once the story completes.
-  const hiddenHandInSidebar = isDailyGame && !storyComplete
+  // During daily play the Hidden Hand lives in the details sheet (status bar
+  // carries the count chip) so it never pushes the story off-screen. The full
+  // reveal card appears once the story completes.
 
   const renderEnrichment = (
     dailyDisplay: 'full' | 'teaser' | 'hidden' = 'full'
@@ -357,19 +364,8 @@ export function GamePlayInterface({ game, isOwner = false }: GamePlayInterfacePr
         dailyTopScore={dailyStats.topScore}
         hasSecretEpilogue={hasSecretEpilogue}
         hasMintedNft={Boolean(liveGame.nftTokenId)}
-        sidebarExtra={
-          hiddenHandInSidebar ? (
-            <HiddenHandTeaser panelsDone={session.assistantMessageCount} />
-          ) : undefined
-        }
       />
-      {/* Mobile has no sidebar — show the slim teaser below instead */}
-      {hiddenHandInSidebar && (
-        <div className="mx-auto max-w-2xl px-4 pb-6 lg:hidden">
-          <HiddenHandTeaser panelsDone={session.assistantMessageCount} />
-        </div>
-      )}
-      {renderEnrichment(hiddenHandInSidebar ? 'hidden' : 'full')}
+      {renderEnrichment(isDailyGame && !storyComplete ? 'hidden' : 'full')}
     </>
   )
 }

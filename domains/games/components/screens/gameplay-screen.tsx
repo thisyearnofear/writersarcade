@@ -2,13 +2,13 @@
 
 import { useEffect, useCallback, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { BookOpen, ChevronDown, Sparkles, Clock3, ArrowUp, ArrowDown } from 'lucide-react'
+import { BookOpen, ChevronDown, Sparkles, ArrowUp, ArrowDown } from 'lucide-react'
 import { ComicPanelCard } from '../comic-panel-card'
-import { MoodIndicator } from '@/components/game/MoodIndicator'
-import { DailyModifierStrip } from '@/components/daily-challenge/daily-modifier-strip'
-import { ResonancePulse, CompetitiveContextBar, PlayPaceTimer } from '@/components/daily-challenge/daily-gameplay-hud'
+import { ResonancePulse } from '@/components/daily-challenge/daily-gameplay-hud'
 import { EpilogueGoalStrip } from '@/components/game/epilogue-goal-strip'
 import { FinaleUnlocksStrip } from '@/components/game/finale-unlocks-strip'
+import { PlayStatusBar } from '../play-status-bar'
+import { PlayDetailsSheet } from '../play-details-sheet'
 import { getModifierCategoryForPanel } from '@/lib/daily-challenge/daily-challenge-ui'
 import {
   parseArticleUrlFromDualSource,
@@ -22,41 +22,6 @@ import { RelatedPlayStrip } from '../related-play-strip'
 
  
 const MAX_COMIC_PANELS = 5
-
-function PanelBeatMeter({
-  current,
-  total = MAX_COMIC_PANELS,
-  accent,
-}: {
-  current: number
-  total?: number
-  accent: string
-}) {
-  const clamped = Math.min(current, total)
-  return (
-    <div
-      className="flex items-center gap-2"
-      aria-label={`Panel ${clamped} of ${total}`}
-    >
-      <div className="flex gap-1" aria-hidden="true">
-        {Array.from({ length: total }, (_, index) => (
-          <span
-            key={index}
-            className="h-2.5 w-6 rounded-[1px] border"
-            style={{
-              backgroundColor: index < clamped ? accent : 'transparent',
-              borderColor: index < clamped ? accent : 'rgba(255,255,255,0.22)',
-              transform: `rotate(${index % 2 === 0 ? -2 : 2}deg)`,
-            }}
-          />
-        ))}
-      </div>
-      <span className="text-xs tabular-nums text-white/60">
-        {clamped} / {total}
-      </span>
-    </div>
-  )
-}
 
 interface GameplayScreenProps {
   game: Game
@@ -102,8 +67,6 @@ interface GameplayScreenProps {
   dailyTopScore?: number | null
   hasSecretEpilogue?: boolean
   hasMintedNft?: boolean
-  /** Extra card rendered at the top of the desktop sidebar (e.g. daily Hidden Hand teaser). */
-  sidebarExtra?: React.ReactNode
 }
 
 export function ChoiceFeedbackBanner({
@@ -189,7 +152,6 @@ export function GameplayScreen({
   dailyTopScore = null,
   hasSecretEpilogue = false,
   hasMintedNft = false,
-  sidebarExtra,
 }: GameplayScreenProps) {
 
   const basePaintDay = parseBasePaintDayFromSource(game.articleUrl)
@@ -290,6 +252,8 @@ export function GameplayScreen({
     !isWaitingForResponse &&
     lastChoiceFeedback.panelIndex === assistantMessageCount - 1
   )
+  const isTerminal = !canAddMorePanels
+  const [detailsOpen, setDetailsOpen] = useState(false)
 
   return (
     <div
@@ -309,110 +273,25 @@ export function GameplayScreen({
             <RelatedPlayStrip game={game} density="wait" />
           </div>
         ) : (
-          <div className="w-full flex flex-col lg:grid lg:grid-cols-[280px_1fr] lg:gap-8 min-h-full p-4 md:p-8 py-6 md:py-8 animate-slide-in">
-            {/* Desktop sidebar */}
-            <aside className="hidden lg:flex lg:flex-col gap-6 sticky top-24 h-fit">
-              {sidebarExtra}
-              <div className="rounded-xl border border-white/10 bg-black/40 p-4">
-                <h3 className="text-sm font-bold text-white mb-3">Story Progress</h3>
-                <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden mb-2">
-                  <div
-                    className="h-full transition-all duration-500"
-                    style={{
-                      width: `${Math.min((assistantMessageCount / MAX_COMIC_PANELS) * 100, 100)}%`,
-                      backgroundColor: game.primaryColor || '#8b5cf6',
-                    }}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {assistantMessageCount >= MAX_COMIC_PANELS ? 'Story complete' : `Panel ${assistantMessageCount} of ${MAX_COMIC_PANELS}`}
-                </p>
-              </div>
-
-              <div className="rounded-xl border border-white/10 bg-black/40 p-4">
-                <h3 className="text-sm font-bold text-white mb-2">World Mood</h3>
-                <MoodIndicator mood={worldMood} />
-                <p className="text-xs text-muted-foreground mt-2">
-                  Your choices signal the story's emotional direction.
-                </p>
-              </div>
-
-              <div className="rounded-xl border border-white/10 bg-black/40 p-4">
-                <h3 className="text-sm font-bold text-white mb-2">Keyboard Shortcuts</h3>
-                <ul className="space-y-2 text-xs text-muted-foreground">
-                  <li>
-                    <kbd className="px-1.5 py-0.5 rounded bg-white/10 font-mono text-white/70 mr-1">1-4</kbd>
-                    Choose option
-                  </li>
-                  <li>
-                    <kbd className="px-1.5 py-0.5 rounded bg-white/10 font-mono text-white/70 mr-1">V</kbd>
-                    View comic
-                  </li>
-                </ul>
-              </div>
-
-              <div className="rounded-xl border border-white/10 bg-black/40 p-4">
-                <h3 className="text-sm font-bold text-white mb-3">Story Map</h3>
-                <div className="flex flex-wrap gap-2">
-                  {messages.filter(m => m.role === 'assistant').map((m, idx) => (
-                    <div
-                      key={m.id}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border ${
-                        idx === assistantMessageCount - 1
-                          ? 'bg-white/20 border-white/40 text-white'
-                          : 'bg-white/5 border-white/10 text-muted-foreground'
-                      }`}
-                    >
-                      {idx + 1}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </aside>
-
-            <main className="flex flex-col items-center w-full lg:col-span-1">
-            <div className="mb-4 flex w-full max-w-5xl items-center justify-between gap-3">
-              <PanelBeatMeter
-                current={assistantMessageCount}
-                accent={game.primaryColor || '#8b5cf6'}
-              />
-              <div className="lg:hidden">
-                <MoodIndicator mood={worldMood} />
-              </div>
-            </div>
-            {isDailyActive && (
-              <DailyModifierStrip
-                panelIndex={Math.max(0, assistantMessageCount - 1)}
-                primaryColor={game.primaryColor}
-                modifierHandle={dailyModifierHandles?.[Math.max(0, assistantMessageCount - 1)]}
-                scoreHandle={dailyScoreHandle}
-              />
+          <div className="w-full min-h-full p-4 md:p-8 py-6 md:py-8 animate-slide-in">
+            <main className="mx-auto flex w-full max-w-3xl flex-col items-center">
+            <PlayStatusBar
+              current={assistantMessageCount}
+              accent={game.primaryColor || '#8b5cf6'}
+              isDailyActive={isDailyActive}
+              dailyPanelIndex={Math.max(0, assistantMessageCount - 1)}
+              panelStartTime={panelStartTime}
+              sessionStartTime={sessionStartTime}
+              hiddenHandPanelsDone={assistantMessageCount}
+              onOpenDetails={() => setDetailsOpen(true)}
+            />
+            {/* One-line unlock teaser — the motivational pull without the rails. */}
+            {!isTerminal && hasSecretEpilogue && (
+              <p className="mb-4 w-full max-w-5xl text-[11px] text-muted-foreground/70">
+                Finish all {MAX_COMIC_PANELS} panels
+                {hasMintedNft ? ' to unlock the secret epilogue.' : ' → secret epilogue, mint, and IP unlock.'}
+              </p>
             )}
-            {isDailyActive && dailyPlayerCount > 0 && (
-              <CompetitiveContextBar
-                playerCount={dailyPlayerCount}
-                averageScore={dailyAverageScore}
-                topScore={dailyTopScore}
-              />
-            )}
-            <div className="w-full max-w-5xl mb-4 rounded-lg border border-white/10 bg-black/30 px-4 py-3 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <Clock3 className="w-4 h-4 shrink-0 text-emerald-300" aria-hidden="true" />
-                <p className="text-xs text-muted-foreground">
-                  {isDailyActive
-                    ? 'Take your time — read carefully, your choices shape both the story and your encrypted score.'
-                    : 'No countdown. Take the time you need to read — your choices shape the story, not your speed.'}
-                </p>
-              </div>
-              {isDailyActive && (
-                <PlayPaceTimer
-                  panelStartTime={panelStartTime}
-                  sessionStartTime={sessionStartTime}
-                  panelNumber={Math.min(assistantMessageCount, 5)}
-                  primaryColor={game.primaryColor}
-                />
-              )}
-            </div>
             {showChoiceFeedback && lastChoiceFeedback && (
               <ChoiceFeedbackBanner
                 feedback={lastChoiceFeedback}
@@ -428,7 +307,8 @@ export function GameplayScreen({
                 visible={showResonance}
               />
             )}
-            {hasSecretEpilogue && (
+            {/* Ownership surfaces only appear once they're actionable. */}
+            {isTerminal && hasSecretEpilogue && (
               <EpilogueGoalStrip
                 panelsDone={assistantMessageCount}
                 hasSecretEpilogue={hasSecretEpilogue}
@@ -436,22 +316,12 @@ export function GameplayScreen({
                 primaryColor={game.primaryColor}
               />
             )}
-            <FinaleUnlocksStrip
-              panelsDone={assistantMessageCount}
-              primaryColor={game.primaryColor}
-            />
-            {/* Story Progress Bar — mobile keeps the bar; desktop uses the beat meter + sidebar */}
-            <div className="w-full max-w-5xl mb-8 pb-6 border-b border-white/10 lg:hidden">
-              <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-                <div
-                  className="h-full transition-all duration-500 ease-out"
-                  style={{
-                    width: `${Math.min((assistantMessageCount / MAX_COMIC_PANELS) * 100, 100)}%`,
-                    backgroundColor: game.primaryColor || '#8b5cf6',
-                  }}
-                />
-              </div>
-            </div>
+            {isTerminal && (
+              <FinaleUnlocksStrip
+                panelsDone={assistantMessageCount}
+                primaryColor={game.primaryColor}
+              />
+            )}
 
             {/* Current Comic Panel */}
               <div className="w-full space-y-8">
@@ -466,8 +336,6 @@ export function GameplayScreen({
                     const hasLaterCompletedPanel = remainingMessages.some(m => m.role === 'assistant' && m.options && m.options.length > 0)
                     if (hasLaterCompletedPanel) return null
                   }
-
-                  const isTerminal = !canAddMorePanels
 
                   const imageReady = message.imageStatus === 'ready' || message.narrativeImage !== undefined
                   const panelIndex = messages
@@ -522,6 +390,19 @@ export function GameplayScreen({
 
             <div ref={messagesEndRef} className="h-8" />
           </main>
+          <PlayDetailsSheet
+            open={detailsOpen}
+            onOpenChange={setDetailsOpen}
+            messages={messages}
+            worldMood={worldMood}
+            isDailyActive={isDailyActive}
+            panelsDone={assistantMessageCount}
+            dailyModifierHandles={dailyModifierHandles}
+            dailyScoreHandle={dailyScoreHandle}
+            dailyPlayerCount={dailyPlayerCount}
+            dailyAverageScore={dailyAverageScore}
+            dailyTopScore={dailyTopScore}
+          />
         </div>
         )}
       </div>

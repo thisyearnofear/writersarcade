@@ -313,61 +313,6 @@ export function ComicPanelCard({
                     </motion.div>
                   </motion.button>
 
-                  {/* Info badges */}
-                  <div className="absolute top-4 left-4 flex items-center gap-2">
-                    {/* Model badge */}
-                    <span className="text-xs font-mono px-3 py-1.5 rounded-md bg-black/85 text-white/80 backdrop-blur-sm border border-white/10">
-                      {imageModel || 'unknown'}
-                    </span>
-                    {/* Regenerate button with attempt counter */}
-                      {onImageRegenerate && (
-                        <motion.button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleRegenerateQuick()
-                          }}
-                          disabled={isRegenerating || isWaiting || !canRegenerate}
-                          className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-md ${
-                            canRegenerate 
-                              ? 'bg-purple-600/80 hover:bg-purple-500 text-white' 
-                              : 'bg-muted/50 text-muted-foreground cursor-not-allowed'
-                          } backdrop-blur-sm border border-purple-400/30 transition-all disabled:opacity-50`}
-                          whileHover={canRegenerate ? { scale: 1.05 } : {}}
-                          whileTap={canRegenerate ? { scale: 0.95 } : {}}
-                          title={canRegenerate ? 'Regenerate image' : `Max ${maxRegenerations} attempts used`}
-                        >
-                          <RefreshCw className={`w-3 h-3 ${isRegenerating ? 'animate-spin' : ''}`} />
-                          <span>
-                            {isRegenerating ? 'Regenerating...' : `New (${regenerationCount}/${maxRegenerations})`}
-                          </span>
-                        </motion.button>
-                      )}
-                  </div>
-
-                  {/* Theme Selector */}
-                  {availableThemes && availableThemes.length > 0 && (
-                    <div className="absolute top-4 right-4 z-20">
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="bg-card/80 backdrop-blur-sm border border-border rounded-lg p-1"
-                      >
-                        <select
-                          value={localTheme}
-                          onChange={(e) => setLocalTheme(e.target.value)}
-                          className="bg-transparent text-white text-xs px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-purple-500"
-                          title="Select visual theme"
-                        >
-                          {availableThemes.map((theme: { value: string, label: string }) => (
-                            <option key={theme.value} value={theme.value} className="bg-card text-white">
-                              {theme.label}
-                            </option>
-                          ))}
-                        </select>
-                      </motion.div>
-                    </div>
-                  )}
-
                   {/* Loading overlay during regeneration */}
                   {isRegenerating && (
                     <motion.div
@@ -388,39 +333,10 @@ export function ComicPanelCard({
                     </motion.div>
                   )}
 
-                  {/* Epilogue badge or Rating stars */}
-                  {isEpilogue ? (
+                  {/* Epilogue badge — rating lives in the Studio section below */}
+                  {isEpilogue && (
                     <div className="absolute top-4 right-4 bg-black/70 px-3 py-1.5 rounded-md backdrop-blur-sm border border-white/10">
                       <span className="text-xs font-semibold text-muted-foreground">Epilogue</span>
-                    </div>
-                  ) : (
-                    <div className="absolute top-4 right-4 flex gap-1 bg-black/70 px-3 py-1.5 rounded-md backdrop-blur-sm border border-white/10">
-                      {!imageRating ? (
-                        <>
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <button
-                              key={star}
-                              onClick={() => handleRating(star)}
-                              className="text-lg sm:text-base hover:scale-125 transition-all duration-200 cursor-pointer text-white/50 hover:text-white p-1"
-                              aria-label={`Rate ${star} stars`}
-                            >
-                              ☆
-                            </button>
-                          ))}
-                        </>
-                      ) : (
-                        <>
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <span
-                              key={star}
-                              className="text-lg sm:text-base transition-colors duration-300"
-                              style={{ color: star <= imageRating ? primaryColor : 'rgba(64,64,64,0.5)' }}
-                            >
-                              ★
-                            </span>
-                          ))}
-                        </>
-                      )}
                     </div>
                   )}
                 </>
@@ -463,8 +379,9 @@ export function ComicPanelCard({
             </div>
           </div>
 
-          {/* Prompt Visibility Panel - Collapsible */}
-          {onImageRegenerate && narrativeImage && (
+          {/* Studio — all creator chrome (model, theme, rating, regen, prompt)
+              collapsed behind one disclosure so the playing surface stays clean. */}
+          {(onImageRegenerate || onImageRating) && narrativeImage && !isEpilogue && (
             <div className="border-t border-white/10">
               <button
                 onClick={() => setShowPrompt(!showPrompt)}
@@ -472,9 +389,12 @@ export function ComicPanelCard({
               >
                 <span className="flex items-center gap-2">
                   <Sparkles className="w-3 h-3" />
-                  {showPrompt ? 'Hide Prompt' : 'View/Edit Prompt'}
+                  {showPrompt ? 'Hide studio' : 'Studio'}
                 </span>
-                {showPrompt ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                <span className="flex items-center gap-2 font-mono text-[10px] text-muted-foreground/70">
+                  {imageModel}
+                  {showPrompt ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                </span>
               </button>
 
               <AnimatePresence>
@@ -486,6 +406,59 @@ export function ComicPanelCard({
                     className="overflow-hidden"
                   >
                     <div className="px-4 pb-4 space-y-3">
+                      {/* Controls row — theme, rating, regenerate */}
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-md border border-white/10 bg-white/5 px-3 py-2">
+                        {availableThemes && availableThemes.length > 0 && (
+                          <select
+                            value={localTheme}
+                            onChange={(e) => setLocalTheme(e.target.value)}
+                            className="bg-transparent text-white text-xs px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-purple-500"
+                            title="Select visual theme"
+                          >
+                            {availableThemes.map((theme: { value: string, label: string }) => (
+                              <option key={theme.value} value={theme.value} className="bg-card text-white">
+                                {theme.label}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                        {onImageRating && (
+                          <span className="flex items-center gap-0.5" title="Rate this panel image">
+                            {[1, 2, 3, 4, 5].map((star) =>
+                              !imageRating ? (
+                                <button
+                                  key={star}
+                                  onClick={() => handleRating(star)}
+                                  className="p-0.5 text-sm text-white/50 transition-all hover:scale-125 hover:text-white"
+                                  aria-label={`Rate ${star} stars`}
+                                >
+                                  ☆
+                                </button>
+                              ) : (
+                                <span
+                                  key={star}
+                                  className="p-0.5 text-sm"
+                                  style={{ color: star <= imageRating ? primaryColor : 'rgba(64,64,64,0.5)' }}
+                                >
+                                  ★
+                                </span>
+                              )
+                            )}
+                          </span>
+                        )}
+                        {onImageRegenerate && (
+                          <button
+                            onClick={handleRegenerateQuick}
+                            disabled={isRegenerating || isWaiting || !canRegenerate}
+                            className="ml-auto inline-flex items-center gap-1.5 rounded-md bg-purple-600/80 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50"
+                            title={canRegenerate ? 'Regenerate image' : `Max ${maxRegenerations} attempts used`}
+                          >
+                            <RefreshCw className={`w-3 h-3 ${isRegenerating ? 'animate-spin' : ''}`} />
+                            {isRegenerating ? 'Regenerating…' : `New image (${regenerationCount}/${maxRegenerations})`}
+                          </button>
+                        )}
+                      </div>
+
                       <div className="text-xs text-muted-foreground mb-2">
                         This prompt was used to generate the image. You can modify it and regenerate.
                       </div>

@@ -21,9 +21,12 @@ interface PlayGameClientProps {
   game: Game
   isOwner: boolean
   maxAttempts: number
+  /** Reports when the player is in active decision-play so surrounding page
+   * chrome (ownership rail) can hide until the finale. */
+  onActivePlayChange?: (active: boolean) => void
 }
 
-export function PlayGameClient({ game, isOwner, maxAttempts }: PlayGameClientProps) {
+export function PlayGameClient({ game, isOwner, maxAttempts, onActivePlayChange }: PlayGameClientProps) {
   const fallback = <WalletLoadingFallback showHeader={false} className="py-12" message="Loading game…" />
 
   useEffect(() => {
@@ -35,7 +38,7 @@ export function PlayGameClient({ game, isOwner, maxAttempts }: PlayGameClientPro
         {game.mode === 'wordle' ? (
           <WordleGameInterface game={game} maxAttempts={maxAttempts} />
         ) : (
-          <GamePlayInterface game={game} isOwner={isOwner} />
+          <GamePlayInterface game={game} isOwner={isOwner} onActivePlayChange={onActivePlayChange} />
         )}
       </Suspense>
     </WalletProviders>

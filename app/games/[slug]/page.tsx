@@ -14,6 +14,7 @@ import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
 import { GameGeneratingView } from '@/domains/games/components/game-generating-view'
 import { GameWatchView } from '@/domains/games/components/game-watch-view'
 import { PlayGameClient } from './PlayGameClient'
+import { PlayPageSurface } from './play-page-surface'
 import { getActor } from '@/services/auth'
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/config'
@@ -197,12 +198,9 @@ export default async function GamePage({ params, searchParams }: GamePageProps) 
           <IPAttribution assets={linkedAssets} compact />
         </div>
       )}
-      <div className="mx-auto max-w-4xl px-4 pt-6">
-        <GameOwnershipProgress game={game} variant="strip" />
-      </div>
       <PlayWelcomeCoach gameSlug={game.slug} />
       <ErrorBoundary>
-        <PlayGameClient game={game} isOwner={viewerIsOwner} maxAttempts={WordleService.DEFAULT_MAX_ATTEMPTS} />
+        <PlayPageSurface game={game} isOwner={viewerIsOwner} maxAttempts={WordleService.DEFAULT_MAX_ATTEMPTS} />
       </ErrorBoundary>
       <script
         type="application/ld+json"
