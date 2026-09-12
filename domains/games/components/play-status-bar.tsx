@@ -78,7 +78,7 @@ export function PlayStatusBar({
   const categoryLabel = MODIFIER_CATEGORY_LABEL[category]
 
   return (
-    <div className="mb-4 flex w-full max-w-5xl items-center justify-between gap-3">
+    <div className="sticky top-2 z-30 mb-4 flex w-full max-w-5xl items-center justify-between gap-3 rounded-full border border-white/10 bg-black/60 px-3 py-2 backdrop-blur-md">
       <div className="flex items-center gap-3">
         <PanelBeatMeter current={current} accent={accent} />
         {isDailyActive && (

@@ -298,7 +298,7 @@ export function ComicPanelCard({
                       e.stopPropagation()
                       handleImageExpand()
                     }}
-                    className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-all duration-200 opacity-0 group-hover:opacity-100"
+                    className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-all duration-200 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-60"
                     aria-label="Expand image"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
