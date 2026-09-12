@@ -97,7 +97,7 @@ export interface Game {
   playFee?: string
   featured?: boolean
   playCount?: number  // Number of times game sessions have completed
-  lastPlayedAt?: Date // Last time the game was played
+  lastPlayedAt?: Date | string // Date in-process; ISO string once serialized over the API
   hasDailySession?: boolean
   secretPanelGenerated?: boolean
 

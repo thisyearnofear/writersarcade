@@ -166,7 +166,7 @@ export function GameGrid({
             primaryColor={game.primaryColor}
             symbol={getGameSymbol(game)}
             playCount={game.playCount}
-            lastPlayedAt={game.lastPlayedAt?.toISOString() ?? null}
+            lastPlayedAt={game.lastPlayedAt ? new Date(game.lastPlayedAt).toISOString() : null}
             hasAnimation={game.videoUpsellStatus === 'completed'}
           />
         </motion.div>
