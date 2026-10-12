@@ -106,7 +106,7 @@ export function DailyChallengeView({ variant = 'arcade' }: DailyChallengeViewPro
 
   const { isConnected } = useAccount()
   const { openConnectModal } = useConnectModal()
-  const { beginSession, detectExistingSession, isStarting, isDetecting, isSwitchingChain, state: onChainState, error: onChainError, reset } = useDailyChallengeOnchain()
+  const { beginSession, detectExistingSession, isStarting, isDetecting, isSwitchingChain, state: onChainState, reset } = useDailyChallengeOnchain()
 
   const feePublicClient = usePublicClient({ chainId: DAILY_CHALLENGE_CHAIN_ID })
   const [dealFeeWei, setDealFeeWei] = useState<bigint | null>(null)
@@ -385,10 +385,7 @@ export function DailyChallengeView({ variant = 'arcade' }: DailyChallengeViewPro
               </motion.section>
 
               {showStatusBanner && (
-                <DailyStatusBanner
-                  variant={statusVariant}
-                  detail={playError === 'play-error' ? onChainError : null}
-                />
+                <DailyStatusBanner variant={statusVariant} />
               )}
 
               {(challenge.sourceType === 'basepaint' || challenge.sourceType === 'dual') && (

@@ -58,7 +58,7 @@ export function useDailyChallengeOnchain() {
       const { challenge, onChain } = startData
 
       if (!onChain.deckShuffled) {
-        throw new Error(onChain.deckSetupError || 'Daily deck is not ready yet. Please try again.')
+        throw new Error("Daily Challenge is warming up. Leaderboard scoring joins once on-chain setup finishes — play in the arcade for now.")
       }
 
       const onChainSession = await startOnChainSession({
