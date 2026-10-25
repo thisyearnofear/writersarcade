@@ -1,5 +1,5 @@
 /**
- * IPFS Utilities for Story Protocol
+ * IPFS utilities
  * Handles metadata uploads to IPFS for IP asset registration
  */
 
@@ -135,7 +135,7 @@ function generateMockIPFSHash(data: string): string {
 }
 
 /**
- * Compute metadata hash for Story Protocol registration
+ * Compute metadata hash
  * Story requires a hash of metadata for integrity verification
  */
 export function computeMetadataHash(metadata: object): string {
@@ -145,7 +145,7 @@ export function computeMetadataHash(metadata: object): string {
 }
 
 /**
- * Format metadata for Story Protocol registration
+ * Format metadata
  */
 export interface IPAssetMetadata {
   title: string;

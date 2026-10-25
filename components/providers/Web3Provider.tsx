@@ -10,9 +10,13 @@ import { http, fallback } from 'wagmi';
 import type { Transport } from 'viem';
 import {
   mezoTestnet,
+  mezoMainnet,
   unisatWalletMezoTestnet,
   okxWalletMezoTestnet,
   xverseWalletMezoTestnet,
+  unisatWalletMezoMainnet,
+  okxWalletMezoMainnet,
+  xverseWalletMezoMainnet,
   PassportProvider
 } from '@mezo-org/passport';
 import { walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
@@ -22,41 +26,17 @@ import {
   baseSepolia,
   mainnet,
 } from 'wagmi/chains';
-import { defineChain } from 'viem';
 import { baseRpcTransport } from '@/lib/base-rpc';
+import { MEZO_NETWORK } from '@/lib/wallet/chains';
 
 import {
   QueryClientProvider,
   QueryClient,
 } from '@tanstack/react-query';
 
-/**
- * Story Protocol Aeneid Testnet
- * Used for IP registration - users switch to this chain to sign IP transactions
- * Docs: https://docs.story.foundation/
- */
-export const storyAeneid = defineChain({
-  id: 1315,
-  name: 'Story Aeneid',
-  nativeCurrency: { name: 'IP', symbol: 'IP', decimals: 18 },
-  rpcUrls: {
-    default: { http: ['https://aeneid.storyrpc.io'] },
-  },
-  blockExplorers: {
-    default: {
-      name: 'Story Explorer',
-      url: 'https://aeneid.storyscan.xyz'
-    },
-  },
-  testnet: true,
-});
-
 // WalletConnect guard: only include WC wallet if a valid projectId is provided
 const WALLET_CONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID;
 const HAS_WC = Boolean(WALLET_CONNECT_PROJECT_ID && WALLET_CONNECT_PROJECT_ID !== 'YOUR_PROJECT_ID');
-
-/** Story chain is opt-in — daily/mint run on Base only. */
-const STORY_WALLET_ENABLED = process.env.NEXT_PUBLIC_STORY_ENABLED !== 'false';
 
 // Lazy load config to avoid SSR issues
 let config: ReturnType<typeof getDefaultConfig> | null = null;
@@ -69,8 +49,8 @@ function getWagmiConfig() {
       baseSepolia,
       // mainnet is included for ENS name/avatar resolution only — wallets stay on Base.
       mainnet,
-      ...(STORY_WALLET_ENABLED ? [storyAeneid] : []),
       mezoTestnet,
+      mezoMainnet,
     ] as const;
 
     const transports: Record<number, Transport> = {
@@ -84,9 +64,7 @@ function getWagmiConfig() {
       ]),
       [baseSepolia.id]: http(),
       [mezoTestnet.id]: http((mezoTestnet.rpcUrls.default.http as string[])[0]),
-    }
-    if (STORY_WALLET_ENABLED) {
-      transports[storyAeneid.id] = http()
+      [mezoMainnet.id]: http((mezoMainnet.rpcUrls.default.http as string[])[0]),
     }
 
     config = getDefaultConfig({
@@ -97,7 +75,9 @@ function getWagmiConfig() {
       wallets: [
         {
           groupName: 'Bitcoin',
-          wallets: [unisatWalletMezoTestnet, okxWalletMezoTestnet, xverseWalletMezoTestnet],
+          wallets: MEZO_NETWORK === 'mainnet'
+            ? [unisatWalletMezoMainnet, okxWalletMezoMainnet, xverseWalletMezoMainnet]
+            : [unisatWalletMezoTestnet, okxWalletMezoTestnet, xverseWalletMezoTestnet],
         },
         {
           groupName: 'Ethereum',

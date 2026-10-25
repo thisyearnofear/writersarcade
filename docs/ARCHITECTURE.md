@@ -24,7 +24,7 @@ Article URL
 **Web3**: wagmi + viem + RainbowKit / WalletConnect  
 **Backend**: Next.js API routes + Prisma + PostgreSQL  
 **AI**: OpenAI/Anthropic (ai-sdk); Venice AI + Modal + Netmind (image generation)  
-**IP**: Story Protocol (testnet) + IPFS (Pinata primary, Grove metadata fallback)  
+**Storage**: IPFS (Pinata primary, Grove metadata fallback)  
 **Access Control**: Inco confidential compute (on-chain encrypted secret panels via euint256 handles + attested decrypt)  
 **Impact**: Hypercerts (AT Protocol impact certificates) — deprecated / not actively maintained
 
@@ -139,7 +139,7 @@ const gameData = await withSharedGenerationLock(lockKey, () => GameAIService.gen
 - Types in `domains/games/types.ts`
 
 **`domains/assets/`** - Asset Marketplace  
-- Asset CRUD, marketplace discovery, Story Protocol integration
+- Asset CRUD, marketplace discovery
 - Game composition from marketplace assets
 
 **`domains/payments/`** - Centralized payment logic (Strategy Pattern + Factory)
@@ -163,7 +163,6 @@ const gameData = await withSharedGenerationLock(lockKey, () => GameAIService.gen
 - `detectWalletProvider()` returns unified interface
 - Support for Mezo Matsnet (Chain ID 31611)
 
-**`lib/story-protocol.service.ts`** - IP registration  
 - Client-side wallet signing (no platform keys)
 - PIL licenses, derivative tracking, royalty claiming
 
@@ -254,7 +253,6 @@ GamePlayEvent  (Resonance telemetry)
 Asset
 ├─ id, userId, articleUrl, title
 ├─ assetData (JSON), type ('pack'|'character'|'mechanic'|'plot')
-├─ storyIpId (optional)
 └─ createdAt
 
 WriterCoin
@@ -339,15 +337,12 @@ See [`docs/HACKATHONS_ARCHIVE.md`](./HACKATHONS_ARCHIVE.md#3-mezo-hackathon-musd
 - GameNFTMezo (open mint — no role check, users pay only gas)
 - Mint endpoint returns chainId dynamically; frontend auto-switches before mint tx
 
-**Story Protocol** (Chain ID: 1315 testnet)  
-- IP Asset Registry, PIL licenses, royalty automation, derivative tracking
 
 ## Key Design Principles
 
 1. **Unified API surface** - Both web app and mini-app use same endpoints
 2. **Domain separation** - Quick Games vs Asset Marketplace share infrastructure
 3. **Centralized payments** - All payment logic through `domains/payments`
-4. **Client-side IP ownership** - Users sign Story Protocol transactions with their wallet
 5. **Non-blocking enrichment** - Inco secret panel storage, image generation, and Hypercerts run async post-creation
 6. **Confidentiality by Design** - Secret panels and daily modifier cards use Inco confidential compute on Base mainnet
 7. **Progressive disclosure** - Entry flow avoids wallet/chain/payment on first view. Users paste a URL or marketing copy → play a game → optionally connect wallet or buy credits for on-chain actions.

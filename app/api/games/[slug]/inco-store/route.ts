@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getPlatformSignerKey } from '@/lib/platform-signer'
 import { prisma } from '@/lib/prisma'
 import { config } from '@/lib/config'
 import { logger } from '@/lib/config'
@@ -48,8 +49,7 @@ export async function POST(
 
     // The server-side wallet that has VAULT_MANAGER_ROLE on the vault contract.
     // This is the same key used for Story CDR vaulting, repurposed for Inco.
-    const managerPrivateKey = process.env.INCO_VAULT_MANAGER_PRIVATE_KEY ||
-                              process.env.STORY_PLATFORM_PRIVATE_KEY
+    const managerPrivateKey = process.env.INCO_VAULT_MANAGER_PRIVATE_KEY || getPlatformSignerKey()
     if (!managerPrivateKey) {
       logger.error('No VAULT_MANAGER private key configured for Inco encryption')
       return NextResponse.json({ error: 'Server wallet not configured' }, { status: 500 })

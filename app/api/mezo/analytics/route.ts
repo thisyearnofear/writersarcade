@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createPublicClient, http, parseAbiItem, type Log } from 'viem'
-import { MEZO_TESTNET_CHAIN_ID } from '@/lib/wallet/chains'
+import { MEZO_ACTIVE_CHAIN_ID } from '@/lib/wallet/chains'
 import { MUSD_CONFIG } from '@/lib/writer-coins'
 
 const MEZO_TESTNET_RPC = process.env.NEXT_PUBLIC_MEZO_TESTNET_RPC || 'https://rpc.test.mezo.org'
@@ -36,7 +36,7 @@ export async function GET() {
   try {
     const client = createPublicClient({
       chain: {
-        id: MEZO_TESTNET_CHAIN_ID,
+        id: MEZO_ACTIVE_CHAIN_ID,
         name: 'Mezo Matsnet',
         network: 'mezo-testnet',
         nativeCurrency: { name: 'MUSD', symbol: 'MUSD', decimals: 18 },

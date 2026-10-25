@@ -7,7 +7,6 @@ import { Game } from '../types'
 import {
   Play,
   Zap,
-  Crown,
   Trash2,
   Eye,
   EyeOff,
@@ -30,7 +29,6 @@ interface GameCardEnhancedProps {
   game: Game
   isUserGame?: boolean
   onMintClick?: () => void
-  onRegisterClick?: () => void
   onToggleVisibility?: (isPrivate: boolean) => void
   onSettingsClick?: () => void
   onDeleteClick?: () => void
@@ -41,7 +39,6 @@ export function GameCardEnhanced({
   game,
   isUserGame = false,
   onMintClick,
-  onRegisterClick,
   onToggleVisibility,
   onSettingsClick,
   onDeleteClick,
@@ -212,15 +209,6 @@ export function GameCardEnhanced({
                         disabled={isLoading || !!game.nftTokenId}
                         icon={<Zap className="w-4 h-4" />}
                         label={game.nftTokenId ? 'Minted' : 'Mint NFT'}
-                      />
-                      <ActionButton
-                        onClick={() => {
-                          trackEvent('ownership_clicked', { action: 'register_ip', surface: 'my_games_card', gameSlug: game.slug })
-                          onRegisterClick?.()
-                        }}
-                        disabled={isLoading || !!game.storyIpId}
-                        icon={<Crown className="w-4 h-4" />}
-                        label={game.storyIpId ? 'IP Registered' : 'Register IP'}
                       />
                     </div>
                     <div className="flex flex-wrap gap-2">

@@ -3,7 +3,7 @@
 import { useReadContract } from 'wagmi'
 import { useAccount } from 'wagmi'
 import { MEZO_CONFIG } from '@/lib/writer-coins'
-import { MEZO_TESTNET_CHAIN_ID } from '@/lib/wallet/chains'
+import { MEZO_ACTIVE_CHAIN_ID } from '@/lib/wallet/chains'
 
 const ERC20_BALANCE_OF_ABI = [{
   name: 'balanceOf',
@@ -30,7 +30,7 @@ export function useMezoBalance() {
     abi: ERC20_BALANCE_OF_ABI,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
-    chainId: MEZO_TESTNET_CHAIN_ID,
+    chainId: MEZO_ACTIVE_CHAIN_ID,
     query: {
       enabled: Boolean(address && isConnected),
       staleTime: 60_000,

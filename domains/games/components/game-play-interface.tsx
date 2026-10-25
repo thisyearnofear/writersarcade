@@ -260,14 +260,6 @@ export function GamePlayInterface({ game, isOwner = false, onActivePlayChange }:
           onArtifactSaved={(updates) => {
             setLiveGame((current) => ({ ...current, ...updates }))
           }}
-          onStoryRegistrationComplete={(result) => {
-            setLiveGame((current) => ({
-              ...current,
-              storyIpId: result.ipId,
-              storyRegistrationTxHash: result.txHash,
-              storyRegisteredAt: new Date(),
-            }))
-          }}
           handlePanelTextChange={(idx, text) => {
             const assistantMessages = session.messages.filter(m => m.role === 'assistant')
             if (assistantMessages[idx]) {
@@ -282,13 +274,6 @@ export function GamePlayInterface({ game, isOwner = false, onActivePlayChange }:
             }
           }}
           regeneratingMessageId={session.regeneratingMessageId}
-          extractedAssetIds={blockchain.extractedAssetIds}
-          derivativeRegistered={blockchain.derivativeRegistered}
-          chainId={blockchain.chainId}
-          switchChain={blockchain.switchChain}
-          isSwitchingChain={blockchain.isSwitchingChain}
-          handleRegisterDerivativeIp={blockchain.handleRegisterDerivativeIp}
-          isRegisteringDerivative={blockchain.isRegisteringDerivative}
           epilogueReflection={session.epilogueReflection}
           isOwner={isOwner}
         />

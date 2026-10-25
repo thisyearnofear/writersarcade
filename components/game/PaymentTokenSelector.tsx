@@ -1,5 +1,7 @@
 'use client'
 
+import { MEZO_NETWORK } from '@/lib/wallet/chains'
+import { getActiveMusdConfig } from '@/lib/writer-coins'
 import { type PaymentToken } from '@/lib/writer-coins'
 
 interface PaymentTokenSelectorProps {
@@ -10,6 +12,7 @@ interface PaymentTokenSelectorProps {
 
 export function PaymentTokenSelector({ selectedToken, onSelectToken, writerCoin }: PaymentTokenSelectorProps) {
   const writerCoinEnabled = writerCoin.coin.paymentEnabled
+  const musdUsable = getActiveMusdConfig().paymentSplitter !== '0x0000000000000000000000000000000000000000'
 
   return (
     <div className="flex gap-2 p-1 rounded-lg bg-slate-900/50 border border-purple-500/20 mb-4">
@@ -34,18 +37,21 @@ export function PaymentTokenSelector({ selectedToken, onSelectToken, writerCoin 
       </button>
       <button
         type="button"
-        onClick={() => onSelectToken({ type: 'musd', network: 'testnet' })}
+        onClick={() => musdUsable && onSelectToken({ type: 'musd', network: MEZO_NETWORK })}
+        disabled={!musdUsable}
         className={`flex-1 px-3 py-2 rounded-md text-xs font-bold uppercase tracking-wider transition-colors ${
           selectedToken.type === 'musd'
             ? 'bg-orange-600 text-white shadow-lg'
-            : 'text-orange-300 hover:bg-orange-800/50'
+            : musdUsable
+              ? 'text-orange-300 hover:bg-orange-800/50'
+              : 'text-slate-500 cursor-not-allowed opacity-60'
         }`}
       >
         <span className="block">MUSD</span>
         <span className={`block text-[10px] font-normal normal-case tracking-normal mt-0.5 ${
           selectedToken.type === 'musd' ? 'text-orange-200' : 'text-orange-400/60'
         }`}>
-          Mezo · universal
+          {musdUsable ? 'Mezo · universal' : 'Use credits (top up with MUSD)'}
         </span>
       </button>
       <button

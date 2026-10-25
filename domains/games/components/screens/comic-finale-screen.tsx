@@ -4,16 +4,11 @@ import { useState, useCallback, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAccount, useWalletClient } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { Loader2, ArrowRightLeft, X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { ComicBookFinale, type ComicBookFinalePanelData } from '../comic-book-finale'
 import { PostGameCompletion } from '../post-game-completion'
 import { Game } from '../../types'
 import type { ChatEntry } from '../../hooks/use-game-session'
-import { STORY_CHAIN_ID, isOnStoryNetwork } from '@/domains/story/services/story-sdk-client'
 
-/** Story Protocol UI is opt-in — same flag semantics as Web3Provider. */
-const STORY_IP_UI_ENABLED = process.env.NEXT_PUBLIC_STORY_ENABLED !== 'false'
 import { type GameCreator, type GameAuthor } from '@/lib/services/ipfs-metadata.service'
 import { getWriterCoinById, getWriterCoinByAuthor, MUSD_CONFIG } from '@/lib/writer-coins'
 import { WriterCoinStrategy } from '@/domains/payments/strategies/writer-coin.strategy'
@@ -31,17 +26,9 @@ interface ComicFinaleScreenProps {
     metadata?: { nftMetadataUri: string; gameMetadataUri: string; creator: GameCreator; author: GameAuthor }
   ) => Promise<void>
   onArtifactSaved?: (updates: Partial<Game>) => void
-  onStoryRegistrationComplete?: (result: { ipId: string; txHash: string }) => void
   handlePanelTextChange: (panelIndex: number, newText: string) => void
   handlePanelImageChange?: (panelIndex: number, customPrompt?: string) => void
   regeneratingMessageId?: string | null
-  extractedAssetIds: string[]
-  derivativeRegistered: boolean
-  chainId: number
-  switchChain: (config: { chainId: number }) => void
-  isSwitchingChain: boolean
-  handleRegisterDerivativeIp: () => Promise<void>
-  isRegisteringDerivative: boolean
   epilogueReflection?: string | null
   isOwner?: boolean
   endingStats?: { totalRuns: number; samePathRuns: number; uniquePath: boolean } | null
@@ -56,17 +43,9 @@ export function ComicFinaleScreen({
   isMinting,
   handleMintComic,
   onArtifactSaved,
-  onStoryRegistrationComplete,
   handlePanelTextChange,
   handlePanelImageChange,
   regeneratingMessageId,
-  extractedAssetIds,
-  derivativeRegistered,
-  chainId,
-  switchChain,
-  isSwitchingChain,
-  handleRegisterDerivativeIp,
-  isRegisteringDerivative,
   epilogueReflection,
   isOwner: isOwnerFromSession = false,
   endingStats,
@@ -77,8 +56,6 @@ export function ComicFinaleScreen({
    
   const { openConnectModal } = useConnectModal()
    
-  const onStoryNetwork = isOnStoryNetwork(chainId)
-  const [derivativePromptDismissed, setDerivativePromptDismissed] = useState(false)
   const [isFunding, setIsFunding] = useState(false)
   const [fundError, setFundError] = useState<string | null>(null)
   const [savedArtifactKey, setSavedArtifactKey] = useState<string | null>(null)
@@ -282,10 +259,8 @@ export function ComicFinaleScreen({
         panels={comicPanels}
         onBack={() => setShowComicFinale(false)}
         onMint={handleMintComic}
-        onStoryRegistrationComplete={onStoryRegistrationComplete}
         isMinting={isMinting}
         nftMinted={Boolean(game.nftTransactionHash || game.nftTokenId)}
-        storyIpId={game.storyIpId}
         creatorWallet={game.creatorWallet || ''}
         articleUrl={game.articleUrl || ''}
         articleTitle={game.articleContext?.replace(/^Article:\s*"([^"]+)".*$/s, '$1') || game.title}
@@ -312,60 +287,6 @@ export function ComicFinaleScreen({
         mintCostLabel={mintCostLabel}
         hasSecretEpilogue={Boolean(game.promptVaultUuid || game.secretPanelGenerated)}
       />
-      {STORY_IP_UI_ENABLED && extractedAssetIds.length > 0 && !derivativeRegistered && !derivativePromptDismissed && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-card border border-border rounded-xl px-6 py-4 flex flex-col items-center gap-3 shadow-2xl max-w-sm w-full mx-4">
-          <button
-            type="button"
-            onClick={() => setDerivativePromptDismissed(true)}
-            className="absolute right-2 top-2 rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
-            aria-label="Dismiss derivative IP prompt"
-          >
-            <X className="h-4 w-4" />
-          </button>
-          <p className="text-sm text-muted-foreground text-center">
-            <span className="font-semibold text-white">{extractedAssetIds.length} asset{extractedAssetIds.length > 1 ? 's' : ''} extracted</span> — register as derivative IP on Story Protocol to establish royalty chains.
-          </p>
-          {!game.storyIpId ? (
-            <>
-              <p className="text-xs text-amber-400 text-center">
-                Register this game as IP first, then return here to link derivative assets.
-              </p>
-              <Button
-                onClick={() => {
-                  setDerivativePromptDismissed(true)
-                  document.getElementById('game-ip-registration')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-                }}
-                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white"
-              >
-                Open Game IP Registration
-              </Button>
-            </>
-          ) : !onStoryNetwork ? (
-            <Button
-              onClick={() => switchChain({ chainId: STORY_CHAIN_ID })}
-              disabled={isSwitchingChain}
-              className="w-full bg-amber-600 hover:bg-amber-500 text-white"
-            >
-              {isSwitchingChain ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ArrowRightLeft className="w-4 h-4 mr-2" />}
-              Switch to Story Network
-            </Button>
-          ) : (
-            <Button
-              onClick={handleRegisterDerivativeIp}
-              disabled={isRegisteringDerivative}
-              className="w-full bg-white text-black hover:bg-muted"
-            >
-              {isRegisteringDerivative ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-              {isRegisteringDerivative ? 'Registering…' : 'Register Derivative IP on Story'}
-            </Button>
-          )}
-        </div>
-      )}
-      {derivativeRegistered && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-card border border-green-700 rounded-xl px-6 py-3 text-green-400 text-sm text-center shadow-2xl">
-          ✅ Derivative IP registered on Story Protocol
-        </div>
-      )}
 
       {/* Post-game completion screen with stats and CTAs */}
       <div className="mt-12 border-t border-border pt-12">

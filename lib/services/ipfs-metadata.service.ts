@@ -49,7 +49,7 @@ export interface NFTMetadata {
 }
 
 export interface GameMetadata {
-  // Full game data for Story Protocol
+  // Full game metadata
   title: string
   description: string
   genre: string
@@ -138,7 +138,7 @@ export class IPFSMetadataService {
   }
 
   /**
-   * Create comprehensive game metadata for Story Protocol
+   * Create comprehensive game metadata
    */
   public createGameMetadata(
     nftMetadata: NFTMetadata,

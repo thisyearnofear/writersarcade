@@ -20,7 +20,6 @@ const ALLOWED_HOSTNAME_PATTERNS: readonly RegExp[] = [
   /^.+\.paragraph\.xyz$/,
   /^paragraph\.xyz$/,
   /^.+\.vercel\.app$/,
-  /^.+\.storyprotocol\.xyz$/,
   // Image CDN providers used by generated game images
   /^.+\.fal\.media$/,
   /^.+\.fal\.run$/,

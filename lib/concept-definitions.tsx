@@ -6,11 +6,6 @@ export const CONCEPTS = {
     explanation:
       'Create a unique digital collectible on Base that proves you own this game. Required to decrypt the secret epilogue.',
   },
-  storyIp: {
-    term: 'Story IP',
-    explanation:
-      'Register your game on Story Protocol so ownership and royalties are tracked on-chain.',
-  },
   secretEpilogue: {
     term: 'Secret epilogue',
     explanation:

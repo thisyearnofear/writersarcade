@@ -10,12 +10,8 @@ import { GameCardEnhanced } from '@/domains/games/components/game-card-enhanced'
 import { RecentlyPlayedSection } from '@/domains/games/components/recently-played-section'
 import { Game } from '@/domains/games/types'
 import { GameSettingsModal } from '@/domains/games/components/game-settings-modal'
-import { IPRegistrationHistory } from '@/components/story/IPRegistrationHistory'
-import { IPRegistration } from '@/components/story/IPRegistration'
-import { Plus, Gamepad2, X, Library, BadgeCheck, Network, Lock, Copy, Check, GalleryHorizontalEnd, ExternalLink, AlertTriangle, Sparkles, ChevronDown, Wallet, Loader2, WifiOff } from 'lucide-react'
+import { Plus, Gamepad2, Library, BadgeCheck, Lock, Copy, Check, GalleryHorizontalEnd, ExternalLink, AlertTriangle, Sparkles, ChevronDown, Wallet, Loader2, WifiOff } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
-import { useDialogA11y } from '@/hooks/use-dialog-a11y'
-import { OverlayPortal } from '@/components/ui/overlay'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -61,7 +57,6 @@ export function MyGamesClient() {
   const [mintConfirmGame, setMintConfirmGame] = useState<Game | null>(null)
   const [deleteConfirmGame, setDeleteConfirmGame] = useState<Game | null>(null)
   const [settingsGame, setSettingsGame] = useState<Game | null>(null)
-  const [registrationGame, setRegistrationGame] = useState<Game | null>(null)
   const [sessionAllowed, setSessionAllowed] = useState(false)
   const [authChecked, setAuthChecked] = useState(false)
   const [activeTab, setActiveTab] = useState<'library' | 'vault' | 'collectibles'>('library')
@@ -71,11 +66,11 @@ export function MyGamesClient() {
   const [copiedVault, setCopiedVault] = useState<string | null>(null)
   const stats = useMemo(() => {
     const minted = games.filter(game => !!game.nftTokenId).length
-    const registered = games.filter(game => !!game.storyIpId).length
+
     const publicGames = games.filter(game => !game.private).length
     const played = games.filter(game => (game.playCount ?? 0) > 0).length
     const superrareMinted = games.filter(game => !!game.superrareTokenId).length
-    return { minted, registered, publicGames, played, superrareMinted }
+    return { minted, publicGames, played, superrareMinted }
   }, [games])
 
   const filteredGames = useMemo(() => {
@@ -103,7 +98,6 @@ export function MyGamesClient() {
 
   const hasOwnershipMilestone =
     stats.minted > 0 ||
-    stats.registered > 0 ||
     unlockedVaults.length > 0 ||
     stats.superrareMinted > 0
 
@@ -127,16 +121,6 @@ export function MyGamesClient() {
       /* ignore */
     }
   }
-
-  const activeRegistration = registrationGame && address
-    ? { game: registrationGame, wallet: address as string }
-    : null
-  const registrationOpen = Boolean(activeRegistration)
-  const { dialogRef: registrationDialogRef, handleBackdropClick: handleRegistrationBackdrop } = useDialogA11y(
-    registrationOpen,
-    () => setRegistrationGame(null),
-    { closeOnBackdrop: true },
-  )
 
   useEffect(() => {
     try {
@@ -270,24 +254,6 @@ export function MyGamesClient() {
       const message = err instanceof Error ? err.message : 'Minting failed'
       console.error('Mint error:', err)
       toast({ title: 'Minting failed', description: message, variant: 'destructive' })
-    } finally {
-      setActionInProgress(null)
-    }
-  }
-
-  const handleRegisterClick = async (gameId: string) => {
-    if (!address) return
-
-    setActionInProgress(gameId)
-    try {
-      const game = games.find(g => g.id === gameId)
-      if (!game) throw new Error('Game not found')
-
-      setRegistrationGame(game)
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Registration failed'
-      console.error('Registration error:', err)
-      toast({ title: 'Registration failed', description: message, variant: 'destructive' })
     } finally {
       setActionInProgress(null)
     }
@@ -473,7 +439,7 @@ export function MyGamesClient() {
                 <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Library</p>
                 <h1 className="text-3xl sm:text-4xl font-bold">My Games</h1>
                 <p className="mt-3 max-w-2xl text-muted-foreground">
-                  Play your generated games first. Mint, secret epilogue unlock, and IP registration live under Ownership on each card.
+                  Play your generated games first. Mint, secret epilogue unlock, and minting live under Ownership on each card.
                 </p>
               </div>
               <Link
@@ -489,7 +455,6 @@ export function MyGamesClient() {
               <StatTile icon={Library} label="Ready to play" value={games.length} />
               <StatTile icon={Gamepad2} label="Played" value={stats.played} />
               <StatTile icon={BadgeCheck} label="Minted" value={stats.minted} />
-              <StatTile icon={Network} label="IP Registered" value={stats.registered} />
             </div>
           </div>
         </section>
@@ -559,7 +524,7 @@ export function MyGamesClient() {
                 >
                   <ChevronDown className="h-3.5 w-3.5" />
                   Vault & collectibles
-                  {(stats.registered > 0 || unlockedVaults.length > 0) && (
+                  {( unlockedVaults.length > 0) && (
                     <span className="rounded-full bg-purple-500/20 px-1.5 py-0.5 text-[10px] text-purple-400">New</span>
                   )}
                 </button>
@@ -710,13 +675,6 @@ export function MyGamesClient() {
                     </div>
                   </div>
                 )}
-                <div className="border-t border-border pt-8">
-                  <div className="mb-4">
-                    <h2 className="text-lg font-semibold text-foreground">IP registrations</h2>
-                    <p className="text-sm text-muted-foreground">Story Protocol registrations for games you own.</p>
-                  </div>
-                  <IPRegistrationHistory />
-                </div>
               </div>
             ) : loading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -825,7 +783,6 @@ export function MyGamesClient() {
                         game={game}
                         isUserGame={true}
                         onMintClick={() => handleMintClick(game.id)}
-                        onRegisterClick={() => handleRegisterClick(game.id)}
                         onToggleVisibility={() => handleToggleVisibility(game.id, !game.private)}
                         onSettingsClick={() => setSettingsGame(game)}
                         onDeleteClick={() => handleDeleteClick(game.id)}
@@ -878,78 +835,7 @@ export function MyGamesClient() {
               onUpdate={handleSettingsUpdate}
             />
 
-            {activeRegistration && (
-              <OverlayPortal>
-              <div
-                className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
-                onClick={handleRegistrationBackdrop}
-                aria-hidden={!registrationOpen}
-              >
-                <div
-                  ref={registrationDialogRef}
-                  role="dialog"
-                  aria-modal="true"
-                  aria-label="Register game IP"
-                  tabIndex={-1}
-                  onClick={(e) => e.stopPropagation()}
-                  className="w-full max-w-2xl max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain outline-none"
-                >
-                  <div className="mb-3 flex justify-end">
-                    <button
-                      onClick={() => setRegistrationGame(null)}
-                      className="rounded-full border border-border bg-card p-2 text-muted-foreground hover:text-foreground"
-                      aria-label="Close IP registration"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                  <IPRegistration
-                    game={{
-                      gameId: activeRegistration.game.id,
-                      title: activeRegistration.game.title,
-                      description: activeRegistration.game.description,
-                      articleUrl: activeRegistration.game.articleUrl || '',
-                      gameCreatorAddress: activeRegistration.wallet,
-                      authorParagraphUsername: activeRegistration.game.authorParagraphUsername || 'Unknown Author',
-                      authorWalletAddress: activeRegistration.game.authorWallet || '0x0000000000000000000000000000000000000000',
-                      genre: ['horror', 'comedy', 'mystery'].includes(activeRegistration.game.genre.toLowerCase())
-                        ? activeRegistration.game.genre.toLowerCase() as 'horror' | 'comedy' | 'mystery'
-                        : 'mystery',
-                      difficulty: activeRegistration.game.difficulty === 'hard' ? 'hard' : 'easy',
-                    }}
-                    onRegistrationComplete={async (result) => {
-                      const response = await fetch(`/api/games/${activeRegistration.game.slug}/story-registration`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                          walletAddress: activeRegistration.wallet,
-                          storyIpId: result.ipId,
-                          transactionHash: result.txHash,
-                        }),
-                      })
-                      if (!response.ok) {
-                        throw new Error('Story registration succeeded, but saving it to the game failed.')
-                      }
-                      setGames(prev => prev.map(game => game.id === activeRegistration.game.id
-                        ? {
-                            ...game,
-                            storyIpId: result.ipId,
-                            storyRegistrationTxHash: result.txHash,
-                            storyRegisteredAt: new Date(result.registeredAt * 1000),
-                          }
-                        : game
-                      ))
-                      toast({
-                        title: 'IP Registered',
-                        description: `Story Protocol IP ID: ${result.ipId.slice(0, 10)}...${result.ipId.slice(-6)}`,
-                        variant: 'default',
-                      })
-                    }}
-                  />
-                </div>
-              </div>
-              </OverlayPortal>
-            )}
+            
           </div>
         </section>
       </main>

@@ -37,9 +37,6 @@ interface FinaleFooterProps {
   isFunding?: boolean
   fundCostLabel?: string
   // IP registration
-  ipRegistrationReady: boolean
-  showIPRegistration: boolean
-  onShowIPRegistration: () => void
   isOwner?: boolean
   gameSlug: string
   hasSecretEpilogue?: boolean
@@ -70,9 +67,6 @@ export function FinaleFooter({
   onConnectWallet,
   isFunding,
   fundCostLabel,
-  ipRegistrationReady,
-  showIPRegistration,
-  onShowIPRegistration,
   isOwner = false,
   gameSlug,
   hasSecretEpilogue = false,
@@ -186,18 +180,6 @@ export function FinaleFooter({
               <Zap className="w-4 h-4" />
               Own game
             </Button>
-          )}
-
-          {ipRegistrationReady && !showIPRegistration && (
-            // Demoted to a quiet advanced link: Story IP registration is a
-            // testnet chain-switch most players don't need at the payoff moment.
-            <button
-              type="button"
-              className="text-xs text-muted-foreground underline-offset-2 hover:text-emerald-300 hover:underline"
-              onClick={onShowIPRegistration}
-            >
-              Advanced: register IP on Story (testnet)
-            </button>
           )}
         </div>
       </div>

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { getActor } from '@/services/auth'
-import { uploadToIPFS } from '@/domains/story/services/ipfs-utils'
+import { uploadToIPFS } from '@/lib/storage/ipfs-utils'
 import { authorizeGameOwner, ownershipError } from '@/domains/games/services/game-ownership.service'
 
 const artifactPanelSchema = z.object({

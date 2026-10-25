@@ -31,7 +31,6 @@ export async function GET(
       playCount: game.playCount,
       lastPlayedAt: game.lastPlayedAt,
       nftTokenId: game.nftTokenId,
-      storyIpId: game.storyIpId,
       hasDailySession,
     })
 

@@ -6,7 +6,7 @@
  * a specific Paragraph author/publication.
  */
 
-import { BASE_MAINNET_CHAIN_ID, MEZO_TESTNET_CHAIN_ID, MEZO_MAINNET_CHAIN_ID } from '@/lib/wallet/chains'
+import { BASE_MAINNET_CHAIN_ID, MEZO_TESTNET_CHAIN_ID, MEZO_MAINNET_CHAIN_ID, MEZO_NETWORK } from '@/lib/wallet/chains'
 
 const BASE_GAME_NFT_ADDRESS =
     (process.env.NEXT_PUBLIC_GAME_NFT_MAINNET as `0x${string}` | undefined) ||
@@ -317,6 +317,11 @@ export const MUSD_CONFIG = {
         mintCost: 500000000000000000n,
     },
 } as const
+
+/** MUSD config for the currently active Mezo network. */
+export function getActiveMusdConfig() {
+    return MUSD_CONFIG[MEZO_NETWORK]
+}
 
 /**
  * MEZO Token Configuration

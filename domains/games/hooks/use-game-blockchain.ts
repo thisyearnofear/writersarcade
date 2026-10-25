@@ -1,12 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { useWriteContract, useWalletClient, useChainId, useSwitchChain, useAccount } from 'wagmi'
+import { useWriteContract, useChainId, useSwitchChain, useAccount } from 'wagmi'
 import { parseEther } from 'viem'
 import { useToast } from '@/components/ui/use-toast'
 import { getWriterCoinById } from '@/lib/writer-coins'
 import { CONTRACT_ABIS } from '@/lib/contracts'
-import { createStoryClientFromWallet, STORY_CHAIN_ID, STORY_SPG_CONTRACT, isOnStoryNetwork, LICENSE_TERMS_ID_COMMERCIAL_REMIX } from '@/domains/story/services/story-sdk-client'
 import { BASE_MAINNET_CHAIN_ID } from '@/lib/wallet/chains'
 import { Game } from '../types'
 import { type ComicBookFinalePanelData } from '../components/comic-book-finale'
@@ -88,15 +87,13 @@ interface GameBlockchainOptions {
 export function useGameBlockchain(game: Game, options: GameBlockchainOptions = {}) {
     const { toast } = useToast()
     const { writeContractAsync } = useWriteContract()
-    const { data: walletClient } = useWalletClient()
+
     const { address: accountAddress } = useAccount()
     const chainId = useChainId()
     const { switchChain, isPending: isSwitchingChain } = useSwitchChain()
 
     const [isPaying, setIsPaying] = useState(false)
     const [isMinting, setIsMinting] = useState(false)
-    const [isRegisteringDerivative, setIsRegisteringDerivative] = useState(false)
-    const [derivativeRegistered, setDerivativeRegistered] = useState(false)
     const [extractedAssetIds, setExtractedAssetIds] = useState<string[]>([])
 
     const handlePaymentConfirm = async (onSuccess: () => void) => {
@@ -353,52 +350,14 @@ export function useGameBlockchain(game: Game, options: GameBlockchainOptions = {
         }
     }
 
-    const handleRegisterDerivativeIp = async () => {
-        if (!walletClient || !extractedAssetIds.length) return
-        if (!isOnStoryNetwork(chainId)) {
-            switchChain({ chainId: STORY_CHAIN_ID })
-            return
-        }
-        setIsRegisteringDerivative(true)
-        try {
-            const storyClient = createStoryClientFromWallet(walletClient)
-            if (!storyClient) throw new Error('Failed to initialize Story Protocol client')
-
-            const parentIpId = game.storyIpId as `0x${string}` | undefined
-            if (!parentIpId) throw new Error('Parent game has no Story Protocol IP ID')
-
-            for (const assetId of extractedAssetIds) {
-                await storyClient.ipAsset.registerDerivativeIpAsset({
-                    nft: { type: "mint", spgNftContract: STORY_SPG_CONTRACT },
-                    derivData: {
-                        parentIpIds: [parentIpId],
-                        licenseTermsIds: [LICENSE_TERMS_ID_COMMERCIAL_REMIX],
-                    },
-                    ipMetadata: {
-                        ipMetadataURI: `https://writersarcade.vercel.app/api/assets/${assetId}?ipMetadata=true`,
-                    },
-                })
-            }
-            setDerivativeRegistered(true)
-            toast({ title: '✅ Derivative IP registered', description: 'Asset(s) linked to parent IP on Story Protocol.' })
-        } catch (err) {
-            toast({ title: 'Derivative IP registration failed', description: err instanceof Error ? err.message : 'Registration failed', variant: 'destructive' })
-        } finally {
-            setIsRegisteringDerivative(false)
-        }
-    }
-
     return {
         isPaying,
         isMinting,
-        isRegisteringDerivative,
-        derivativeRegistered,
         extractedAssetIds,
         chainId,
         isSwitchingChain,
         handlePaymentConfirm,
         handleMintComic,
-        handleRegisterDerivativeIp,
         switchChain,
     }
 }

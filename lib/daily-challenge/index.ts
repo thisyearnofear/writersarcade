@@ -14,6 +14,7 @@
  */
 
 import type { WalletClient, Transport, Chain, Account } from 'viem'
+import { getPlatformSignerKey } from '@/lib/platform-signer'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -238,9 +239,7 @@ export function getVaultAddress(): `0x${string}` {
  */
 export function getSessionManagerPrivateKey(): `0x${string}` | null {
   const key =
-    process.env.DAILY_CHALLENGE_MANAGER_PRIVATE_KEY ||
-    process.env.INCO_VAULT_MANAGER_PRIVATE_KEY ||
-    process.env.STORY_PLATFORM_PRIVATE_KEY
+    process.env.INCO_VAULT_MANAGER_PRIVATE_KEY || getPlatformSignerKey()
 
   return key ? (key as `0x${string}`) : null
 }

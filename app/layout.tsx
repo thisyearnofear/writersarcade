@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     template: '%s — writersarcade',
   },
   description: 'Transform articles into interactive, mintable games. Support writers with their own coins, earn from plays, and own on-chain IP with configurable revenue splits.',
-  keywords: ['interactive fiction', 'games', 'articles', 'NFT', 'writer coins', 'paragraph', 'farcaster', 'base', 'story protocol'],
+  keywords: ['interactive fiction', 'games', 'articles', 'NFT', 'writer coins', 'paragraph', 'farcaster', 'base',],
   openGraph: {
     title: 'writersarcade — Interactive fiction from the writers you follow',
     description: 'Transform articles into interactive, mintable games. Support writers with their own coins and own on-chain IP.',

@@ -1,5 +1,6 @@
 'use client'
 
+import { GetMusdOptions } from '@/components/mezo/GetMusdOptions'
 import { useState, useEffect, useRef } from 'react'
 import { useAccount, useWalletClient, useSwitchChain } from 'wagmi'
 import { Coins, Loader2, Plus, ExternalLink, X, ArrowRight } from 'lucide-react'
@@ -7,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CREDITS_CONFIG, MUSD_CONFIG, MEZO_TREASURY_ADDRESS } from '@/lib/writer-coins'
-import { MEZO_TESTNET_CHAIN_ID } from '@/lib/wallet/chains'
+import { MEZO_ACTIVE_CHAIN_ID, MEZO_ACTIVE_EXPLORER, MEZO_NETWORK } from '@/lib/wallet/chains'
 import { useMUSDBalance } from '@/hooks/useMUSDBalance'
 import { useOverlay, OverlayPortal } from '@/components/ui/overlay'
 
@@ -140,7 +141,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
 
   const musdAmountWei = BigInt(selectedAmount / 100) * 1_000_000_000_000_000_000n
   const musdUnits = selectedAmount / 100
-  const isWrongMezoChain = isConnected && chainId !== MEZO_TESTNET_CHAIN_ID
+  const isWrongMezoChain = isConnected && chainId !== MEZO_ACTIVE_CHAIN_ID
   const hasInsufficientMusd = musdBalance < musdAmountWei
 
   const handlePayWithMusd = async () => {
@@ -168,7 +169,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
         const res = await fetch('/api/credits/purchase-musd', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ transactionHash: txHash, chainId: MEZO_TESTNET_CHAIN_ID }),
+          body: JSON.stringify({ transactionHash: txHash, chainId: MEZO_ACTIVE_CHAIN_ID }),
         })
         const data = await res.json().catch(() => ({}))
         if (res.ok && data.success) {
@@ -408,7 +409,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                           {musdGranted?.boost && ' — incl. +10% MEZO holder bonus'}
                         </p>
                         <a
-                          href={`https://explorer.test.mezo.org/tx/${musdTxHash}`}
+                          href={`${MEZO_ACTIVE_EXPLORER}/tx/${musdTxHash}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="mt-1 flex items-center gap-1 underline hover:text-amber-100"
@@ -437,7 +438,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                           </div>
                         </div>
                         <Button
-                          onClick={isWrongMezoChain ? () => switchChainAsync({ chainId: MEZO_TESTNET_CHAIN_ID }).catch(() => {}) : handlePayWithMusd}
+                          onClick={isWrongMezoChain ? () => switchChainAsync({ chainId: MEZO_ACTIVE_CHAIN_ID }).catch(() => {}) : handlePayWithMusd}
                           disabled={musdLoading || (!isWrongMezoChain && hasInsufficientMusd)}
                           className="mt-3 w-full bg-amber-600 hover:bg-amber-500 text-white"
                           size="lg"
@@ -451,15 +452,12 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                           )}
                         </Button>
                         {hasInsufficientMusd && !isWrongMezoChain && (
-                          <p className="mt-2 text-center text-[10px] text-muted-foreground">
-                            Need MUSD?{' '}
-                            <a href="https://faucet.test.mezo.org/" target="_blank" rel="noopener noreferrer" className="underline text-amber-400 hover:text-amber-300">
-                              Get testnet tokens
-                            </a>
-                          </p>
+                          <div className="mt-2 flex justify-center">
+                            <GetMusdOptions />
+                          </div>
                         )}
                         <p className="mt-2 text-center text-[10px] text-muted-foreground">
-                          MUSD on Mezo testnet — verified on-chain, credits granted instantly.
+                          MUSD on Mezo {MEZO_NETWORK === 'mainnet' ? 'mainnet' : 'testnet'} — verified on-chain, credits granted instantly.
                           {' '}<span className="text-amber-400/80">MEZO holders earn +10%.</span>
                         </p>
                       </>

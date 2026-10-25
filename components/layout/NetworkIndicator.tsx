@@ -112,9 +112,7 @@ export function NetworkIndicatorCompact() {
         <div className={`w-2 h-2 rounded-full ${
           !chainInfo.isSupported
             ? 'bg-amber-500'
-            : chainInfo.ecosystem === 'story'
-              ? 'bg-emerald-500'
-              : chainInfo.ecosystem === 'mezo'
+            : chainInfo.ecosystem === 'mezo'
                 ? 'bg-amber-400'
                 : 'bg-blue-500'
         }`} />

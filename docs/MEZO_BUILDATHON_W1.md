@@ -51,6 +51,13 @@ with new MUSD/MEZO features added during the hackathon window.
 - New `POST /api/credits/purchase-musd`: verified MUSD→credits onramp,
   idempotent by tx hash, retryable on RPC index lag.
 - Auto chain-switch on MUSD selection; chain-agnostic payment labels.
+- "Get MUSD" options (`components/mezo/GetMusdOptions.tsx`) surface in the
+  buy-credits modal and MUSD payment flow whenever balance is short —
+  network-aware (testnet: Mezo faucet + borrow testnet app; mainnet:
+  mezo.org borrow/Banxa, Portal bridge).
+- Mainnet readiness is env-switchable: `NEXT_PUBLIC_MEZO_NETWORK` flips
+  chain id, explorer, RPC, MUSD token config and Bitcoin wallet set
+  (testnet stays default for the submission).
 - Live proof: E2E against the production deployment — real `payForGeneration`
   tx with `boosted=true` and a real treasury transfer that granted credits.
 

@@ -37,7 +37,7 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
       icon: Coins,
       title: 'Own and earn',
       description:
-        'Ready to go deeper? Connect a wallet to mint your game as an NFT, register it as IP on Story Protocol, and earn from every play.',
+        'Ready to go deeper? Connect a wallet to mint your game as an NFT and earn from every play.',
       tip: 'Wallet connection is only required for on-chain actions — gameplay is free.',
     },
   ]

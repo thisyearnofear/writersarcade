@@ -6,7 +6,7 @@ import { type WriterCoin } from "@/lib/writer-coins";
 import type { Game } from "@/domains/games/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { triggerHaptic, cn } from "@/lib/utils";
-import { Share2, ExternalLink, ShieldCheck, Trophy } from "lucide-react";
+import { Share2, ShieldCheck, Trophy } from "lucide-react";
 import { shareGame } from "@/domains/farcaster/services/farcaster-sharing.service";
 
 interface GamePlayerProps {
@@ -31,7 +31,6 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [mintResult, setMintResult] = useState<{
     txHash: string;
-    storyIpId?: string;
   } | null>(null);
   const [isMinting, setIsMinting] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
@@ -117,11 +116,11 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
     }
   }, [gameContent, options, isLoading]);
 
-  const handleMintSuccess = async (transactionHash: string, storyIPAssetId?: string) => {
+  const handleMintSuccess = async (transactionHash: string) => {
     triggerHaptic('success');
     setShowMintDialog(false);
     setIsMinting(false);
-    setMintResult({ txHash: transactionHash, storyIpId: storyIPAssetId });
+    setMintResult({ txHash: transactionHash });
     setShowSuccessDialog(true);
     };
 
@@ -410,17 +409,6 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
                                     <ShieldCheck className="h-4 w-4 text-purple-400 mb-1" />
                                     <span className="text-[9px] font-black uppercase text-white/60 tracking-widest">BaseScan</span>
                                 </a>
-                                {mintResult.storyIpId && (
-                                    <a
-                                        href={`https://aeneid-testnet-explorer.story.foundation/ipa/${mintResult.storyIpId}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex flex-col items-center justify-center rounded-xl bg-white/5 border border-white/10 p-3 hover:bg-white/10 transition-colors"
-                                    >
-                                        <ExternalLink className="h-4 w-4 text-indigo-400 mb-1" />
-                                        <span className="text-[9px] font-black uppercase text-white/60 tracking-widest">IP Explorer</span>
-                                    </a>
-                                )}
                             </div>
 
                             <button

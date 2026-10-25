@@ -1,39 +1,22 @@
 'use client'
 
-import { useState, useCallback } from 'react'
-import { useAccount, useChainId, useSwitchChain, useWalletClient } from 'wagmi'
 import { useGetCurrentAccount } from '@mezo-org/passport'
 import Link from 'next/link'
 import { Header } from '@/components/layout/header'
 import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
 import { Badge } from '@/components/ui/badge'
-import { LicenseConfigurator } from './LicenseConfigurator'
-import { WRITER_COINS } from '@/lib/writer-coins'
-import {
-  createStoryClientFromWallet,
-  isOnStoryNetwork,
-  STORY_CHAIN_ID,
-} from '@/domains/story/services/story-sdk-client'
-import { mintLicenseTokens } from '@/domains/story/services/story-license.service'
 import {
   Gamepad2,
   Eye,
   Lock,
   BadgeCheck,
-  Network,
   Sparkles,
   Coins,
   Zap,
   ChevronRight,
   ExternalLink,
-  Loader2,
-  CheckCircle2,
-  AlertCircle,
-  Copy,
-  Check,
   AlertTriangle,
   Image as ImageIcon,
-  Shield,
 } from 'lucide-react'
 import type {
   CreatorStudioSummary,
@@ -66,12 +49,6 @@ const attentionMeta: Record<
     icon: BadgeCheck,
     tone: 'purple',
   },
-  'not-registered': {
-    label: 'Not IP-registered',
-    description: 'Minted, but Story IP registration is missing.',
-    icon: Network,
-    tone: 'indigo',
-  },
 }
 
 const toneClasses: Record<'amber' | 'blue' | 'purple' | 'indigo', string> = {
@@ -84,109 +61,7 @@ const toneClasses: Record<'amber' | 'blue' | 'purple' | 'indigo', string> = {
 export function DashboardClient({ initialSummary }: DashboardClientProps) {
   const summary = initialSummary
   const { data: mezoAccount } = useGetCurrentAccount()
-  const { address, isConnected } = useAccount()
-  const chainId = useChainId()
-  const { switchChain } = useSwitchChain()
-  const { data: walletClient } = useWalletClient()
 
-  const [mintingIp, setMintingIp] = useState<string | null>(null)
-  const [mintResult, setMintResult] = useState<Record<string, string>>({})
-  const [mintError, setMintError] = useState<string | null>(null)
-  const [claiming, setClaiming] = useState(false)
-  const [claimResult, setClaimResult] = useState<string | null>(null)
-  const [copiedField, setCopiedField] = useState<string | null>(null)
-
-  const onStoryNetwork = isOnStoryNetwork(chainId)
-  const activeWriterCoin = WRITER_COINS[0]
-
-  const handleSwitchChain = useCallback(async () => {
-    if (!switchChain) return
-    try {
-      await switchChain({ chainId: STORY_CHAIN_ID })
-    } catch (err) {
-      console.error('Failed to switch network:', err)
-    }
-  }, [switchChain])
-
-  const handleMintLicenseTokens = useCallback(
-    async (ipId: string) => {
-      if (!walletClient || !address || !onStoryNetwork) {
-        if (!onStoryNetwork) await handleSwitchChain()
-        else setMintError('Connect your wallet first')
-        return
-      }
-
-      setMintingIp(ipId)
-      setMintError(null)
-
-      try {
-        const storyClient = createStoryClientFromWallet(walletClient)
-        if (!storyClient) throw new Error('Failed to initialize Story client')
-
-        const result = await mintLicenseTokens(storyClient, {
-          licensorIpId: ipId as `0x${string}`,
-          licenseTermsId: 2,
-          receiver: address as `0x${string}`,
-          amount: 1,
-        })
-
-        setMintResult((prev) => ({ ...prev, [ipId]: result.txHash }))
-      } catch (err) {
-        setMintError(err instanceof Error ? err.message : 'Minting failed')
-      } finally {
-        setMintingIp(null)
-      }
-    },
-    [walletClient, address, onStoryNetwork, handleSwitchChain],
-  )
-
-  const handleClaimFromPool = useCallback(async () => {
-    if (!walletClient || !address || !onStoryNetwork) {
-      if (!onStoryNetwork) await handleSwitchChain()
-      else setMintError('Connect your wallet first')
-      return
-    }
-
-    setClaiming(true)
-    setClaimResult(null)
-
-    try {
-      const storyClient = createStoryClientFromWallet(walletClient)
-      if (!storyClient) throw new Error('Failed to initialize Story client')
-
-      const { collectAndDistributeGroupRoyalties } = await import(
-        '@/domains/story/services/story-grouping.service'
-      )
-      const memberIpIds = summary.ip.registeredGames
-        .map((g) => g.storyIpId as `0x${string}`)
-        .filter(Boolean)
-
-      if (!summary.ip.storyGroupIpId) throw new Error('No group IP found')
-      if (memberIpIds.length === 0) throw new Error('No registered IPs to distribute')
-
-      const result = await collectAndDistributeGroupRoyalties(
-        storyClient,
-        summary.ip.storyGroupIpId as `0x${string}`,
-        memberIpIds,
-      )
-
-      setClaimResult(result.txHash)
-    } catch (err) {
-      setMintError(err instanceof Error ? err.message : 'Claim failed')
-    } finally {
-      setClaiming(false)
-    }
-  }, [walletClient, address, onStoryNetwork, handleSwitchChain, summary.ip])
-
-  const copyToClipboard = async (text: string, field: string) => {
-    try {
-      await navigator.clipboard.writeText(text)
-      setCopiedField(field)
-      setTimeout(() => setCopiedField(null), 1500)
-    } catch (err) {
-      console.error('Failed to copy:', err)
-    }
-  }
 
   const walletDisplay = summary.identity.walletAddress
     ? `${summary.identity.walletAddress.slice(0, 6)}…${summary.identity.walletAddress.slice(-4)}`
@@ -260,7 +135,6 @@ export function DashboardClient({ initialSummary }: DashboardClientProps) {
               <StatTile icon={Lock} label="Private" value={summary.games.private} />
               <StatTile icon={ImageIcon} label="Artifacts" value={summary.games.artifactReady} />
               <StatTile icon={BadgeCheck} label="Minted" value={summary.games.minted} />
-              <StatTile icon={Network} label="IP Registered" value={summary.games.storyRegistered} />
             </div>
           </section>
 
@@ -275,22 +149,6 @@ export function DashboardClient({ initialSummary }: DashboardClientProps) {
 
               {/* Side column */}
               <div className="space-y-6">
-                <IpSection
-                  ip={summary.ip}
-                  onStoryNetwork={onStoryNetwork}
-                  onSwitchChain={handleSwitchChain}
-                  onMintLicense={handleMintLicenseTokens}
-                  onClaimFromPool={handleClaimFromPool}
-                  mintingIp={mintingIp}
-                  mintResult={mintResult}
-                  mintError={mintError}
-                  claiming={claiming}
-                  claimResult={claimResult}
-                  copiedField={copiedField}
-                  onCopy={copyToClipboard}
-                  isConnected={isConnected}
-                />
-                <LicenseCard writerCoin={activeWriterCoin} />
               </div>
             </div>
           </section>
@@ -537,212 +395,3 @@ function PaymentColumn({
   )
 }
 
-function IpSection({
-  ip,
-  onStoryNetwork,
-  onSwitchChain,
-  onMintLicense,
-  onClaimFromPool,
-  mintingIp,
-  mintResult,
-  mintError,
-  claiming,
-  claimResult,
-  copiedField,
-  onCopy,
-  isConnected,
-}: {
-  ip: CreatorStudioSummary['ip']
-  onStoryNetwork: boolean
-  onSwitchChain: () => Promise<void> | void
-  onMintLicense: (ipId: string) => void
-  onClaimFromPool: () => void
-  mintingIp: string | null
-  mintResult: Record<string, string>
-  mintError: string | null
-  claiming: boolean
-  claimResult: string | null
-  copiedField: string | null
-  onCopy: (text: string, field: string) => void
-  isConnected: boolean
-}) {
-  return (
-    <section className="rounded-lg border border-border bg-card p-5">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Shield className="h-4 w-4 text-purple-500" />
-          <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-            IP &amp; Licensing
-          </h2>
-        </div>
-        <span className="text-xs text-muted-foreground">{ip.registeredCount} registered</span>
-      </div>
-
-      <div className="rounded-lg border border-border bg-muted/30 p-3 mb-4">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            Group IP
-          </span>
-          <Badge
-            variant="outline"
-            className={`text-[10px] ${
-              ip.storyGroupIpId
-                ? 'text-emerald-500 border-emerald-500/30'
-                : 'text-amber-500 border-amber-500/30'
-            }`}
-          >
-            {ip.storyGroupIpId ? 'Active' : 'Not created'}
-          </Badge>
-        </div>
-        {ip.storyGroupIpId ? (
-          <div className="flex items-center gap-2">
-            <code className="text-xs font-mono text-foreground/80 truncate flex-1">
-              {ip.storyGroupIpId}
-            </code>
-            <button
-              onClick={() => onCopy(ip.storyGroupIpId!, 'groupIp')}
-              className="p-1 rounded hover:bg-muted transition-colors"
-              aria-label="Copy group IP"
-            >
-              {copiedField === 'groupIp' ? (
-                <Check className="h-3.5 w-3.5 text-emerald-500" />
-              ) : (
-                <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-              )}
-            </button>
-          </div>
-        ) : (
-          <p className="text-xs text-muted-foreground">
-            Auto-created on first IP registration.
-          </p>
-        )}
-      </div>
-
-      {ip.registeredGames.length > 0 && (
-        <div className="space-y-2 mb-4">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block">
-            Registered games ({ip.registeredGames.length})
-          </span>
-          {ip.registeredGames.slice(0, 5).map((game) => (
-            <div
-              key={game.gameId}
-              className="rounded-lg border border-border bg-muted/20 p-3"
-            >
-              <div className="flex items-start justify-between gap-2 mb-1">
-                <Link
-                  href={`/games/${game.slug}`}
-                  className="text-sm font-semibold text-foreground hover:text-purple-500 transition-colors truncate"
-                >
-                  {game.title}
-                </Link>
-                <Badge variant="outline" className="text-[10px] uppercase tracking-wider shrink-0">
-                  {game.genre}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <code className="text-[10px] font-mono text-muted-foreground">
-                  {game.storyIpId.slice(0, 10)}…
-                </code>
-                {mintResult[game.storyIpId] ? (
-                  <span className="inline-flex items-center gap-1 text-[10px] text-emerald-500">
-                    <CheckCircle2 className="h-3 w-3" /> Minted
-                  </span>
-                ) : (
-                  <button
-                    onClick={() => onMintLicense(game.storyIpId)}
-                    disabled={mintingIp === game.storyIpId || !onStoryNetwork || !isConnected}
-                    className="text-[10px] font-bold uppercase tracking-wider text-purple-500 hover:text-purple-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                  >
-                    {mintingIp === game.storyIpId ? (
-                      <span className="inline-flex items-center gap-1">
-                        <Loader2 className="h-3 w-3 animate-spin" /> Minting
-                      </span>
-                    ) : (
-                      'Mint license'
-                    )}
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <div className="space-y-2">
-        <div className="flex items-center justify-between rounded-lg border border-border bg-muted/20 p-2.5">
-          <div className="flex items-center gap-2">
-            <div
-              className={`h-2 w-2 rounded-full ${
-                onStoryNetwork ? 'bg-emerald-500' : 'bg-amber-500'
-              }`}
-            />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              {onStoryNetwork ? 'Story Aeneid' : 'Switch to Story'}
-            </span>
-          </div>
-          <button
-            onClick={onSwitchChain}
-            className="text-[10px] font-bold uppercase tracking-widest text-purple-500 hover:text-purple-400 transition-colors"
-          >
-            {onStoryNetwork ? '✓' : 'Switch'}
-          </button>
-        </div>
-
-        {ip.storyGroupIpId && ip.registeredGames.length > 0 && (
-          <button
-            onClick={onClaimFromPool}
-            disabled={claiming || !onStoryNetwork || !isConnected}
-            className="w-full rounded-lg bg-purple-600 px-3 py-2.5 text-xs font-bold uppercase tracking-widest text-white transition-colors hover:bg-purple-700 disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {claiming ? (
-              <span className="inline-flex items-center justify-center gap-2">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Claiming…
-              </span>
-            ) : claimResult ? (
-              <span className="inline-flex items-center justify-center gap-2">
-                <CheckCircle2 className="h-3.5 w-3.5" /> Claimed
-              </span>
-            ) : (
-              'Claim from group pool'
-            )}
-          </button>
-        )}
-      </div>
-
-      {mintError && (
-        <div className="mt-3 rounded-lg border border-red-500/30 bg-red-500/10 p-3 flex items-start gap-2">
-          <AlertCircle className="h-3.5 w-3.5 text-red-500 mt-0.5 shrink-0" />
-          <p className="text-xs text-red-400">{mintError}</p>
-        </div>
-      )}
-    </section>
-  )
-}
-
-function LicenseCard({ writerCoin }: { writerCoin: (typeof WRITER_COINS)[number] }) {
-  const [open, setOpen] = useState(false)
-  return (
-    <section className="rounded-lg border border-border bg-card overflow-hidden">
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between p-5 text-left hover:bg-muted/30 transition-colors"
-        aria-expanded={open}
-      >
-        <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-purple-500" />
-          <span className="text-sm font-semibold text-foreground uppercase tracking-wider">
-            License terms
-          </span>
-        </div>
-        <ChevronRight
-          className={`h-4 w-4 text-muted-foreground transition-transform ${open ? 'rotate-90' : ''}`}
-        />
-      </button>
-      {open && (
-        <div className="border-t border-border">
-          <LicenseConfigurator writerCoin={writerCoin} />
-        </div>
-      )}
-    </section>
-  )
-}

@@ -3,8 +3,8 @@ import { randomBytes } from 'crypto'
 import { prisma } from '@/lib/prisma'
 import { getActor } from '@/services/auth'
 import { checkRateLimit } from '@/services/rate-limit'
-import { VideoGenerationService, type VideoProviderName, type VideoStyle } from '@/domains/games/services/video-generation.service'
-import { persistMediaUrl } from '@/domains/story/services/media-upload'
+import { VideoGenerationService, type VideoStyle } from '@/domains/games/services/video-generation.service'
+import { persistMediaUrl } from '@/lib/storage/media-upload'
 import { config } from '@/lib/config'
 
 /**

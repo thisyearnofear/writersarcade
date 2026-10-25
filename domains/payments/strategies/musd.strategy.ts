@@ -1,6 +1,6 @@
 import type { PaymentStrategy, ExecutePaymentParams, PaymentResult } from './payment-strategy'
 import { getPaymentTokenConfig } from '@/lib/writer-coins'
-import { MEZO_TESTNET_CHAIN_ID } from '@/lib/wallet/chains'
+import { MEZO_ACTIVE_CHAIN_ID } from '@/lib/wallet/chains'
 import { logger } from '@/lib/config'
 
 const ERC20_APPROVE_ABI = [{
@@ -70,7 +70,7 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as const
 export class MUSDStrategy implements PaymentStrategy {
   id = 'musd'
   name = 'MUSD (Mezo)'
-  chainId = MEZO_TESTNET_CHAIN_ID
+  chainId = MEZO_ACTIVE_CHAIN_ID
 
   async executePayment({ walletClient, userAddress, token, action, amount, onStep }: ExecutePaymentParams): Promise<PaymentResult> {
     if (token.type !== 'musd') {

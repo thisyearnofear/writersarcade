@@ -15,7 +15,7 @@ const fileVars = fs.existsSync(envPath)
   : {}
 const vars = { ...process.env, ...fileVars }
 
-const privateKey = vars.STORY_PLATFORM_PRIVATE_KEY || vars.MEZO_DEPLOYER_PRIVATE_KEY
+const privateKey = vars.PLATFORM_SIGNER_PRIVATE_KEY || vars.STORY_PLATFORM_PRIVATE_KEY || vars.MEZO_DEPLOYER_PRIVATE_KEY
 if (!privateKey) throw new Error('Missing deployment private key')
 
 const account = privateKeyToAccount(privateKey)

@@ -74,7 +74,6 @@ export async function GET(request: NextRequest) {
 
     // Calculate stats
     const mintedGames = games.filter((g) => g.nftTokenId).length
-    const registeredGames = games.filter((g) => g.storyIpId).length
     const playedGames = games.filter((g) => g.playCount > 0).length
 
     const gameIds = games.map((g) => g.id)
@@ -153,7 +152,6 @@ export async function GET(request: NextRequest) {
         promptVaultUuid: game.promptVaultUuid,
         wordleAnswerVaultUuid: game.wordleAnswerVaultUuid,
         secretPanelGenerated: game.secretPanelGenerated ?? false,
-        storyIpId: game.storyIpId,
         superrareTokenId: game.superrareTokenId,
         hasDailySession: dailyGameIds.has(game.id),
         createdAt: game.createdAt,
@@ -170,7 +168,6 @@ export async function GET(request: NextRequest) {
       stats: {
         totalGames: total,
         mintedGames,
-        registeredGames,
         playedGames,
       },
     })

@@ -9,7 +9,7 @@ import { WRITER_COINS } from '@/lib/writer-coins'
 import { CopyAddressButton } from '@/components/ui/copy-address-button'
 import type { BalanceData } from '@/hooks/useWriterCoinBalance'
 import { useMezoBalance } from '@/hooks/useMezoBalance'
-import { getChainInfo, MEZO_TESTNET_CHAIN_ID, type ChainInfo } from '@/lib/wallet/chains'
+import { getChainInfo, MEZO_ACTIVE_CHAIN_ID, type ChainInfo } from '@/lib/wallet/chains'
 import { openBuyCredits } from '@/components/ui/buy-credits'
 
 interface BalanceDisplayProps {
@@ -317,7 +317,7 @@ export function BalanceDisplay({ mobileLayout = false }: BalanceDisplayProps) {
 
   const ecosystemGroups = useMemo<EcosystemGroup[]>(() => {
     const baseChain = getChainInfo(primary.coin ? 8453 : 8453)
-    const mezoChain = getChainInfo(MEZO_TESTNET_CHAIN_ID)
+    const mezoChain = getChainInfo(MEZO_ACTIVE_CHAIN_ID)
 
     return [
       {
@@ -420,7 +420,7 @@ export function BalanceDisplay({ mobileLayout = false }: BalanceDisplayProps) {
           mobileLayout={mobileLayout}
           isMezoHolder={isMezoHolder}
           mezoFormatted={mezoFormatted}
-          switchToMezo={group.id === 'mezo' ? () => switchChain({ chainId: MEZO_TESTNET_CHAIN_ID }) : undefined}
+          switchToMezo={group.id === 'mezo' ? () => switchChain({ chainId: MEZO_ACTIVE_CHAIN_ID }) : undefined}
           isSwitching={isSwitching}
           isOnMezo={getChainInfo(chainId).ecosystem === 'mezo'}
           onBuyCredits={group.id === 'credits' ? () => { setIsOpen(false); openBuyCredits() } : undefined}

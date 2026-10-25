@@ -23,7 +23,7 @@ interface ChecklistItem {
 
 /**
  * Pre-mint validation checklist
- * Ensures asset pack is ready for Story Protocol registration
+ * Ensures asset pack is ready for minting
  * 
  * Returns: { checklist, canMint, criticalPassed }
  */

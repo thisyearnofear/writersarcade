@@ -8,6 +8,7 @@
  * useReducedMotion in StylePreview.
  */
 
+import { MEZO_NETWORK, MEZO_ACTIVE_EXPLORER } from '@/lib/wallet/chains'
 import { motion, useReducedMotion } from 'framer-motion'
 import Link from 'next/link'
 import { AlertTriangle, RefreshCw, X, Gamepad2, Sparkles } from 'lucide-react'
@@ -52,7 +53,7 @@ export interface ArticlePreview {
 
 export function paymentTokenForPath(path: PaymentPath, writerCoin: WriterCoin): PaymentToken {
   return path === 'musd'
-    ? { type: 'musd', network: 'testnet' }
+    ? { type: 'musd', network: MEZO_NETWORK }
     : { type: 'writercoin', coin: writerCoin }
 }
 
@@ -88,7 +89,7 @@ export function shortTxHash(hash: string): string {
 
 export function paymentExplorerUrl(path: PaymentPath, hash: string): string {
   const baseUrl = path === 'musd'
-    ? 'https://explorer.test.mezo.org/tx'
+    ? `${MEZO_ACTIVE_EXPLORER}/tx`
     : 'https://basescan.org/tx'
   return `${baseUrl}/${hash}`
 }

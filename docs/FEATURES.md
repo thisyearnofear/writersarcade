@@ -20,7 +20,7 @@ See the [Creation UX Contract](./CREATION_UX.md) for the decision record, feedba
 3. **Customize** (Optional): Edit characters & mechanics in Workshop
 4. **Generate**: Compile assets into 5-panel comic story (`contentType: 'dual'` when staged)
 5. **Refine**: Regenerate images with custom prompts + edit text
-6. **Register**: Mint NFT & register IP on Story Protocol (user-owned)
+6. **Mint**: Mint the game as an NFT (user-owned)
 7. **Revenue**: Splits executed on-chain (Writer/Platform/Creator)
 
 ### Marketing Copy → Playable Story (`/studio`)
@@ -159,34 +159,6 @@ self-contained hooks + presentational components so each feature stays testable:
 
 ## Integrations
 
-### Story Protocol (IP Registration)
-
-**Network**: Story Aeneid testnet (Chain ID: 1315)  
-**SDK**: `@story-protocol/core-sdk@^1.4.2`  
-**Integration**: Client-side wallet signing (no platform keys)
-
-**Features**:
-- **User-owned IP**: Users sign transactions - they own the IP
-- **PIL Licenses**: Commercial Remix licenses (10% royalty default)
-- **Automatic metadata**: Game details, attribution, assets on IPFS
-- **Derivative royalties**: Original creators earn from remixes
-- **On-chain tracking**: Parent-child relationships recorded
-- **Claimable revenue**: Royalty claiming UI for IP owners
-
-**License Types**:
-- **Non-Commercial Social Remixing** (ID: 1) - Free, derivatives allowed
-- **Commercial Remix** (ID: 2) - Derivatives with revenue share (default)
-- **Commercial Use** (ID: 3) - No derivatives allowed
-
-**IP Registration Flow**:
-1. User connects wallet, clicks "Register IP"
-2. App validates wallet + network (switch to Story if needed)
-3. Gas estimation with 15% buffer
-4. User selects license type
-5. Metadata uploaded to IPFS via Pinata, with Grove fallback
-6. User signs transaction in wallet
-7. IP registered on-chain with license
-8. Verification: Read IP Asset to confirm
 
 #### Inco Confidential Compute (Secret Panels) — *Primary*
 **Integration**: Inco Lightning (`@inco/lightning-js`) for on-chain encrypted secret panels and Wordle answers.
@@ -248,7 +220,7 @@ Game Creation → createGameHypercert() (async, non-blocking)
 **Primary (metadata)**: `PINATA_JWT` environment variable
 **Primary (media bytes)**: Grove immutable upload via `https://api.grove.storage` — keyless, anchored to `GROVE_CHAIN_ID` (Base mainnet `8453`; never a testnet id, which has weaker retention)
 **Fallback**: Grove for metadata, Pinata for media (when `PINATA_JWT` is set)
-**Usage**: Metadata uploads for Story Protocol IP registration; durable persistence for generated video/stills
+**Usage**: Metadata uploads for NFT minting; durable persistence for generated video/stills
 
 For the optional hero-video artifact pipeline, Grove persists binary media (panel clips, montage films, stills) — a provider-hosted video URL is not treated as durable. See [Video Artifact Pipeline](#video-artifact-pipeline) below.
 
@@ -337,7 +309,7 @@ Full spec is embedded in the Video Artifact Pipeline section above.
 | 8 | Quality & UX (narrative preview, article fidelity review, NPS feedback, ErrorBoundary) | ✅ |
 | 9 | Production Polish (5 writer coins, writer profiles, editorial redesign, IPAttribution bar) | ✅ |
 | 10 | Asset Marketplace (discovery, pagination, genre filtering, create page fix) | ✅ |
-| 11 | Asset Derivation (post-mint extraction, PATCH handler, Story Protocol derivative path) | ✅ |
+| 11 | Asset Derivation (post-mint extraction, PATCH handler) | ✅ |
 | 12 | PL Genesis (Lit Protocol secret panels, NFT-gated UI, Hypercerts background enrichment) | ✅ |
 | 13 | Wordle Revival + Farcaster (Wordle free tier, Farcaster cast sharing, daily homepage section) | ✅ |
 | 18–21 | Identity, Resonance & Embeds (progressive identity, magic link, `/studio` free demo, Resonance dashboard, embed player) | ✅ |
@@ -368,7 +340,6 @@ The first-run creation flow follows the [Creation UX Contract](./CREATION_UX.md)
 | Game Generation | ✅ Production (cross-instance `GenerationLock` dedup, `paymentId` unique) |
 | Asset Workshop | ✅ Production (full WYSIWYG editor) |
 | NFT Minting | ✅ Production (Base mainnet) |
-| Story Protocol IP | ✅ Testnet (Aeneid) |
 | Inco Vault | ✅ Production (encrypted modifier deck + secret panels) |
 | Image Generation | ✅ Production (multi-provider fallback) |
 | Payments | ✅ Production (5 writer coins, standardized credit spend) |
@@ -384,7 +355,7 @@ The first-run creation flow follows the [Creation UX Contract](./CREATION_UX.md)
 - **Media Expansion**: Directed cut (`reference-to-video`), animated BasePaint canvas for Daily, social sharing integrations, animated panel transitions
 - **Advanced Gameplay**: Branching narratives with consequences, character stats, multiplayer story contributions, persistent game worlds
 - **Farcaster Integration**: Webhook notifications, push notifications for new games from followed writers, `NotificationToken` model
-- **Story Protocol Mainnet**: Deploy when available on Base, multi-asset derivative games, royalty automation, cross-chain IP verification
+- Multi-asset derivative games, royalty automation, cross-chain IP verification
 - **Platform Scaling**: Redis caching, BullMQ background jobs, database read replicas, CDN for static assets, APM
 
 ## Past Hackathons (Archived)

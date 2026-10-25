@@ -82,7 +82,7 @@ export function WriterCoinSelector({ onSelect }: WriterCoinSelectorProps) {
                     </div>
                 ) : (
                     <p className="text-[10px] text-muted-foreground px-1">
-                        Hover a writer to see details. Each game is attributed on-chain via Story Protocol.
+                        Hover a writer to see details. Plays and mints route a share to the writer automatically.
                     </p>
                 )}
             </div>

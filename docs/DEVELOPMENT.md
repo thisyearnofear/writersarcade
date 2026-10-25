@@ -100,8 +100,6 @@ NETMIND_API_KEY="..."             # Secondary image fallback
 
 # Blockchain
 BASE_RPC_URL="https://mainnet.base.org"
-STORY_RPC_URL="https://aeneid.storyrpc.io"
-STORY_WALLET_KEY="0x..."          # For server-side Story txs
 PINATA_JWT="pina_..."             # Optional — fallback for durable media bytes (must be a JWT, not an API key)
 IPFS_GATEWAY="https://gateway.pinata.cloud"
 GROVE_CHAIN_ID="8453"             # Grove (Lens storage) — primary for media bytes; mainnet id required for retention
@@ -164,7 +162,6 @@ lib/                    # Cross-cutting infrastructure
 ├── generation-lock.ts  # Cross-instance Postgres-backed generation lock
 ├── ai-cache.ts         # AI generation caching + cross-instance dedup
 ├── latency-monitor.ts  # P95 latency monitoring
-├── story-protocol.*    # Story Protocol SDK
 ├── inco.ts             # Inco confidential compute (secret panels)
 ├── daily-challenge.ts  # Daily challenge server helpers
 ├── hypercerts.*        # Impact certificates
@@ -229,12 +226,7 @@ Runs `pnpm type-check` before every push. Bypass with `git push --no-verify`.
 - `POST /api/assets/generate` - Generate assets from article
 - `POST /api/assets/save` - Save asset draft
 - `GET /api/assets/marketplace` - Browse marketplace assets
-- `POST /api/assets/[id]/register` - Register asset as Story Protocol IP
 
-### Story Protocol
-- `POST /api/story/register` - Client-side IP registration
-- `GET /api/story/royalties` - Check royalty balances
-- `POST /api/story/claim` - Claim derivative royalties
 
 ### Image Generation
 - `POST /api/generate-image` - Multi-provider image generation (Venice → Modal → Netmind)

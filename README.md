@@ -20,7 +20,6 @@ The shared daily ritual: a featured writer's Paragraph article staged inside tod
 - **Creative Control**: Regenerate panel images and edit narrative text before minting
 - Mint games as NFTs on Base; browse and play recent games
 - Pay with writer coins (ERC-20 on Base) using RainbowKit/WalletConnect, or buy credits with fiat
-- **Story Protocol Integration**: Register games and assets as IP with configurable licenses
 - **Inco Integration**: NFT-gated secret panels + Daily Challenge modifier deck on Base mainnet
 - **Video Animation**: Post-completion hero clip + whole-comic montage upsell (Runware/Luma/fal/Replicate)
 - **Panel Narration**: ElevenLabs TTS with cinematic auto-play
@@ -67,7 +66,7 @@ See [docs/DEVELOPMENT.md](./docs/DEVELOPMENT.md) for full setup.
 - **Web3**: wagmi + viem + RainbowKit / WalletConnect
 - **Backend**: Next.js API routes + Prisma + PostgreSQL
 - **AI**: OpenAI/Anthropic (ai-sdk); Venice AI + Modal + Netmind (images); Runware + Luma + fal + Replicate (hero video fallbacks)
-- **IP**: Story Protocol (testnet) + IPFS (Pinata primary, Grove metadata fallback; Pinata binary storage required for durable hero video)
+- **Storage**: IPFS (Pinata primary, Grove metadata fallback; Pinata binary storage required for durable hero video)
 - **Access Control**: Inco (`@inco/lightning-js` + `@inco/lightning`) — secret panels, Wordle answers, daily challenge sessions
 - **Impact**: Hypercerts (AT Protocol) — deprecated / not actively maintained
 
@@ -95,7 +94,6 @@ Revenue splits enforced on-chain, configurable per writer coin.
 
 - **Live**: https://writersarcade.vercel.app/
 - **Contracts**: Base mainnet (verified on Sourcify)
-- **Story Protocol**: Aeneid testnet (IP registration)
 
 ---
 

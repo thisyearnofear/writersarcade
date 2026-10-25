@@ -1,3 +1,4 @@
+import { getPlatformSignerKey } from '@/lib/platform-signer'
 /**
  * writersarcade Configuration & Feature Flags
  * Centralized environment and feature management
@@ -86,17 +87,6 @@ export const config = {
     groveChainId: Number.parseInt(process.env.GROVE_CHAIN_ID || '8453', 10),
   },
 
-  /**
-   * Story Protocol Configuration
-   * Enables/disables Story Protocol integration for IP registration
-   */
-  storyProtocol: {
-    enabled:
-      process.env.NEXT_PUBLIC_STORY_ENABLED !== 'false' &&
-      process.env.STORY_PROTOCOL_ENABLED !== 'false',
-    rpcUrl: process.env.STORY_RPC_URL || 'https://aeneid.storyrpc.io',
-    chainId: process.env.STORY_CHAIN_ID ? parseInt(process.env.STORY_CHAIN_ID) : 1315,
-  },
 
   /**
    * Payment Verification
@@ -143,7 +133,7 @@ export const config = {
   dailyChallenge: {
     enabled: features.dailyChallenge,
     vaultAddress: process.env.NEXT_PUBLIC_DAILY_CHALLENGE_VAULT_ADDRESS || '',
-    managerPrivateKey: process.env.DAILY_CHALLENGE_MANAGER_PRIVATE_KEY || process.env.STORY_PLATFORM_PRIVATE_KEY || '',
+    managerPrivateKey: getPlatformSignerKey(),
     /** Featured article URL for dual-source Daily (plot). Empty = BasePaint-only / auto-pick. */
     featuredArticleUrl: (process.env.DAILY_CHALLENGE_FEATURED_ARTICLE_URL || '').trim(),
     /** Optional display title when article fetch is skipped or fails. */
@@ -205,11 +195,6 @@ export function validateConfig(): void {
       errors.push('AUTH_SECRET environment variable (>= 16 chars) is required in production for session signing')
     }
 
-    // Production requires Story Protocol SPG contract
-    const spgContract = process.env.NEXT_PUBLIC_STORY_SPG_CONTRACT
-    if (!spgContract) {
-      errors.push('NEXT_PUBLIC_STORY_SPG_CONTRACT environment variable is required in production for IP registration')
-    }
   }
 
   // Fail fast if any critical config is missing
@@ -220,7 +205,6 @@ export function validateConfig(): void {
   console.log('[Config] Environment:', {
     environment: process.env.NODE_ENV,
     ipfsEnabled: !config.ipfs.enableMock,
-    storyProtocolEnabled: config.storyProtocol.enabled,
   })
 }
 
@@ -294,14 +278,6 @@ export const logger = {
     logger.info(`[Payment] ${action}`, context)
   },
 
-  /**
-   * Story Protocol-specific logging
-   */
-  storyProtocol: (action: string, context: LogContext) => {
-    if (config.storyProtocol.enabled) {
-      logger.info(`[Story Protocol] ${action}`, context)
-    }
-  },
 
   /**
    * IPFS-specific logging

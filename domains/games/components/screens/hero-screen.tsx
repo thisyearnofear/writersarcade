@@ -246,7 +246,7 @@ export function HeroScreen({
                 </p>
 
                 <div className="text-xs text-muted-foreground bg-card p-3 rounded border border-border">
-                  Funds are automatically split between the Game Creator and the Original Article Author via Story Protocol.
+                  Funds are automatically split between the Game Creator and the Original Article Author.
                 </div>
 
                 <div className="flex gap-3 pt-2">

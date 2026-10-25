@@ -3,12 +3,12 @@ import Link from 'next/link'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
-import { Coins, Network, ShieldCheck, ArrowRight, Sparkles } from 'lucide-react'
+import { Coins, Network, ArrowRight, Sparkles } from 'lucide-react'
 import { OwnershipExplainer } from '@/components/ownership/ownership-explainer'
 
 export const metadata: Metadata = {
   title: 'How the chains work — WritersArcade',
-  description: 'WritersArcade uses Mezo, Base, and Story Protocol. Here is what each one does, and which one powers each part of the experience.',
+  description: 'WritersArcade uses Mezo and Base. Here is what each one does, and which one powers each part of the experience.',
 }
 
 export default function ChainsLearnPage() {
@@ -29,17 +29,16 @@ export default function ChainsLearnPage() {
                 How the chains work
               </p>
               <h1 className="font-serif text-3xl sm:text-4xl font-bold text-foreground mb-4 leading-tight">
-                WritersArcade runs on three chains. Each one does what it&apos;s best at.
+                WritersArcade runs on two chains. Each one does what it&apos;s best at.
               </h1>
               <p className="text-muted-foreground leading-relaxed max-w-2xl">
                 You don&apos;t need to pick one. The app auto-routes your action to the right chain, and you only sign when your wallet is needed.
               </p>
             </header>
 
-            <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-12">
+            <section className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-12">
               <ChainOverview color="amber" name="Mezo" role="Frictionless onramp" blurb="Pay for any game with MUSD, a Bitcoin-backed stablecoin. No writer token needed." />
               <ChainOverview color="blue" name="Base" role="Writer royalties" blurb="Mint games as NFTs. Writer coins (social tokens) flow back to the original writer." />
-              <ChainOverview color="emerald" name="Story Protocol" role="On-chain IP" blurb="Register your game as intellectual property. Pool it with your other works to earn from derivatives." />
             </section>
 
             <SectionTable />
@@ -47,8 +46,8 @@ export default function ChainsLearnPage() {
             <section className="mb-12">
               <OwnershipExplainer variant="full" />
               <p className="text-xs text-muted-foreground mt-4 max-w-2xl">
-                Ownership flows in one direction: mint first on the chain you paid on, register as IP
-                on Story Protocol when you want provenance, then collect royalties from your pool.
+                Ownership flows in one direction: mint first on the chain you paid on,
+                then earn a share every time the game gets played or funded.
               </p>
             </section>
 
@@ -94,9 +93,6 @@ function SectionTable() {
           <tbody className="divide-y divide-border">
             <Row action="Pay to generate a game" chain="Mezo (Matsnet testnet)" token="MUSD (default) or a writer coin (Base) if the author has one" />
             <Row action="Mint a game as an NFT" chain="Base (mainnet) or Mezo (Matsnet)" token="MUSD on Mezo, or the writer coin on Base" />
-            <Row action="Register the game as IP" chain="Story Protocol (Aeneid testnet)" token="Free (gas paid by the platform)" />
-            <Row action="Pool your IPs for royalties" chain="Story Protocol (Aeneid testnet)" token="Free (gas paid by the platform)" />
-            <Row action="Claim royalties from your pool" chain="Story Protocol (Aeneid testnet)" token="MUSD / WIP / native (per pool config)" />
             <Row action="Play a free Wordle" chain="— (no wallet, no chain)" token="Free" />
           </tbody>
         </table>
@@ -128,8 +124,8 @@ function SectionRouting() {
           All gameplay happens off-chain. No transactions, no gas.
         </p>
         <p>
-          <span className="font-medium text-foreground">4. You mint and (optionally) register IP.</span>{' '}
-          Minting mints an NFT on the same chain you paid with. Registering IP moves you to Story Protocol and creates a writer-specific royalty pool — your first game creates the pool, every later game joins it.
+          <span className="font-medium text-foreground">4. You mint.</span>{' '}
+          Minting mints an NFT on the same chain you paid with. Every play or mint routes the writer's share to them automatically.
         </p>
       </div>
     </section>
@@ -140,12 +136,11 @@ function SectionTradeoffs() {
   return (
     <section className="mb-12">
       <h2 className="text-sm font-semibold uppercase tracking-widest text-foreground mb-4">
-        Why three chains, honestly
+        Why two chains, honestly
       </h2>
       <div className="space-y-4">
         <Tradeoff name="Mezo" icon={<Coins className="w-4 h-4" />} color="amber" pros={['Cheap for any user — no writer token required', 'Bitcoin-backed stablecoin avoids writer-coin liquidity issues', 'Boosts for MEZO holders funded by the platform']} cons={['Testnet only at the moment — mainnet launch tracked separately']} />
         <Tradeoff name="Base" icon={<Network className="w-4 h-4" />} color="blue" pros={['Where the writer coins already live — no bridge, no friction', 'L2 finality for NFTs is fast and cheap', 'Coin holders are the people who actually want to play']} cons={['Only 5 launch writers have coins today', 'Users without a writer coin must bridge or use MUSD']} />
-        <Tradeoff name="Story Protocol" icon={<ShieldCheck className="w-4 h-4" />} color="emerald" pros={['Real on-chain IP — license terms and royalty splits are enforceable', 'Pool model: every game you register joins your writer royalty pool', 'Platform pays gas so registration feels free']} cons={['Testnet only — production mainnet launch is environment-gated', 'One extra wallet signature for creators who register']} />
       </div>
     </section>
   )
@@ -158,10 +153,8 @@ function SectionFaq() {
         Common questions
       </h2>
       <div className="space-y-3">
-        <Faq q="Do I need to hold every chain's token?" a="No. The app switches chains for you. You only need the token for the chain you choose to pay on — MUSD on Mezo, or the writer coin on Base. Story Protocol operations are gas-sponsored by the platform." />
+        <Faq q="Do I need to hold every chain's token?" a="No. The app switches chains for you. You only need the token for the chain you choose to pay on — MUSD on Mezo, or the writer coin on Base." />
         <Faq q="Can I pay with MUSD for a writer who has a coin?" a="Yes. When the URL matches a known writer, the form shows a 'Use MUSD instead' link. Your MUSD still splits to the writer per the contract terms." />
-        <Faq q="What happens if I skip IP registration?" a="The game still mints as an NFT and you still earn from plays. You just don't get the royalty-pool benefits (licensing, derivatives, even distribution across your works)." />
-        <Faq q="Why does Story Protocol run on testnet?" a="We're aligned with Story's Aeneid testnet for the current cycle. Mainnet configuration is environment-gated and will flip when Story's mainnet is ready for our integration." />
       </div>
     </section>
   )

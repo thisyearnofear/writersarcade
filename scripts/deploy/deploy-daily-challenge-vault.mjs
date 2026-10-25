@@ -48,11 +48,11 @@ const fileVars = fs.existsSync(envPath)
   : {}
 const vars = { ...process.env, ...fileVars }
 
-const deployerKey = vars.MEZO_DEPLOYER_PRIVATE_KEY || vars.STORY_PLATFORM_PRIVATE_KEY
+const deployerKey = vars.MEZO_DEPLOYER_PRIVATE_KEY || vars.PLATFORM_SIGNER_PRIVATE_KEY || vars.STORY_PLATFORM_PRIVATE_KEY
 const managerKey =
   vars.INCO_VAULT_MANAGER_PRIVATE_KEY ||
   vars.DAILY_CHALLENGE_MANAGER_PRIVATE_KEY ||
-  vars.STORY_PLATFORM_PRIVATE_KEY ||
+  vars.PLATFORM_SIGNER_PRIVATE_KEY || vars.STORY_PLATFORM_PRIVATE_KEY ||
   deployerKey
 
 if (!deployerKey) throw new Error('Missing MEZO_DEPLOYER_PRIVATE_KEY or STORY_PLATFORM_PRIVATE_KEY')

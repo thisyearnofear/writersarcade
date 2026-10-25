@@ -13,7 +13,6 @@ import {
   FinaleCinematicView,
 } from './finale-video-screen'
 import { useNarration } from './finale-narration'
-import { IPRegistration } from '@/components/story/IPRegistration'
 import type { GameCreator, GameAuthor } from '@/lib/services/ipfs-metadata.service'
 import { shouldShowFeedbackPrompt } from './feedback-prompt'
 import { downloadComicAsImage } from './finale-download'
@@ -34,8 +33,6 @@ export interface ComicBookFinalePanelData {
   audioUrl?: string | null  // Audio narration URL
 }
 
-/** Story Protocol UI is opt-in — same flag semantics as Web3Provider. */
-const STORY_IP_UI_ENABLED = process.env.NEXT_PUBLIC_STORY_ENABLED !== 'false'
 
 interface ComicBookFinaleProps {
   gameId: string
@@ -46,10 +43,8 @@ interface ComicBookFinaleProps {
   panels: ComicBookFinalePanelData[]
   onBack: () => void
   onMint: (panelData: ComicBookFinalePanelData[], metadata?: { nftMetadataUri: string; gameMetadataUri: string; creator: GameCreator; author: GameAuthor }) => void | Promise<void>
-  onStoryRegistrationComplete?: (result: { ipId: string; txHash: string }) => void
   isMinting?: boolean
   nftMinted?: boolean
-  storyIpId?: string
   // Attribution data
   creatorWallet: string
   articleUrl: string
@@ -86,7 +81,7 @@ interface ComicBookFinaleProps {
 }
 
 export function ComicBookFinale({
-  gameId,
+  gameId: _gameId,
   gameSlug,
   gameTitle,
   genre,
@@ -94,10 +89,8 @@ export function ComicBookFinale({
   panels,
   onBack,
   onMint,
-  onStoryRegistrationComplete,
   isMinting = false,
-  nftMinted = false,
-  storyIpId,
+  nftMinted: _nftMinted = false,
   creatorWallet,
   articleUrl,
   articleTitle,
@@ -128,7 +121,6 @@ export function ComicBookFinale({
 }: ComicBookFinaleProps) {
   const [currentPanelIndex, setCurrentPanelIndex] = useState(0)
   const [viewMode, setViewMode] = useState<'single' | 'grid' | 'nft-preview' | 'cinematic'>('grid')
-  const [showIPRegistration, setShowIPRegistration] = useState(false)
   const [showFeedback, setShowFeedback] = useState(false)
   const [showVideoStyleModal, setShowVideoStyleModal] = useState(false)
 
@@ -196,11 +188,6 @@ export function ComicBookFinale({
 
   const currentPanel = panels[currentPanelIndex]
   const totalPanels = panels.length
-
-  // Story Protocol IP registration is opt-in (Base-first product); the
-  // section never auto-opens — players reach it via the advanced link.
-  const ipRegistrationReady =
-    STORY_IP_UI_ENABLED && (nftMinted || showIPRegistration) && !storyIpId
 
   // Fetch credits once for the auto-offer — cheap, silent on failure.
   const videoStatusForOffer = video.status
@@ -528,9 +515,6 @@ export function ComicBookFinale({
           onConnectWallet={onConnectWallet}
           isFunding={isFunding}
           fundCostLabel={fundCostLabel}
-          ipRegistrationReady={ipRegistrationReady}
-          showIPRegistration={showIPRegistration}
-          onShowIPRegistration={() => setShowIPRegistration(true)}
           onOpenVideoStyleModal={() => setShowVideoStyleModal(true)}
           onWatchCinematic={() => setViewMode('cinematic')}
         />
@@ -548,50 +532,6 @@ export function ComicBookFinale({
               void video.start()
             }}
           />
-        )}
-
-        {/* Story Protocol IP Registration */}
-        {ipRegistrationReady && showIPRegistration && (
-          <div id="game-ip-registration" className="border-t border-white/10 p-4 md:p-8 bg-gradient-to-b from-black/40 via-black to-black"
-            style={{ boxShadow: `inset 0 1px 0 ${primaryColor}15` }}
-          >
-            <div className="max-w-6xl mx-auto">
-              <div className="mb-4">
-                <h3 className="text-sm md:text-base font-semibold text-white flex items-center gap-2 mb-1">
-                  <span>📜</span> Register as IP Asset (Optional)
-                </h3>
-                <p className="text-xs md:text-sm text-muted-foreground">Track ownership & set royalty terms on Story Protocol</p>
-              </div>
-              <IPRegistration
-                game={{
-                  gameId,
-                  title: gameTitle,
-                  description: `Interactive ${genre.toLowerCase()} comic with ${totalPanels} panels`,
-                  articleUrl: articleUrl,
-                  gameCreatorAddress: creatorWallet,
-                  authorParagraphUsername: authorParagraphUsername,
-                  authorWalletAddress: authorWallet || '',
-                  genre: genre.toLowerCase() as 'horror' | 'comedy' | 'mystery',
-                  difficulty: difficulty.toLowerCase() as 'easy' | 'hard',
-                }}
-                onRegistrationComplete={async (result) => {
-                  const response = await fetch(`/api/games/${gameSlug}/story-registration`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      walletAddress: creatorWallet,
-                      storyIpId: result.ipId,
-                      transactionHash: result.txHash,
-                    }),
-                  })
-                  if (!response.ok) {
-                    throw new Error('Story registration succeeded, but saving it to the game failed.')
-                  }
-                  onStoryRegistrationComplete?.({ ipId: result.ipId, txHash: result.txHash })
-                }}
-              />
-            </div>
-          </div>
         )}
 
         {/* Post-game feedback modal */}

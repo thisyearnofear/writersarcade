@@ -364,7 +364,6 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Phase 11: Extract reusable assets from the minted game (non-blocking)
-    // Returns asset IDs so the client can register derivative IPs on Story Protocol
     const extractedAssetIds = await GameDatabaseService.extractAndSaveGameAssets(gameId)
 
     // After successful mint, attempt to store the secret panel on-chain via Inco.
@@ -392,8 +391,6 @@ export async function PATCH(request: NextRequest) {
         transactionHash,
         status: 'minted',
         message: 'NFT minting complete!',
-        // Derivative IP wiring: client should call storyClient.ipAsset.registerDerivativeIp()
-        // using the game's Story Protocol IP ID (registered separately via IPRegistrationFlow)
         extractedAssetIds,
       },
     })

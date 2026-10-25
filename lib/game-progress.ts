@@ -7,13 +7,11 @@ export type GameProgressPhase =
   | 'completed'
   | 'secret_ready'
   | 'minted'
-  | 'ip_registered'
 
 export interface GameProgressInput extends SecretPanelGameFields {
   playCount?: number
   lastPlayedAt?: Date | string | null
   nftTokenId?: string | null
-  storyIpId?: string | null
   hasDailySession?: boolean
 }
 
@@ -31,13 +29,10 @@ export function getGameProgress(game: GameProgressInput): GameProgress {
   const playCount = game.playCount ?? 0
   const hasDailySession = game.hasDailySession ?? false
   const minted = Boolean(game.nftTokenId)
-  const ipRegistered = Boolean(game.storyIpId)
 
   let phase: GameProgressPhase = 'draft'
 
-  if (ipRegistered) {
-    phase = 'ip_registered'
-  } else if (minted) {
+  if (minted) {
     phase = 'minted'
   } else if (secretStatus.kind === 'inco' || secretStatus.kind === 'legacy') {
     phase = 'secret_ready'
@@ -49,15 +44,13 @@ export function getGameProgress(game: GameProgressInput): GameProgress {
 
   let chipLabel = 'Ready to play'
   if (hasDailySession) chipLabel = 'Daily run active'
-  else if (phase === 'ip_registered') chipLabel = 'IP registered'
   else if (phase === 'minted') chipLabel = 'Minted'
   else if (phase === 'secret_ready') chipLabel = 'Secret epilogue ready'
   else if (phase === 'played') chipLabel = 'Played'
   else chipLabel = 'Not played yet'
 
   let nextStepLabel: string | null = 'Play your story'
-  if (phase === 'ip_registered') nextStepLabel = null
-  else if (phase === 'minted') nextStepLabel = 'Register IP (optional)'
+  if (phase === 'minted') nextStepLabel = null
   else if (phase === 'secret_ready' && !minted) nextStepLabel = 'Mint to own & unlock epilogue'
   else if (phase === 'played' && secretStatus.kind === 'pending') nextStepLabel = 'Mint to store secret on-chain'
   else if (phase === 'played') nextStepLabel = 'Play again or mint'

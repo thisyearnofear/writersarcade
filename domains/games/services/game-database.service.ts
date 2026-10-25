@@ -211,11 +211,7 @@ export class GameDatabaseService {
 
           gamesFromAssets: {
             include: {
-              asset: {
-                include: {
-                  storyRegistration: true
-                }
-              }
+              asset: true
             }
           }
         }
@@ -342,7 +338,6 @@ export class GameDatabaseService {
               { artifactPanels: { some: {} } },
               { nftTokenId: { not: null } },
               { nftTransactionHash: { not: null } },
-              { storyIpId: { not: null } },
             ],
           } : {},
         ]
@@ -629,7 +624,7 @@ export class GameDatabaseService {
       articleContext: prismaGame.articleContext || undefined,
       writerCoinId: prismaGame.writerCoinId || (prismaGame as { payment?: { writerCoinId?: string | null } | null }).payment?.writerCoinId || undefined,
       difficulty: prismaGame.difficulty || undefined,
-      // Attribution data - preserves source material author for NFT & Story Protocol
+      // Attribution data - preserves source material author for NFT metadata
       ownerWallet: (prismaGame as { ownerWallet?: string | null }).ownerWallet || undefined,
       ownershipSource: (prismaGame as { ownershipSource?: Game['ownershipSource'] | null }).ownershipSource || undefined,
       creatorWallet: prismaGame.creatorWallet || undefined,
@@ -649,9 +644,6 @@ export class GameDatabaseService {
       savedPanels,
       artifactManifestUri: gameWithArtifacts.artifactManifestUri || undefined,
       artifactSavedAt: gameWithArtifacts.artifactSavedAt || undefined,
-      storyIpId: (prismaGame as { storyIpId?: string }).storyIpId || undefined,
-      storyRegistrationTxHash: (prismaGame as { storyRegistrationTxHash?: string }).storyRegistrationTxHash || undefined,
-      storyRegisteredAt: (prismaGame as { storyRegisteredAt?: Date }).storyRegisteredAt || undefined,
       cdrReadConditionType: (prismaGame as { cdrReadConditionType?: string }).cdrReadConditionType || undefined,
       cdrVaultedAt: (prismaGame as { cdrVaultedAt?: Date }).cdrVaultedAt || undefined,
       wordleAnswerVaultUuid: prismaGame.wordleAnswerVaultUuid || undefined,
@@ -909,7 +901,7 @@ export class GameDatabaseService {
    * Extract reusable assets from a minted game and persist them.
    * Creates one Asset record per extracted component (character, plot, world)
    * derived from the game's title, description, genre, and article context.
-   * Returns the saved asset IDs for downstream Story Protocol wiring.
+   * Returns the saved asset IDs for downstream minting wiring.
    */
   static async extractAndSaveGameAssets(gameId: string): Promise<string[]> {
     try {

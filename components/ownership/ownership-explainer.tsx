@@ -1,9 +1,9 @@
 'use client'
 
-import { BadgeCheck, Network, Coins, ArrowRight } from 'lucide-react'
+import { BadgeCheck, Coins, ArrowRight } from 'lucide-react'
 
 /**
- * Ownership-explained primer: connects Mint → IP → Royalties in one place.
+ * Ownership-explained primer: connects Mint → Earn in one place.
  *
  * Full variant renders three benefit-led cards (learn page). Compact variant
  * renders a horizontal strip (finale disclosure, where the money decision
@@ -19,18 +19,11 @@ const STEPS = [
     body: 'Mint on Base to own a verifiable collectible of your story — and unlock the secret epilogue.',
   },
   {
-    icon: Network,
-    step: '2',
-    title: 'Register as IP',
-    headline: 'Make it provably yours',
-    body: 'Optional: register on Story Protocol so ownership and license terms live on-chain.',
-  },
-  {
     icon: Coins,
-    step: '3',
-    title: 'Earn royalties',
-    headline: 'Get paid for remixes',
-    body: 'Every derivative and remix routes a share into your writer royalty pool. Claim anytime from your dashboard.',
+    step: '2',
+    title: 'Earn',
+    headline: 'Get paid for plays',
+    body: 'Players fund your game in your writer coin — every play or mint routes a share to you automatically.',
   },
 ] as const
 

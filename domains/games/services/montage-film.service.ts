@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/config'
-import { persistMediaBuffer } from '@/domains/story/services/media-upload'
+import { persistMediaBuffer } from '@/lib/storage/media-upload'
 
 /**
  * Assemble the per-panel clips into one continuous film.

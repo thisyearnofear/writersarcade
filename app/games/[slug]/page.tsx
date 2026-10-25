@@ -3,7 +3,6 @@ import { GameDatabaseService } from '@/domains/games/services/game-database.serv
 import { GameArtifactView } from '@/domains/games/components/game-artifact-view'
 import { ImageGenerationService } from '@/domains/games/services/image-generation.service'
 import { WordleService } from '@/domains/games/services/wordle.service'
-import { IPAttribution } from '@/domains/games/components/ip-attribution'
 import { GameOwnershipProgress } from '@/domains/games/components/game-ownership-progress'
 import { PlayWelcomeCoach } from '@/components/onboarding/play-welcome-coach'
 import { getSecretPanelStatus, formatSecretPanelDetail } from '@/lib/secret-panel-status'
@@ -166,10 +165,6 @@ export default async function GamePage({ params, searchParams }: GamePageProps) 
   }
 
   // Extract and flatten assets for the attribution component
-   
-  type LinkedAsset = { id: string; title: string; type: string; storyRegistration?: { storyIpId: string; status: string } | null }
-  const gameWithAssets = game as typeof game & { gamesFromAssets?: { asset: LinkedAsset }[] }
-  const linkedAssets = gameWithAssets.gamesFromAssets?.map((relation) => relation.asset) || []
 
   return (
     <div className="min-h-screen bg-black">
@@ -191,11 +186,6 @@ export default async function GamePage({ params, searchParams }: GamePageProps) 
               </div>
             )}
           </div>
-        </div>
-      )}
-      {linkedAssets.length > 0 && (
-        <div className="max-w-4xl mx-auto px-4 pt-6">
-          <IPAttribution assets={linkedAssets} compact />
         </div>
       )}
       <PlayWelcomeCoach gameSlug={game.slug} />

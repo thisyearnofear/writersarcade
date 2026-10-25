@@ -143,8 +143,6 @@ const nextConfig = {
       { protocol: 'https', hostname: '*.paragraph.xyz' },
       { protocol: 'https', hostname: 'paragraph.xyz' },
       { protocol: 'https', hostname: '*.vercel.app' },
-      // Story Protocol media
-      { protocol: 'https', hostname: '*.storyprotocol.xyz' },
     ],
   },
   typescript: {

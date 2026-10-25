@@ -10,7 +10,7 @@ import {
 } from '@/domains/games/services/video-generation.service'
 import { CREDITS_CONFIG } from '@/lib/writer-coins'
 import { config } from '@/lib/config'
-import { persistMediaUrl } from '@/domains/story/services/media-upload'
+import { persistMediaUrl } from '@/lib/storage/media-upload'
 import { refundPanelCharge } from '@/domains/games/services/video-charge.service'
 
 const COST = CREDITS_CONFIG.cost['animate-panel']

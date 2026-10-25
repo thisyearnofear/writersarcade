@@ -72,6 +72,27 @@ gh auth switch --user thisyearnofear
 git -c credential.helper="!gh auth git-credential" push origin main
 ```
 
+## 🪦 Story Protocol removed (Oct 2026)
+
+Story Protocol rebranded to DATA Foundation / DATA Network (June 2026, AI-data
+pivot) and was never used here (0 registrations in prod). All app code was
+removed. Leftovers by design: `story*` columns + `AssetStoryRegistration` in
+`schema.prisma` (additive-migration rule — do not drop), and
+`STORY_PLATFORM_PRIVATE_KEY`, which is the **live platform signer key in
+Vercel prod** — read it only via `getPlatformSignerKey()` in
+`lib/platform-signer.ts` (`PLATFORM_SIGNER_PRIVATE_KEY` is the canonical name).
+`@story-protocol/core-sdk` is still in package.json but unimported: removing
+it needs a lockfile regen that pnpm 12's exotic-subdep check blocks — don't
+work around it by disabling `blockExoticSubdeps`.
+
+## ⛓️ Mezo network switch
+
+`NEXT_PUBLIC_MEZO_NETWORK=testnet|mainnet` (default testnet) drives the MUSD
+chain, token, explorer and Passport BTC wallets (`MEZO_NETWORK` in
+`lib/wallet/chains.ts`, `getActiveMusdConfig()` in `lib/writer-coins.ts`).
+MUSD-for-generate needs that network's `MezoPaymentSplitter`; without it the
+selector disables MUSD and users top up credits with MUSD instead.
+
 ## 📈 Credit economics (current pricing, margins)
 
 Peg: **1 credit = $0.10**. `CREDITS_CONFIG.cost` (in `lib/writer-coins.ts`) is the

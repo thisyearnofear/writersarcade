@@ -11,7 +11,7 @@ import type { PaymentAction } from '@/domains/payments/types'
 import { AlertCircle, ArrowRightLeft } from 'lucide-react'
 import { PaymentTokenSelector } from './PaymentTokenSelector'
 import { trackEvent } from '@/services/analytics'
-import { BASE_MAINNET_CHAIN_ID, MEZO_TESTNET_CHAIN_ID, getChainInfo } from '@/lib/wallet/chains'
+import { BASE_MAINNET_CHAIN_ID, MEZO_ACTIVE_CHAIN_ID, MEZO_NETWORK, getChainInfo } from '@/lib/wallet/chains'
 import type { PaymentResult } from '@/domains/payments/strategies/payment-strategy'
 
 interface PaymentOptionProps {
@@ -73,7 +73,7 @@ export function PaymentOption({
 
   const isMUSD = selectedToken.type === 'musd'
   const isCredits = selectedToken.type === 'credits'
-  const targetChainId = isMUSD ? MEZO_TESTNET_CHAIN_ID : BASE_MAINNET_CHAIN_ID
+  const targetChainId = isMUSD ? MEZO_ACTIVE_CHAIN_ID : BASE_MAINNET_CHAIN_ID
   const isWrongChain = !isCredits && Boolean(chainId && chainId !== targetChainId)
   const currentChain = getChainInfo(chainId)
 
@@ -119,7 +119,7 @@ export function PaymentOption({
 
   const otherToken: PaymentToken = isCredits ? writerCoinToken
     : isMUSD ? writerCoinToken
-    : { type: 'musd', network: 'testnet' }
+    : { type: 'musd', network: MEZO_NETWORK }
 
   return (
     <div className="space-y-4">

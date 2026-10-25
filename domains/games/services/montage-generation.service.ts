@@ -5,7 +5,7 @@ import {
   VideoGenerationService,
   type VideoStyle,
 } from '@/domains/games/services/video-generation.service'
-import { persistMediaUrl } from '@/domains/story/services/media-upload'
+import { persistMediaUrl } from '@/lib/storage/media-upload'
 import { generateHeroStill } from '@/domains/games/services/video-hero-still.service'
 import { assembleMontageFilm } from '@/domains/games/services/montage-film.service'
 import type { Game, GameArtifactPanel } from '@prisma/client'

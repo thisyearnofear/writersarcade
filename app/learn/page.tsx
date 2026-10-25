@@ -14,7 +14,7 @@ const PAGES = [
     href: '/learn/chains',
     icon: Network,
     title: 'How the chains work',
-    blurb: 'Mezo, Base, and Story Protocol — what each one does, and which one powers each part of the experience.',
+    blurb: 'Mezo and Base — what each one does, and which one powers each part of the experience.',
   },
 ]
 

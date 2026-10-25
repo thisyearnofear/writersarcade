@@ -72,10 +72,6 @@ export interface Game {
   artifactManifestUri?: string
   artifactSavedAt?: Date
 
-  // Story Protocol IP registration (set after registerGameAsIP)
-  storyIpId?: string
-  storyRegistrationTxHash?: string
-  storyRegisteredAt?: Date
 
   // Story CDR lifecycle metadata
   cdrReadConditionType?: string

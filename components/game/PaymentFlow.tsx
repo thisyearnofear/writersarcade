@@ -1,5 +1,6 @@
 'use client'
 
+import { GetMusdOptions } from '@/components/mezo/GetMusdOptions'
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { useAccount, useWalletClient, useSwitchChain } from 'wagmi'
 import { type PaymentToken, getPaymentTokenConfig, CREDITS_CONFIG } from '@/lib/writer-coins'
@@ -14,12 +15,12 @@ import { PaymentStrategyFactory } from '@/domains/payments/services/payment-stra
 import { Button } from '@/components/ui/button'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import { BASE_MAINNET_CHAIN_ID, MEZO_TESTNET_CHAIN_ID, getChainInfo } from '@/lib/wallet/chains'
+import { BASE_MAINNET_CHAIN_ID, MEZO_ACTIVE_CHAIN_ID, MEZO_ACTIVE_EXPLORER, MEZO_NETWORK, getChainInfo } from '@/lib/wallet/chains'
 import { trackEvent } from '@/services/analytics'
 import { openBuyCredits } from '@/components/ui/buy-credits'
 import type { PaymentResult } from '@/domains/payments/strategies/payment-strategy'
 
-const MEZO_TESTNET_EXPLORER_URL = 'https://explorer.test.mezo.org/tx'
+const MEZO_EXPLORER_URL = `${MEZO_ACTIVE_EXPLORER}/tx`
 
 interface PaymentFlowProps {
   paymentToken: PaymentToken
@@ -204,7 +205,7 @@ export function PaymentFlow({
       ? `Pay ${costFormatted} ${tokenSymbol} and Generate`
       : `Mint as NFT (${costFormatted} ${tokenSymbol})`
 
-  const targetChainId = isMUSD ? MEZO_TESTNET_CHAIN_ID : BASE_MAINNET_CHAIN_ID
+  const targetChainId = isMUSD ? MEZO_ACTIVE_CHAIN_ID : BASE_MAINNET_CHAIN_ID
   const isWrongChain = !isCredits && Boolean(chainId && chainId !== targetChainId)
   const networkName = isMUSD ? 'mezo' : 'base'
 
@@ -316,12 +317,9 @@ export function PaymentFlow({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5 text-[10px] text-amber-200/60 font-medium tracking-wide uppercase">
                     <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                    Mezo Testnet
+                    Mezo {MEZO_NETWORK === 'mainnet' ? 'Mainnet' : 'Testnet'}
                   </div>
-                  <a href="https://faucet.test.mezo.org/" target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-[10px] text-amber-500 hover:text-amber-400 transition-colors font-semibold">
-                    MUSD Faucet <ExternalLink className="w-2.5 h-2.5" />
-                  </a>
+                  {hasInsufficientBalance && <GetMusdOptions />}
                 </div>
                 {isMezoHolder && (
                   <div className="flex items-center gap-1.5 rounded-md border border-amber-400/30 bg-amber-400/10 px-2 py-1 text-[10px] font-semibold text-amber-300">
@@ -334,6 +332,7 @@ export function PaymentFlow({
         )}
 
         {userAddress && compact && isMUSD && (
+          <>
           <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-[11px]">
             <span className="flex items-center gap-1.5 text-amber-200">
               <MUSDLogo className="w-3.5 h-3.5 text-[8px]" />
@@ -351,6 +350,8 @@ export function PaymentFlow({
               </span>
             )}
           </div>
+          {hasInsufficientBalance && <GetMusdOptions className="px-1" />}
+          </>
         )}
 
         {userAddress && !compact && isCredits && (
@@ -418,7 +419,7 @@ export function PaymentFlow({
 
       {isWrongChain && !error && (
         <p className="text-xs text-muted-foreground text-center">
-          You&apos;re on {chainId === BASE_MAINNET_CHAIN_ID ? 'Base' : chainId === MEZO_TESTNET_CHAIN_ID ? 'Mezo' : `chain ${chainId}`}.
+          You&apos;re on {chainId === BASE_MAINNET_CHAIN_ID ? 'Base' : chainId === MEZO_ACTIVE_CHAIN_ID ? 'Mezo' : `chain ${chainId}`}.
           {' '}Pick a payment token above for your current chain, or use the button above to switch networks.
         </p>
       )}
@@ -448,7 +449,7 @@ export function PaymentFlow({
           <span className="flex-1">
             Transaction confirmed! View on{' '}
             <a
-              href={`${getChainInfo(targetChainId).blockExplorer ?? MEZO_TESTNET_EXPLORER_URL}/tx/${lastTxHash}`}
+              href={`${getChainInfo(targetChainId).blockExplorer ?? MEZO_EXPLORER_URL}/tx/${lastTxHash}`}
               target="_blank" rel="noopener noreferrer"
               className="underline font-semibold hover:text-green-300 transition-colors"
             >

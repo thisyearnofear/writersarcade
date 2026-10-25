@@ -11,7 +11,7 @@ import {
 } from '@/domains/games/services/video-generation.service'
 import { CREDITS_CONFIG } from '@/lib/writer-coins'
 import { config } from '@/lib/config'
-import { persistMediaUrl } from '@/domains/story/services/media-upload'
+import { persistMediaUrl } from '@/lib/storage/media-upload'
 import { refundVideoCharge } from '@/domains/games/services/video-charge.service'
 import { generateHeroStill } from '@/domains/games/services/video-hero-still.service'
 

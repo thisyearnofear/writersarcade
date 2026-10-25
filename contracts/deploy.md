@@ -47,7 +47,7 @@ Inco vault deploy txs (Aug 2026):
 - `DailyChallengeVault.createDailyChallenge` (day 1093 initial shuffle): `0xf64513118e2c651dd76aaa9d7005849ac0eb900a5f777d36e8ed534716edf8bd`
 
 **Security**: Never commit `INCO_VAULT_MANAGER_PRIVATE_KEY`, `MEZO_DEPLOYER_PRIVATE_KEY`, or
-`STORY_PLATFORM_PRIVATE_KEY`. Store only in Vercel encrypted env vars. The deployer wallet
+`PLATFORM_SIGNER_PRIVATE_KEY`. Store only in Vercel encrypted env vars. The deployer wallet
 should not receive production traffic — grant roles to a dedicated server wallet.
 
 Deployment transaction hashes:

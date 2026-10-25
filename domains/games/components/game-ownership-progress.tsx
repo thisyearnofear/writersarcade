@@ -1,6 +1,6 @@
 'use client'
 
-import { BadgeCheck, Coins, FileText, LockKeyhole, Network, Play } from 'lucide-react'
+import { BadgeCheck, Coins, FileText, LockKeyhole, Play } from 'lucide-react'
 import type { ComponentType } from 'react'
 import { Game } from '../types'
 import { formatSecretPanelDetail } from '@/lib/secret-panel-status'
@@ -31,7 +31,6 @@ function getLifecycleSteps(game: Game): LifecycleStep[] {
   const progress = getGameProgress(game)
   const secret = progress.secretStatus
   const minted = Boolean(game.nftTransactionHash || game.nftTokenId)
-  const registered = Boolean(game.storyIpId)
   const played = progress.playCount > 0
 
   const steps: Omit<LifecycleStep, 'state'>[] = [
@@ -60,12 +59,6 @@ function getLifecycleSteps(game: Game): LifecycleStep[] {
       icon: BadgeCheck,
     },
     {
-      id: 'story',
-      label: 'Story IP',
-      detail: registered ? 'Registered on Story Protocol' : 'Optional IP registration',
-      icon: Network,
-    },
-    {
       id: 'secret',
       label: 'Secret',
       detail: formatSecretPanelDetail(secret),
@@ -76,14 +69,12 @@ function getLifecycleSteps(game: Game): LifecycleStep[] {
   const completedIds = new Set<string>(['source', 'payment'])
   if (played) completedIds.add('play')
   if (minted) completedIds.add('mint')
-  if (registered) completedIds.add('story')
   if (secret.kind === 'inco' || secret.kind === 'legacy') completedIds.add('secret')
 
   let currentId: string | null = null
   if (!played) currentId = 'play'
   else if (!minted) currentId = 'mint'
   else if (secret.kind === 'pending' || secret.kind === 'none') currentId = 'secret'
-  else if (!registered) currentId = 'story'
 
   return steps.map((step) => {
     let state: StepState = 'pending'
@@ -107,7 +98,7 @@ export function GameOwnershipProgress({ game, variant = 'full' }: GameOwnershipP
           {progress.chipLabel}
         </span>
         {steps
-          .filter((s) => ['mint', 'story', 'secret'].includes(s.id))
+          .filter((s) => ['mint', 'secret'].includes(s.id))
           .map((step) => {
             const Icon = step.icon
             return (
@@ -132,7 +123,7 @@ export function GameOwnershipProgress({ game, variant = 'full' }: GameOwnershipP
   }
 
   if (variant === 'strip') {
-    const ordered = ['play', 'secret', 'mint', 'story'] as const
+    const ordered = ['play', 'secret', 'mint'] as const
     const stripSteps = ordered
       .map((id) => steps.find((s) => s.id === id))
       .filter(Boolean) as LifecycleStep[]
