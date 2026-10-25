@@ -22,12 +22,24 @@
 
 **What it was:** Bitcoin-backed MUSD payments on Mezo Matsnet (chainId 31611): `MUSDStrategy`, atomic on-chain splits, Mezo Passport + MUSD UI, `useMezoBalance` + "MEZO Holder" badge, one-click pay flow, `/mezo/analytics` dashboard.
 
-**Contracts (Mezo Matsnet):**
-- `MezoPaymentSplitter` `0x32D0356f533cC429F94Db73f383bBb21a459E16b`
-- `MezoBoostedSplitter` v2 `0x56Ee5A3f122da00B635DdbB319708e24450aEB89`
+**Contracts (Mezo testnet, chainId 31611):**
+- `MezoPaymentSplitter` `0x32D0356f533cC429F94Db73f383bBb21a459E16b` (superseded)
+- `MezoBoostedSplitter` v2 `0x56Ee5A3f122da00B635DdbB319708e24450aEB89` (superseded)
+- `MezoBoostedSplitter` v3 `0x5eEb15C32F54B242B07B5Dc23859a3DC71D0C592` (live — `payForGeneration` + `payAndMintGame` + on-chain MEZO-holder boost)
 - `GameNFTMezo` `0xb6001687e4700843e0a04a442031525f669465e7`
 
-Code remains (`musd.strategy.ts`, MUSD/MEZO config) but the track is not live.
+**Revived for Mezo Buildathon Wave 1 (Oct 2026):**
+- `MUSDStrategy` now calls `payForGeneration` for `generate-game` (was wrongly
+  routing through `payAndMintGame` with placeholder metadata, which failed the
+  verifier's function check).
+- `PaymentFlow` surfaces the MEZO-holder boost when `useMezoBalance().isHolder`.
+- New "Buy credits with MUSD" onramp: `POST /api/credits/purchase-musd`
+  verifies a plain `MUSD.transfer(treasury, amount)` on Mezo testnet or
+  mainnet and grants 10 credits per 1 MUSD, idempotent by tx hash
+  (`Payment.transactionHash` + `CreditTransaction.externalRef`). UI lives in
+  `components/ui/buy-credits.tsx` for connected wallets.
+- Mainnet deploy: `scripts/deploy/deploy-mezo-mainnet.sh` (needs deployer
+  funded with mainnet BTC for gas).
 
 ## 4. CDR Hackathon by Story Protocol (May 27–Jun 5, 2026, $3k)
 

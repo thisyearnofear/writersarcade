@@ -14,7 +14,6 @@ const ERC20_APPROVE_ABI = [{
   outputs: [{ name: '', type: 'bool' }],
 }] as const
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const SPLITTER_PAY_FOR_GENERATION_ABI = [{
   name: 'payForGeneration',
   type: 'function',
@@ -61,12 +60,12 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as const
  *   - creatorShareBP  → game creator (mints only)
  *   - writerShareBP   → retained for writer claim
  *
- * Splitter source: contracts/src/MezoPaymentSplitter.sol
+ * Splitter source: contracts/src/MezoBoostedSplitter.sol
  *
- * NOTE: The deployed MezoBoostedSplitter only has `payAndMintGame`, so for
- * `generate-game` actions we call `payAndMintGame` with placeholder metadata.
- * Once the updated contract with `payForGeneration` is redeployed, the code
- * will switch to the dedicated function.
+ * `generate-game` calls `payForGeneration(amount)`; `mint-nft` calls
+ * `payAndMintGame(tokenURI, metadata)`. Both routes apply the on-chain
+ * MEZO-holder boost (10% more to the writer/creator share, funded by the
+ * platform share) when `isMezoHolder(sender)`.
  */
 export class MUSDStrategy implements PaymentStrategy {
   id = 'musd'
@@ -106,31 +105,38 @@ export class MUSDStrategy implements PaymentStrategy {
     })
     logger.info('[MUSDStrategy] Approval tx:', { approvalTx })
 
-    // 2. Execute splitter call
-    // For both generate-game and mint-nft, use payAndMintGame since the
-    // currently deployed MezoBoostedSplitter only has that function.
-    // The cost (1 MUSD) is the same for both actions.
+    // 2. Execute splitter call. `generate-game` goes through payForGeneration
+    // (no NFT is minted for a generation), `mint-nft` through payAndMintGame.
     step('Step 2 of 2: Confirm payment in your wallet…')
-    const tokenURI = `ipfs://writersarcade/mezo-${action}-${Date.now()}`
-    const metadata = {
-      articleUrl: '',
-      creator: sender,
-      writerCoin: musd,
-      genre: '',
-      difficulty: '',
-      createdAt: BigInt(Math.floor(Date.now() / 1000)),
-      gameTitle: action === 'mint-nft' ? 'WritersArcade Game NFT' : 'WritersArcade Game',
-    }
-
-    const txHash = await walletClient.writeContract({
-      address: splitter,
-      abi: SPLITTER_PAY_AND_MINT_ABI,
-      functionName: 'payAndMintGame',
-      args: [tokenURI, metadata],
-      account: sender,
-      chain: null,
-    })
-    logger.info(`[MUSDStrategy] payAndMintGame (${action}) tx:`, { txHash })
+    const txHash = action === 'generate-game'
+      ? await walletClient.writeContract({
+          address: splitter,
+          abi: SPLITTER_PAY_FOR_GENERATION_ABI,
+          functionName: 'payForGeneration',
+          args: [amt],
+          account: sender,
+          chain: null,
+        })
+      : await walletClient.writeContract({
+          address: splitter,
+          abi: SPLITTER_PAY_AND_MINT_ABI,
+          functionName: 'payAndMintGame',
+          args: [
+            `ipfs://writersarcade/mezo-mint-${Date.now()}`,
+            {
+              articleUrl: '',
+              creator: sender,
+              writerCoin: musd,
+              genre: '',
+              difficulty: '',
+              createdAt: BigInt(Math.floor(Date.now() / 1000)),
+              gameTitle: 'WritersArcade Game NFT',
+            },
+          ],
+          account: sender,
+          chain: null,
+        })
+    logger.info(`[MUSDStrategy] ${action === 'generate-game' ? 'payForGeneration' : 'payAndMintGame'} tx:`, { txHash })
 
     // Verify via backend (with retry — Mezo blocks may not be indexed immediately)
     step('Verifying on-chain…')

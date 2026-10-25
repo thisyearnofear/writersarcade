@@ -304,7 +304,7 @@ export const MUSD_CONFIG = {
         gameGenerationCost: 1000000000000000000n, // 1 MUSD
         mintCost: 500000000000000000n,            // 0.5 MUSD (informational; splitter currently fixes mint at 1 MUSD)
     },
-    // Mezo Mainnet MUSD token (Mezo Mainnet, chainId 30062)
+    // Mezo Mainnet MUSD token (Mezo Mainnet, chainId 31612)
     mainnet: {
         address: "0xdD468A1DDc392dcdbEf6db6e34E89AA338F9F186" as `0x${string}`,
         paymentSplitter: MEZO_MAINNET_PAYMENT_SPLITTER,
@@ -343,6 +343,16 @@ export const MEZO_CONFIG = {
     /** Writer share boost (in basis points) applied when a wallet meets `holderThreshold`. More of the payment goes to the writer. */
     holderDiscountBP: 1000, // 10% boost to writer share
 } as const
+
+/**
+ * Treasury that receives direct MUSD transfers for credit top-ups
+ * ("buy credits with MUSD"). Credits are granted at 10 credits per 1 MUSD
+ * after the transfer is verified on-chain.
+ * Override via `NEXT_PUBLIC_MEZO_TREASURY_ADDRESS`.
+ */
+export const MEZO_TREASURY_ADDRESS =
+    (process.env.NEXT_PUBLIC_MEZO_TREASURY_ADDRESS as `0x${string}` | undefined) ||
+    "0xb8CE765cD679ECB958c0D2869d516C386b9d5a85" // platform treasury / deployer
 
 export type PaymentToken = 
     | { type: 'writercoin'; coin: WriterCoin }

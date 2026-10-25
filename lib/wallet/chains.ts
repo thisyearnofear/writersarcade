@@ -100,6 +100,7 @@ const CHAINS: Record<number, ChainInfo> = {
     purpose: 'MUSD payments',
     isTestnet: false,
     isSupported: true,
+    blockExplorer: 'https://explorer.mezo.org',
   },
   [STORY_AENEID_CHAIN_ID]: {
     id: STORY_AENEID_CHAIN_ID,

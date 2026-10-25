@@ -1,8 +1,8 @@
 import { createPublicClient, http, type Chain, type PublicClient } from 'viem'
 import { decodeFunctionData, decodeEventLog, keccak256, parseAbi, toBytes } from 'viem'
 import { base as baseChain } from 'viem/chains'
-import { getWriterCoinById, MUSD_CONFIG } from '@/lib/writer-coins'
-import { BASE_MAINNET_CHAIN_ID, MEZO_TESTNET_CHAIN_ID } from '@/lib/wallet/chains'
+import { getWriterCoinById, MUSD_CONFIG, MEZO_TREASURY_ADDRESS } from '@/lib/writer-coins'
+import { BASE_MAINNET_CHAIN_ID, MEZO_TESTNET_CHAIN_ID, MEZO_MAINNET_CHAIN_ID } from '@/lib/wallet/chains'
 import { baseRpcTransport } from '@/lib/base-rpc'
 
 export type PaymentAction = 'generate-game' | 'mint-nft'
@@ -134,8 +134,30 @@ function toNativeBigInt(value: unknown): bigint {
 
 function getRpcUrl(chainId: number): string | null {
   if (chainId === MEZO_TESTNET_CHAIN_ID) return process.env.NEXT_PUBLIC_MEZO_TESTNET_RPC || 'https://rpc.test.mezo.org'
+  if (chainId === MEZO_MAINNET_CHAIN_ID) {
+    return (
+      process.env.MEZO_MAINNET_RPC ||
+      process.env.NEXT_PUBLIC_MEZO_MAINNET_RPC ||
+      'https://rpc-http.mezo.boar.network'
+    )
+  }
   return null
 }
+
+/** Map a Mezo chain id to the MUSD_CONFIG network key. */
+function mezoNetworkForChain(chainId: number): 'testnet' | 'mainnet' | null {
+  if (chainId === MEZO_TESTNET_CHAIN_ID) return 'testnet'
+  if (chainId === MEZO_MAINNET_CHAIN_ID) return 'mainnet'
+  return null
+}
+
+const ERC20_TRANSFER_ABI = parseAbi([
+  'function transfer(address to, uint256 amount) returns (bool)',
+])
+const ERC20_TRANSFER_EVENT = parseAbi([
+  'event Transfer(address indexed from, address indexed to, uint256 value)',
+])
+const ERC20_TRANSFER_SIG = 'Transfer(address,address,uint256)'
 
 export function createReceiptClient(chainId: number): PublicClient | null {
   if (chainId === BASE_MAINNET_CHAIN_ID) {
@@ -292,5 +314,120 @@ export async function verifyOnChainPayment(params: VerifyPaymentParams): Promise
     receipt,
     transaction,
   })
+}
+
+export interface VerifyMusdTreasuryTransferParams {
+  transactionHash: `0x${string}`
+  userAddress: string
+  chainId: number
+  /** Destination treasury; defaults to the configured platform treasury. */
+  treasury?: string
+}
+
+export interface VerifiedMusdTreasuryTransfer {
+  txHash: `0x${string}`
+  /** MUSD amount in wei paid to the treasury. */
+  amount: bigint
+  network: 'testnet' | 'mainnet'
+}
+
+export interface VerifyMusdTransferEvidenceParams extends VerifyMusdTreasuryTransferParams {
+  receipt: PaymentEvidence
+  transaction: PaymentTransaction
+}
+
+/**
+ * Pure, network-free verification of a plain MUSD `transfer(treasury, amount)`
+ * used to top up credits:
+ *   1. Receipt succeeded; tx sender is the connected wallet.
+ *   2. tx.to is the canonical MUSD token for that chain; calldata is a
+ *      `transfer` whose recipient is the platform treasury.
+ *   3. The MUSD contract emitted a Transfer(user → treasury) event whose
+ *      value matches the calldata amount.
+ * Throws on any mismatch so the caller can map it to a 4xx rejection.
+ */
+export function verifyMusdTransferEvidence(
+  params: VerifyMusdTransferEvidenceParams
+): VerifiedMusdTreasuryTransfer {
+  const network = mezoNetworkForChain(params.chainId)
+  if (!network) throw new Error(`Unsupported Mezo chain: ${params.chainId}`)
+
+  const treasury = (params.treasury ?? MEZO_TREASURY_ADDRESS).toLowerCase()
+  const musdToken = MUSD_CONFIG[network].address.toLowerCase()
+  const { receipt, transaction } = params
+
+  if (receipt.status !== 'success') throw new Error('Transaction did not succeed')
+  if (transaction.from.toLowerCase() !== params.userAddress.toLowerCase()) {
+    throw new Error('Payment sender does not match connected wallet')
+  }
+  if (transaction.to?.toLowerCase() !== musdToken) {
+    throw new Error('Transaction was not sent to the MUSD token contract')
+  }
+
+  let callTo: string | undefined
+  let callAmount: bigint | undefined
+  try {
+    const call = decodeFunctionData({ abi: ERC20_TRANSFER_ABI, data: (transaction.input ?? '0x') as `0x${string}` })
+    if (call.functionName !== 'transfer') throw new Error('not-transfer')
+    callTo = (call.args?.[0] as string)?.toLowerCase()
+    callAmount = toNativeBigInt(call.args?.[1])
+  } catch {
+    throw new Error('Transaction did not call MUSD transfer')
+  }
+  if (callTo !== treasury) {
+    throw new Error('MUSD transfer recipient is not the platform treasury')
+  }
+  if (!callAmount || callAmount <= 0n) {
+    throw new Error('MUSD transfer amount is invalid')
+  }
+
+  // Require the matching Transfer(from=user, to=treasury) log emitted by MUSD.
+  const topic0 = keccak256(toBytes(ERC20_TRANSFER_SIG))
+  const matchedLog = receipt.logs.find(
+    (log) =>
+      log.address?.toLowerCase() === musdToken &&
+      log.topics?.[0]?.toLowerCase() === topic0.toLowerCase() &&
+      log.topics?.[1] &&
+      ('0x' + log.topics[1].slice(26)).toLowerCase() === params.userAddress.toLowerCase() &&
+      log.topics?.[2] &&
+      ('0x' + log.topics[2].slice(26)).toLowerCase() === treasury
+  )
+  if (!matchedLog) {
+    throw new Error('Expected MUSD Transfer event to treasury was not found')
+  }
+
+  const parsed = decodeEventLog({
+    abi: ERC20_TRANSFER_EVENT,
+    data: (matchedLog.data ?? '0x') as `0x${string}`,
+    topics: matchedLog.topics as [`0x${string}`, ...`0x${string}`[]],
+  })
+  const evArgs = parsed.args as unknown as Record<string, unknown>
+  const eventAmount = toNativeBigInt(evArgs.value)
+  if (eventAmount !== callAmount) {
+    throw new Error('Transfer event amount does not match transaction input')
+  }
+
+  return { txHash: params.transactionHash, amount: eventAmount, network }
+}
+
+/**
+ * Fetch transaction evidence and verify an MUSD treasury transfer on-chain.
+ */
+export async function verifyMusdTreasuryTransfer(
+  params: VerifyMusdTreasuryTransferParams
+): Promise<VerifiedMusdTreasuryTransfer> {
+  const client = createReceiptClient(params.chainId)
+  if (!client) throw new Error(`Unsupported payment chain: ${params.chainId}`)
+
+  const [receipt, transaction] = await Promise.all([
+    (client as unknown as {
+      getTransactionReceipt: (args: { hash: string }) => Promise<PaymentEvidence>
+    }).getTransactionReceipt({ hash: params.transactionHash }),
+    (client as unknown as {
+      getTransaction: (args: { hash: string }) => Promise<PaymentTransaction>
+    }).getTransaction({ hash: params.transactionHash }),
+  ])
+
+  return verifyMusdTransferEvidence({ ...params, receipt, transaction })
 }
 

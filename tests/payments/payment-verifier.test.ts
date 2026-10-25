@@ -9,11 +9,12 @@ import {
 } from 'viem'
 import {
   verifyPaymentEvidence,
+  verifyMusdTransferEvidence,
   getExpectedPaymentContract,
   getPaymentAmount,
   type VerifyEvidenceParams,
 } from '@/services/payments/payment-verifier'
-import { getWriterCoinById } from '@/lib/writer-coins'
+import { getWriterCoinById, MUSD_CONFIG, MEZO_TREASURY_ADDRESS } from '@/lib/writer-coins'
 
 const USER = '0xAb5801a7D398351b8bE11C439e05C5B3259aeC9B'
 const avc = getWriterCoinById('avc')!
@@ -261,5 +262,95 @@ describe('verifyPaymentEvidence — Mezo (MUSD) generate', () => {
   it('rejects Mezo generate on a wrong function', () => {
     const wrong = { ...evidence(), transaction: { from: USER, to: MEZO_CONTRACT, input: '0x00000000' } }
     expect(() => verifyPaymentEvidence(wrong)).toThrow(/expected payment function/i)
+  })
+})
+
+describe('verifyMusdTransferEvidence — MUSD credit top-up', () => {
+  const MUSD = MUSD_CONFIG.testnet.address
+  const TREASURY = MEZO_TREASURY_ADDRESS
+  const erc20Transfer = parseAbi(['function transfer(address to, uint256 amount) returns (bool)'])
+
+  function transferCalldata(to: string, amount: bigint) {
+    return encodeFunctionData({ abi: erc20Transfer, functionName: 'transfer', args: [to as `0x${string}`, amount] })
+  }
+
+  function transferLog(opts: { from: string; to: string; value: bigint; emitter?: string }) {
+    const event = parseAbiItem('event Transfer(address indexed from, address indexed to, uint256 value)')
+    const topics = encodeEventTopics({
+      abi: [event],
+      eventName: 'Transfer',
+      args: { from: opts.from as `0x${string}`, to: opts.to as `0x${string}` },
+    })
+    const data = encodeAbiParameters(parseAbiParameters('uint256'), [opts.value])
+    return { address: opts.emitter ?? MUSD, topics: topics as unknown as string[], data }
+  }
+
+  function evidence(overrides?: {
+    from?: string
+    to?: string
+    input?: string
+    amount?: bigint
+    logs?: Array<{ address?: string; topics: string[]; data: string }>
+    status?: string
+    chainId?: number
+  }) {
+    const amount = overrides?.amount ?? 1_000_000_000_000_000_000n
+    return {
+      transactionHash: ('0x' + 'e'.repeat(64)) as `0x${string}`,
+      userAddress: USER,
+      chainId: overrides?.chainId ?? 31611,
+      receipt: {
+        status: overrides?.status ?? 'success',
+        logs: overrides?.logs ?? [transferLog({ from: USER, to: TREASURY, value: amount })],
+      },
+      transaction: {
+        from: overrides?.from ?? USER,
+        to: overrides?.to ?? MUSD,
+        input: overrides?.input ?? transferCalldata(TREASURY, amount),
+      },
+    }
+  }
+
+  it('verifies a valid MUSD treasury transfer and returns the amount', () => {
+    const res = verifyMusdTransferEvidence(evidence({ amount: 2_000_000_000_000_000_000n }))
+    expect(res.amount).toBe(2_000_000_000_000_000_000n)
+    expect(res.network).toBe('testnet')
+  })
+
+  it('rejects when the transaction did not succeed', () => {
+    expect(() => verifyMusdTransferEvidence(evidence({ status: 'reverted' }))).toThrow(/did not succeed/i)
+  })
+
+  it('rejects when the sender does not match the wallet', () => {
+    expect(() => verifyMusdTransferEvidence(evidence({ from: CONTRACT }))).toThrow(/sender does not match/i)
+  })
+
+  it('rejects when sent to the splitter instead of the MUSD token', () => {
+    expect(() =>
+      verifyMusdTransferEvidence(evidence({ to: MUSD_CONFIG.testnet.paymentSplitter }))
+    ).toThrow(/not sent to the MUSD token/i)
+  })
+
+  it('rejects when the recipient is not the treasury', () => {
+    const input = transferCalldata(CONTRACT, 1_000_000_000_000_000_000n)
+    expect(() => verifyMusdTransferEvidence(evidence({ input }))).toThrow(/not the platform treasury/i)
+  })
+
+  it('rejects when the Transfer event is missing', () => {
+    expect(() => verifyMusdTransferEvidence(evidence({ logs: [] }))).toThrow(/Transfer event/i)
+  })
+
+  it('rejects a Transfer event emitted by a different token', () => {
+    const log = transferLog({ from: USER, to: TREASURY, value: 1_000_000_000_000_000_000n, emitter: CONTRACT })
+    expect(() => verifyMusdTransferEvidence(evidence({ logs: [log] }))).toThrow(/Transfer event/i)
+  })
+
+  it('rejects when the event amount differs from calldata', () => {
+    const logs = [transferLog({ from: USER, to: TREASURY, value: 5_000_000_000_000_000_000n })]
+    expect(() => verifyMusdTransferEvidence(evidence({ logs }))).toThrow(/does not match/i)
+  })
+
+  it('rejects on a non-Mezo chain', () => {
+    expect(() => verifyMusdTransferEvidence(evidence({ chainId: 8453 }))).toThrow(/Unsupported Mezo chain/i)
   })
 })

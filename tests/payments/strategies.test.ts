@@ -347,10 +347,11 @@ describe('MUSDStrategy', () => {
       functionName: 'approve',
     }))
 
-    // Verify payAndMintGame was called on splitter
+    // Verify payForGeneration was called on the splitter with the full amount
     expect(mockWriteContract).toHaveBeenNthCalledWith(2, expect.objectContaining({
       address: expect.stringMatching(/^0x[a-fA-F0-9]{40}$/),
-      functionName: 'payAndMintGame',
+      functionName: 'payForGeneration',
+      args: [1000000000000000000n],
     }))
   })
 })

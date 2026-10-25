@@ -5,3 +5,23 @@ neverBuiltDependencies:
   - "@safe-global/safe-smart-account"
   - ds-test
   - forge-std
+
+# pnpm >=10 ignores the "pnpm" field in package.json — these live here.
+overrides:
+  forge-std: "https://codeload.github.com/foundry-rs/forge-std/tar.gz/2f05b30"
+  ds-test: "https://codeload.github.com/dapphub/ds-test/tar.gz/e282159"
+  "@safe-global/safe-smart-account": "1.5.0"
+  "@base-org/account": "2.4.0"
+  "@coinbase/wallet-sdk": "3.9.3"
+  "@rainbow-me/rainbowkit": "2.2.11"
+  viem: "2.48.8"
+  ox: "0.14.20"
+
+patchedDependencies:
+  "@gelatonetwork/relay-sdk@5.7.0": "patches/@gelatonetwork__relay-sdk@5.7.0.patch"
+
+# blockExoticSubdeps (pnpm >=12 default) stays ON — these two are the
+# foundry contract deps this repo deliberately pins via tarball above.
+blockExoticSubdepsExclude:
+  - ds-test
+  - forge-std

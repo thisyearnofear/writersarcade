@@ -1,12 +1,25 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAccount } from 'wagmi'
-import { Coins, Loader2, Plus, ExternalLink, Ban } from 'lucide-react'
+import { useAccount, useWalletClient, useSwitchChain } from 'wagmi'
+import { Coins, Loader2, Plus, ExternalLink, Ban, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CREDITS_CONFIG } from '@/lib/writer-coins'
+import { CREDITS_CONFIG, MUSD_CONFIG, MEZO_TREASURY_ADDRESS } from '@/lib/writer-coins'
+import { MEZO_TESTNET_CHAIN_ID } from '@/lib/wallet/chains'
+import { useMUSDBalance } from '@/hooks/useMUSDBalance'
+
+const ERC20_TRANSFER_ABI = [{
+  name: 'transfer',
+  type: 'function',
+  stateMutability: 'nonpayable',
+  inputs: [
+    { name: 'to', type: 'address' },
+    { name: 'amount', type: 'uint256' },
+  ],
+  outputs: [{ name: '', type: 'bool' }],
+}] as const
 
 interface CreditsData {
   credits: number
@@ -17,7 +30,10 @@ const FIAT_AMOUNTS = [500, 1000, 2500, 5000]
 const CREDITS_PER_DOLLAR = 10
 
 export function BuyCreditsButton() {
-  const { address, isConnected } = useAccount()
+  const { address, isConnected, chainId } = useAccount()
+  const { data: walletClient } = useWalletClient()
+  const { switchChainAsync } = useSwitchChain()
+  const { balance: musdBalance, formatted: musdFormatted, refresh: refreshMUSDBalance } = useMUSDBalance()
   const [credits, setCredits] = useState<CreditsData | null>(null)
   const [loading, setLoading] = useState(false)
   const [showModal, setShowModal] = useState(false)
@@ -28,6 +44,9 @@ export function BuyCreditsButton() {
   const [needsEmail, setNeedsEmail] = useState(false)
   const [email, setEmail] = useState('')
   const [emailSent, setEmailSent] = useState(false)
+  const [musdLoading, setMusdLoading] = useState(false)
+  const [musdTxHash, setMusdTxHash] = useState<string | null>(null)
+  const [musdStep, setMusdStep] = useState<string | null>(null)
 
   useEffect(() => {
     setLoading(true)
@@ -76,6 +95,61 @@ export function BuyCreditsButton() {
       setError(err instanceof Error ? err.message : 'Failed to create order')
     } finally {
       setQuoteLoading(false)
+    }
+  }
+
+  const musdAmountWei = BigInt(selectedAmount / 100) * 1_000_000_000_000_000_000n
+  const musdUnits = selectedAmount / 100
+  const isWrongMezoChain = isConnected && chainId !== MEZO_TESTNET_CHAIN_ID
+  const hasInsufficientMusd = musdBalance < musdAmountWei
+
+  const refreshCredits = async () => {
+    const query = address ? `?wallet=${encodeURIComponent(address)}` : ''
+    const data = await fetch(`/api/ramp/credits${query}`).then(r => r.json()).catch(() => null)
+    if (data?.success) setCredits(data.data)
+  }
+
+  const handlePayWithMusd = async () => {
+    if (!walletClient || !address) return
+    setMusdLoading(true)
+    setMusdStep('Confirm MUSD transfer in your wallet…')
+    setError(null)
+    setMusdTxHash(null)
+    try {
+      const txHash = await walletClient.writeContract({
+        address: MUSD_CONFIG.testnet.address,
+        abi: ERC20_TRANSFER_ABI,
+        functionName: 'transfer',
+        args: [MEZO_TREASURY_ADDRESS, musdAmountWei],
+        account: address,
+        chain: null,
+      })
+      setMusdTxHash(txHash)
+      setMusdStep('Verifying on-chain…')
+
+      // Mezo receipts may lag the wallet callback — retry briefly.
+      let lastError = 'Verification failed'
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        await new Promise(r => setTimeout(r, 3000))
+        const res = await fetch('/api/credits/purchase-musd', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transactionHash: txHash, chainId: MEZO_TESTNET_CHAIN_ID }),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (res.ok && data.success) {
+          await Promise.all([refreshCredits(), refreshMUSDBalance()])
+          return
+        }
+        lastError = data.error || lastError
+      }
+      throw new Error(lastError)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'MUSD payment failed')
+      setMusdTxHash(null)
+    } finally {
+      setMusdLoading(false)
+      setMusdStep(null)
     }
   }
 
@@ -293,6 +367,70 @@ export function BuyCreditsButton() {
                   <p className="mt-3 text-center text-[10px] text-muted-foreground">
                     Powered by Etherfuse — fiat to crypto onramp on Base
                   </p>
+
+                  {isConnected && (
+                    <>
+                      <div className="mt-4 flex items-center gap-2">
+                        <div className="h-px flex-1 bg-border" />
+                        <span className="text-[10px] uppercase tracking-wide text-muted-foreground">or pay on-chain</span>
+                        <div className="h-px flex-1 bg-border" />
+                      </div>
+
+                      {musdTxHash ? (
+                        <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
+                          <p className="font-semibold">Credits purchased with MUSD!</p>
+                          <a
+                            href={`https://explorer.test.mezo.org/tx/${musdTxHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-1 flex items-center gap-1 underline hover:text-amber-100"
+                          >
+                            View on Mezo Explorer <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="mt-3 rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-xs text-muted-foreground">
+                            <div className="flex justify-between">
+                              <span>You pay</span>
+                              <span className="font-semibold text-amber-300">{musdUnits} MUSD</span>
+                            </div>
+                            <div className="mt-1 flex justify-between">
+                              <span>Your MUSD balance</span>
+                              <span className={cn('font-semibold', hasInsufficientMusd ? 'text-red-400' : 'text-amber-300')}>
+                                {musdFormatted} MUSD
+                              </span>
+                            </div>
+                          </div>
+                          <Button
+                            onClick={isWrongMezoChain ? () => switchChainAsync({ chainId: MEZO_TESTNET_CHAIN_ID }).catch(() => {}) : handlePayWithMusd}
+                            disabled={musdLoading || (!isWrongMezoChain && hasInsufficientMusd)}
+                            className="mt-3 w-full bg-amber-600 hover:bg-amber-500 text-white"
+                            size="lg"
+                          >
+                            {musdLoading ? (
+                              <><Loader2 className="h-4 w-4 animate-spin" /> {musdStep ?? 'Processing…'}</>
+                            ) : isWrongMezoChain ? (
+                              <>Switch to Mezo <ArrowRight className="h-4 w-4" /></>
+                            ) : (
+                              <><Coins className="h-4 w-4" /> Pay {musdUnits} MUSD on Mezo</>
+                            )}
+                          </Button>
+                          {hasInsufficientMusd && !isWrongMezoChain && (
+                            <p className="mt-2 text-center text-[10px] text-muted-foreground">
+                              Need MUSD?{' '}
+                              <a href="https://faucet.test.mezo.org/" target="_blank" rel="noopener noreferrer" className="underline text-amber-400 hover:text-amber-300">
+                                Get testnet tokens
+                              </a>
+                            </p>
+                          )}
+                          <p className="mt-2 text-center text-[10px] text-muted-foreground">
+                            MUSD on Mezo testnet — verified on-chain, credits granted instantly
+                          </p>
+                        </>
+                      )}
+                    </>
+                  )}
                 </>
               )}
             </motion.div>

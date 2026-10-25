@@ -57,8 +57,7 @@ export function PaymentFlow({
   const tokenSymbol = isCredits ? 'Credits' : isMUSD ? config.symbol : config.symbol
 
   const { balance, isLoading: isLoadingBalance, error: balanceError, refresh } = useWriterCoinBalance(isMUSD ? '' : (isCredits ? '' : paymentToken.coin.id))
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { isHolder: isMezoHolder, formatted: mezoFormatted, balance: rawMezoBalance } = useMezoBalance()
+  const { isHolder: isMezoHolder, formatted: mezoFormatted } = useMezoBalance()
 
   const {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -300,15 +299,22 @@ export function PaymentFlow({
               </div>
             </div>
             {isMUSD && (
-              <div className="mt-3 pt-3 border-t border-amber-500/10 flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-[10px] text-amber-200/60 font-medium tracking-wide uppercase">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                  Mezo Matsnet Testnet
+              <div className="mt-3 pt-3 border-t border-amber-500/10 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-[10px] text-amber-200/60 font-medium tracking-wide uppercase">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                    Mezo Testnet
+                  </div>
+                  <a href="https://faucet.test.mezo.org/" target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-[10px] text-amber-500 hover:text-amber-400 transition-colors font-semibold">
+                    MUSD Faucet <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
                 </div>
-                <a href="https://mezo.org/docs/developers/musd/" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-[10px] text-amber-500 hover:text-amber-400 transition-colors font-semibold">
-                  MUSD Faucet <ExternalLink className="w-2.5 h-2.5" />
-                </a>
+                {isMezoHolder && (
+                  <div className="flex items-center gap-1.5 rounded-md border border-amber-400/30 bg-amber-400/10 px-2 py-1 text-[10px] font-semibold text-amber-300">
+                    ⚡ MEZO Holder ({mezoFormatted} MEZO) — +10% of this payment goes to the writer
+                  </div>
+                )}
               </div>
             )}
           </motion.div>
