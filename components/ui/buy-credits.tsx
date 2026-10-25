@@ -7,7 +7,7 @@ import { Coins, Loader2, Plus, ExternalLink, X, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CREDITS_CONFIG, MUSD_CONFIG, MEZO_TREASURY_ADDRESS } from '@/lib/writer-coins'
+import { CREDITS_CONFIG, MEZO_TREASURY_ADDRESS, getActiveMusdConfig } from '@/lib/writer-coins'
 import { MEZO_ACTIVE_CHAIN_ID, MEZO_ACTIVE_EXPLORER, MEZO_NETWORK } from '@/lib/wallet/chains'
 import { useMUSDBalance } from '@/hooks/useMUSDBalance'
 import { useOverlay, OverlayPortal } from '@/components/ui/overlay'
@@ -30,6 +30,12 @@ interface CreditsData {
 
 const FIAT_AMOUNTS = [500, 1000, 2500, 5000]
 const CREDITS_PER_DOLLAR = 10
+
+// A confirmed wallet transfer whose credit grant hasn't been verified yet.
+// Persisted so a modal close / refresh never strands a paid top-up.
+const PENDING_MUSD_KEY = 'wa:musd-pending-topup'
+// Mezo receipts can lag the wallet callback well past 10s — ~26s of retries.
+const MUSD_VERIFY_DELAYS_MS = [3000, 4000, 5000, 6000, 8000]
 
 export const OPEN_BUY_CREDITS_EVENT = 'wa:open-buy-credits'
 
@@ -57,6 +63,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
   const [musdTxHash, setMusdTxHash] = useState<string | null>(null)
   const [musdStep, setMusdStep] = useState<string | null>(null)
   const [musdGranted, setMusdGranted] = useState<{ credits: number; boost: boolean } | null>(null)
+  const [pendingMusdTx, setPendingMusdTx] = useState<string | null>(null)
   const successRef = useRef<HTMLDivElement | null>(null)
 
   const effectivePaymentMethod = paymentMethod ?? (isConnected ? 'musd' : 'card')
@@ -102,6 +109,23 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
     }
   }, [musdGranted])
 
+  // Restore a persisted pending MUSD top-up for this wallet (on mount and
+  // every time the modal opens) so an interrupted verification can be
+  // finished manually instead of stranding a paid transfer.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(PENDING_MUSD_KEY)
+      const parsed = raw ? (JSON.parse(raw) as { txHash?: string; wallet?: string }) : null
+      if (parsed?.txHash && parsed.wallet && address && parsed.wallet.toLowerCase() === address.toLowerCase()) {
+        setPendingMusdTx(parsed.txHash)
+      } else {
+        setPendingMusdTx(null)
+      }
+    } catch {
+      setPendingMusdTx(null)
+    }
+  }, [address, showModal])
+
   const handleBuyCredits = async () => {
     setQuoteLoading(true)
     setError(null)
@@ -144,28 +168,37 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
   const isWrongMezoChain = isConnected && chainId !== MEZO_ACTIVE_CHAIN_ID
   const hasInsufficientMusd = musdBalance < musdAmountWei
 
-  const handlePayWithMusd = async () => {
-    if (!walletClient || !address) return
-    setMusdLoading(true)
-    setMusdStep('Confirm MUSD transfer in your wallet…')
-    setError(null)
-    setMusdTxHash(null)
+  const persistPendingMusdTx = (txHash: string) => {
+    if (!address) return
     try {
-      const txHash = await walletClient.writeContract({
-        address: MUSD_CONFIG.testnet.address,
-        abi: ERC20_TRANSFER_ABI,
-        functionName: 'transfer',
-        args: [MEZO_TREASURY_ADDRESS, musdAmountWei],
-        account: address,
-        chain: null,
-      })
-      setMusdTxHash(txHash)
-      setMusdStep('Verifying on-chain…')
+      localStorage.setItem(PENDING_MUSD_KEY, JSON.stringify({ txHash, wallet: address, ts: Date.now() }))
+    } catch {
+      // storage unavailable (private mode etc.) — in-memory state still works
+    }
+    setPendingMusdTx(txHash)
+  }
 
-      // Mezo receipts may lag the wallet callback — retry briefly.
+  const clearPendingMusdTx = () => {
+    try {
+      localStorage.removeItem(PENDING_MUSD_KEY)
+    } catch {
+      // storage unavailable — in-memory state still works
+    }
+    setPendingMusdTx(null)
+  }
+
+  // POSTs the tx hash to the idempotent grant endpoint (a replayed hash
+  // returns the original grant) with widening retries — Mezo receipts can
+  // lag the wallet callback. Shared by the auto-verify loop in
+  // handlePayWithMusd and the manual "Verify payment" recovery button.
+  const verifyMusdPurchase = async (txHash: string) => {
+    setMusdLoading(true)
+    setMusdStep('Verifying on-chain…')
+    setError(null)
+    try {
       let lastError = 'Verification failed'
-      for (let attempt = 1; attempt <= 3; attempt++) {
-        await new Promise(r => setTimeout(r, 3000))
+      for (const delay of MUSD_VERIFY_DELAYS_MS) {
+        await new Promise(r => setTimeout(r, delay))
         const res = await fetch('/api/credits/purchase-musd', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -174,18 +207,52 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
         const data = await res.json().catch(() => ({}))
         if (res.ok && data.success) {
           setMusdGranted({ credits: data.data.creditsGranted ?? 0, boost: Boolean(data.data.mezoHolderBoost) })
+          setMusdTxHash(txHash)
+          clearPendingMusdTx()
           await Promise.all([refreshCredits(), refreshMUSDBalance()])
           return
         }
         lastError = data.error || lastError
       }
       throw new Error(lastError)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'MUSD payment failed')
-      setMusdTxHash(null)
     } finally {
       setMusdLoading(false)
       setMusdStep(null)
+    }
+  }
+
+  const handlePayWithMusd = async () => {
+    if (!walletClient || !address) return
+    setMusdLoading(true)
+    setMusdStep('Confirm MUSD transfer in your wallet…')
+    setError(null)
+    setMusdTxHash(null)
+    setMusdGranted(null)
+    let txHash: `0x${string}`
+    try {
+      txHash = await walletClient.writeContract({
+        address: getActiveMusdConfig().address,
+        abi: ERC20_TRANSFER_ABI,
+        functionName: 'transfer',
+        args: [MEZO_TREASURY_ADDRESS, musdAmountWei],
+        account: address,
+        chain: null,
+      })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'MUSD payment failed')
+      setMusdLoading(false)
+      setMusdStep(null)
+      return
+    }
+    setMusdTxHash(txHash)
+    persistPendingMusdTx(txHash)
+    try {
+      await verifyMusdPurchase(txHash)
+    } catch (err) {
+      // The transfer may still have landed — keep the pending record so the
+      // user can finish verification with the "Verify payment" button.
+      const msg = err instanceof Error ? err.message : 'Verification failed'
+      setError(`${msg} — if your wallet confirmed the transfer, press "Verify payment" to finish.`)
     }
   }
 
@@ -336,8 +403,8 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                             : 'border-border bg-muted/50 hover:border-muted-foreground/30'
                         )}
                       >
-                        <div className="text-lg font-bold text-foreground">${(amount / 100).toFixed(2)}</div>
-                        <div className="text-xs text-muted-foreground mt-0.5">{creditsAmount} credits</div>
+                        <div className="text-lg font-bold text-foreground">{creditsAmount} credits</div>
+                        <div className="text-xs text-muted-foreground mt-0.5">${(amount / 100).toFixed(2)} · {amount / 100} MUSD</div>
                       </button>
                     )
                   })}
@@ -402,26 +469,67 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
 
                 {isConnected && effectivePaymentMethod === 'musd' && (
                   <>
-                    {musdTxHash ? (
+                    {musdGranted ? (
                       <div ref={successRef} className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
                         <p className="font-semibold">
-                          {musdGranted ? `+${musdGranted.credits} credits added` : 'Credits purchased with MUSD!'}
-                          {musdGranted?.boost && ' — incl. +10% MEZO holder bonus'}
+                          {`+${musdGranted.credits} credits added`}
+                          {musdGranted.boost && ' — incl. +10% MEZO holder bonus'}
                         </p>
-                        <a
-                          href={`${MEZO_ACTIVE_EXPLORER}/tx/${musdTxHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-1 flex items-center gap-1 underline hover:text-amber-100"
-                        >
-                          View on Mezo Explorer <ExternalLink className="w-3 h-3" />
-                        </a>
+                        {musdTxHash && (
+                          <a
+                            href={`${MEZO_ACTIVE_EXPLORER}/tx/${musdTxHash}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-1 flex items-center gap-1 underline hover:text-amber-100"
+                          >
+                            View on Mezo Explorer <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )}
                         <a
                           href="/generate"
                           className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-amber-600 px-4 py-2 font-semibold text-white transition hover:bg-amber-500"
                         >
                           Generate a game now <ArrowRight className="h-3.5 w-3.5" />
                         </a>
+                      </div>
+                    ) : pendingMusdTx ? (
+                      <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
+                        <p className="font-semibold">Payment pending — verify on-chain</p>
+                        <p className="mt-1 text-amber-200/70">
+                          Your MUSD transfer was sent but the credit grant hasn't confirmed yet.
+                        </p>
+                        <a
+                          href={`${MEZO_ACTIVE_EXPLORER}/tx/${pendingMusdTx}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-1 flex items-center gap-1 underline hover:text-amber-100"
+                        >
+                          {pendingMusdTx.slice(0, 10)}…{pendingMusdTx.slice(-6)} <ExternalLink className="w-3 h-3" />
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            void verifyMusdPurchase(pendingMusdTx).catch(err =>
+                              setError(err instanceof Error ? err.message : 'Verification failed')
+                            )
+                          }}
+                          disabled={musdLoading}
+                          className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-amber-600 px-4 py-2 font-semibold text-white transition hover:bg-amber-500 disabled:opacity-50"
+                        >
+                          {musdLoading ? (
+                            <><Loader2 className="h-3.5 w-3.5 animate-spin" /> {musdStep ?? 'Verifying…'}</>
+                          ) : (
+                            'Verify payment'
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={clearPendingMusdTx}
+                          disabled={musdLoading}
+                          className="mt-2 w-full text-center text-[11px] text-amber-200/70 underline hover:text-amber-100 disabled:opacity-50"
+                        >
+                          Dismiss and send a new payment
+                        </button>
                       </div>
                     ) : (
                       <>

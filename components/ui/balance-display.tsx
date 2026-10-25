@@ -203,6 +203,12 @@ function EcosystemSection({
   isOnMezo?: boolean
   onBuyCredits?: () => void
 }) {
+  const [expanded, setExpanded] = useState(false)
+  // Hide rows that settled on a zero balance; rows still loading stay visible.
+  const visibleRows = group.rows.filter(row => !row.isZero || row.isLoading)
+  // Long Base coin lists collapse behind a summary row (default collapsed).
+  const collapsible = group.id === 'base' && group.rows.length > 4
+
   return (
     <div>
       {group.chain ? (
@@ -233,19 +239,44 @@ function EcosystemSection({
         </div>
       )}
 
-      {group.rows.map((row) => (
-        <BalanceRow
-          key={row.id}
-          symbol={row.symbol}
-          address={row.address}
-          value={row.value}
-          isLoading={row.isLoading}
-          isZero={row.isZero}
-          mobileLayout={mobileLayout}
-          accentClass={row.accentClass}
-          icon={group.id === 'credits' ? <Banknote className={`w-4 h-4 shrink-0 ${row.isZero ? 'text-muted-foreground' : 'text-emerald-400'}`} /> : undefined}
-        />
-      ))}
+      {group.id === 'base' && visibleRows.length === 0 ? (
+        <div className={`flex items-center ${mobileLayout ? 'py-2.5 px-4' : 'py-2 px-3'}`}>
+          <span className="text-sm text-muted-foreground">No balances yet</span>
+        </div>
+      ) : (
+        <>
+          {collapsible && (
+            <button
+              type="button"
+              onClick={() => setExpanded(v => !v)}
+              aria-expanded={expanded}
+              className={`flex w-full items-center justify-between gap-3 text-left transition-colors hover:bg-muted/40 ${mobileLayout ? 'py-2.5 px-4' : 'py-2 px-3'}`}
+            >
+              <span className="flex items-center gap-2.5 min-w-0">
+                <Coins className="w-4 h-4 shrink-0 text-muted-foreground" />
+                <span className="text-sm font-medium text-muted-foreground truncate">
+                  Base · {group.rows.length} writer coins
+                </span>
+              </span>
+              <ChevronDown className={`w-3.5 h-3.5 shrink-0 text-muted-foreground transition-transform ${expanded ? 'rotate-180' : ''}`} />
+            </button>
+          )}
+          {(!collapsible || expanded) &&
+            visibleRows.map((row) => (
+              <BalanceRow
+                key={row.id}
+                symbol={row.symbol}
+                address={row.address}
+                value={row.value}
+                isLoading={row.isLoading}
+                isZero={row.isZero}
+                mobileLayout={mobileLayout}
+                accentClass={row.accentClass}
+                icon={group.id === 'credits' ? <Banknote className={`w-4 h-4 shrink-0 ${row.isZero ? 'text-muted-foreground' : 'text-emerald-400'}`} /> : undefined}
+              />
+            ))}
+        </>
+      )}
 
       {group.id === 'credits' && onBuyCredits && (
         <div className={`${mobileLayout ? 'px-4 pb-3' : 'px-3 pb-3'}`}>
