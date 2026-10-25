@@ -5,18 +5,9 @@
 // React.__SECRET_INTERNALS.ReactCurrentOwner.
 import '@/lib/react-19-internals-polyfill';
 
-import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
-
-const ClientProviders = dynamic(
-  () => import('./ClientProviders').then(m => m.ClientProviders),
-  { ssr: false }
-);
-
-const EmbedProviders = dynamic(
-  () => import('./EmbedProviders').then(m => m.EmbedProviders),
-  { ssr: false }
-);
+import { ClientProviders } from './ClientProviders';
+import { EmbedProviders } from './EmbedProviders';
 
 export function ClientProvidersLoader({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
