@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { X, Wand2, Gamepad2, Coins } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useDialogA11y } from '@/hooks/use-dialog-a11y'
+import { OverlayPortal } from '@/components/ui/overlay'
 
 interface OnboardingModalProps {
   isOpen: boolean
@@ -58,8 +59,9 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
   const isLast = currentStep === steps.length - 1
 
   return (
+    <OverlayPortal>
     <div
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[80] p-4"
       onClick={handleBackdropClick}
       aria-hidden={!isOpen}
     >
@@ -70,7 +72,7 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
         aria-labelledby="onboarding-title"
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
-        className="bg-card border border-border rounded-2xl max-w-sm w-full shadow-2xl outline-none"
+        className="bg-card border border-border rounded-2xl max-w-sm w-full max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain shadow-2xl outline-none"
       >
         <div className="flex items-center justify-between p-5 border-b border-border">
           <h2 id="onboarding-title" className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
@@ -133,5 +135,6 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
         </div>
       </div>
     </div>
+    </OverlayPortal>
   )
 }

@@ -1,8 +1,12 @@
 import { SkeletonShimmer } from '@/components/effects'
+import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
+import { Header } from '@/components/layout/header'
 
 export default function ProfileLoading() {
   return (
+    <ThemeWrapper theme="arcade">
     <div className="flex flex-col min-h-screen">
+      <Header />
       <main className="flex-1 py-8 px-4">
         <div className="max-w-4xl mx-auto space-y-6">
           <SkeletonShimmer lines={2} showAvatar={false} />
@@ -13,5 +17,6 @@ export default function ProfileLoading() {
         </div>
       </main>
     </div>
+    </ThemeWrapper>
   )
 }

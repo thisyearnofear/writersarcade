@@ -2,10 +2,11 @@
 
 import { CheckCircle, Copy, Eye, Library, RotateCcw, Share2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ShareDropdown } from '@/components/ui/share-dropdown'
 import { trackEvent } from '@/services/analytics'
+import { useOverlay, OverlayPortal } from '@/components/ui/overlay'
 
 interface SuccessModalProps {
   isOpen: boolean
@@ -87,21 +88,14 @@ export function SuccessModal({
     onClose()
   }
 
-  // Scroll lock effect
-  useEffect(() => {
-    if (!isOpen) return
-    const originalOverflow = document.documentElement.style.overflow
-    document.documentElement.style.overflow = 'hidden'
-    return () => {
-      document.documentElement.style.overflow = originalOverflow
-    }
-  }, [isOpen])
+  useOverlay(isOpen, onClose)
 
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[9999] p-3 sm:p-4">
-      <div className="bg-gradient-to-br from-card to-black border border-green-500/50 rounded-xl max-w-lg w-full shadow-[0_0_0_1px_rgba(34,197,94,0.35)] max-h-[92vh] overflow-y-auto">
+    <OverlayPortal>
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[90] p-3 sm:p-4">
+      <div role="dialog" aria-modal="true" className="bg-gradient-to-br from-card to-black border border-green-500/50 rounded-xl max-w-lg w-full shadow-[0_0_0_1px_rgba(34,197,94,0.35)] max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain">
         <div className="p-5 sm:p-6 space-y-5">
           <div className="text-center space-y-3">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-500/15 border border-green-500/35">
@@ -225,5 +219,6 @@ export function SuccessModal({
         </div>
       </div>
     </div>
+    </OverlayPortal>
   )
 }

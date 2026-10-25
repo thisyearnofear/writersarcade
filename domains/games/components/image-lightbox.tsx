@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useOverlay, OverlayPortal } from '@/components/ui/overlay'
 
 interface ImageLightboxProps {
   isOpen: boolean
@@ -30,27 +31,32 @@ export function ImageLightbox({
   canNavigatePrev = false,
   canNavigateNext = false,
 }: ImageLightboxProps) {
+  useOverlay(isOpen, onClose)
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isOpen) return
-      if (e.key === 'Escape') onClose()
       if (e.key === 'ArrowLeft' && onNavigate && canNavigatePrev) onNavigate('prev')
       if (e.key === 'ArrowRight' && onNavigate && canNavigateNext) onNavigate('next')
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, onClose, onNavigate, canNavigatePrev, canNavigateNext])
+  }, [isOpen, onNavigate, canNavigatePrev, canNavigateNext])
 
   if (!isOpen) return null
 
   return (
+    <OverlayPortal>
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Expanded image"
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-5xl max-h-[90vh] flex flex-col rounded-lg overflow-hidden shadow-2xl"
+        className="relative w-full max-w-5xl max-h-[calc(100dvh-2rem)] flex flex-col rounded-lg overflow-hidden shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header with close button */}
@@ -135,5 +141,6 @@ export function ImageLightbox({
         )}
       </div>
     </div>
+    </OverlayPortal>
   )
 }

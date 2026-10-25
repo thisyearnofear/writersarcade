@@ -1,6 +1,8 @@
 'use client'
 
 import Link from 'next/link'
+import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
+import { Header } from '@/components/layout/header'
 
 export default function InsightsError({
   error,
@@ -10,7 +12,10 @@ export default function InsightsError({
   reset: () => void
 }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-black px-6">
+    <ThemeWrapper theme="arcade">
+    <div className="flex min-h-screen flex-col bg-black">
+      <Header />
+      <div className="flex flex-1 items-center justify-center px-6">
       <div className="space-y-4 text-center">
         <p className="text-sm font-semibold text-white">Insights couldn't load.</p>
         <p className="text-xs text-muted-foreground">
@@ -31,6 +36,8 @@ export default function InsightsError({
           </Link>
         </div>
       </div>
+      </div>
     </div>
+    </ThemeWrapper>
   )
 }

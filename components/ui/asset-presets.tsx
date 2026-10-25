@@ -17,6 +17,7 @@ interface AssetPresetsProps {
  */
 export function AssetPresets({ currentAssets, onLoadPreset }: AssetPresetsProps) {
     const [isOpen, setIsOpen] = useState(false)
+    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
     const [presets, setPresets] = useState<CompositionPreset[]>([])
     const [saveMode, setSaveMode] = useState(false)
     const [presetName, setPresetName] = useState('')
@@ -60,10 +61,16 @@ export function AssetPresets({ currentAssets, onLoadPreset }: AssetPresetsProps)
     }
 
     const handleDeletePreset = (presetId: string) => {
-        if (confirm('Delete this preset?')) {
+        if (confirmDeleteId === presetId) {
             AssetPresetsService.deletePresetLocally(presetId)
             loadPresets()
+            setConfirmDeleteId(null)
+            return
         }
+        setConfirmDeleteId(presetId)
+        window.setTimeout(() => {
+            setConfirmDeleteId((cur) => (cur === presetId ? null : cur))
+        }, 3000)
     }
 
     const handleExportPreset = (preset: CompositionPreset) => {
@@ -114,14 +121,14 @@ export function AssetPresets({ currentAssets, onLoadPreset }: AssetPresetsProps)
                                         placeholder="Preset name"
                                         value={presetName}
                                         onChange={(e) => setPresetName(e.target.value)}
-                                        className="w-full bg-muted border border-border rounded px-2 py-1 text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                                        className="w-full bg-muted border border-border rounded px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-green-500"
                                         autoFocus
                                     />
                                     <textarea
                                         placeholder="Description (optional)"
                                         value={presetDescription}
                                         onChange={(e) => setPresetDescription(e.target.value)}
-                                        className="w-full bg-muted border border-border rounded px-2 py-1 text-sm text-white focus:outline-none focus:ring-2 focus:ring-green-500 resize-none min-h-[50px]"
+                                        className="w-full bg-muted border border-border rounded px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-green-500 resize-none min-h-[50px]"
                                     />
                                     <div className="flex gap-2">
                                         <button
@@ -195,10 +202,14 @@ export function AssetPresets({ currentAssets, onLoadPreset }: AssetPresetsProps)
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeletePreset(preset.id)}
-                                                    className="px-2 py-1 bg-red-900/20 hover:bg-red-900/40 text-red-300 rounded text-xs transition-colors"
-                                                    title="Delete"
+                                                    className={`px-2 py-1 rounded text-xs transition-colors ${
+                                                        confirmDeleteId === preset.id
+                                                            ? 'bg-red-600 text-white hover:bg-red-500'
+                                                            : 'bg-red-900/20 hover:bg-red-900/40 text-red-300'
+                                                    }`}
+                                                    title={confirmDeleteId === preset.id ? 'Confirm delete' : 'Delete'}
                                                 >
-                                                    <Trash2 className="w-3 h-3" />
+                                                    {confirmDeleteId === preset.id ? <span>Confirm?</span> : <Trash2 className="w-3 h-3" />}
                                                 </button>
                                             </div>
                                         </div>

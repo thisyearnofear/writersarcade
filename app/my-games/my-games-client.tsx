@@ -15,6 +15,7 @@ import { IPRegistration } from '@/components/story/IPRegistration'
 import { Plus, Gamepad2, X, Library, BadgeCheck, Network, Lock, Copy, Check, GalleryHorizontalEnd, ExternalLink, AlertTriangle, Sparkles, ChevronDown, Wallet, Loader2, WifiOff } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 import { useDialogA11y } from '@/hooks/use-dialog-a11y'
+import { OverlayPortal } from '@/components/ui/overlay'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -878,8 +879,9 @@ export function MyGamesClient() {
             />
 
             {activeRegistration && (
+              <OverlayPortal>
               <div
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+                className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
                 onClick={handleRegistrationBackdrop}
                 aria-hidden={!registrationOpen}
               >
@@ -890,7 +892,7 @@ export function MyGamesClient() {
                   aria-label="Register game IP"
                   tabIndex={-1}
                   onClick={(e) => e.stopPropagation()}
-                  className="w-full max-w-2xl outline-none"
+                  className="w-full max-w-2xl max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain outline-none"
                 >
                   <div className="mb-3 flex justify-end">
                     <button
@@ -946,6 +948,7 @@ export function MyGamesClient() {
                   />
                 </div>
               </div>
+              </OverlayPortal>
             )}
           </div>
         </section>

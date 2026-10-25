@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Play, Image as ImageIcon, LayoutPanelTop, Loader2 } from 'lucide-react'
 import { Game } from '@/domains/games/types'
+import { useOverlay, OverlayPortal } from '@/components/ui/overlay'
 
 interface StoryboardPanel {
   title: string
@@ -33,7 +34,10 @@ export function NarrativePreviewModal({
   isLoading = false,
   storyboardPanels,
 }: NarrativePreviewModalProps) {
+  useOverlay(isOpen, onClose)
+
   return (
+    <OverlayPortal>
     <AnimatePresence>
       {isOpen && (
         <>
@@ -43,7 +47,7 @@ export function NarrativePreviewModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/80 z-40"
+            className="fixed inset-0 bg-black/80 z-[80]"
           />
 
           {/* Modal */}
@@ -51,14 +55,14 @@ export function NarrativePreviewModal({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 z-[80] flex items-center justify-center p-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="bg-card border border-border rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div role="dialog" aria-modal="true" aria-labelledby="narrative-preview-title" className="bg-card border border-border rounded-2xl shadow-2xl max-w-2xl w-full max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain">
               {/* Header */}
               <div className="sticky top-0 bg-muted/95 backdrop-blur border-b border-border p-6 flex items-start justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-1">
+                  <h2 id="narrative-preview-title" className="text-2xl font-bold text-white mb-1">
                     {game.title}
                   </h2>
                   <p className="text-sm text-muted-foreground">
@@ -235,5 +239,6 @@ export function NarrativePreviewModal({
         </>
       )}
     </AnimatePresence>
+    </OverlayPortal>
   )
 }

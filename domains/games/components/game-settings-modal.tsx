@@ -69,7 +69,7 @@ export function GameSettingsModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[425px] bg-card text-white border-purple-500/30">
+            <DialogContent className="sm:max-w-[425px] bg-card text-foreground border-purple-500/30">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <Settings className="w-5 h-5 text-purple-400" />
@@ -94,7 +94,7 @@ export function GameSettingsModal({
                                 value={playFee}
                                 onChange={handleFeeChange}
                                 placeholder="0.00"
-                                className="bg-muted border-border text-white pl-8 focus:border-purple-500"
+                                className="bg-muted border-border text-foreground pl-8 focus:border-purple-500"
                                 step="0.1"
                                 min="0"
                             />
@@ -150,7 +150,7 @@ export function GameSettingsModal({
                 </div>
 
                 <DialogFooter>
-                    <Button variant="outline" onClick={onClose} className="border-border hover:bg-muted hover:text-white">
+                    <Button variant="outline" onClick={onClose} className="border-border hover:bg-muted hover:text-foreground">
                         Cancel
                     </Button>
                     <Button onClick={handleSave} disabled={isLoading} className="bg-purple-600 hover:bg-purple-700">

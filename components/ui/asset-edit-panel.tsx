@@ -116,7 +116,7 @@ export function AssetEditPanel({
             value={editedTitle}
             onChange={(e) => setEditedTitle(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="flex-1 bg-card border border-purple-500 rounded px-3 py-2 text-white font-bold text-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+            className="flex-1 bg-card border border-purple-500 rounded px-3 py-2 text-foreground font-bold text-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
             autoFocus
           />
           <button
@@ -239,7 +239,7 @@ export function AssetEditPanel({
                   value={newTagKey}
                   onChange={(e) => setNewTagKey(e.target.value)}
                   placeholder="e.g., tone"
-                  className="w-full bg-card border border-border rounded px-2 py-1 text-xs text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  className="w-full bg-card border border-border rounded px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-purple-400"
                   autoFocus
                 />
               </div>
@@ -250,7 +250,7 @@ export function AssetEditPanel({
                   value={newTagValue}
                   onChange={(e) => setNewTagValue(e.target.value)}
                   placeholder="e.g., dark"
-                  className="w-full bg-card border border-border rounded px-2 py-1 text-xs text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  className="w-full bg-card border border-border rounded px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-purple-400"
                 />
               </div>
               <button

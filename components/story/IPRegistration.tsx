@@ -97,7 +97,6 @@ export function IPRegistration({ game, onRegistrationComplete }: IPRegistrationP
         });
       }
 
-      console.log(`📄 Using license terms ID: ${selectedLicenseId}`);
       const registrationResult = await registerGameAsIP(storyClient, {
         title: game.title,
         description: game.description,

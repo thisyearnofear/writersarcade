@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useRef, useState, useMemo } from 'react'
 import { Loader2, Sparkles, Gamepad2, X, Lightbulb, BookOpen, Quote } from 'lucide-react'
 import { ProgressBar } from '@/components/ui/ProgressBar'
+import { useOverlay, OverlayPortal } from '@/components/ui/overlay'
 
 type LoadingStep = 'payment' | 'validate' | 'extract' | 'generate' | 'save'
 type StepStatus = 'pending' | 'in-progress' | 'completed' | 'error'
@@ -63,6 +64,9 @@ export function GameGenerationOverlay({
   onCancel,
   paymentExplorerUrl,
 }: GameGenerationOverlayProps) {
+  // Lock scroll while generating; Escape must NOT cancel — use the Cancel button.
+  useOverlay(isOpen, () => {}, { closeOnEscape: false })
+
   const steps = ['payment', 'validate', 'extract', 'generate', 'save'] as const
   const currentStepIndex = currentStep ? steps.indexOf(currentStep) : -1
   const progress = currentStep ? ((currentStepIndex + 1) / steps.length) * 100 : 0
@@ -109,10 +113,11 @@ export function GameGenerationOverlay({
   }, [])
 
   return (
+    <OverlayPortal>
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm"
+          className="fixed inset-0 z-[90] flex items-center justify-center bg-black/90 backdrop-blur-sm"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -306,5 +311,6 @@ export function GameGenerationOverlay({
         </motion.div>
       )}
     </AnimatePresence>
+    </OverlayPortal>
   )
 }

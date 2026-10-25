@@ -175,7 +175,7 @@ function BalanceRow({
         {isLoading ? (
           <Loader2 className="w-3.5 h-3.5 text-muted-foreground animate-spin" />
         ) : (
-          <span className={`text-sm tabular-nums ${isZero ? 'text-muted-foreground' : 'text-white font-medium'}`}>
+          <span className={`text-sm tabular-nums ${isZero ? 'text-muted-foreground' : 'text-foreground font-medium'}`}>
             {value}
           </span>
         )}
@@ -391,7 +391,7 @@ export function BalanceDisplay({ mobileLayout = false }: BalanceDisplayProps) {
       ) : hasPrimaryBalance ? (
         <>
           <Coins className={`text-purple-400 ${mobileLayout ? 'w-5 h-5' : 'w-4 h-4'}`} />
-          <span className={`text-white font-medium ${textClasses}`}>{abbreviateBalance(primary.balance!.formattedBalance)}</span>
+          <span className={`text-foreground font-medium ${textClasses}`}>{abbreviateBalance(primary.balance!.formattedBalance)}</span>
           <span className={`text-muted-foreground ${textClasses}`}>{primary.balance!.symbol}</span>
           {nonZeroCount > 1 && (
             <span className={`text-purple-400 ${textClasses}`}>+{nonZeroCount - 1}</span>

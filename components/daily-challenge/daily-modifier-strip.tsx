@@ -59,7 +59,7 @@ export function DailyModifierStrip({
           </span>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-white">
+          <p className="text-sm font-medium text-foreground">
             Hidden hand · Card {cardNumber}/5 · <span style={{ color: categoryColor }}>{label}</span>
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">

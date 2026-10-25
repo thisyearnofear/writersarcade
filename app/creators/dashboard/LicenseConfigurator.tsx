@@ -89,7 +89,7 @@ export function LicenseConfigurator({ writerCoin }: { writerCoin: WriterCoin }) 
         <div className="bg-card border border-border rounded-lg p-6">
             <div className="flex justify-between items-start mb-6">
                 <div>
-                    <h3 className="text-xl font-bold text-white">License Terms (Story Protocol)</h3>
+                    <h3 className="text-xl font-bold text-foreground">License Terms (Story Protocol)</h3>
                     <p className="text-muted-foreground text-sm mt-1">
                         Configure how your generated games can be remixed and monetized.
                     </p>

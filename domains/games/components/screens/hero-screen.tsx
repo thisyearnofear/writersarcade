@@ -8,6 +8,7 @@ import { NarrativePreviewModal } from '@/components/game/narrative-preview-modal
 import { RelatedPlayStrip } from '../related-play-strip'
 import type { Game } from '../../types'
 import type { ChatEntry } from '../../hooks/use-game-session'
+import { useOverlay, OverlayPortal } from '@/components/ui/overlay'
 
 interface HeroScreenProps {
   game: Game
@@ -51,6 +52,8 @@ export function HeroScreen({
   onClearStartError,
   generateStoryboardPreview,
 }: HeroScreenProps) {
+  useOverlay(showPaymentModal, onClosePayment)
+
   return (
     <>
       <div className="fixed inset-0 w-full h-full overflow-hidden bg-black">
@@ -220,18 +223,22 @@ export function HeroScreen({
 
         {/* Payment Modal Overlay */}
         {showPaymentModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <OverlayPortal>
+          <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
             <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="insert-coin-title"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-card border border-purple-500/30 rounded-xl p-5 sm:p-6 max-w-sm w-full shadow-2xl max-h-[90vh] overflow-y-auto"
+              className="bg-card border border-purple-500/30 rounded-xl p-5 sm:p-6 max-w-sm w-full shadow-2xl max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain"
             >
               <div className="text-center space-y-4">
                 <div className="w-16 h-16 bg-purple-600/20 rounded-full flex items-center justify-center mx-auto">
                   <div className="text-3xl">🪙</div>
                 </div>
 
-                <h3 className="text-xl font-bold text-white">Insert Coin to Play</h3>
+                <h3 id="insert-coin-title" className="text-xl font-bold text-white">Insert Coin to Play</h3>
 
                 <p className="text-muted-foreground">
                   This arcade cabinet requires a credit of <br />
@@ -268,6 +275,7 @@ export function HeroScreen({
               </div>
             </motion.div>
           </div>
+          </OverlayPortal>
         )}
       </div>
 

@@ -109,11 +109,11 @@ export default function AssetDetailPage() {
             </div>
             <div>
               <p className="text-xs text-slate-400 uppercase">Type</p>
-              <p className="text-white font-semibold capitalize">{asset.type}</p>
+              <p className="text-foreground font-semibold capitalize">{asset.type}</p>
             </div>
             <div>
               <p className="text-xs text-slate-400 uppercase">Tags</p>
-              <p className="text-white font-semibold">{asset.tags.length} tags</p>
+              <p className="text-foreground font-semibold">{asset.tags.length} tags</p>
             </div>
           </div>
         </div>
@@ -208,13 +208,13 @@ export default function AssetDetailPage() {
             </div>
             <div>
               <p className="text-xs text-slate-400 uppercase">Top Genre</p>
-              <p className="text-white font-semibold">
+              <p className="text-foreground font-semibold">
                 {detail.stats.assetsByGenre[0]?.genre || 'N/A'}
               </p>
             </div>
             <div>
               <p className="text-xs text-slate-400 uppercase">Top Tag</p>
-              <p className="text-white font-semibold">
+              <p className="text-foreground font-semibold">
                 {detail.stats.topTags[0]?.tag || 'N/A'}
               </p>
             </div>

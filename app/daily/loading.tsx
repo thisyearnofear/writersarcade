@@ -1,6 +1,11 @@
+import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
+import { Header } from '@/components/layout/header'
+
 export default function DailyLoading() {
   return (
+    <ThemeWrapper theme="arcade">
     <div className="flex flex-col min-h-screen">
+      <Header />
       <main className="flex-1 py-8 px-4">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Badge + heading skeleton */}
@@ -16,5 +21,6 @@ export default function DailyLoading() {
         </div>
       </main>
     </div>
+    </ThemeWrapper>
   )
 }

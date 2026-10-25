@@ -173,7 +173,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
               <Circle className="w-2 h-2 fill-green-400 text-green-400" />
               Connected
             </span>
-            <span className="group-hover:underline group-focus:underline cursor-pointer text-white text-base truncate"
+            <span className="group-hover:underline group-focus:underline cursor-pointer text-foreground text-base truncate"
               onClick={(e) => { e.preventDefault(); openAccountModal?.() }}
             >
               {displayName}
@@ -216,7 +216,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-white">{displayName}</div>
+                  <div className="font-medium text-foreground">{displayName}</div>
                 </div>
               </div>
               {isConnected && (
@@ -233,7 +233,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
                 onClick={() => setIsOpen(false)}
               >
                 <LayoutDashboard className="w-4 h-4 text-amber-500 group-hover:text-amber-400" />
-                <span className="text-muted-foreground group-hover:text-white font-bold uppercase tracking-widest text-[10px]">Creator Studio</span>
+                <span className="text-muted-foreground group-hover:text-foreground font-bold uppercase tracking-widest text-[10px]">Creator Studio</span>
               </Link>
 
               <button
@@ -241,7 +241,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
                 className="flex items-center space-x-3 w-full p-3 rounded-lg hover:bg-emerald-500/10 transition-colors group text-left"
               >
                 <Coins className="w-4 h-4 text-emerald-400 group-hover:text-emerald-300" />
-                <span className="text-muted-foreground group-hover:text-white">Buy credits</span>
+                <span className="text-muted-foreground group-hover:text-foreground">Buy credits</span>
               </button>
 
               <Link
@@ -250,7 +250,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
                 onClick={() => setIsOpen(false)}
               >
                 <Settings className="w-4 h-4 text-purple-400 group-hover:text-purple-300" />
-                <span className="text-muted-foreground group-hover:text-white">Preferences</span>
+                <span className="text-muted-foreground group-hover:text-foreground">Preferences</span>
               </Link>
 
               <Link
@@ -259,7 +259,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
                 onClick={() => setIsOpen(false)}
               >
                 <GamepadIcon className="w-4 h-4 text-purple-400 group-hover:text-purple-300" />
-                <span className="text-muted-foreground group-hover:text-white">My Games</span>
+                <span className="text-muted-foreground group-hover:text-foreground">My Games</span>
               </Link>
 
               <Link
@@ -268,7 +268,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
                 onClick={() => setIsOpen(false)}
               >
                 <HelpCircle className="w-4 h-4 text-purple-400 group-hover:text-purple-300" />
-                <span className="text-muted-foreground group-hover:text-white">How it works</span>
+                <span className="text-muted-foreground group-hover:text-foreground">How it works</span>
               </Link>
 
               {mounted && (
@@ -283,7 +283,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
                     ) : (
                       <Sun className="w-4 h-4 text-purple-400 group-hover:text-purple-300" />
                     )}
-                    <span className="text-muted-foreground group-hover:text-white">
+                    <span className="text-muted-foreground group-hover:text-foreground">
                       {isDarkMode ? 'Switch to Light' : 'Switch to Dark'}
                     </span>
                   </button>
@@ -296,7 +296,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
                 className="flex items-center space-x-3 w-full p-3 rounded-lg hover:bg-red-600/10 transition-colors group text-left"
               >
                 <LogOut className="w-4 h-4 text-red-400 group-hover:text-red-300" />
-                <span className="text-muted-foreground group-hover:text-white">Disconnect Wallet</span>
+                <span className="text-muted-foreground group-hover:text-foreground">Disconnect Wallet</span>
               </button>
             </div>
           </div>

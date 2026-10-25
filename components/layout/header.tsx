@@ -4,7 +4,6 @@ import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import { PenLine, Sun, Moon } from 'lucide-react'
 
-import { motion, useReducedMotion } from 'framer-motion'
 import { useIsActive } from '@/hooks/useIsActive'
 import { useDarkMode } from '@/components/providers/DarkModeProvider'
 import { config } from '@/lib/config'
@@ -35,13 +34,8 @@ const NAV_LINKS = [
 ]
 
 function AnimatedNavLink({ href, label, title, isActive }: { href: string; label: string; title?: string; isActive: boolean }) {
-  const prefersReducedMotion = useReducedMotion()
-  
   return (
-    <motion.div
-      whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
-      whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
-    >
+    <div className="transition-transform hover:scale-105 active:scale-95 motion-reduce:transform-none">
       <Link
         href={href}
         title={title}
@@ -54,18 +48,13 @@ function AnimatedNavLink({ href, label, title, isActive }: { href: string; label
       >
         {label}
       </Link>
-    </motion.div>
+    </div>
   )
 }
 
 function AnimatedCreateButton({ isActive }: { isActive: boolean }) {
-  const prefersReducedMotion = useReducedMotion()
-  
   return (
-    <motion.div
-      whileHover={prefersReducedMotion ? {} : { scale: 1.05 }}
-      whileTap={prefersReducedMotion ? {} : { scale: 0.95 }}
-    >
+    <div className="transition-transform hover:scale-105 active:scale-95 motion-reduce:transform-none">
       <Link
         href="/generate"
         className={`flex items-center space-x-2 px-3 py-2 rounded-lg border transition-all text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background ${
@@ -78,7 +67,7 @@ function AnimatedCreateButton({ isActive }: { isActive: boolean }) {
         <PenLine className="w-4 h-4" />
         <span>Create</span>
       </Link>
-    </motion.div>
+    </div>
   )
 }
 
@@ -90,12 +79,10 @@ export function Header() {
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-2">
-          <motion.img 
-            src="/logo.png" 
-            alt="writersarcade" 
-            className="h-8 w-auto"
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 400, damping: 17 }}
+          <img
+            src="/logo.png"
+            alt="writersarcade"
+            className="h-8 w-auto transition-transform hover:scale-105 motion-reduce:transform-none"
           />
         </Link>
 

@@ -122,8 +122,7 @@ export function GamePlayInterface({ game, isOwner = false, onActivePlayChange }:
     return baseSuggestions
   }
 
-  const handleAIPromptSelect = (prompt: string) => {
-    console.log('AI prompt selected:', prompt)
+  const handleAIPromptSelect = (_prompt: string) => {
   }
 
   /**

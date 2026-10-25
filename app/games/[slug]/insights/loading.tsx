@@ -1,6 +1,11 @@
+import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
+import { Header } from '@/components/layout/header'
+
 export default function InsightsLoading() {
   return (
+    <ThemeWrapper theme="arcade">
     <div className="min-h-screen bg-black">
+      <Header />
       <div className="mx-auto max-w-4xl animate-pulse px-4 py-10">
         <div className="h-3 w-24 rounded bg-white/10" />
         <div className="mt-6 h-7 w-56 rounded bg-white/10" />
@@ -13,5 +18,6 @@ export default function InsightsLoading() {
         <div className="mt-8 h-64 rounded-xl border border-white/10 bg-white/5" />
       </div>
     </div>
+    </ThemeWrapper>
   )
 }

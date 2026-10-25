@@ -145,11 +145,11 @@ export function RelatedPlayStrip({ game, density, className }: RelatedPlayStripP
       aria-label={heading}
     >
       <div className="mb-3 flex items-end justify-between gap-3">
-        <h2 className={`text-white ${density === 'wait' ? 'text-xs font-semibold uppercase tracking-wider text-white/55' : 'font-serif text-lg'}`}>
+        <h2 className={`text-foreground ${density === 'wait' ? 'text-xs font-semibold uppercase tracking-wider text-foreground/55' : 'font-serif text-lg'}`}>
           {density === 'wait' ? 'Meanwhile' : heading}
         </h2>
         {density !== 'wait' ? (
-          <Link href={writerHref} className="text-xs text-white/45 transition-colors hover:text-white">
+          <Link href={writerHref} className="text-xs text-foreground/45 transition-colors hover:text-foreground">
             {fromWriter > 0 ? 'All from this writer' : 'Arcade'}
           </Link>
         ) : null}

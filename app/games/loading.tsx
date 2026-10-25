@@ -1,8 +1,12 @@
 import { GridSkeleton } from '@/components/effects'
+import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
+import { Header } from '@/components/layout/header'
 
 export default function GamesLoading() {
   return (
+    <ThemeWrapper theme="arcade">
     <div className="flex flex-col min-h-screen">
+      <Header />
       <main className="flex-1 py-8 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="mb-8">
@@ -13,5 +17,6 @@ export default function GamesLoading() {
         </div>
       </main>
     </div>
+    </ThemeWrapper>
   )
 }

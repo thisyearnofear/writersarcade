@@ -79,7 +79,7 @@ export function PlayDetailsSheet({
           </section>
 
           <section>
-            <h3 className="mb-2 text-xs font-bold uppercase tracking-widest text-white/70">Story Map</h3>
+            <h3 className="mb-2 text-xs font-bold uppercase tracking-widest text-foreground/70">Story Map</h3>
             <div className="flex flex-wrap gap-2">
               {panelMessages.map((m, idx) => (
                 <div
@@ -105,7 +105,7 @@ export function PlayDetailsSheet({
           </section>
 
           <section>
-            <h3 className="mb-2 text-xs font-bold uppercase tracking-widest text-white/70">Keyboard</h3>
+            <h3 className="mb-2 text-xs font-bold uppercase tracking-widest text-foreground/70">Keyboard</h3>
             <ul className="space-y-2 text-xs text-muted-foreground">
               <li>
                 <kbd className="mr-1 rounded bg-white/10 px-1.5 py-0.5 font-mono text-white/70">1-4</kbd>

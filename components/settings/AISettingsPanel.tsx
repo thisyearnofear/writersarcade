@@ -112,7 +112,7 @@ export function AISettingsPanel({ initialPreferences }: { initialPreferences?: U
     <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-white">AI Provider Settings</h3>
+          <h3 className="font-semibold text-foreground">AI Provider Settings</h3>
           <p className="text-xs text-muted-foreground">Configure your preferred AI models</p>
         </div>
         {isSaved && (
@@ -141,7 +141,7 @@ export function AISettingsPanel({ initialPreferences }: { initialPreferences?: U
               placeholder="Enter your Google AI API key"
               value={apiKey}
               onChange={(e) => handleApiKeyChange(e.target.value)}
-              className="font-mono text-xs bg-muted border-border text-white"
+              className="font-mono text-xs bg-muted border-border text-foreground"
             />
             <div className="flex gap-2">
               <Button
@@ -169,7 +169,7 @@ export function AISettingsPanel({ initialPreferences }: { initialPreferences?: U
 
           <div className="flex items-center justify-between text-sm pt-2">
             <div>
-              <span className="text-white">Prioritize Gemini 3</span>
+              <span className="text-foreground">Prioritize Gemini 3</span>
               <p className="text-xs text-muted-foreground">When enabled, prefer Gemini for AI tasks</p>
             </div>
             <Switch

@@ -8,6 +8,7 @@ import { AssetGenerationResponse } from '@/domains/games/types'
 import { Header } from '@/components/layout/header'
 import { useOnboarding } from '@/hooks/useOnboarding'
 import { RevenueForecast } from '@/components/ui/revenue-forecast'
+import { useOverlay, OverlayPortal } from '@/components/ui/overlay'
 
 type WorkshopState = 'input' | 'processing' | 'workshop' | 'compiling' | 'minting'
 
@@ -92,8 +93,11 @@ export function WorkshopClient() {
         if (prev) setAssets(prev.state)
     }
 
+    const tourOpen = Boolean(showOnboarding && flowId === 'workshop-tour')
+    useOverlay(tourOpen, dismissOnboarding)
+
     const renderTour = () => {
-        if (!showOnboarding || flowId !== 'workshop-tour') return null
+        if (!tourOpen) return null
         const steps = [
             "Welcome to the Workshop! This is where you can refine your game assets.",
             "Decomposed assets appear here. You can drag and drop them to organize.",
@@ -101,8 +105,9 @@ export function WorkshopClient() {
             "Once you're ready, look for the 'Register IP' button to mint your game!"
         ]
         return (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-                <div className="bg-card border border-purple-500 p-6 rounded-2xl max-w-sm w-full">
+            <OverlayPortal>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-4">
+                <div role="dialog" aria-modal="true" aria-label="Workshop tour" className="bg-card border border-purple-500 p-6 rounded-2xl max-w-sm w-full max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain">
                     <h3 className="text-white font-bold mb-2">Workshop Tour ({currentStep + 1}/{steps.length})</h3>
                     <p className="text-muted-foreground text-sm mb-6">{steps[currentStep]}</p>
                     <div className="flex justify-between">
@@ -115,6 +120,7 @@ export function WorkshopClient() {
                     </div>
                 </div>
             </motion.div>
+            </OverlayPortal>
         )
     }
 

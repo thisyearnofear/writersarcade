@@ -11,6 +11,7 @@ import type { GenreOption } from '@/domains/games/components/genre-filter-list'
 import { DailyChallengeBanner } from '@/components/daily-challenge/daily-challenge-banner'
 import { WRITER_COINS } from '@/lib/writer-coins'
 import Link from 'next/link'
+import { useOverlay, OverlayPortal } from '@/components/ui/overlay'
 
 const genres: GenreOption[] = [
   { id: 'all', label: 'All', icon: BookOpen },
@@ -29,6 +30,7 @@ export function GamesClient() {
   const [itemsPerPage] = useState(12)
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false)
   const [sortBy, setSortBy] = useState<'recent' | 'playCount'>('recent')
+  useOverlay(filterDrawerOpen, () => setFilterDrawerOpen(false))
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage)
@@ -102,13 +104,13 @@ export function GamesClient() {
           </div>
 
           {filterDrawerOpen && (
-            <>
+            <OverlayPortal>
               <div
-                className="fixed inset-0 z-40 bg-black/60 lg:hidden"
+                className="fixed inset-0 z-[80] bg-black/60 lg:hidden"
                 onClick={() => setFilterDrawerOpen(false)}
                 aria-hidden="true"
               />
-              <div className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-card border-t border-border rounded-t-lg p-5 lg:hidden animate-slide-in-up">
+              <div role="dialog" aria-modal="true" aria-label="Filters" className="fixed bottom-0 left-0 right-0 z-[80] max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain bg-white dark:bg-card border-t border-border rounded-t-lg p-5 lg:hidden animate-slide-in-up">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2">
                     <Filter className="w-4 h-4" /> Filters
@@ -164,7 +166,7 @@ export function GamesClient() {
                   />
                 </div>
               </div>
-            </>
+            </OverlayPortal>
           )}
 
           <div className="max-w-7xl mx-auto px-4 py-8">

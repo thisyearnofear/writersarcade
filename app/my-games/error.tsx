@@ -3,6 +3,8 @@
 import { useEffect } from 'react'
 import Link from 'next/link'
 import { Gamepad2 } from 'lucide-react'
+import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
+import { Header } from '@/components/layout/header'
 
 export default function MyGamesError({
   error,
@@ -16,7 +18,9 @@ export default function MyGamesError({
   }, [error])
 
   return (
+    <ThemeWrapper theme="arcade">
     <div className="flex flex-col min-h-screen">
+      <Header />
       <main className="flex-1 flex items-center justify-center py-16 px-4">
         <div className="text-center max-w-md">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-destructive/10">
@@ -43,5 +47,6 @@ export default function MyGamesError({
         </div>
       </main>
     </div>
+    </ThemeWrapper>
   )
 }

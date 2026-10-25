@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react'
 import { ErrorCard } from '@/components/error/ErrorCard'
+import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
+import { Header } from '@/components/layout/header'
 
 export default function ProfileError({
   error,
@@ -15,7 +17,9 @@ export default function ProfileError({
   }, [error])
 
   return (
+    <ThemeWrapper theme="arcade">
     <div className="flex flex-col min-h-screen">
+      <Header />
       <main className="flex-1 flex items-center justify-center py-16 px-4">
         <ErrorCard
           error={error}
@@ -25,5 +29,6 @@ export default function ProfileError({
         />
       </main>
     </div>
+    </ThemeWrapper>
   )
 }

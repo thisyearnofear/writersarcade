@@ -7,6 +7,7 @@ import { GameplayOption } from '../types'
 import { parsePanel } from '../utils/text-parser'
 import { ImageGenerationResult } from '../services/image-generation.service'
 import { ImageLightbox } from './image-lightbox'
+import { useOverlay, OverlayPortal } from '@/components/ui/overlay'
 import { AnimatedOptionButton } from './animated-option-button'
 import { StreamingTypewriter } from '@/components/effects'
 import { Button } from '@/components/ui/button'
@@ -105,6 +106,7 @@ export function ComicPanelCard({
   const [imageHistory, setImageHistory] = useState<ImageVersion[]>([])
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0)
   const [showImageComparison, setShowImageComparison] = useState(false)
+  useOverlay(showImageComparison, () => setShowImageComparison(false))
   const [regenerationCount, setRegenerationCount] = useState(0)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [revealAnimation, setRevealAnimation] = useState(false)
@@ -689,26 +691,30 @@ export function ComicPanelCard({
             </div>
 
             {/* Image Comparison Modal */}
+            <OverlayPortal>
             <AnimatePresence>
             {showImageComparison && imageHistory.length > 1 && (
             <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
             onClick={() => setShowImageComparison(false)}
             >
             <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="image-comparison-title"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-card border border-white/10 rounded-xl overflow-hidden w-full max-w-5xl max-h-[90vh] flex flex-col"
+              className="bg-card border border-white/10 rounded-xl overflow-hidden w-full max-w-5xl max-h-[calc(100dvh-2rem)] flex flex-col"
             >
               {/* Header */}
               <div className="p-4 border-b border-white/10 bg-black/50">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-white">Choose Your Image</h3>
+                  <h3 id="image-comparison-title" className="text-lg font-semibold text-white">Choose Your Image</h3>
                   <button
                     onClick={() => setShowImageComparison(false)}
                     className="text-muted-foreground hover:text-white transition-colors"
@@ -786,6 +792,7 @@ export function ComicPanelCard({
             </motion.div>
             )}
             </AnimatePresence>
+            </OverlayPortal>
             </>
             )
             }

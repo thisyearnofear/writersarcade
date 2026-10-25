@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { ConceptTerm } from '@/lib/concept-definitions'
 import { isOnboardingDismissed } from '@/hooks/useOnboarding'
 import { useDialogA11y } from '@/hooks/use-dialog-a11y'
+import { OverlayPortal } from '@/components/ui/overlay'
 
 const STORAGE_KEY = 'writersarcade:play-welcome-dismissed'
 
@@ -94,9 +95,10 @@ export function PlayWelcomeCoach({ gameSlug }: PlayWelcomeCoachProps) {
   const isLast = step === steps.length - 1
 
   return (
+    <OverlayPortal>
     <AnimatePresence>
       <div
-        className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
         onClick={handleBackdropClick}
         aria-hidden={!open}
       >
@@ -110,7 +112,7 @@ export function PlayWelcomeCoach({ gameSlug }: PlayWelcomeCoachProps) {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 16 }}
-          className="w-full max-w-md rounded-2xl border border-border bg-card shadow-2xl"
+          className="w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-2xl border border-border bg-card shadow-2xl"
         >
           <div className="flex items-center justify-between border-b border-border p-4">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -145,5 +147,6 @@ export function PlayWelcomeCoach({ gameSlug }: PlayWelcomeCoachProps) {
         </motion.div>
       </div>
     </AnimatePresence>
+    </OverlayPortal>
   )
 }

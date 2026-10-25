@@ -126,7 +126,7 @@ export function BasePaintCollectionView() {
                             href={getBasePaintDayUrl(canvas.day)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="rounded-md border border-white/20 px-3 py-1.5 text-xs text-white/70 hover:text-white"
+                            className="rounded-md border border-white/20 px-3 py-1.5 text-xs text-foreground/70 hover:text-foreground"
                           >
                             On BasePaint
                           </a>

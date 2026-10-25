@@ -128,7 +128,7 @@ export function BasePaintCanvasMeta({
           <p className="text-xs font-semibold uppercase tracking-wider text-purple-300/90">
             What the community painted
           </p>
-          <p className="mt-1 text-sm leading-relaxed text-white/75">{canvasDescription}</p>
+          <p className="mt-1 text-sm leading-relaxed text-foreground/75">{canvasDescription}</p>
         </div>
       )}
 
@@ -164,7 +164,7 @@ export function BasePaintCanvasMeta({
         >
           View & mint on BasePaint →
         </a>
-        <p className="mt-1 text-[10px] text-white/40">Artwork © BasePaint community (CC0)</p>
+        <p className="mt-1 text-[10px] text-foreground/40">Artwork © BasePaint community (CC0)</p>
       </div>
     </div>
   )

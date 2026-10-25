@@ -83,7 +83,7 @@ export function AssetPalette({ isOpen, onClose, onInject }: AssetPaletteProps) {
                     {/* Header */}
                     <div className="flex justify-between items-center mb-4">
                         <div>
-                            <h3 className="text-lg font-bold text-white">Marketplace Assets</h3>
+                            <h3 className="text-lg font-bold text-foreground">Marketplace Assets</h3>
                             <p className="text-xs text-muted-foreground">Drag or click to add</p>
                         </div>
                         <button

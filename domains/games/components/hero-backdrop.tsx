@@ -1,6 +1,6 @@
 'use client'
 
-import { useSyncExternalStore } from 'react'
+import { useSyncExternalStore, useEffect, useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import type { SampleGame } from './hero-game-strip'
 
@@ -18,6 +18,31 @@ function useIsDesktop(): boolean {
 }
 
 /**
+ * Defer the ~8MB ambient clip until after window load + idle so it doesn't
+ * compete with LCP; skipped entirely on save-data connections.
+ */
+function useAmbientVideoReady(): boolean {
+  const [ready, setReady] = useState(false)
+  useEffect(() => {
+    const nav = navigator as Navigator & { connection?: { saveData?: boolean } }
+    if (nav.connection?.saveData) return
+    let cancelled = false
+    const arm = () => {
+      const ric = (window as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback
+      if (ric) ric(() => { if (!cancelled) setReady(true) }, { timeout: 1500 })
+      else window.setTimeout(() => { if (!cancelled) setReady(true) }, 1500)
+    }
+    if (document.readyState === 'complete') arm()
+    else window.addEventListener('load', arm, { once: true })
+    return () => {
+      cancelled = true
+      window.removeEventListener('load', arm)
+    }
+  }, [])
+  return ready
+}
+
+/**
  * Ambient hero backdrop made from the product's own output — the pitch is
  * "prose becomes film," so the field behind it should look like it.
  *
@@ -32,6 +57,7 @@ function useIsDesktop(): boolean {
 export function HeroBackdrop({ games }: { games: (SampleGame & { montageVideoUrl?: string; clipVideoUrl?: string })[] }) {
   const reduceMotion = useReducedMotion()
   const isDesktop = useIsDesktop()
+  const videoReady = useAmbientVideoReady()
 
   // Prefer a single ~8MB panel clip over the 40MB+ montage for ambient use.
   const film = games.find((g) => g.clipVideoUrl?.startsWith('http'))?.clipVideoUrl
@@ -43,10 +69,11 @@ export function HeroBackdrop({ games }: { games: (SampleGame & { montageVideoUrl
 
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-      {film && isDesktop && !reduceMotion ? (
+      {film && isDesktop && !reduceMotion && videoReady ? (
         <video
           src={film}
           poster={poster}
+          preload="metadata"
           autoPlay
           muted
           loop

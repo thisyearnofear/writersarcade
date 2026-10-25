@@ -34,6 +34,7 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
     storyIpId?: string;
   } | null>(null);
   const [isMinting, setIsMinting] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Start the game
@@ -130,7 +131,8 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
     if (!success) {
       // Fallback: copy to clipboard
       navigator.clipboard.writeText(`${window.location.origin}/games/${game.slug}`);
-      alert("Link copied to clipboard!");
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
     }
     };
 
@@ -395,7 +397,7 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
                                 className="group flex w-full items-center justify-center space-x-3 rounded-2xl bg-white py-4 text-sm font-black uppercase tracking-widest text-black transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xl"
                             >
                                 <Share2 className="h-4 w-4" />
-                                <span>Share to Feed</span>
+                                <span>{linkCopied ? "Copied!" : "Share to Feed"}</span>
                             </button>
 
                             <div className="grid grid-cols-2 gap-2">

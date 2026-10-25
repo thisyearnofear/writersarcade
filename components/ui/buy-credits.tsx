@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { createPortal } from 'react-dom'
 import { useAccount, useWalletClient, useSwitchChain } from 'wagmi'
 import { Coins, Loader2, Plus, ExternalLink, X, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -10,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { CREDITS_CONFIG, MUSD_CONFIG, MEZO_TREASURY_ADDRESS } from '@/lib/writer-coins'
 import { MEZO_TESTNET_CHAIN_ID } from '@/lib/wallet/chains'
 import { useMUSDBalance } from '@/hooks/useMUSDBalance'
+import { useOverlay, OverlayPortal } from '@/components/ui/overlay'
 
 const ERC20_TRANSFER_ABI = [{
   name: 'transfer',
@@ -44,7 +44,6 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
   const [credits, setCredits] = useState<CreditsData | null>(null)
   const [loading, setLoading] = useState(false)
   const [showModal, setShowModal] = useState(false)
-  const [mounted, setMounted] = useState(false)
   const [selectedAmount, setSelectedAmount] = useState(1000)
   const [paymentMethod, setPaymentMethod] = useState<'musd' | 'card' | null>(null)
   const [quoteLoading, setQuoteLoading] = useState(false)
@@ -60,10 +59,6 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
   const successRef = useRef<HTMLDivElement | null>(null)
 
   const effectivePaymentMethod = paymentMethod ?? (isConnected ? 'musd' : 'card')
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   useEffect(() => {
     setLoading(true)
@@ -97,19 +92,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
   }, [address])
 
   // Escape to close + lock body scroll while the modal is open.
-  useEffect(() => {
-    if (!showModal) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setShowModal(false)
-    }
-    document.addEventListener('keydown', onKey)
-    const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = previousOverflow
-    }
-  }, [showModal])
+  useOverlay(showModal, () => setShowModal(false))
 
   // Bring the success confirmation into view after an MUSD purchase.
   useEffect(() => {
@@ -247,6 +230,9 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             onClick={e => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Buy credits"
             className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto overscroll-contain rounded-xl border border-border bg-card p-5 shadow-xl"
           >
             {widgetUrl ? (
@@ -506,7 +492,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
         </button>
       )}
 
-      {mounted ? createPortal(modal, document.body) : null}
+      <OverlayPortal>{modal}</OverlayPortal>
     </>
   )
 }

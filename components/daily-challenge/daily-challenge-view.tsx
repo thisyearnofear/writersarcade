@@ -297,9 +297,9 @@ export function DailyChallengeView({ variant = 'arcade' }: DailyChallengeViewPro
                           {challenge.articleTitle || challenge.theme}
                         </h1>
                         {challenge.articleAuthor && (
-                          <p className="text-sm text-white/75">by {challenge.articleAuthor}</p>
+                          <p className="text-sm text-foreground/75">by {challenge.articleAuthor}</p>
                         )}
-                        <p className="text-sm text-white/65">
+                        <p className="text-sm text-foreground/65">
                           Staged in today&apos;s world — BasePaint Day {challenge.day}
                           {challenge.canvasTheme ? ` · ${challenge.canvasTheme}` : ''}
                         </p>
@@ -309,13 +309,13 @@ export function DailyChallengeView({ variant = 'arcade' }: DailyChallengeViewPro
                         <h1 className="text-3xl font-bold leading-tight md:text-4xl">
                           {challenge.theme}
                         </h1>
-                        <p className="text-sm text-white/65">
+                        <p className="text-sm text-foreground/65">
                           BasePaint Day {challenge.day} — same canvas for everyone today
                         </p>
                       </div>
                     )}
 
-                    <p className="max-w-lg text-sm text-white/70">
+                    <p className="max-w-lg text-sm text-foreground/70">
                       {dailyMode === 'live'
                         ? 'Same source for all players. Your five encrypted modifier cards deal a unique story hand on Base.'
                         : 'Preview today’s world below. Leaderboard scoring joins when on-chain setup finishes.'}
@@ -356,7 +356,7 @@ export function DailyChallengeView({ variant = 'arcade' }: DailyChallengeViewPro
                               </>
                             )}
                           </button>
-                          <p className="text-xs text-white/55">
+                          <p className="text-xs text-foreground/55">
                             {hasLiveSession
                               ? 'Already paid — your 5 cards are dealt. Resuming is always free.'
                               : isConnected

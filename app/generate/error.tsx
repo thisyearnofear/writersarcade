@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react'
 import Link from 'next/link'
+import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
+import { Header } from '@/components/layout/header'
 
 export default function GenerateError({
   error,
@@ -15,7 +17,9 @@ export default function GenerateError({
   }, [error])
 
   return (
+    <ThemeWrapper theme="arcade">
     <div className="flex flex-col min-h-screen">
+      <Header />
       <main className="flex-1 flex items-center justify-center py-16 px-4">
         <div className="text-center max-w-md">
           <h2 className="text-xl font-semibold text-foreground mb-2">Couldn't load the generator</h2>
@@ -39,5 +43,6 @@ export default function GenerateError({
         </div>
       </main>
     </div>
+    </ThemeWrapper>
   )
 }

@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { ExternalLink } from 'lucide-react'
 import { CopyAddressButton } from '@/components/ui/copy-address-button'
-import { motion } from 'framer-motion'
 import { WRITER_COINS } from '@/lib/writer-coins'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
@@ -28,17 +27,11 @@ export default function WritersPage() {
               Every game is generated from a real article. When you play or mint, the writer earns — automatically, on-chain.
             </p>
 
-            <motion.ul
-              className="divide-y divide-border"
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.1 }}
-              variants={{ visible: { transition: { staggerChildren: 0.07 } } }}
-            >
+            <ul className="divide-y divide-border">
               {WRITER_COINS.map((coin) => (
-                <motion.li
+                <li
                   key={coin.id}
-                  variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } } }}
+                  className="animate-slide-up motion-reduce:animate-none"
                 >
                   <Link
                     href={`/writers/${coin.id}`}
@@ -73,9 +66,9 @@ export default function WritersPage() {
                       </span>
                     </div>
                   </Link>
-                </motion.li>
+                </li>
               ))}
-            </motion.ul>
+            </ul>
           </div>
         </main>
 

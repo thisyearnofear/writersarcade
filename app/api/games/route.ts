@@ -1,6 +1,5 @@
 import { NextRequest } from 'next/server'
-import { GameDatabaseService } from '@/domains/games/services/game-database.service'
-import { prisma } from '@/lib/prisma'
+import { getPublicGamesWithClips } from '@/domains/games/services/public-games.service'
 import { cacheGet, cacheSet } from '@/lib/cache'
 import { ok, fail } from '@/lib/api-response'
 
@@ -41,7 +40,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const result = await GameDatabaseService.getGames({
+    const result = await getPublicGamesWithClips({
       limit,
       offset,
       search,
@@ -52,27 +51,7 @@ export async function GET(request: NextRequest) {
       requireImage,
       requireArtifact,
       sortBy,
-      includePrivate: false,
     })
-
-    // Enrich each game with its first landed clip — powers ambient surfaces
-    // (hero backdrop) with a light ~8MB clip instead of the full montage MP4.
-    const ids = result.games.map((g) => g.id)
-    if (ids.length > 0) {
-      const clips = await prisma.gameArtifactPanel.findMany({
-        where: { gameId: { in: ids }, videoUrl: { not: null } },
-        select: { gameId: true, videoUrl: true },
-        orderBy: { panelIndex: 'asc' },
-      })
-      const clipByGame = new Map<string, string>()
-      for (const c of clips) {
-        if (c.videoUrl && !clipByGame.has(c.gameId)) clipByGame.set(c.gameId, c.videoUrl)
-      }
-      for (const g of result.games) {
-        const clip = clipByGame.get(g.id)
-        if (clip) g.clipVideoUrl = clip
-      }
-    }
 
     if (cacheKey) cacheSet(cacheKey, result)
 

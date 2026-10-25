@@ -152,7 +152,7 @@ export default function CreateGamePage() {
         {/* Step Indicator */}
         <div className="flex items-center justify-between mb-12">
           <div className={`flex items-center ${step === 'select' ? 'opacity-100' : 'opacity-50'}`}>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-foreground font-bold ${
               step === 'select' || ['customize', 'confirm'].includes(step) ? 'bg-blue-600' : 'bg-slate-600'
             }`}>
               1
@@ -390,7 +390,7 @@ export default function CreateGamePage() {
                 {gameDescription && (
                   <div>
                     <p className="text-sm text-slate-400">Description</p>
-                    <p className="text-white">{gameDescription}</p>
+                    <p className="text-foreground">{gameDescription}</p>
                   </div>
                 )}
               </div>
