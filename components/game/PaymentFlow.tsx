@@ -3,8 +3,7 @@
 import { GetMusdOptions } from '@/components/mezo/GetMusdOptions'
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { useAccount, useWalletClient, useSwitchChain } from 'wagmi'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { useWeb3Auth } from '@/components/providers/Web3Provider'
+import { useWeb3Auth, openWalletConnectModal } from '@/components/providers/web3-auth-context'
 import { type PaymentToken, getPaymentTokenConfig, CREDITS_CONFIG } from '@/lib/writer-coins'
 import type { PaymentAction } from '@/domains/payments/types'
 import { ErrorCard } from '@/components/error/ErrorCard'
@@ -53,7 +52,6 @@ export function PaymentFlow({
 }: PaymentFlowProps) {
   const { address: userAddress, chainId } = useAccount()
   const { status: authStatus } = useWeb3Auth()
-  const { openConnectModal } = useConnectModal()
   const { data: walletClient } = useWalletClient()
   const { switchChainAsync } = useSwitchChain()
 
@@ -131,7 +129,7 @@ export function PaymentFlow({
 
   const handleTokenPayment = useCallback(async () => {
     if (needsWalletSignIn) {
-      openConnectModal?.()
+      openWalletConnectModal()
       return
     }
     if (!walletClient || !userAddress) {
@@ -177,11 +175,11 @@ export function PaymentFlow({
     } finally {
       setIsProcessing(false)
     }
-  }, [walletClient, userAddress, paymentToken, action, hasInsufficientBalance, userBalance, requiredAmount, onPaymentStart, onPaymentSuccess, onPaymentError, refresh, refreshMUSDBalance, isMUSD, config, tokenSymbol, needsWalletSignIn, openConnectModal])
+  }, [walletClient, userAddress, paymentToken, action, hasInsufficientBalance, userBalance, requiredAmount, onPaymentStart, onPaymentSuccess, onPaymentError, refresh, refreshMUSDBalance, isMUSD, config, tokenSymbol, needsWalletSignIn])
 
   const handleCreditPayment = useCallback(async () => {
     if (needsWalletSignIn) {
-      openConnectModal?.()
+      openWalletConnectModal()
       return
     }
     if (!userAddress) {
@@ -223,7 +221,7 @@ export function PaymentFlow({
       setIsProcessing(false)
     }
    
-  }, [userAddress, action, hasInsufficientBalance, userBalance, requiredAmount, onPaymentStart, onPaymentSuccess, onPaymentError, needsWalletSignIn, openConnectModal])
+  }, [userAddress, action, hasInsufficientBalance, userBalance, requiredAmount, onPaymentStart, onPaymentSuccess, onPaymentError, needsWalletSignIn])
 
   const actionLabel = isCredits
     ? `Pay ${requiredAmount} Credits and ${action === 'generate-game' ? 'Generate' : 'Mint'}`
@@ -411,7 +409,7 @@ export function PaymentFlow({
       </AnimatePresence>
 
       <Button
-        onClick={needsWalletSignIn ? () => openConnectModal?.() : isWrongChain ? handleNetworkSwitch : (isCredits ? handleCreditPayment : handleTokenPayment)}
+        onClick={needsWalletSignIn ? () => openWalletConnectModal() : isWrongChain ? handleNetworkSwitch : (isCredits ? handleCreditPayment : handleTokenPayment)}
         disabled={
           disabled || isProcessing || (isCredits ? !userAddress : (!walletClient || !userAddress)) ||
           (isCredits ? isLoadingCredits : isLoadingBalance) || (!needsWalletSignIn && hasInsufficientBalance)

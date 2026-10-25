@@ -98,21 +98,30 @@ function getQueryClient() {
   return queryClient;
 }
 
-import { useState, useEffect, useMemo, createContext, useContext } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   createAuthenticationAdapter,
   RainbowKitAuthenticationProvider,
+  useConnectModal,
   AuthenticationStatus,
 } from '@rainbow-me/rainbowkit';
+import { Web3AuthContext, OPEN_CONNECT_MODAL_EVENT } from './web3-auth-context';
 import { SiweMessage } from 'siwe';
 import { logger } from '@/lib/config';
 
-interface Web3AuthContextType {
-  status: AuthenticationStatus;
-}
-const Web3AuthContext = createContext<Web3AuthContextType>({ status: 'loading' });
+export { useWeb3Auth } from './web3-auth-context';
 
-export const useWeb3Auth = () => useContext(Web3AuthContext);
+// Lives inside RainbowKitProvider so useConnectModal is available; translates
+// the dependency-free OPEN_CONNECT_MODAL_EVENT into the real modal.
+function ConnectModalListener() {
+  const { openConnectModal } = useConnectModal();
+  useEffect(() => {
+    const handler = () => openConnectModal?.();
+    window.addEventListener(OPEN_CONNECT_MODAL_EVENT, handler);
+    return () => window.removeEventListener(OPEN_CONNECT_MODAL_EVENT, handler);
+  }, [openConnectModal]);
+  return null;
+}
 
 export function Web3Provider({ children }: { children: React.ReactNode }) {
   const [authStatus, setAuthStatus] = useState<AuthenticationStatus>('loading');
@@ -217,6 +226,7 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
                 modalSize="compact"
                 initialChain={base}
               >
+                <ConnectModalListener />
                 {children}
               </RainbowKitProvider>
             </RainbowKitAuthenticationProvider>

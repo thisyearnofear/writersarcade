@@ -2,8 +2,7 @@
 
 import { useState } from 'react'
 import { useWriteContract, useChainId, useSwitchChain, useAccount } from 'wagmi'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { useWeb3Auth } from '@/components/providers/Web3Provider'
+import { useWeb3Auth, openWalletConnectModal } from '@/components/providers/web3-auth-context'
 import { parseEther } from 'viem'
 import { useToast } from '@/components/ui/use-toast'
 import { getWriterCoinById } from '@/lib/writer-coins'
@@ -92,7 +91,6 @@ export function useGameBlockchain(game: Game, options: GameBlockchainOptions = {
 
     const { address: accountAddress } = useAccount()
     const { status: authStatus } = useWeb3Auth()
-    const { openConnectModal } = useConnectModal()
     const chainId = useChainId()
     const { switchChain, isPending: isSwitchingChain } = useSwitchChain()
 
@@ -144,7 +142,7 @@ export function useGameBlockchain(game: Game, options: GameBlockchainOptions = {
         }
         if (authStatus !== 'authenticated') {
             toast({ title: 'Sign in required', description: 'Sign the wallet message to mint.', variant: 'destructive' })
-            openConnectModal?.()
+            openWalletConnectModal()
             return
         }
 

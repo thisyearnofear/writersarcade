@@ -3,8 +3,7 @@
 import { GetMusdOptions } from '@/components/mezo/GetMusdOptions'
 import { useState, useEffect, useRef } from 'react'
 import { useAccount, useWalletClient, useSwitchChain } from 'wagmi'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
-import { useWeb3Auth } from '@/components/providers/Web3Provider'
+import { useWeb3Auth, openWalletConnectModal } from '@/components/providers/web3-auth-context'
 import { Coins, Loader2, Plus, ExternalLink, X, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -54,7 +53,6 @@ export function notifyCreditsChanged() {
 export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
   const { address, isConnected, chainId } = useAccount()
   const { status: authStatus } = useWeb3Auth()
-  const { openConnectModal } = useConnectModal()
   const { data: walletClient } = useWalletClient()
   const { switchChainAsync } = useSwitchChain()
   const { balance: musdBalance, formatted: musdFormatted, refresh: refreshMUSDBalance } = useMUSDBalance()
@@ -287,7 +285,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
 
   const handlePayWithMusd = async () => {
     if (needsWalletSignIn) {
-      openConnectModal?.()
+      openWalletConnectModal()
       return
     }
     if (!walletClient || !address) return
@@ -590,7 +588,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                           type="button"
                           onClick={() => {
                             if (needsWalletSignIn) {
-                              openConnectModal?.()
+                              openWalletConnectModal()
                               return
                             }
                             void verifyMusdPurchase(pendingMusdTx).catch(err =>
@@ -632,7 +630,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                           </div>
                         </div>
                         <Button
-                          onClick={needsWalletSignIn ? () => openConnectModal?.() : isWrongMezoChain ? () => switchChainAsync({ chainId: MEZO_ACTIVE_CHAIN_ID }).catch(() => {}) : handlePayWithMusd}
+                          onClick={needsWalletSignIn ? () => openWalletConnectModal() : isWrongMezoChain ? () => switchChainAsync({ chainId: MEZO_ACTIVE_CHAIN_ID }).catch(() => {}) : handlePayWithMusd}
                           disabled={musdLoading || (!needsWalletSignIn && !isWrongMezoChain && hasInsufficientMusd)}
                           className="mt-3 w-full bg-amber-600 hover:bg-amber-500 text-white"
                           size="lg"
