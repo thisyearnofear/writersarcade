@@ -5,8 +5,6 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  forge-std: https://codeload.github.com/foundry-rs/forge-std/tar.gz/2f05b30
-  ds-test: https://codeload.github.com/dapphub/ds-test/tar.gz/e282159
   '@safe-global/safe-smart-account': 1.5.0
   '@base-org/account': 2.4.0
   '@coinbase/wallet-sdk': 3.9.3
@@ -38,9 +36,6 @@ importers:
       '@farcaster/miniapp-sdk':
         specifier: ^0.2.1
         version: 0.2.1(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
-      '@inco/lightning':
-        specifier: 1.0.2
-        version: 1.0.2
       '@inco/lightning-js':
         specifier: 1.0.2
         version: 1.0.2(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
@@ -1571,11 +1566,7 @@ packages:
   '@inco/lightning-js@1.0.2':
     resolution: {integrity: sha512-spNyxdeDnnfHifHR4iDW4Tgdnj/7gyoI0UAEp3MZQhi+skDlwUzJA55bo9PVR38c2oYA/Lj3gdFbb00jfydp1Q==}
 
-  '@inco/lightning@1.0.2':
-    resolution: {integrity: sha512-89wpEO//L3GqJbLs8suubVgmswt4n88efdSg1XNfli8gFsBXWexKcCM2k+cfxMFbqcOC8VZ8Vw/pDNbnriPxHQ==}
 
-  '@inco/shared@0.1.0':
-    resolution: {integrity: sha512-Yw4KnTCGJPMGlWFq1JEpuadoNYFEXA+TObwNsR2Tq9ICgf0iVksSYatqiUeHaB1/J9Vyo5obZOKsU92Oieacog==}
 
   '@isaacs/ttlcache@1.4.1':
     resolution: {integrity: sha512-RQgQ4uQ+pLbqXfOmieB91ejmLwvSgv9nLx6sT6sD83s7umBypgg+OIBOBbEUiJXrfpnp9j0mRhYYdzp9uqq3lA==}
@@ -5313,8 +5304,6 @@ packages:
     resolution: {integrity: sha512-JVUnt+DUIzu87TABbhPmNfVdBDt18BLOWjMUFJMSi/Qqg7NTYtabbvSNJGOJ7afbRuv9D/lngizHtP7QyLQ+9w==}
     engines: {node: '>=12'}
 
-  ds-test@https://codeload.github.com/dapphub/ds-test/tar.gz/e282159:
-    resolution: {tarball: https://codeload.github.com/dapphub/ds-test/tar.gz/e282159}
     version: 1.0.0
 
   dunder-proto@1.0.1:
@@ -5873,8 +5862,6 @@ packages:
   forever-agent@0.6.1:
     resolution: {integrity: sha512-j0KLYPhm6zeac4lz3oJ3o65qvgQCcPubiyotZrXqEaG4hNagNYO8qdlUrX5vwqv9ohqeT/Z3j6+yW067yWWdUw==}
 
-  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/2f05b30:
-    resolution: {tarball: https://codeload.github.com/foundry-rs/forge-std/tar.gz/2f05b30}
     version: 1.14.0
 
   form-data-encoder@1.7.1:
@@ -10873,21 +10860,7 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@inco/lightning@1.0.2':
-    dependencies:
-      '@inco/shared': 0.1.0
-      '@openzeppelin/contracts': 5.4.0
-      '@openzeppelin/contracts-upgradeable': 5.4.0(@openzeppelin/contracts@5.4.0)
-      '@safe-global/safe-smart-account': 1.5.0
-      ds-test: https://codeload.github.com/dapphub/ds-test/tar.gz/e282159
-      forge-std: https://codeload.github.com/foundry-rs/forge-std/tar.gz/2f05b30
-      tsx: 4.20.6
 
-  '@inco/shared@0.1.0':
-    dependencies:
-      '@openzeppelin/contracts': 5.3.0
-      ds-test: https://codeload.github.com/dapphub/ds-test/tar.gz/e282159
-      forge-std: https://codeload.github.com/foundry-rs/forge-std/tar.gz/2f05b30
 
   '@isaacs/ttlcache@1.4.1':
     optional: true
@@ -15955,7 +15928,6 @@ snapshots:
 
   dotenv@17.2.3: {}
 
-  ds-test@https://codeload.github.com/dapphub/ds-test/tar.gz/e282159: {}
 
   dunder-proto@1.0.1:
     dependencies:
@@ -16852,7 +16824,6 @@ snapshots:
 
   forever-agent@0.6.1: {}
 
-  forge-std@https://codeload.github.com/foundry-rs/forge-std/tar.gz/2f05b30: {}
 
   form-data-encoder@1.7.1: {}
 
