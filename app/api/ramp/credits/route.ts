@@ -28,8 +28,10 @@ export async function GET(request: NextRequest) {
 
     let user
     if (walletAddress) {
-      user = await prisma.user.findUnique({
-        where: { walletAddress: walletAddress.toLowerCase() },
+      // walletAddress is stored as the SIWE checksummed address — match
+      // case-insensitively or checksummed lookups silently miss.
+      user = await prisma.user.findFirst({
+        where: { walletAddress: { equals: walletAddress, mode: 'insensitive' } },
         select: creditsSelect,
       })
     } else {

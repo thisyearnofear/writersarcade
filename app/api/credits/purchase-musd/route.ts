@@ -184,6 +184,13 @@ export async function POST(request: NextRequest) {
         details: error.errors.map((e) => `${e.path.join('.')}: ${e.message}`),
       })
     }
+    // Mezo's public RPC can lag on its tx index — a just-mined tx may briefly
+    // report "receipt could not be found". Surface as retryable, not a 500.
+    if (error instanceof Error && /could not be found|receipt/i.test(error.message)) {
+      return fail('Transaction not confirmed yet — retry in a few seconds', 409, {
+        code: 'TX_NOT_CONFIRMED',
+      })
+    }
     return fail(error instanceof Error ? error.message : 'Failed to purchase credits', 500)
   }
 }
