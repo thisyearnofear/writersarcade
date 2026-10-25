@@ -12,7 +12,6 @@ import { DailyChallengeSubnav } from '@/components/daily-challenge/daily-challen
 import { BasePaintTrack } from '@/components/basepaint/basepaint-track'
 import { WalletProviders } from '@/components/providers/WalletProviders'
 import { WalletLoadingFallback } from '@/components/providers/WalletLoadingFallback'
-import { GAME_MODE_EXPLOAINER } from '@/lib/game-mode-labels'
 import { getBasePaintDay } from '@/lib/daily-challenge/daily-challenge-ui'
 import { Sparkles, ArrowLeft } from 'lucide-react'
 
@@ -99,7 +98,7 @@ function GeneratePageContent() {
             )}
             {!isWordleMode && (
               <p className="mx-auto mb-6 max-w-lg px-4 text-center text-xs text-muted-foreground sm:mb-8">
-                {GAME_MODE_EXPLOAINER}.{' '}
+                Want something quicker?{' '}
                 <a href="/generate?mode=wordle" className="text-amber-600 hover:underline dark:text-amber-400">
                   Try Wordle instead
                 </a>

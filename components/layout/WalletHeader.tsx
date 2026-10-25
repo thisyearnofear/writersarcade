@@ -2,13 +2,21 @@
 
 import { UserMenu } from '@/domains/users/components/user-menu'
 import { BalanceDisplay } from '@/components/ui/balance-display'
+import { BuyCreditsButton } from '@/components/ui/buy-credits'
 import { WalletProviders } from '@/components/providers/WalletProviders'
 import { useWalletInside } from '@/components/providers/wallet-inside-context'
 
 function WalletHeaderContent({ mobileLayout = false }: { mobileLayout?: boolean }) {
   return (
     <div className="flex items-center gap-2">
-      <div className={mobileLayout ? 'hidden' : 'hidden md:block'}>
+      {/* One instance only (the desktop nav stays mounted on mobile via CSS),
+          so its buy-credits modal listener never doubles up. */}
+      {!mobileLayout && (
+        <div className="hidden md:flex">
+          <BuyCreditsButton />
+        </div>
+      )}
+      <div className={mobileLayout ? 'hidden' : 'hidden lg:block'}>
         <BalanceDisplay />
       </div>
       <UserMenu />

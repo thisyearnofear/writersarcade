@@ -16,6 +16,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { BASE_MAINNET_CHAIN_ID, MEZO_TESTNET_CHAIN_ID, getChainInfo } from '@/lib/wallet/chains'
 import { trackEvent } from '@/services/analytics'
+import { openBuyCredits } from '@/components/ui/buy-credits'
 import type { PaymentResult } from '@/domains/payments/strategies/payment-strategy'
 
 const MEZO_TESTNET_EXPLORER_URL = 'https://explorer.test.mezo.org/tx'
@@ -332,6 +333,26 @@ export function PaymentFlow({
           </motion.div>
         )}
 
+        {userAddress && compact && isMUSD && (
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-[11px]">
+            <span className="flex items-center gap-1.5 text-amber-200">
+              <MUSDLogo className="w-3.5 h-3.5 text-[8px]" />
+              {isMUSDBalanceLoading ? (
+                <Loader2 className="w-3 h-3 animate-spin text-amber-400" />
+              ) : (
+                <span className={cn('font-semibold', hasInsufficientBalance ? 'text-red-400' : 'text-amber-300')}>
+                  {musdFormatted} MUSD
+                </span>
+              )}
+            </span>
+            {isMezoHolder && (
+              <span className="rounded border border-amber-400/30 bg-amber-400/10 px-1.5 py-0.5 text-[10px] font-semibold text-amber-300">
+                ⚡ MEZO Holder ({mezoFormatted} MEZO) — +10% goes to the writer
+              </span>
+            )}
+          </div>
+        )}
+
         {userAddress && !compact && isCredits && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -398,7 +419,20 @@ export function PaymentFlow({
       {isWrongChain && !error && (
         <p className="text-xs text-muted-foreground text-center">
           You&apos;re on {chainId === BASE_MAINNET_CHAIN_ID ? 'Base' : chainId === MEZO_TESTNET_CHAIN_ID ? 'Mezo' : `chain ${chainId}`}.
-          {' '}Pick a payment token above for your current chain, or use the button below to switch networks.
+          {' '}Pick a payment token above for your current chain, or use the button above to switch networks.
+        </p>
+      )}
+
+      {isCredits && hasInsufficientBalance && (
+        <p className="text-center text-xs text-muted-foreground">
+          Not enough credits?{' '}
+          <button
+            type="button"
+            onClick={openBuyCredits}
+            className="font-semibold text-emerald-400 underline underline-offset-2 hover:text-emerald-300"
+          >
+            Buy credits
+          </button>
         </p>
       )}
 

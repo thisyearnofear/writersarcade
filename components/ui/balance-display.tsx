@@ -10,6 +10,7 @@ import { CopyAddressButton } from '@/components/ui/copy-address-button'
 import type { BalanceData } from '@/hooks/useWriterCoinBalance'
 import { useMezoBalance } from '@/hooks/useMezoBalance'
 import { getChainInfo, MEZO_TESTNET_CHAIN_ID, type ChainInfo } from '@/lib/wallet/chains'
+import { openBuyCredits } from '@/components/ui/buy-credits'
 
 interface BalanceDisplayProps {
   mobileLayout?: boolean
@@ -191,6 +192,7 @@ function EcosystemSection({
   switchToMezo,
   isSwitching,
   isOnMezo,
+  onBuyCredits,
 }: {
   group: EcosystemGroup
   mobileLayout: boolean
@@ -199,6 +201,7 @@ function EcosystemSection({
   switchToMezo?: () => void
   isSwitching?: boolean
   isOnMezo?: boolean
+  onBuyCredits?: () => void
 }) {
   return (
     <div>
@@ -243,6 +246,18 @@ function EcosystemSection({
           icon={group.id === 'credits' ? <Banknote className={`w-4 h-4 shrink-0 ${row.isZero ? 'text-muted-foreground' : 'text-emerald-400'}`} /> : undefined}
         />
       ))}
+
+      {group.id === 'credits' && onBuyCredits && (
+        <div className={`${mobileLayout ? 'px-4 pb-3' : 'px-3 pb-3'}`}>
+          <button
+            onClick={onBuyCredits}
+            className="flex w-full items-center justify-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-400 transition-colors hover:bg-emerald-500/20 hover:border-emerald-500/50"
+          >
+            <Coins className="w-3 h-3" />
+            Buy credits
+          </button>
+        </div>
+      )}
 
       {group.id === 'mezo' && (
         <div className={`${mobileLayout ? 'px-4 pb-3' : 'px-3 pb-3'} space-y-2`}>
@@ -306,18 +321,18 @@ export function BalanceDisplay({ mobileLayout = false }: BalanceDisplayProps) {
 
     return [
       {
-        id: 'base',
-        label: 'Base',
-        chain: baseChain,
-        rows: allBalances.map((row) => ({
-          id: row.coin.id,
-          symbol: row.coin.symbol,
-          address: row.coin.address,
-          value: row.balance ? toWholeNumber(row.balance.formattedBalance) : '—',
-          isLoading: row.isLoading,
-          isZero: !row.balance || row.balance.formattedBalance === '0',
-          accentClass: 'text-purple-400',
-        })),
+        id: 'credits',
+        label: 'Credits',
+        rows: [
+          {
+            id: 'credits-balance',
+            symbol: 'Credits',
+            value: isLoadingCredits ? '—' : credits.toString(),
+            isLoading: isLoadingCredits,
+            isZero: !hasCredits && credits === 0,
+            accentClass: 'text-emerald-400',
+          },
+        ],
       },
       {
         id: 'mezo',
@@ -336,18 +351,18 @@ export function BalanceDisplay({ mobileLayout = false }: BalanceDisplayProps) {
         ],
       },
       {
-        id: 'credits',
-        label: 'Credits',
-        rows: [
-          {
-            id: 'credits-balance',
-            symbol: 'Credits',
-            value: isLoadingCredits ? '—' : credits.toString(),
-            isLoading: isLoadingCredits,
-            isZero: !hasCredits && credits === 0,
-            accentClass: 'text-emerald-400',
-          },
-        ],
+        id: 'base',
+        label: 'Base',
+        chain: baseChain,
+        rows: allBalances.map((row) => ({
+          id: row.coin.id,
+          symbol: row.coin.symbol,
+          address: row.coin.address,
+          value: row.balance ? toWholeNumber(row.balance.formattedBalance) : '—',
+          isLoading: row.isLoading,
+          isZero: !row.balance || row.balance.formattedBalance === '0',
+          accentClass: 'text-purple-400',
+        })),
       },
     ]
   }, [allBalances, isMezoHolder, isLoadingMezo, mezoFormatted, primary.coin, credits, isLoadingCredits, hasCredits])
@@ -396,7 +411,7 @@ export function BalanceDisplay({ mobileLayout = false }: BalanceDisplayProps) {
     <div
       role="listbox"
       aria-label="Token balances"
-      className={`divide-y divide-border/50 ${mobileLayout ? '' : 'rounded-lg bg-card border border-border/50 backdrop-blur-lg shadow-xl'}`}
+      className={`divide-y divide-border/50 ${mobileLayout ? '' : 'rounded-lg bg-card border border-border/50 backdrop-blur-lg shadow-xl max-h-[calc(100dvh-5rem)] overflow-y-auto overscroll-contain'}`}
     >
       {ecosystemGroups.map((group) => (
         <EcosystemSection
@@ -408,6 +423,7 @@ export function BalanceDisplay({ mobileLayout = false }: BalanceDisplayProps) {
           switchToMezo={group.id === 'mezo' ? () => switchChain({ chainId: MEZO_TESTNET_CHAIN_ID }) : undefined}
           isSwitching={isSwitching}
           isOnMezo={getChainInfo(chainId).ecosystem === 'mezo'}
+          onBuyCredits={group.id === 'credits' ? () => { setIsOpen(false); openBuyCredits() } : undefined}
         />
       ))}
     </div>
@@ -431,7 +447,7 @@ export function BalanceDisplay({ mobileLayout = false }: BalanceDisplayProps) {
       {toggleButton}
       {isOpen && (
         <div
-          className="absolute right-0 top-full mt-1.5 w-64 max-w-[calc(100vw-2rem)] z-50 animate-fade-in"
+          className="absolute right-0 top-full mt-1.5 w-72 max-w-[calc(100vw-2rem)] z-50 animate-fade-in"
         >
           {balanceList}
         </div>

@@ -93,7 +93,7 @@ export function useGameGenerator({
   const isMusdPath = store.paymentPath === 'musd'
   const writerCoin = !isMusdPath && detectedCoin ? detectedCoin : (store.selectedCoin ?? DEFAULT_WRITER_COIN)
   const activePaymentTxHash = paymentTxHashRef.current
-  const activePaymentExplorerUrl = activePaymentTxHash
+  const activePaymentExplorerUrl = activePaymentTxHash && !activePaymentTxHash.startsWith('credits:')
     ? paymentExplorerUrl(store.paymentPath, activePaymentTxHash)
     : null
   const canGoBack = getStepIndex(store.mobileStep) > 0

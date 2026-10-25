@@ -15,6 +15,7 @@ interface GameGenerationOverlayProps {
   genre?: string
   difficulty?: string
   onCancel?: () => void
+  paymentExplorerUrl?: string | null
 }
 
 const SLOW_WARNING_MS = 45_000
@@ -60,6 +61,7 @@ export function GameGenerationOverlay({
   genre = 'story',
   difficulty = 'easy',
   onCancel,
+  paymentExplorerUrl,
 }: GameGenerationOverlayProps) {
   const steps = ['payment', 'validate', 'extract', 'generate', 'save'] as const
   const currentStepIndex = currentStep ? steps.indexOf(currentStep) : -1
@@ -136,7 +138,7 @@ export function GameGenerationOverlay({
           </div>
 
           <motion.div
-            className="relative z-10 w-full max-w-lg mx-4 px-5 py-5 bg-gradient-to-br from-purple-950/90 via-indigo-950/90 to-purple-900/90 border border-purple-500/40 rounded-xl shadow-2xl"
+            className="relative z-10 w-full max-w-lg mx-4 px-5 py-5 max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain bg-gradient-to-br from-purple-950/90 via-indigo-950/90 to-purple-900/90 border border-purple-500/40 rounded-xl shadow-2xl"
             initial={{ scale: 0.9, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 200, damping: 20 }}
@@ -172,6 +174,19 @@ export function GameGenerationOverlay({
               {/* Progress bar */}
               <div>
                 <ProgressBar value={progress} label="Progress" percent />
+                {paymentExplorerUrl && (
+                  <p className="mt-2 text-center text-xs text-emerald-300">
+                    Payment confirmed on-chain ·{' '}
+                    <a
+                      href={paymentExplorerUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold underline underline-offset-2 hover:text-emerald-200"
+                    >
+                      View transaction ↗
+                    </a>
+                  </p>
+                )}
               </div>
 
               {/* Steps */}

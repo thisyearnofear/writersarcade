@@ -7,6 +7,7 @@ import { Loader2, Sparkles, Wand2 } from 'lucide-react'
 import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
 import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
+import { openBuyCredits } from '@/components/ui/buy-credits'
 import { cn } from '@/lib/utils'
 
 const GENRES = [
@@ -147,9 +148,13 @@ export default function StudioPage() {
                   <p className="font-semibold text-foreground mb-1">Your free story is used up</p>
                   <p className="text-muted-foreground">
                     Buy credits to keep creating — 10 credits ($1) per story.{' '}
-                    <Link href="/my-games" className="text-primary underline underline-offset-2">
+                    <button
+                      type="button"
+                      onClick={openBuyCredits}
+                      className="text-primary underline underline-offset-2"
+                    >
                       Get credits
-                    </Link>
+                    </button>
                     {' '}or{' '}
                     <Link href="/games" className="text-primary underline underline-offset-2">
                       play public games

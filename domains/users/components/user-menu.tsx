@@ -13,7 +13,8 @@ import {
   Moon,
   Sun,
   LayoutDashboard,
-  HelpCircle
+  HelpCircle,
+  Coins
 } from 'lucide-react'
 import { useAccount, useDisconnect, useEnsName, useEnsAvatar } from 'wagmi'
 import { normalize } from 'viem/ens'
@@ -24,6 +25,7 @@ import { getFarcasterProfile } from '@/domains/farcaster/services/farcaster'
 import type { FarcasterProfile } from '@/domains/farcaster/services/farcaster'
 import { useDarkMode } from '@/components/providers/DarkModeProvider'
 import { NetworkIndicatorCompact } from '@/components/layout/NetworkIndicator'
+import { openBuyCredits } from '@/components/ui/buy-credits'
 import { logger } from '@/lib/config'
 
 interface UserMenuProps {
@@ -39,6 +41,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
   const [mounted, setMounted] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const kebabRef = useRef<HTMLButtonElement | null>(null)
+  const containerRef = useRef<HTMLDivElement | null>(null)
   const [profile, setProfile] = useState<FarcasterProfile | null>(null)
   const [_isLoadingProfile, setIsLoadingProfile] = useState(false)
   const router = useRouter()
@@ -61,6 +64,25 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
   const ensAvatar = ensAvatarData ?? null
 
   useEffect(() => { setMounted(true) }, [])
+
+  // Close on outside click (covers kebab + menu) and on Escape.
+  useEffect(() => {
+    if (!isOpen) return
+    const handleMouseDown = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false)
+    }
+    document.addEventListener('mousedown', handleMouseDown)
+    document.addEventListener('keydown', handleKey)
+    return () => {
+      document.removeEventListener('mousedown', handleMouseDown)
+      document.removeEventListener('keydown', handleKey)
+    }
+  }, [isOpen])
 
   // Fetch Farcaster profile when wallet connects
   useEffect(() => {
@@ -120,7 +142,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
 
   // When connected, show unified wallet + user menu
   return (
-    <div className="relative flex items-center gap-2">
+    <div ref={containerRef} className="relative flex items-center gap-2">
       {/* Wallet chip -> RainbowKit account modal */}
       <button
         onClick={(e) => { e.preventDefault(); openAccountModal?.() }}
@@ -166,21 +188,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
       <button
         ref={kebabRef}
         onClick={() => setIsOpen(!isOpen)}
-        onBlur={(_e) => {
-          // Close when focus leaves kebab and menu
-          setTimeout(() => {
-            const related = document.activeElement
-            if (
-              isOpen &&
-              related !== kebabRef.current &&
-              related !== menuRef.current &&
-              !menuRef.current?.contains(related as Node)
-            ) {
-              setIsOpen(false)
-            }
-          }, 0)
-        }}
-        className={`p-2 rounded-md border border-purple-500/30 hover:border-purple-500/50 hover:bg-purple-600/10 transition ${mobileLayout ? '' : ''}`}
+        className="p-2 rounded-md border border-purple-500/30 hover:border-purple-500/50 hover:bg-purple-600/10 transition"
         aria-haspopup="menu"
         aria-expanded={isOpen}
         aria-label="Open menu"
@@ -190,17 +198,9 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
       </button>
 
       {isOpen && (
-        <>
-          {/* Backdrop */}
           <div
-            className="fixed inset-0 z-[60]"
-            onClick={() => setIsOpen(false)}
-          />
-
-          {/* Menu */}
-          <div 
-            ref={menuRef} 
-            className="absolute right-0 mt-4 w-72 max-w-[calc(100vw-2rem)] bg-card border border-purple-500/30 rounded-lg shadow-xl shadow-purple-500/10 z-[70] max-h-[80vh] overflow-auto md:right-0 sm:right-auto"
+            ref={menuRef}
+            className="absolute right-0 top-full mt-2 w-72 max-w-[calc(100vw-2rem)] max-h-[calc(100dvh-5rem)] overflow-y-auto bg-card border border-purple-500/30 rounded-lg shadow-xl shadow-purple-500/10 z-[70]"
           >
             <div className="p-4 border-b border-border bg-gradient-to-r from-purple-900/20 to-pink-900/20">
               <div className="flex items-center space-x-3">
@@ -235,6 +235,14 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
                 <LayoutDashboard className="w-4 h-4 text-amber-500 group-hover:text-amber-400" />
                 <span className="text-muted-foreground group-hover:text-white font-bold uppercase tracking-widest text-[10px]">Creator Studio</span>
               </Link>
+
+              <button
+                onClick={() => { setIsOpen(false); openBuyCredits() }}
+                className="flex items-center space-x-3 w-full p-3 rounded-lg hover:bg-emerald-500/10 transition-colors group text-left"
+              >
+                <Coins className="w-4 h-4 text-emerald-400 group-hover:text-emerald-300" />
+                <span className="text-muted-foreground group-hover:text-white">Buy credits</span>
+              </button>
 
               <Link
                 href="/profile"
@@ -292,7 +300,6 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
               </button>
             </div>
           </div>
-        </>
       )}
     </div>
   )

@@ -42,7 +42,7 @@ export function DesktopStepIndicator({ currentStep }: { currentStep: GenerateSte
                   ? 'w-10 bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.6)]'
                   : idx < currentIdx
                   ? 'bg-green-500/60'
-                  : 'bg-white/10'
+                  : 'bg-border'
               }`}
             />
           )

@@ -85,10 +85,14 @@ app. Explorer evidence:
   a Bitcoin-backed stablecoin." Show landing → paste a Paragraph URL.
 - 0:20–0:45 — Wallet-free path: generate with credits. One line: "no wallet
   required to start."
-- 0:45–1:15 — **The onramp**: Buy Credits modal → "Pay 10 MUSD on Mezo" →
+- 0:45–1:15 — **The onramp**: green credits pill (top bar, left of the wallet
+  chip; or kebab menu → "Buy credits") → Buy Credits modal opens on the
+  "MUSD on Mezo" tab → "Pay 10 MUSD on Mezo" →
   wallet confirm → "+110 credits added — incl. +10% MEZO holder bonus" →
   explorer link. (This is the demo's centerpiece: one tx, verified on-chain.)
 - 1:15–1:40 — Crypto-native path: pick MUSD in the payment selector → auto
-  chain-switch → payForGeneration → explorer shows `boosted=true`.
+  chain-switch (MEZO Holder badge shows under the selector) → payForGeneration
+  → generation overlay shows "Payment confirmed on-chain · View transaction ↗"
+  → explorer shows `boosted=true`.
 - 1:40–2:00 — Close: "MUSD funds the whole arcade. MEZO holders get more.
   Live on Mezo testnet, mainnet-ready." Show contract addresses + live URL.

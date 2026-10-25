@@ -100,7 +100,7 @@ export function Header() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-6">
+        <nav className="hidden md:flex items-center gap-4 lg:gap-6">
           {NAV_LINKS.slice(0, 2).map(({ href, label, title }) => (
             <AnimatedNavLink key={href} href={href} label={label} title={title} isActive={isActive(href)} />
           ))}

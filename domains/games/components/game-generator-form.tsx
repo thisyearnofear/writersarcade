@@ -170,6 +170,7 @@ export function GameGeneratorForm({
         genre={g.genre}
         difficulty={g.difficulty}
         onCancel={g.handleCancel}
+        paymentExplorerUrl={g.activePaymentExplorerUrl}
       />
 
       {/* Mobile bottom nav — back button + step dots */}
