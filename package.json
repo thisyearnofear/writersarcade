@@ -99,18 +99,5 @@
   },
   "engines": {
     "node": ">=24"
-  },
-  "pnpm": {
-    "overrides": {
-      "@safe-global/safe-smart-account": "1.5.0",
-      "@base-org/account": "2.4.0",
-      "@coinbase/wallet-sdk": "3.9.3",
-      "@rainbow-me/rainbowkit": "2.2.11",
-      "viem": "2.48.8",
-      "ox": "0.14.20"
-    },
-    "patchedDependencies": {
-      "@gelatonetwork/relay-sdk@5.7.0": "patches/@gelatonetwork__relay-sdk@5.7.0.patch"
-    }
   }
 }
