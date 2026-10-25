@@ -47,6 +47,9 @@ function GeneratePageContent() {
   const isBasePaintSource = sourceParam === 'basepaint' || sourceParam === 'daily'
   const dayParam = searchParams.get('day')
   const basePaintDay = dayParam ? Number.parseInt(dayParam, 10) : isBasePaintSource ? getBasePaintDay() : undefined
+  const flynnSmsHref = process.env.NEXT_PUBLIC_FLYNN_IMESSAGE
+    ? `sms:${process.env.NEXT_PUBLIC_FLYNN_IMESSAGE}?&body=${encodeURIComponent('Turn this article into a game: ')}`
+    : undefined
 
   return (
     <ErrorBoundary>
@@ -85,26 +88,29 @@ function GeneratePageContent() {
                 ? 'Paste a Paragraph article URL to create a free word puzzle. No wallet needed.'
                 : 'Paste a Paragraph article URL. AI turns it into a playable 5-panel comic.'}
             </p>
-            {process.env.NEXT_PUBLIC_FLYNN_IMESSAGE && (
-              <p className="mx-auto mb-2 max-w-md text-center text-xs text-muted-foreground">
-                or{' '}
-                <a
-                  href={`sms:${process.env.NEXT_PUBLIC_FLYNN_IMESSAGE}?&body=${encodeURIComponent('Turn this article into a game: ')}`}
-                  className="underline decoration-dotted underline-offset-2 hover:text-foreground"
-                >
-                  text the link to Flynn on iMessage
-                </a>
+            {flynnSmsHref || !isWordleMode ? (
+              <p className="mx-auto mb-6 max-w-md px-4 text-center text-xs text-muted-foreground sm:mb-8">
+                {!isWordleMode && (
+                  <a
+                    href="/generate?mode=wordle"
+                    className="underline decoration-dotted underline-offset-2 hover:text-foreground"
+                  >
+                    Free word puzzle
+                  </a>
+                )}
+                {!isWordleMode && flynnSmsHref && <span aria-hidden="true"> · </span>}
+                {flynnSmsHref && (
+                  <a
+                    href={flynnSmsHref}
+                    className="underline decoration-dotted underline-offset-2 hover:text-foreground"
+                  >
+                    Text the link to Flynn
+                  </a>
+                )}
               </p>
+            ) : (
+              <div className="mb-6 sm:mb-8" />
             )}
-            {!isWordleMode && (
-              <p className="mx-auto mb-6 max-w-lg px-4 text-center text-xs text-muted-foreground sm:mb-8">
-                Want something quicker?{' '}
-                <a href="/generate?mode=wordle" className="text-amber-600 hover:underline dark:text-amber-400">
-                  Try Wordle instead
-                </a>
-              </p>
-            )}
-            {isWordleMode && <div className="mb-6 sm:mb-8" />}
           </>
         )}
 

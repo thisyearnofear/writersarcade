@@ -57,27 +57,29 @@ describe('ArticleStep', () => {
 
   it('shows "Preview article" button when no preview exists', () => {
     render(<ArticleStep {...baseProps} />)
-    expect(screen.getByText('Preview article')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Preview article' })).toBeInTheDocument()
   })
 
-  it('uses 48px touch targets for the source input and preview action', () => {
+  it('renders the URL field and preview action inside the command-bar pill', () => {
     render(<ArticleStep {...baseProps} />)
-    const input = screen.getByRole('textbox', { name: 'Paragraph.xyz Article URL' })
+    const input = screen.getByRole('textbox', { name: 'Article URL' })
     const button = screen.getByRole('button', { name: 'Preview article' })
 
-    expect(input).toHaveClass('min-h-[48px]')
-    expect(button).toHaveClass('min-h-[48px]')
+    expect(input).toHaveClass('h-12')
+    expect(button).toHaveClass('h-9')
   })
 
   it('disables preview button when URL is empty', () => {
     render(<ArticleStep {...baseProps} url="" />)
-    const button = screen.getByText('Preview article').closest('button')
+    const button = screen.getByRole('button', { name: 'Preview article' })
     expect(button).toBeDisabled()
   })
 
-  it('shows "Checking article..." when previewing', () => {
+  it('shows a spinner on the preview action when previewing', () => {
     render(<ArticleStep {...baseProps} isPreviewingArticle={true} url="https://paragraph.xyz/test" />)
-    expect(screen.getByText('Checking article...')).toBeInTheDocument()
+    const button = screen.getByRole('button', { name: 'Preview article' })
+    expect(button).toBeDisabled()
+    expect(button.querySelector('.animate-spin')).toBeTruthy()
   })
 
   it('shows article preview card when preview is available', () => {

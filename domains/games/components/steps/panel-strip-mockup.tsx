@@ -5,7 +5,6 @@ import type { GameGenre } from '@/components/game/GenreSelector'
 
 interface PanelStripMockupProps {
   genre: GameGenre
-  articleTitle: string
   primaryColor?: string
 }
 
@@ -31,7 +30,7 @@ const GENRE_GRADIENTS: Record<string, string> = {
   mystery: 'from-indigo-950 to-slate-950',
 }
 
-export function PanelStripMockup({ genre, articleTitle, primaryColor }: PanelStripMockupProps) {
+export function PanelStripMockup({ genre, primaryColor }: PanelStripMockupProps) {
   const gradient = GENRE_GRADIENTS[genre] || 'from-slate-900 to-slate-950'
   const accentColor = primaryColor || '#8b5cf6'
 
@@ -70,16 +69,6 @@ export function PanelStripMockup({ genre, articleTitle, primaryColor }: PanelStr
           </motion.div>
         ))}
       </div>
-
-      {/* "What you'll get" description */}
-      <p className="mt-2 text-xs text-muted-foreground">
-        AI generates 5 custom panels with artwork, branching choices, and mood tracking from
-        <span className="text-foreground font-medium"> &ldquo;{articleTitle.slice(0, 40)}{articleTitle.length > 40 ? '…' : ''}&rdquo;</span>
-      </p>
-
-      <p className="mt-2 text-[11px] text-muted-foreground">
-        Your choices shape the resolution. This previews the story shape, not the ending.
-      </p>
     </div>
   )
 }

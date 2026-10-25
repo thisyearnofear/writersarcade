@@ -1,8 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { CheckCircle2, FileText, Info, Loader2 } from 'lucide-react'
-import { Input } from '@/components/ui/input'
+import { ArrowRight, CheckCircle2, Info, Loader2 } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import type { WriterCoin } from '@/lib/writer-coins'
 import {
@@ -14,7 +13,6 @@ import type {
   DailyGenerateFlow,
 } from '@/lib/stores/game-generator.store'
 import { getBasePaintCanvasProxyUrl } from '@/lib/daily-challenge'
-import { GAME_MODE_EXPLOAINER } from '@/lib/game-mode-labels'
 
 interface ArticleStepProps {
   url: string
@@ -152,29 +150,41 @@ export function ArticleStep({
   return (
     <div className="rounded-xl border border-border bg-card p-4 space-y-3">
       <div>
-        <h2 className="text-lg font-semibold text-foreground">Paste the article</h2>
-        <p className="text-sm text-muted-foreground">
-          Start with a public Paragraph article.
-        </p>
-        <p className="mt-2 text-xs text-muted-foreground rounded-lg border border-border bg-muted/30 px-3 py-2 leading-relaxed">
-          {GAME_MODE_EXPLOAINER}
-        </p>
-      </div>
-
-      <div>
-        <div className="flex items-center gap-2 mb-2">
-          <Label htmlFor="url" className="text-sm font-medium">
-            Paragraph.xyz Article URL
-          </Label>
+        <Label htmlFor="url" className="mb-2 block text-sm font-medium">
+          Article URL
+        </Label>
+        {/* Command-bar pill — same pattern as the landing hero SimpleGameForm:
+            borderless input, icon-circle submit that arms once a URL exists. */}
+        <div className="mx-auto flex w-full items-center rounded-full border border-border bg-card pr-1.5 transition-colors focus-within:border-foreground/30">
+          <input
+            id="url"
+            type="url"
+            placeholder={isMusdPath ? 'https://paragraph.xyz/... (any article)' : 'https://paragraph.xyz/...'}
+            value={url}
+            onChange={(e) => onUrlChange(e.target.value)}
+            className="h-12 min-w-0 flex-1 bg-transparent pl-5 pr-2 font-mono text-sm text-foreground outline-none placeholder:text-muted-foreground"
+          />
+          {!articlePreview && (
+            <button
+              type="button"
+              onClick={onPreview}
+              disabled={isPreviewingArticle || !url.trim()}
+              title="Preview article"
+              aria-label="Preview article"
+              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors disabled:cursor-not-allowed ${
+                url.trim()
+                  ? 'bg-foreground text-background hover:opacity-90'
+                  : 'bg-muted/50 text-muted-foreground'
+              }`}
+            >
+              {isPreviewingArticle ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <ArrowRight className="h-4 w-4" />
+              )}
+            </button>
+          )}
         </div>
-        <Input
-          id="url"
-          type="url"
-          placeholder={isMusdPath ? 'https://paragraph.xyz/... (any article)' : 'https://paragraph.xyz/...'}
-          value={url}
-          onChange={(e) => onUrlChange(e.target.value)}
-          className="mt-1 min-h-[48px] font-mono focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
-        />
       </div>
 
       {/* Auto-detected writer coin recommendation */}
@@ -318,18 +328,6 @@ export function ArticleStep({
             </p>
           )}
         </div>
-      )}
-
-      {!articlePreview && (
-        <button
-          type="button"
-          onClick={onPreview}
-          disabled={isPreviewingArticle || !url.trim()}
-          className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {isPreviewingArticle ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
-          {isPreviewingArticle ? 'Checking article...' : 'Preview article'}
-        </button>
       )}
 
       {/* Mode toggle is only shown when the user explicitly enters via

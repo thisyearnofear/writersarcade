@@ -242,7 +242,6 @@ export function CustomizeStep({
               {mode === 'story' && articlePreview && (
                 <PanelStripMockup
                   genre={genre}
-                  articleTitle={articlePreview.title}
                   primaryColor={undefined}
                 />
               )}
