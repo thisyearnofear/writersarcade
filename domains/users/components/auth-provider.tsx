@@ -26,7 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await fetch('/api/auth/me', { credentials: 'include' })
       const data = await response.json()
-      if (data.success) {
+      if (data.success && data.user) {
         setUser(data.user)
       } else {
         setUser(null)

@@ -190,7 +190,7 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
           credentials: 'include',
         });
         const data = await res.json();
-        setAuthStatus(data.success ? 'authenticated' : 'unauthenticated');
+        setAuthStatus(data.success && data.user?.walletAddress ? 'authenticated' : 'unauthenticated');
       } catch {
         setAuthStatus('unauthenticated');
       }

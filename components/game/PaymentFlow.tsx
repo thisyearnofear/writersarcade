@@ -3,6 +3,8 @@
 import { GetMusdOptions } from '@/components/mezo/GetMusdOptions'
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { useAccount, useWalletClient, useSwitchChain } from 'wagmi'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { useWeb3Auth } from '@/components/providers/Web3Provider'
 import { type PaymentToken, getPaymentTokenConfig, CREDITS_CONFIG } from '@/lib/writer-coins'
 import type { PaymentAction } from '@/domains/payments/types'
 import { ErrorCard } from '@/components/error/ErrorCard'
@@ -50,6 +52,8 @@ export function PaymentFlow({
   compact = false,
 }: PaymentFlowProps) {
   const { address: userAddress, chainId } = useAccount()
+  const { status: authStatus } = useWeb3Auth()
+  const { openConnectModal } = useConnectModal()
   const { data: walletClient } = useWalletClient()
   const { switchChainAsync } = useSwitchChain()
 
@@ -111,7 +115,14 @@ export function PaymentFlow({
     return userBalance < requiredAmount
   }, [userBalance, requiredAmount, isLoadingBalance, isLoadingCredits])
 
+  // Connected is not enough — the verify endpoint needs the SIWE session.
+  const needsWalletSignIn = !!userAddress && authStatus !== 'authenticated'
+
   const handleTokenPayment = useCallback(async () => {
+    if (needsWalletSignIn) {
+      openConnectModal?.()
+      return
+    }
     if (!walletClient || !userAddress) {
       setError('Wallet not available. Please make sure your wallet is connected.')
       return
@@ -159,6 +170,10 @@ export function PaymentFlow({
   }, [walletClient, userAddress, paymentToken, action, hasInsufficientBalance, userBalance, requiredAmount, onPaymentSuccess, onPaymentError, refresh, isMUSD, config, tokenSymbol])
 
   const handleCreditPayment = useCallback(async () => {
+    if (needsWalletSignIn) {
+      openConnectModal?.()
+      return
+    }
     if (!userAddress) {
       setError('Wallet not connected.')
       return
@@ -197,7 +212,7 @@ export function PaymentFlow({
       setIsProcessing(false)
     }
    
-  }, [userAddress, action, hasInsufficientBalance, userBalance, requiredAmount, onPaymentStart, onPaymentSuccess, onPaymentError])
+  }, [userAddress, action, hasInsufficientBalance, userBalance, requiredAmount, onPaymentStart, onPaymentSuccess, onPaymentError, needsWalletSignIn, openConnectModal])
 
   const actionLabel = isCredits
     ? `Pay ${requiredAmount} Credits and ${action === 'generate-game' ? 'Generate' : 'Mint'}`
@@ -385,10 +400,10 @@ export function PaymentFlow({
       </AnimatePresence>
 
       <Button
-        onClick={isWrongChain ? handleNetworkSwitch : (isCredits ? handleCreditPayment : handleTokenPayment)}
+        onClick={needsWalletSignIn ? () => openConnectModal?.() : isWrongChain ? handleNetworkSwitch : (isCredits ? handleCreditPayment : handleTokenPayment)}
         disabled={
           disabled || isProcessing || (isCredits ? !userAddress : (!walletClient || !userAddress)) ||
-          (isCredits ? isLoadingCredits : isLoadingBalance) || hasInsufficientBalance
+          (isCredits ? isLoadingCredits : isLoadingBalance) || (!needsWalletSignIn && hasInsufficientBalance)
         }
         size="lg"
         className={cn(
@@ -403,6 +418,10 @@ export function PaymentFlow({
           <span className="flex items-center justify-center gap-2">
             <Loader2 className="h-5 w-5 animate-spin" />
             {currentStep ?? 'Processing…'}
+          </span>
+        ) : needsWalletSignIn ? (
+          <span className="flex items-center justify-center gap-2 text-center">
+            <Wallet className="w-4 h-4" /> Sign in with wallet to pay
           </span>
         ) : isWrongChain ? (
           <span className="flex items-center justify-center gap-2 text-center">

@@ -3,6 +3,8 @@
 import { GetMusdOptions } from '@/components/mezo/GetMusdOptions'
 import { useState, useEffect, useRef } from 'react'
 import { useAccount, useWalletClient, useSwitchChain } from 'wagmi'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { useWeb3Auth } from '@/components/providers/Web3Provider'
 import { Coins, Loader2, Plus, ExternalLink, X, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -45,6 +47,8 @@ export function openBuyCredits() {
 
 export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
   const { address, isConnected, chainId } = useAccount()
+  const { status: authStatus } = useWeb3Auth()
+  const { openConnectModal } = useConnectModal()
   const { data: walletClient } = useWalletClient()
   const { switchChainAsync } = useSwitchChain()
   const { balance: musdBalance, formatted: musdFormatted, refresh: refreshMUSDBalance } = useMUSDBalance()
@@ -126,6 +130,22 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
     }
   }, [address, showModal])
 
+  // After a user who paid while signed out finishes SIWE, complete the grant
+  // for their saved pending tx automatically (once per tx).
+  const autoVerifyRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (authStatus !== 'authenticated') {
+      autoVerifyRef.current = null
+      return
+    }
+    if (!showModal || !pendingMusdTx || autoVerifyRef.current === pendingMusdTx) return
+    autoVerifyRef.current = pendingMusdTx
+    void verifyMusdPurchase(pendingMusdTx).catch(err =>
+      setError(err instanceof Error ? err.message : 'Verification failed')
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authStatus, showModal, pendingMusdTx])
+
   const handleBuyCredits = async () => {
     setQuoteLoading(true)
     setError(null)
@@ -167,6 +187,8 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
   const musdUnits = selectedAmount / 100
   const isWrongMezoChain = isConnected && chainId !== MEZO_ACTIVE_CHAIN_ID
   const hasInsufficientMusd = musdBalance < musdAmountWei
+  // Connected is not enough — wallet-gated routes need the SIWE session.
+  const needsWalletSignIn = isConnected && authStatus !== 'authenticated'
 
   const persistPendingMusdTx = (txHash: string) => {
     if (!address) return
@@ -199,11 +221,16 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
       let lastError = 'Verification failed'
       for (const delay of MUSD_VERIFY_DELAYS_MS) {
         await new Promise(r => setTimeout(r, delay))
-        const res = await fetch('/api/credits/purchase-musd', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ transactionHash: txHash, chainId: MEZO_ACTIVE_CHAIN_ID }),
-        })
+        let res: Response
+        try {
+          res = await fetch('/api/credits/purchase-musd', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ transactionHash: txHash, chainId: MEZO_ACTIVE_CHAIN_ID }),
+          })
+        } catch {
+          continue // network blip — keep retrying within the delay budget
+        }
         const data = await res.json().catch(() => ({}))
         if (res.ok && data.success) {
           setMusdGranted({ credits: data.data.creditsGranted ?? 0, boost: Boolean(data.data.mezoHolderBoost) })
@@ -211,6 +238,13 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
           clearPendingMusdTx()
           await Promise.all([refreshCredits(), refreshMUSDBalance()])
           return
+        }
+        if (res.status === 401) {
+          throw new Error('Sign in with your wallet to finish — your payment is saved.')
+        }
+        // Only an unconfirmed receipt is worth retrying — anything else won't change.
+        if (!(res.status === 409 && data.code === 'TX_NOT_CONFIRMED')) {
+          throw new Error(data.error || lastError)
         }
         lastError = data.error || lastError
       }
@@ -222,6 +256,10 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
   }
 
   const handlePayWithMusd = async () => {
+    if (needsWalletSignIn) {
+      openConnectModal?.()
+      return
+    }
     if (!walletClient || !address) return
     setMusdLoading(true)
     setMusdStep('Confirm MUSD transfer in your wallet…')
@@ -252,7 +290,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
       // The transfer may still have landed — keep the pending record so the
       // user can finish verification with the "Verify payment" button.
       const msg = err instanceof Error ? err.message : 'Verification failed'
-      setError(`${msg} — if your wallet confirmed the transfer, press "Verify payment" to finish.`)
+      setError(msg.endsWith('saved.') ? msg : `${msg} — if your wallet confirmed the transfer, press "Verify payment" to finish.`)
     }
   }
 
@@ -498,6 +536,11 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                         <p className="mt-1 text-amber-200/70">
                           Your MUSD transfer was sent but the credit grant hasn't confirmed yet.
                         </p>
+                        {needsWalletSignIn && (
+                          <p className="mt-1 text-amber-200/70">
+                            Sign the wallet message to confirm it's you, then verify.
+                          </p>
+                        )}
                         <a
                           href={`${MEZO_ACTIVE_EXPLORER}/tx/${pendingMusdTx}`}
                           target="_blank"
@@ -509,6 +552,10 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                         <button
                           type="button"
                           onClick={() => {
+                            if (needsWalletSignIn) {
+                              openConnectModal?.()
+                              return
+                            }
                             void verifyMusdPurchase(pendingMusdTx).catch(err =>
                               setError(err instanceof Error ? err.message : 'Verification failed')
                             )
@@ -518,6 +565,8 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                         >
                           {musdLoading ? (
                             <><Loader2 className="h-3.5 w-3.5 animate-spin" /> {musdStep ?? 'Verifying…'}</>
+                          ) : needsWalletSignIn ? (
+                            'Sign in to verify payment'
                           ) : (
                             'Verify payment'
                           )}
@@ -546,13 +595,15 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                           </div>
                         </div>
                         <Button
-                          onClick={isWrongMezoChain ? () => switchChainAsync({ chainId: MEZO_ACTIVE_CHAIN_ID }).catch(() => {}) : handlePayWithMusd}
-                          disabled={musdLoading || (!isWrongMezoChain && hasInsufficientMusd)}
+                          onClick={needsWalletSignIn ? () => openConnectModal?.() : isWrongMezoChain ? () => switchChainAsync({ chainId: MEZO_ACTIVE_CHAIN_ID }).catch(() => {}) : handlePayWithMusd}
+                          disabled={musdLoading || (!needsWalletSignIn && !isWrongMezoChain && hasInsufficientMusd)}
                           className="mt-3 w-full bg-amber-600 hover:bg-amber-500 text-white"
                           size="lg"
                         >
                           {musdLoading ? (
                             <><Loader2 className="h-4 w-4 animate-spin" /> {musdStep ?? 'Processing…'}</>
+                          ) : needsWalletSignIn ? (
+                            <>Sign in with wallet to pay <ArrowRight className="h-4 w-4" /></>
                           ) : isWrongMezoChain ? (
                             <>Switch to Mezo <ArrowRight className="h-4 w-4" /></>
                           ) : (

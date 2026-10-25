@@ -46,7 +46,7 @@ export function ProfileClient() {
         }
 
         const userData = await userRes.json()
-        if (!userData.success) {
+        if (!userData.success || !userData.user) {
           router.push('/')
           return
         }
