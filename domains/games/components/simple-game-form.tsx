@@ -45,7 +45,11 @@ export function SimpleGameForm({ onGenerate, isGenerating }: SimpleGameFormProps
           className="h-12 px-6 font-bold uppercase tracking-widest"
           title="Generate a game from this article"
         >
-          {isGenerating ? <Loader2 className="animate-spin" /> : <ArrowRight />}
+          {isGenerating ? (
+            <Loader2 className="animate-spin" />
+          ) : (
+            <>Make my game <ArrowRight className="h-4 w-4" /></>
+          )}
         </Button>
       </form>
 
@@ -56,7 +60,7 @@ export function SimpleGameForm({ onGenerate, isGenerating }: SimpleGameFormProps
           className="text-xs text-muted-foreground text-center"
         >
           Paste a Paragraph article URL above to generate a 5-panel interactive comic.{' '}
-          <span className="text-emerald-500 font-medium">No wallet needed to start.</span>
+          <span className="text-emerald-500 font-medium">Your first game is free — no wallet needed.</span>
         </motion.p>
       )}
     </div>

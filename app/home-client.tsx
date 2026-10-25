@@ -31,7 +31,7 @@ import {
   MessageCircle,
 } from 'lucide-react'
 import { GridSkeleton } from '@/components/effects'
-import { WRITER_COINS, CREDITS_CONFIG } from '@/lib/writer-coins'
+import { WRITER_COINS } from '@/lib/writer-coins'
 import { config } from '@/lib/config'
 import { ConceptTerm } from '@/lib/concept-definitions'
 
@@ -272,36 +272,20 @@ export function HomeClient({ initialSampleGames, initialStats }: HomeClientProps
               {/* Visual proof of the headline's promise, before the visitor has to act. */}
               <HeroGameStrip games={sampleGames} />
 
-              {/* The one loud action, and the fastest path to value: an already
-                  generated game opens instantly. It demonstrates the headline
-                  rather than restating it. Falls back to the create-from-sample
-                  path only if no public game with a cover has loaded. */}
+              {/* Primary action: the paste-input IS the headline's promise —
+                  make it the loudest element. The first story game is free, so
+                  creation doesn't demand payment up front. */}
               <div
                 className="mt-8 flex flex-col items-center gap-2 animate-slide-up [animation-delay:200ms] [animation-fill-mode:both] motion-reduce:animate-none"
               >
-                {featuredSample ? (
-                  <Link
-                    href={`/games/${featuredSample.slug}?play=1`}
-                    className="inline-flex h-14 w-full max-w-sm items-center justify-center gap-2 rounded-xl bg-foreground px-6 text-sm font-bold uppercase tracking-widest text-background transition-all hover:-translate-y-0.5 hover:opacity-90"
-                  >
-                    <Sparkles className="h-4 w-4" />
-                    Play one now — free
-                  </Link>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      router.push(`/generate?${new URLSearchParams({ url: SAMPLE_ARTICLE_URL }).toString()}`)
+                <ErrorBoundary>
+                  <SimpleGameForm
+                    onGenerate={(url: string) => {
+                      router.push(`/generate?${new URLSearchParams({ url }).toString()}`)
                     }}
-                    className="inline-flex h-14 w-full max-w-sm items-center justify-center gap-2 rounded-xl bg-foreground px-6 text-sm font-bold uppercase tracking-widest text-background transition-all hover:-translate-y-0.5 hover:opacity-90"
-                  >
-                    <Sparkles className="h-4 w-4" />
-                    Try it with a sample article
-                  </button>
-                )}
-                <p className="text-xs text-muted-foreground">
-                  {featuredSample ? 'Free to play · no wallet, no signup' : 'Free · no wallet, no signup'}
-                </p>
+                    isGenerating={false}
+                  />
+                </ErrorBoundary>
                 {config.features.dailyChallenge && (
                   <Link
                     href="/basepaint"
@@ -313,50 +297,6 @@ export function HomeClient({ initialSampleGames, initialStats }: HomeClientProps
                 )}
               </div>
 
-              {/* Secondary block: creating is the commitment step, so it sits below
-                  the free demo and carries no loud button of its own. */}
-              <div
-                className="max-w-xl mx-auto mt-8 animate-slide-up [animation-delay:300ms] [animation-fill-mode:both] motion-reduce:animate-none"
-              >
-                <ErrorBoundary>
-                  <div className="p-6 rounded-2xl bg-card border border-border shadow-sm space-y-4 text-left">
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-widest text-primary">Make your own</p>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        Turn an article into a 5-panel interactive comic. Public games are always free to play; generating your own costs {CREDITS_CONFIG.cost['generate-game']} credits (~${(CREDITS_CONFIG.cost['generate-game'] * 0.1).toFixed(2)}).
-                      </p>
-                    </div>
-
-                    <SimpleGameForm
-                      onGenerate={(url: string) => {
-                        router.push(`/generate?${new URLSearchParams({ url }).toString()}`)
-                      }}
-                      isGenerating={false}
-                    />
-
-                    <div className="flex flex-col gap-2 border-t border-border pt-3">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          router.push(`/generate?${new URLSearchParams({ url: SAMPLE_ARTICLE_URL }).toString()}`)
-                        }}
-                        className="inline-flex items-center gap-1.5 text-left text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        <Wand2 className="w-3.5 h-3.5" />
-                        No article handy? Build one from a sample
-                      </button>
-                      <Link
-                        href="/generate?mode=wordle"
-                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
-                      >
-                        <Puzzle className="w-3.5 h-3.5" />
-                        Prefer something shorter? Make a word puzzle instead
-                      </Link>
-                    </div>
-                  </div>
-                </ErrorBoundary>
-              </div>
-
               {/* Secondary routes, deliberately quiet so the hero has one loud CTA. */}
               <motion.div
                 className="mt-5 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-muted-foreground"
@@ -364,6 +304,26 @@ export function HomeClient({ initialSampleGames, initialStats }: HomeClientProps
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4, duration: 0.5 }}
               >
+                {featuredSample && (
+                  <Link href={`/games/${featuredSample.slug}?play=1`} className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Play one now — free
+                  </Link>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    router.push(`/generate?${new URLSearchParams({ url: SAMPLE_ARTICLE_URL }).toString()}`)
+                  }}
+                  className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
+                >
+                  <Wand2 className="h-3.5 w-3.5" />
+                  No article handy? Start from a sample
+                </button>
+                <Link href="/generate?mode=wordle" className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
+                  <Puzzle className="h-3.5 w-3.5" />
+                  Make a word puzzle
+                </Link>
                 <Link href="/games" className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
                   <Gamepad2 className="h-3.5 w-3.5" />
                   Browse the arcade

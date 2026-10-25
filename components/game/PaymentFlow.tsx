@@ -347,7 +347,7 @@ export function PaymentFlow({
                 </div>
                 {isMezoHolder && (
                   <div className="flex items-center gap-1.5 rounded-md border border-amber-400/30 bg-amber-400/10 px-2 py-1 text-[10px] font-semibold text-amber-300">
-                    ⚡ MEZO Holder ({mezoFormatted} MEZO) — +10% of this payment goes to the writer
+                    ⚡ MEZO Holder ({mezoFormatted} MEZO) — 10% more of this payment goes to the writer
                   </div>
                 )}
               </div>
@@ -370,7 +370,7 @@ export function PaymentFlow({
             </span>
             {isMezoHolder && (
               <span className="rounded border border-amber-400/30 bg-amber-400/10 px-1.5 py-0.5 text-[10px] font-semibold text-amber-300">
-                ⚡ MEZO Holder ({mezoFormatted} MEZO) — +10% goes to the writer
+                ⚡ MEZO Holder ({mezoFormatted} MEZO) — 10% more goes to the writer
               </span>
             )}
           </div>

@@ -652,7 +652,18 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                         )}
                         <p className="mt-2 text-center text-[10px] text-muted-foreground">
                           MUSD on Mezo {MEZO_NETWORK === 'mainnet' ? 'mainnet' : 'testnet'} — verified on-chain, credits granted instantly.
-                          {' '}<span className="text-amber-400/80">MEZO holders earn +10%.</span>
+                          {' '}<span className="text-amber-400/80">
+                            Hold ≥1{' '}
+                            <a
+                              href={`${MEZO_ACTIVE_EXPLORER}/address/0x7B7c000000000000000000000000000000000001`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline decoration-dotted underline-offset-2 hover:text-amber-300"
+                            >
+                              MEZO
+                            </a>
+                            {' '}and we add +10% bonus credits.
+                          </span>
                         </p>
                       </>
                     )}
