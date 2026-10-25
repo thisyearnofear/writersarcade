@@ -106,6 +106,14 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
   // Escape to close + lock body scroll while the modal is open.
   useOverlay(showModal, () => setShowModal(false))
 
+  // A finished purchase shouldn't block the next one — reset on close.
+  useEffect(() => {
+    if (!showModal) {
+      setMusdGranted(null)
+      setMusdTxHash(null)
+    }
+  }, [showModal])
+
   // Bring the success confirmation into view after an MUSD purchase.
   useEffect(() => {
     if (musdGranted) {
@@ -529,6 +537,13 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                         >
                           Generate a game now <ArrowRight className="h-3.5 w-3.5" />
                         </a>
+                        <button
+                          type="button"
+                          onClick={() => { setMusdGranted(null); setMusdTxHash(null) }}
+                          className="mt-2 w-full text-center underline hover:text-amber-100"
+                        >
+                          Buy more credits
+                        </button>
                       </div>
                     ) : pendingMusdTx ? (
                       <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
