@@ -47,6 +47,7 @@ export function BuyCreditsButton() {
   const [musdLoading, setMusdLoading] = useState(false)
   const [musdTxHash, setMusdTxHash] = useState<string | null>(null)
   const [musdStep, setMusdStep] = useState<string | null>(null)
+  const [musdGranted, setMusdGranted] = useState<{ credits: number; boost: boolean } | null>(null)
 
   useEffect(() => {
     setLoading(true)
@@ -138,6 +139,7 @@ export function BuyCreditsButton() {
         })
         const data = await res.json().catch(() => ({}))
         if (res.ok && data.success) {
+          setMusdGranted({ credits: data.data.creditsGranted ?? 0, boost: Boolean(data.data.mezoHolderBoost) })
           await Promise.all([refreshCredits(), refreshMUSDBalance()])
           return
         }
@@ -378,7 +380,10 @@ export function BuyCreditsButton() {
 
                       {musdTxHash ? (
                         <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
-                          <p className="font-semibold">Credits purchased with MUSD!</p>
+                          <p className="font-semibold">
+                            {musdGranted ? `+${musdGranted.credits} credits added` : 'Credits purchased with MUSD!'}
+                            {musdGranted?.boost && ' — incl. +10% MEZO holder bonus'}
+                          </p>
                           <a
                             href={`https://explorer.test.mezo.org/tx/${musdTxHash}`}
                             target="_blank"
@@ -386,6 +391,12 @@ export function BuyCreditsButton() {
                             className="mt-1 flex items-center gap-1 underline hover:text-amber-100"
                           >
                             View on Mezo Explorer <ExternalLink className="w-3 h-3" />
+                          </a>
+                          <a
+                            href="/studio"
+                            className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-amber-600 px-4 py-2 font-semibold text-white transition hover:bg-amber-500"
+                          >
+                            Generate a game now <ArrowRight className="h-3.5 w-3.5" />
                           </a>
                         </div>
                       ) : (
@@ -425,7 +436,8 @@ export function BuyCreditsButton() {
                             </p>
                           )}
                           <p className="mt-2 text-center text-[10px] text-muted-foreground">
-                            MUSD on Mezo testnet — verified on-chain, credits granted instantly
+                            MUSD on Mezo testnet — verified on-chain, credits granted instantly.
+                            {' '}<span className="text-amber-400/80">MEZO holders earn +10%.</span>
                           </p>
                         </>
                       )}

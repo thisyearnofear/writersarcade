@@ -80,7 +80,14 @@ See [docs/DEVELOPMENT.md](./docs/DEVELOPMENT.md) for full setup.
 - **DailyChallengeVault** (v3 — per-panel FHE verdicts, gradient scoring, 2026-08-12): [`0xcc271a53e4286012f3289273fdaa32f66fa64a33`](https://basescan.org/address/0xcc271a53e4286012f3289273fdaa32f66fa64a33)
 - Deployment guide: [contracts/deploy.md](./contracts/deploy.md)
 
-**Mezo Matsnet (testnet)** — archived hackathon track, see [`docs/HACKATHONS_ARCHIVE.md`](docs/HACKATHONS_ARCHIVE.md#3-mezo-hackathon-musd-track-aprmay-2026--archived). Contracts (`MezoPaymentSplitter`, `MezoBoostedSplitter` v2, `GameNFTMezo`) and MUSD/MEZO config remain in code for reference.
+**Mezo testnet (chainId 31611)** — MUSD payments + credit top-ups, live for the Mezo Buildathon (Oct 2026):
+
+- **MezoBoostedSplitter v3**: [`0x5eEb15C32F54B242B07B5Dc23859a3DC71D0C592`](https://explorer.test.mezo.org/address/0x5eEb15C32F54B242B07B5Dc23859a3DC71D0C592) — `payForGeneration` + `payAndMintGame` with an on-chain MEZO-holder boost (+10% to writer/creator share, funded by platform share)
+- **GameNFTMezo**: [`0xb6001687e4700843e0a04a442031525f669465e7`](https://explorer.test.mezo.org/address/0xb6001687e4700843e0a04a442031525f669465e7)
+- **MUSD token**: `0x118917a40FAF1CD7a13dB0Ef56C86De7973Ac503` · **MEZO precompile**: `0x7B7c…0001`
+- **Buy credits with MUSD**: `POST /api/credits/purchase-musd` verifies a plain `MUSD.transfer(treasury, amount)` and grants 10 credits per 1 MUSD (+10% for MEZO holders), idempotent by tx hash
+- Verified on-chain (Oct 25, 2026): `payForGeneration` w/ `boosted=true` [`0x43893294…430b`](https://explorer.test.mezo.org/tx/0x43893294991ffa921f0c026251b7a988328602b481b9d00cd549577efb6c430b) · treasury transfer for credit grant [`0x67246c15…9ce1`](https://explorer.test.mezo.org/tx/0x67246c1504cca1ac99d7638c641a52a866f47f9b86aa17f1f220b605f1839ce1)
+- Mainnet deploy: `scripts/deploy/deploy-mezo-mainnet.sh`
 
 Revenue splits enforced on-chain, configurable per writer coin.
 

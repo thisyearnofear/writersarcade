@@ -1,7 +1,7 @@
 import { createPublicClient, http, type Chain, type PublicClient } from 'viem'
 import { decodeFunctionData, decodeEventLog, keccak256, parseAbi, toBytes } from 'viem'
 import { base as baseChain } from 'viem/chains'
-import { getWriterCoinById, MUSD_CONFIG, MEZO_TREASURY_ADDRESS } from '@/lib/writer-coins'
+import { getWriterCoinById, MUSD_CONFIG, MEZO_CONFIG, MEZO_TREASURY_ADDRESS } from '@/lib/writer-coins'
 import { BASE_MAINNET_CHAIN_ID, MEZO_TESTNET_CHAIN_ID, MEZO_MAINNET_CHAIN_ID } from '@/lib/wallet/chains'
 import { baseRpcTransport } from '@/lib/base-rpc'
 
@@ -429,5 +429,33 @@ export async function verifyMusdTreasuryTransfer(
   ])
 
   return verifyMusdTransferEvidence({ ...params, receipt, transaction })
+}
+
+const ERC20_BALANCE_OF_ABI = parseAbi([
+  'function balanceOf(address account) view returns (uint256)',
+])
+
+/**
+ * On-chain MEZO-holder check (MEZO precompile balance >= holderThreshold).
+ * Returns false on any read failure — a missed boost is graceful, a wrong
+ * grant is not.
+ */
+export async function isMezoHolderOnChain(userAddress: string, chainId: number): Promise<boolean> {
+  if (mezoNetworkForChain(chainId) === null) return false
+  const client = createReceiptClient(chainId)
+  if (!client) return false
+  try {
+    const bal = await (client as unknown as {
+      readContract: (args: unknown) => Promise<bigint>
+    }).readContract({
+      address: MEZO_CONFIG.address,
+      abi: ERC20_BALANCE_OF_ABI,
+      functionName: 'balanceOf',
+      args: [userAddress],
+    })
+    return bal >= MEZO_CONFIG.holderThreshold
+  } catch {
+    return false
+  }
 }
 

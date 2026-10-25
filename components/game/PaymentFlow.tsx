@@ -236,6 +236,18 @@ export function PaymentFlow({
     }
   }, [action, chainId, networkName, onPaymentError, switchChainAsync, targetChainId, tokenSymbol])
 
+  // Auto-prompt the chain switch the moment an on-chain token on another
+  // network is selected — don't make users discover it at pay time. Fires
+  // once per (token, target chain) pair; the manual button remains as backup.
+  const autoSwitchKeyRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!isWrongChain || !userAddress) return
+    const key = `${paymentToken.type}-${targetChainId}`
+    if (autoSwitchKeyRef.current === key) return
+    autoSwitchKeyRef.current = key
+    handleNetworkSwitch()
+  }, [isWrongChain, userAddress, paymentToken.type, targetChainId, handleNetworkSwitch])
+
   if (creditSuccess) {
     return (
       <motion.div

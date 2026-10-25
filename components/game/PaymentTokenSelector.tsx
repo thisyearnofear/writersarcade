@@ -25,11 +25,11 @@ export function PaymentTokenSelector({ selectedToken, onSelectToken, writerCoin 
               : 'text-slate-500 cursor-not-allowed opacity-60'
         }`}
       >
-        <span className="block">{writerCoin.coin.symbol} · Base</span>
+        <span className="block">{writerCoin.coin.symbol}</span>
         <span className={`block text-[10px] font-normal normal-case tracking-normal mt-0.5 ${
           selectedToken.type === 'writercoin' ? 'text-purple-200' : 'text-purple-400/60'
         }`}>
-          {writerCoinEnabled ? 'Writer Coin' : 'Use MUSD'}
+          {writerCoinEnabled ? 'Writer coin · Base' : 'Use MUSD'}
         </span>
       </button>
       <button
@@ -41,11 +41,11 @@ export function PaymentTokenSelector({ selectedToken, onSelectToken, writerCoin 
             : 'text-orange-300 hover:bg-orange-800/50'
         }`}
       >
-        <span className="block">MUSD · Mezo</span>
+        <span className="block">MUSD</span>
         <span className={`block text-[10px] font-normal normal-case tracking-normal mt-0.5 ${
           selectedToken.type === 'musd' ? 'text-orange-200' : 'text-orange-400/60'
         }`}>
-          Universal
+          Mezo · universal
         </span>
       </button>
       <button

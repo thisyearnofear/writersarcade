@@ -5,7 +5,7 @@ import { getActor } from '@/services/auth'
 import { ok, fail } from '@/lib/api-response'
 import { logger } from '@/lib/config'
 import { reportServerError } from '@/services/error-reporting'
-import { verifyMusdTreasuryTransfer } from '@/services/payments/payment-verifier'
+import { verifyMusdTreasuryTransfer, isMezoHolderOnChain } from '@/services/payments/payment-verifier'
 import { MEZO_TESTNET_CHAIN_ID, MEZO_MAINNET_CHAIN_ID } from '@/lib/wallet/chains'
 
 /**
@@ -90,7 +90,11 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    const creditsGranted = Number(verified.amount / WEI_PER_CREDIT)
+    // MEZO holders earn +10% credits on top-ups — MEZO as loyalty/utility
+    // signal, consistent with the splitter's on-chain boost.
+    const mezoHolderBoost = await isMezoHolderOnChain(wallet, chainId)
+    const baseCredits = Number(verified.amount / WEI_PER_CREDIT)
+    const creditsGranted = mezoHolderBoost ? Math.floor(baseCredits * 1.1) : baseCredits
     const fiatCentsEquivalent = Number((verified.amount * 100n) / 1_000_000_000_000_000_000n)
     const writerCoinId = `musd-${verified.network}`
 
@@ -120,7 +124,7 @@ export async function POST(request: NextRequest) {
             creditAmount: creditsGranted,
             status: 'completed',
             completedAt: new Date(),
-            metadata: { method: 'musd', network: verified.network, chainId, transactionHash },
+            metadata: { method: 'musd', network: verified.network, chainId, transactionHash, mezoHolderBoost },
           },
         })
         const updatedUser = await tx.user.update({
@@ -174,6 +178,7 @@ export async function POST(request: NextRequest) {
       paymentId,
       transactionHash,
       network: verified.network,
+      mezoHolderBoost,
       message: `Purchased ${creditsGranted} credits with MUSD`,
     })
   } catch (error) {
