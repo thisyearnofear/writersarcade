@@ -41,7 +41,7 @@ See the [Creation UX Contract](./CREATION_UX.md) for the decision record, feedba
 ### Progressive Identity (No Wallet Required)
 - Start instantly as an anonymous guest
 - Attach an email at any time via magic link to preserve progress across devices
-- Connect a wallet later to mint NFTs, register IP, or receive on-chain revenue
+- Connect a wallet later to mint NFTs or receive on-chain revenue
 - Automatic merge: games, credits, and payments follow the user across identity upgrades
 
 ### `/studio` — Copy-to-Story
@@ -355,7 +355,7 @@ The first-run creation flow follows the [Creation UX Contract](./CREATION_UX.md)
 - **Media Expansion**: Directed cut (`reference-to-video`), animated BasePaint canvas for Daily, social sharing integrations, animated panel transitions
 - **Advanced Gameplay**: Branching narratives with consequences, character stats, multiplayer story contributions, persistent game worlds
 - **Farcaster Integration**: Webhook notifications, push notifications for new games from followed writers, `NotificationToken` model
-- Multi-asset derivative games, royalty automation, cross-chain IP verification
+- Multi-asset derivative games, remix collections
 - **Platform Scaling**: Redis caching, BullMQ background jobs, database read replicas, CDN for static assets, APM
 
 ## Past Hackathons (Archived)

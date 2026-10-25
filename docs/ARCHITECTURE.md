@@ -164,7 +164,6 @@ const gameData = await withSharedGenerationLock(lockKey, () => GameAIService.gen
 - Support for Mezo Matsnet (Chain ID 31611)
 
 - Client-side wallet signing (no platform keys)
-- PIL licenses, derivative tracking, royalty claiming
 
 **`lib/daily-challenge/inco.ts`** - Inco confidential compute
 - On-chain encryption of secret panels (chunked) and Wordle answers via `@inco/lightning-js`

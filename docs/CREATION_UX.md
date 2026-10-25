@@ -39,9 +39,9 @@ Keep these discoverable but collapsed or secondary:
 - Specific writer selection
 - Technical model/provider details
 - Fine-grained generation settings
-- IP registration and marketplace enrichment
+- NFT minting and marketplace enrichment
 
-The default path must not require a user to understand wallets, chains, tokens, model names, Inco, NFTs, or Story Protocol.
+The default path must not require a user to understand wallets, chains, tokens, model names, Inco, or NFTs.
 
 ## Progressive optionality
 
@@ -212,7 +212,7 @@ These rules rank above Progressive Disclosure when they conflict: a fast path to
 
 ### Core rules
 
-1. **Defaults first, details on demand.** Every screen should complete its primary job with sensible defaults visible. Anything optional, advanced, or ownership-related (payment rails, IP registration, contracts, export formats) belongs behind a disclosure: `<details>/<summary>`, a tooltip (`ConceptTooltip`), a modal, or a progressive tab.
+1. **Defaults first, details on demand.** Every screen should complete its primary job with sensible defaults visible. Anything optional, advanced, or ownership-related (payment rails, NFT minting, contracts, export formats) belongs behind a disclosure: `<details>/<summary>`, a tooltip (`ConceptTooltip`), a modal, or a progressive tab.
 2. **One primary next action per screen.** A view should have at most one visually dominant CTA (the "share your ending" card, the "Play game" button, the hero "Create" field). Secondary paths are smaller, lower-emphasis rows — never a second big card competing for attention.
 3. **Max 3 visible footer/nav links per group.** The footer Explore column lists the four core pillars only; everything else lives behind the "More" disclosure. Never duplicate a link that already exists in the header or user menu.
 4. **No raw URLs or hashes as visible content.** Show the hostname for source links (`paragraph.com`), a shortened address for wallets/tx hashes, and put the full value in `title` or on the explorer page.

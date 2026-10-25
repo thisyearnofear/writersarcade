@@ -33,9 +33,9 @@ The first-run creation path is intentionally compact: **Source → Story directi
 3. **Generate**: Complete the required payment/free path and create a 5-panel playable story
 4. **Play**: Make choices that shape the narrative and resolution
 5. **Expand**: Share, own/unlock, inspect reader insights, or optionally animate the completed comic
-6. **Refine**: Use Workshop/Creator Studio for deeper asset, ending, model, and IP controls
+6. **Refine**: Use Workshop/Creator Studio for deeper asset, ending, model, and collection controls
 
-The first-run path does not require users to understand wallets, chains, tokens, model providers, NFTs, or Story Protocol.
+The first-run path does not require users to understand wallets, chains, tokens, model providers, or NFTs.
 
 ## Quick start
 
