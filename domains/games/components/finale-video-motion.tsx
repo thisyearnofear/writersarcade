@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useVideoStatus, type VideoPanelStatus } from '../hooks/use-video-status'
 import { trackEvent } from '@/services/analytics'
+import { notifyCreditsChanged } from '@/components/ui/buy-credits'
 import type { VideoStyle } from '../services/video-generation.types'
 
 export interface VideoPanelLike {
@@ -98,6 +99,7 @@ export function useVideoMotion(gameSlug: string): VideoMotion {
             if (json.data?.status === 'pending' || json.data?.status === 'completed') {
         trackEvent('animation_started', { surface: 'finale', mode: 'hero', style })
       }
+      notifyCreditsChanged()
       await mutateVideoStatus()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start video generation')
@@ -122,6 +124,7 @@ export function useVideoMotion(gameSlug: string): VideoMotion {
       if (json.data?.status === 'pending' || json.data?.status === 'completed') {
         trackEvent('animation_started', { surface: 'finale', mode: 'montage', style })
       }
+      notifyCreditsChanged()
       await mutateVideoStatus()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start the whole-comic animation')
@@ -188,6 +191,7 @@ export function useVideoMotion(gameSlug: string): VideoMotion {
       if (json.data?.status === 'pending' || json.data?.status === 'completed') {
         trackEvent('animation_started', { surface: 'finale', mode: 'panel', panelIndex, style })
       }
+      notifyCreditsChanged()
       await mutateVideoStatus()
       return true
     } catch (err) {

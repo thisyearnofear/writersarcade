@@ -30,6 +30,7 @@ import {
 } from './game-generator-helpers'
 import { useGameGeneratorStore } from '@/lib/stores'
 import { config, logger } from '@/lib/config'
+import { MEZO_NETWORK } from '@/lib/wallet/chains'
 import { getBasePaintDay } from '@/lib/basepaint/day'
 
 const DEFAULT_WRITER_COIN = WRITER_COINS[0]
@@ -565,7 +566,7 @@ export function useGameGenerator({
                   paymentId: currentPaymentId,
                   writerCoinId: currentPaymentTxHash?.startsWith('credits:')
                     ? 'credits'
-                    : isMusdPath ? 'musd-testnet' : writerCoin.id,
+                    : isMusdPath ? `musd-${MEZO_NETWORK}` : writerCoin.id,
                   paymentPath: store.paymentPath,
                   transactionHash: currentPaymentTxHash?.startsWith('0x')
                     ? currentPaymentTxHash

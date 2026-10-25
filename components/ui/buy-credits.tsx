@@ -45,6 +45,12 @@ export function openBuyCredits() {
   window.dispatchEvent(new Event(OPEN_BUY_CREDITS_EVENT))
 }
 
+export const CREDITS_CHANGED_EVENT = 'wa:credits-changed'
+
+export function notifyCreditsChanged() {
+  window.dispatchEvent(new Event(CREDITS_CHANGED_EVENT))
+}
+
 export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
   const { address, isConnected, chainId } = useAccount()
   const { status: authStatus } = useWeb3Auth()
@@ -107,12 +113,27 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
   useOverlay(showModal, () => setShowModal(false))
 
   // A finished purchase shouldn't block the next one — reset on close.
+  // pendingMusdTx deliberately survives: it's the recovery handle for a paid
+  // but unverified transfer.
   useEffect(() => {
     if (!showModal) {
       setMusdGranted(null)
       setMusdTxHash(null)
+      setWidgetUrl(null)
+      setNeedsEmail(false)
+      setEmailSent(false)
+      setError(null)
+      setPaymentMethod(null)
     }
   }, [showModal])
+
+  // Keep the pill + modal balance fresh when any surface grants or spends credits.
+  useEffect(() => {
+    const handler = () => { void refreshCredits() }
+    window.addEventListener(CREDITS_CHANGED_EVENT, handler)
+    return () => window.removeEventListener(CREDITS_CHANGED_EVENT, handler)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address])
 
   // Bring the success confirmation into view after an MUSD purchase.
   useEffect(() => {
@@ -244,6 +265,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
           setMusdGranted({ credits: data.data.creditsGranted ?? 0, boost: Boolean(data.data.mezoHolderBoost) })
           setMusdTxHash(txHash)
           clearPendingMusdTx()
+          notifyCreditsChanged()
           await Promise.all([refreshCredits(), refreshMUSDBalance()])
           return
         }
@@ -464,7 +486,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                   <div className="mt-4 grid grid-cols-2 rounded-lg border border-border bg-muted/40 p-1 text-xs font-semibold">
                     <button
                       type="button"
-                      onClick={() => setPaymentMethod('musd')}
+                      onClick={() => { setPaymentMethod('musd'); setError(null) }}
                       className={cn(
                         'rounded-md px-3 py-1.5 transition',
                         effectivePaymentMethod === 'musd'
@@ -476,7 +498,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setPaymentMethod('card')}
+                      onClick={() => { setPaymentMethod('card'); setError(null) }}
                       className={cn(
                         'rounded-md px-3 py-1.5 transition',
                         effectivePaymentMethod === 'card'

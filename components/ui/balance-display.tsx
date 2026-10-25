@@ -10,7 +10,7 @@ import { CopyAddressButton } from '@/components/ui/copy-address-button'
 import type { BalanceData } from '@/hooks/useWriterCoinBalance'
 import { useMezoBalance } from '@/hooks/useMezoBalance'
 import { getChainInfo, MEZO_ACTIVE_CHAIN_ID, type ChainInfo } from '@/lib/wallet/chains'
-import { openBuyCredits } from '@/components/ui/buy-credits'
+import { openBuyCredits, CREDITS_CHANGED_EVENT } from '@/components/ui/buy-credits'
 
 interface BalanceDisplayProps {
   mobileLayout?: boolean
@@ -48,14 +48,20 @@ function useCreditsBalance() {
       setCredits(null)
       return
     }
-    setIsLoading(true)
-    fetch(`/api/ramp/credits?wallet=${encodeURIComponent(address)}`)
-      .then(r => r.json())
-      .then(data => {
-        if (data.success) setCredits(data.data.credits ?? 0)
-      })
-      .catch(() => setCredits(0))
-      .finally(() => setIsLoading(false))
+    const refresh = () => {
+      setIsLoading(true)
+      fetch(`/api/ramp/credits?wallet=${encodeURIComponent(address)}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) setCredits(data.data.credits ?? 0)
+        })
+        .catch(() => setCredits(0))
+        .finally(() => setIsLoading(false))
+    }
+    refresh()
+    // Stay in sync when credits are granted or spent on another surface.
+    window.addEventListener(CREDITS_CHANGED_EVENT, refresh)
+    return () => window.removeEventListener(CREDITS_CHANGED_EVENT, refresh)
   }, [address, isConnected])
 
   return { credits: credits ?? 0, isLoading }

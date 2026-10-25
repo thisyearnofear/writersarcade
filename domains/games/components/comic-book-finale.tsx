@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { ChevronDown, ChevronLeft, Clapperboard, Grid3X3, Eye, X, Zap } from 'lucide-react'
 import { useAccount } from 'wagmi'
 import { CREDITS_CONFIG } from '@/lib/writer-coins'
+import { CREDITS_CHANGED_EVENT } from '@/components/ui/buy-credits'
 import { useGameInsights } from '../hooks/use-game-insights'
 import { useVideoMotion } from './finale-video-motion'
 import {
@@ -189,21 +190,27 @@ export function ComicBookFinale({
   const currentPanel = panels[currentPanelIndex]
   const totalPanels = panels.length
 
-  // Fetch credits once for the auto-offer — cheap, silent on failure.
+  // Fetch credits for the auto-offer — cheap, silent on failure, and kept
+  // fresh when credits are granted or spent on another surface.
   const videoStatusForOffer = video.status
   useEffect(() => {
     if (videoStatusForOffer !== 'idle' && videoStatusForOffer !== 'failed') return
     if (videoOfferDismissed) return
     let cancelled = false
-    const query = offerWalletAddress ? `?wallet=${encodeURIComponent(offerWalletAddress)}` : ''
-    fetch(`/api/ramp/credits${query}`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (!cancelled && data.success) setCreditsBalance(data.data.credits ?? 0)
-      })
-      .catch(() => {})
+    const fetchCredits = () => {
+      const query = offerWalletAddress ? `?wallet=${encodeURIComponent(offerWalletAddress)}` : ''
+      fetch(`/api/ramp/credits${query}`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (!cancelled && data.success) setCreditsBalance(data.data.credits ?? 0)
+        })
+        .catch(() => {})
+    }
+    fetchCredits()
+    window.addEventListener(CREDITS_CHANGED_EVENT, fetchCredits)
     return () => {
       cancelled = true
+      window.removeEventListener(CREDITS_CHANGED_EVENT, fetchCredits)
     }
      
   }, [videoStatusForOffer, videoOfferDismissed, offerWalletAddress])

@@ -94,6 +94,19 @@ export function GameGenerationOverlay({
     }))
   }, [])
 
+  // The overlay stays mounted with isOpen=false — reset per-run state when
+  // it opens (adjust-during-render keeps this lint-clean) and arm the timers
+  // only while a generation is actually visible.
+  const [wasOpen, setWasOpen] = useState(isOpen)
+  if (wasOpen !== isOpen) {
+    setWasOpen(isOpen)
+    if (isOpen) {
+      setTipIndex(0)
+      setShowSlowWarning(false)
+      setShowStallWarning(false)
+    }
+  }
+
   useEffect(() => {
     if (isOpen) {
       const interval = setInterval(() => {
@@ -104,13 +117,14 @@ export function GameGenerationOverlay({
   }, [isOpen])
 
   useEffect(() => {
+    if (!isOpen) return
     slowTimerRef.current = setTimeout(() => setShowSlowWarning(true), SLOW_WARNING_MS)
     stallTimerRef.current = setTimeout(() => setShowStallWarning(true), STALL_WARNING_MS)
     return () => {
       if (slowTimerRef.current) clearTimeout(slowTimerRef.current)
       if (stallTimerRef.current) clearTimeout(stallTimerRef.current)
     }
-  }, [])
+  }, [isOpen])
 
   return (
     <OverlayPortal>

@@ -19,7 +19,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { BASE_MAINNET_CHAIN_ID, MEZO_ACTIVE_CHAIN_ID, MEZO_ACTIVE_EXPLORER, MEZO_NETWORK, getChainInfo } from '@/lib/wallet/chains'
 import { trackEvent } from '@/services/analytics'
-import { openBuyCredits } from '@/components/ui/buy-credits'
+import { openBuyCredits, notifyCreditsChanged, CREDITS_CHANGED_EVENT } from '@/components/ui/buy-credits'
 import type { PaymentResult } from '@/domains/payments/strategies/payment-strategy'
 
 const MEZO_EXPLORER_URL = `${MEZO_ACTIVE_EXPLORER}/tx`
@@ -85,7 +85,7 @@ export function PaymentFlow({
   const networkPromptTrackedRef = useRef<string | null>(null)
   const networkSwitchCompletedRef = useRef(false)
 
-  useEffect(() => {
+  const refreshCreditBalance = useCallback(() => {
     if (!userAddress || !isCredits) return
     setIsLoadingCredits(true)
     fetch(`/api/ramp/credits?wallet=${encodeURIComponent(userAddress)}`)
@@ -96,6 +96,17 @@ export function PaymentFlow({
       .catch(() => setCreditBalance(0))
       .finally(() => setIsLoadingCredits(false))
   }, [userAddress, isCredits])
+
+  useEffect(() => {
+    refreshCreditBalance()
+  }, [refreshCreditBalance])
+
+  // Refetch when credits are granted/spent elsewhere (e.g. the buy modal).
+  useEffect(() => {
+    const handler = () => refreshCreditBalance()
+    window.addEventListener(CREDITS_CHANGED_EVENT, handler)
+    return () => window.removeEventListener(CREDITS_CHANGED_EVENT, handler)
+  }, [refreshCreditBalance])
 
   const requiredAmount = useMemo(() => {
     if (isCredits) return CREDITS_CONFIG.cost[action] ?? 10
@@ -166,8 +177,7 @@ export function PaymentFlow({
     } finally {
       setIsProcessing(false)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [walletClient, userAddress, paymentToken, action, hasInsufficientBalance, userBalance, requiredAmount, onPaymentSuccess, onPaymentError, refresh, isMUSD, config, tokenSymbol])
+  }, [walletClient, userAddress, paymentToken, action, hasInsufficientBalance, userBalance, requiredAmount, onPaymentStart, onPaymentSuccess, onPaymentError, refresh, refreshMUSDBalance, isMUSD, config, tokenSymbol, needsWalletSignIn, openConnectModal])
 
   const handleCreditPayment = useCallback(async () => {
     if (needsWalletSignIn) {
@@ -200,6 +210,7 @@ export function PaymentFlow({
       setCreditBalance(data.data.creditsRemaining)
       setCurrentStep(null)
       setCreditSuccess(true)
+      notifyCreditsChanged()
       // Server-issued paymentId is the verification handle; the sentinel
       // transactionHash is display-only and never sent to the generate route.
       onPaymentSuccess?.({ transactionHash: `credits:${data.data.paymentId}`, paymentId: data.data.paymentId })
