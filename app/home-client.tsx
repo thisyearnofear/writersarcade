@@ -7,6 +7,7 @@ import { motion } from 'framer-motion'
 import { GameGrid } from '@/domains/games/components/game-grid'
 import { SimpleGameForm } from '@/domains/games/components/simple-game-form'
 import { HeroGameStrip, type SampleGame } from '@/domains/games/components/hero-game-strip'
+import { HeroTransformation, type HeroTransformationProps } from '@/domains/games/components/hero-transformation'
 import { HeroBackdrop } from '@/domains/games/components/hero-backdrop'
 import { RecentlyPlayedSection } from '@/domains/games/components/recently-played-section'
 import { DailyChallengeBanner } from '@/components/daily-challenge/daily-challenge-banner'
@@ -28,7 +29,6 @@ import {
   ArrowUpRight,
   ChevronDown,
   Sparkles,
-  MessageCircle,
 } from 'lucide-react'
 import { GridSkeleton } from '@/components/effects'
 import { WRITER_COINS } from '@/lib/writer-coins'
@@ -208,9 +208,11 @@ function useSampleGames(initial: SampleGame[]) {
 interface HomeClientProps {
   initialSampleGames: SampleGame[]
   initialStats: HomeStats | null
+  /** Article→comic artifact for the hero; absent falls back to the game strip. */
+  featuredArtifact?: HeroTransformationProps
 }
 
-export function HomeClient({ initialSampleGames, initialStats }: HomeClientProps) {
+export function HomeClient({ initialSampleGames, initialStats, featuredArtifact }: HomeClientProps) {
   // The hero explains the product, so the tour is opt-in via "New here?" rather
   // than auto-opening a modal over the first impression.
   const { showOnboarding, dismissOnboarding, startTour } = useOnboarding()
@@ -248,14 +250,14 @@ export function HomeClient({ initialSampleGames, initialStats }: HomeClientProps
               <p
                 className="text-base sm:text-lg text-muted-foreground mb-8 max-w-lg mx-auto leading-relaxed animate-slide-up [animation-delay:150ms] [animation-fill-mode:both] motion-reduce:animate-none"
               >
-                Drop a{' '}
+                AI turns any{' '}
                 <ConceptTooltip
                   term="Paragraph"
                   explanation="A publishing platform for writers and creators. Many crypto and tech writers publish there."
                 >
                   <span className="underline decoration-dotted underline-offset-2 cursor-help text-foreground font-medium">Paragraph</span>
                 </ConceptTooltip>{' '}
-                article URL. AI reads it and turns it into a{' '}
+                article into a{' '}
                 <span className="text-foreground font-medium">5-panel interactive comic</span>{' '}
                 you play by making choices.
               </p>
@@ -269,8 +271,14 @@ export function HomeClient({ initialSampleGames, initialStats }: HomeClientProps
                 </p>
               )}
 
-              {/* Visual proof of the headline's promise, before the visitor has to act. */}
-              <HeroGameStrip games={sampleGames} />
+              {/* Visual proof of the headline's promise, before the visitor has
+                  to act: a real article's transformation when we have one, else
+                  the generic strip of real games. */}
+              {featuredArtifact ? (
+                <HeroTransformation {...featuredArtifact} />
+              ) : (
+                <HeroGameStrip games={sampleGames} />
+              )}
 
               {/* Primary action: the paste-input IS the headline's promise —
                   make it the loudest element. The first story game is free, so
@@ -286,15 +294,7 @@ export function HomeClient({ initialSampleGames, initialStats }: HomeClientProps
                     isGenerating={false}
                   />
                 </ErrorBoundary>
-                {config.features.dailyChallenge && (
-                  <Link
-                    href="/basepaint"
-                    className="mt-1 inline-flex items-center gap-1.5 rounded-full border border-purple-500/40 bg-purple-500/10 px-3 py-1.5 text-xs font-semibold text-purple-700 transition-colors hover:border-purple-400/60 hover:bg-purple-500/15 dark:text-purple-200"
-                  >
-                    <CalendarDays className="h-3.5 w-3.5" />
-                    New: today&apos;s BasePaint canvas as a playable comic
-                  </Link>
-                )}
+                <p className="text-xs text-muted-foreground">First game free · no wallet needed</p>
               </div>
 
               {/* Secondary routes, deliberately quiet so the hero has one loud CTA. */}
@@ -324,26 +324,6 @@ export function HomeClient({ initialSampleGames, initialStats }: HomeClientProps
                   <Puzzle className="h-3.5 w-3.5" />
                   Make a word puzzle
                 </Link>
-                <Link href="/games" className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-                  <Gamepad2 className="h-3.5 w-3.5" />
-                  Browse the arcade
-                </Link>
-                {process.env.NEXT_PUBLIC_FLYNN_IMESSAGE && (
-                  <a
-                    href={`sms:${process.env.NEXT_PUBLIC_FLYNN_IMESSAGE}?&body=${encodeURIComponent('Turn this article into a game: ')}`}
-                    className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
-                    title="Text an article link to Flynn — he'll send back a playable game"
-                  >
-                    <MessageCircle className="h-3.5 w-3.5" />
-                    Or text it to Flynn
-                  </a>
-                )}
-                {config.features.dailyChallenge && (
-                  <Link href="/basepaint" className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-                    <CalendarDays className="h-3.5 w-3.5" />
-                    Daily challenge
-                  </Link>
-                )}
                 <button
                   type="button"
                   onClick={() => startTour('welcome')}

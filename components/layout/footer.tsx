@@ -17,6 +17,11 @@ const MORE_LINKS = [
   { href: '/writers', label: 'Writers' },
   { href: '/assets', label: 'Marketplace' },
   { href: '/#how-it-works', label: 'How it works' },
+  // Flynn's iMessage line only exists when the env var is configured — an
+  // empty 'sms:' href would render a dead link.
+  ...(process.env.NEXT_PUBLIC_FLYNN_IMESSAGE
+    ? [{ href: 'sms:' + process.env.NEXT_PUBLIC_FLYNN_IMESSAGE, label: 'Text Flynn' }]
+    : []),
 ]
 
 const BASE_GAME_NFT_ADDRESS =
