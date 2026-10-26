@@ -13,6 +13,12 @@ export interface ImageGenerationApiResult {
   provider: BackendImageProvider | string
 }
 
+// The route is a Vercel function with maxDuration=60 — the whole provider
+// chain must fit well under that or the platform kills the invocation and the
+// client sees a 502 instead of a graceful "no image".
+const PER_PROVIDER_TIMEOUT_MS = 12_000
+const FALLBACK_DEADLINE_MS = 40_000
+
 const IN_FLIGHT = new Map<string, Promise<ImageGenerationApiResult>>()
 const providerHealth = {
   fal: { failures: 0, lastSuccess: Date.now() },
@@ -29,7 +35,7 @@ function requestKey(prompt: string, model: string, provider: string) {
 async function callPollinationsAPI(prompt: string): Promise<{ imageUrl: string | null; success: boolean }> {
   try {
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 50000)
+    const timeoutId = setTimeout(() => controller.abort(), PER_PROVIDER_TIMEOUT_MS)
     const encodedPrompt = encodeURIComponent(prompt)
     const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true`
     const response = await fetch(imageUrl, { signal: controller.signal })
@@ -63,14 +69,18 @@ async function callVeniceAPI(prompt: string, model: string): Promise<{ imageUrl:
   if (!apiKey) return { imageUrl: null, success: false }
 
   try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), PER_PROVIDER_TIMEOUT_MS)
     const response = await fetch('https://api.venice.ai/api/v1/image/generate', {
       method: 'POST',
+      signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({ prompt, model, width: 1024, height: 1024, format: 'png' }),
     })
+    clearTimeout(timeoutId)
 
     if (!response.ok) {
       providerHealth.venice.failures += response.status === 402 ? 10 : 1
@@ -96,14 +106,18 @@ async function callNetmindAPI(prompt: string, model: string): Promise<{ imageUrl
   if (!apiKey) return { imageUrl: null, success: false }
 
   try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), PER_PROVIDER_TIMEOUT_MS)
     const response = await fetch('https://api.netmind.ai/inference-api/openai/v1/images/generations', {
       method: 'POST',
+      signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({ model, prompt, response_format: 'b64_json' }),
     })
+    clearTimeout(timeoutId)
 
     if (!response.ok) {
       providerHealth.netmind.failures++
@@ -166,11 +180,15 @@ async function callModalAPI(prompt: string): Promise<{ imageUrl: string | null; 
   if (!modalUrl) return { imageUrl: null, success: false }
 
   try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), PER_PROVIDER_TIMEOUT_MS)
     const response = await fetch(modalUrl, {
       method: 'POST',
+      signal: controller.signal,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt, width: 1024, height: 1024 }),
     })
+    clearTimeout(timeoutId)
 
     if (!response.ok) {
       providerHealth.modal.failures++
@@ -230,6 +248,7 @@ export async function generateImage(payload: ImageGenerationPayload): Promise<Im
       return callNetmindAPI(prompt, providerModel)
     }
 
+    const startedAt = Date.now()
     let result = await callProvider(selectedProvider, selectedModel)
     if (result.success && result.imageUrl) {
       return { imageUrl: result.imageUrl, model: selectedModel, provider: selectedProvider }
@@ -244,6 +263,9 @@ export async function generateImage(payload: ImageGenerationPayload): Promise<Im
     ].filter((entry) => entry.provider !== selectedProvider)
 
     for (const fallback of fallbackChain) {
+      // Stop before the platform would kill the function — a clean "failed"
+      // result lets the client degrade instead of receiving a 502.
+      if (Date.now() - startedAt > FALLBACK_DEADLINE_MS) break
       result = await callProvider(fallback.provider, fallback.model)
       if (result.success && result.imageUrl) {
         return { imageUrl: result.imageUrl, model: fallback.model, provider: fallback.provider }

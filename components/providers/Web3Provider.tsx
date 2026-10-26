@@ -108,8 +108,13 @@ import {
 import { Web3AuthContext, OPEN_CONNECT_MODAL_EVENT } from './web3-auth-context';
 import { SiweMessage } from 'siwe';
 import { logger } from '@/lib/config';
+import { installIpfsGatewayShim } from '@/lib/ipfs-gateway-shim';
 
 export { useWeb3Auth } from './web3-auth-context';
+
+// RainbowKit resolves the connected wallet's ENS avatar via ipfs.io (no CORS
+// headers → console spam). Rewrite to a CORS-friendly gateway once, globally.
+installIpfsGatewayShim();
 
 // Lives inside RainbowKitProvider so useConnectModal is available; translates
 // the dependency-free OPEN_CONNECT_MODAL_EVENT into the real modal.
