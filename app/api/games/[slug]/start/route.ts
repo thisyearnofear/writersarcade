@@ -7,6 +7,12 @@ import { UserAIPreferenceService } from '@/lib/user-ai-preferences.service'
 import { isFeatureEnabled, logger } from '@/lib/config'
 import { Prisma } from '@prisma/client'
 
+// The opening panel streams an LLM generation; without an explicit limit the
+// function dies on the platform default mid-stream and the client sees a
+// silently truncated SSE (no 'end' event). 120s covers the primary +
+// fallback provider path.
+export const maxDuration = 120
+
 const startGameSchema = z.object({
   sessionId: z.string().uuid(),
   ref: z.string().max(200).optional(),

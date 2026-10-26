@@ -7,6 +7,11 @@ import { isFeatureEnabled } from '@/lib/config'
 import type { StoryPlan } from '@/domains/games/services/story-planner.service'
 import { Prisma } from '@prisma/client'
 
+// Same SSE mid-stream kill risk as the start route — without an explicit
+// limit the function dies on the platform default and the client sees a
+// silently truncated stream.
+export const maxDuration = 120
+
 const chatSchema = z.object({
   sessionId: z.string().uuid(),
   gameId: z.string(),
