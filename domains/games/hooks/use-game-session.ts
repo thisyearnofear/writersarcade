@@ -55,6 +55,7 @@ export interface GameSessionState {
   epilogueReflection: string | null
   epilogueGenerationFailed: boolean
   startError: string | null
+  streamWarming: boolean
   // Mood tracking
   worldMood: {
     tension: number
@@ -126,6 +127,10 @@ export function useGameSession(game: Game, options?: GameSessionOptions): GameSe
   const [startError, setStartError] = useState<string | null>(null)
   // Persisted panel images (survive replays) — fetched once per start.
   const panelImagesRef = useRef<Record<number, string>>({})
+  // True while the stream is alive (keepalives flowing) but the model hasn't
+  // produced content yet — lets the UI show "still working" instead of a
+  // static spinner during provider latency.
+  const [streamWarming, setStreamWarming] = useState(false)
   const [worldMood, setWorldMood] = useState({ tension: 0, chaos: 0, hope: 0 })
   const [lastChoiceFeedback, setLastChoiceFeedback] = useState<ChoiceFeedback | null>(null)
   const decisionStartedAtRef = useRef<number | null>(null)
@@ -194,6 +199,7 @@ export function useGameSession(game: Game, options?: GameSessionOptions): GameSe
   const startGame = useCallback(async () => {
     setIsStarting(true)
     setStartError(null)
+    setStreamWarming(false)
     try {
       const pr = await fetch(`/api/games/${game.slug}/panels`)
       const pd = await pr.json()
@@ -258,7 +264,9 @@ export function useGameSession(game: Game, options?: GameSessionOptions): GameSe
             try {
               const data = JSON.parse(line.slice(6))
 
-              if (data.type === 'error') {
+              if (data.type === 'keepalive') {
+                if (!currentMessage && !gotEndEvent) setStreamWarming(true)
+              } else if (data.type === 'error') {
                 console.error('Game start error from server:', data.error)
                 const message = data.error || 'AI generation failed. Please try again.'
                 toast({
@@ -271,6 +279,7 @@ export function useGameSession(game: Game, options?: GameSessionOptions): GameSe
                 return
               } else if (data.type === 'content') {
                 currentMessage += data.content
+                setStreamWarming(false)
               } else if (data.type === 'options') {
                 currentOptions = data.options || []
                 // The narrative is complete once options arrive — start the
@@ -783,6 +792,7 @@ export function useGameSession(game: Game, options?: GameSessionOptions): GameSe
     epilogueReflection,
     epilogueGenerationFailed,
     startError,
+    streamWarming,
     // Actions
     startGame,
     sendMessage,

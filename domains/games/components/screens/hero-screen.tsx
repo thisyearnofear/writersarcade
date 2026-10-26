@@ -14,6 +14,7 @@ interface HeroScreenProps {
   game: Game
   isStarting: boolean
   loadingProgress: { text: boolean; images: boolean }
+  streamWarming?: boolean
   messages: ChatEntry[]
   showPreview: boolean
   showPaymentModal: boolean
@@ -38,6 +39,7 @@ export function HeroScreen({
   game,
   isStarting,
   loadingProgress,
+  streamWarming,
   messages,
   showPreview,
   showPaymentModal,
@@ -149,7 +151,7 @@ export function HeroScreen({
                     <>
                       <Loader2 className="w-5 h-5 md:w-6 md:h-6 mr-2 animate-spin" />
                       <span>
-                        {!loadingProgress.text ? 'Crafting your story...' :
+                        {!loadingProgress.text ? (streamWarming ? 'AI is thinking — still crafting...' : 'Crafting your story...') :
                           !loadingProgress.images ? 'Generating visuals...' :
                             'Almost ready...'}
                       </span>

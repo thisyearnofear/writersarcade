@@ -301,6 +301,7 @@ export function GamePlayInterface({ game, isOwner = false, onActivePlayChange }:
           onClosePreview={() => setShowPreview(false)}
           onClosePayment={() => setShowPaymentModal(false)}
           startError={session.startError}
+          streamWarming={session.streamWarming}
           onClearStartError={session.clearStartError}
           generateStoryboardPreview={generateStoryboardPreview}
         />
