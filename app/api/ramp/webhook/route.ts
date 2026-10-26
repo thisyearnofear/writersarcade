@@ -1,4 +1,3 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import {
   type RampWebhookPayload,
@@ -6,17 +5,15 @@ import {
 } from '@/lib/integrations/etherfuse'
 import { reportServerError } from '@/services/error-reporting'
 import { logger } from '@/lib/config'
+import { ok, fail, apiHandler } from '@/lib/api-response'
 
-export async function POST(request: NextRequest) {
-  try {
+export const POST = apiHandler(async (request) => {
+  {
     const bodyText = await request.text()
     const signature = request.headers.get('x-etherfuse-signature') || ''
 
     if (!await verifyWebhookSignature(bodyText, signature)) {
-      return NextResponse.json(
-        { error: 'Invalid signature' },
-        { status: 401 }
-      )
+      return fail('Invalid signature', 401)
     }
 
     const payload: RampWebhookPayload = JSON.parse(bodyText)
@@ -27,15 +24,12 @@ export async function POST(request: NextRequest) {
     })
 
     if (!transaction) {
-      return NextResponse.json(
-        { error: 'Order not found' },
-        { status: 404 }
-      )
+      return fail('Order not found', 404)
     }
 
     // Idempotency: never credit a completed order twice (webhook replay guard).
     if (transaction.status === 'completed') {
-      return NextResponse.json({ received: true, idempotent: true })
+      return ok({ received: true, idempotent: true })
     }
 
     if (payload.event === 'order.completed') {
@@ -70,13 +64,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    return NextResponse.json({ received: true })
-  } catch (error) {
+    return ok({ received: true })
+  }
+}, {
+  onError: (error) => {
     logger.error('[Ramp Webhook] Error:', error)
     reportServerError(error, { route: '/api/ramp/webhook' })
-    return NextResponse.json(
-      { error: 'Webhook processing failed' },
-      { status: 500 }
-    )
-  }
-}
+    return fail('Webhook processing failed', 500)
+  },
+})

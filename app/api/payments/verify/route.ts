@@ -5,7 +5,7 @@ import { getActor } from '@/services/auth'
 import { logger } from '@/lib/config'
 import { reportServerError } from '@/services/error-reporting'
 import { verifyOnChainPayment } from '@/services/payments/payment-verifier'
-import { fail } from '@/lib/api-response'
+import { fail, apiHandler } from '@/lib/api-response'
 
 /**
  * Unified Payment Verification Endpoint
@@ -48,8 +48,8 @@ function samePaymentIdentity(
  * POST: Initiate async payment verification
  * Returns endpoint for polling verification status
  */
-export async function POST(request: NextRequest) {
-  try {
+export const POST = apiHandler(async (request) => {
+  {
     const actor = await getActor()
     const actorWallet = actor?.identity === 'wallet' ? actor.user.walletAddress?.toLowerCase() : null
     if (!actor || !actorWallet) {
@@ -146,7 +146,9 @@ export async function POST(request: NextRequest) {
       status: payment.status,
       statusCheckUrl: `/api/payments/${payment.id}/status`,
     })
-  } catch (error) {
+  }
+}, {
+  onError: (error) => {
     logger.error('[Payment Verify] Error', error)
     reportServerError(error, { route: '/api/payments/verify' })
 
@@ -161,8 +163,8 @@ export async function POST(request: NextRequest) {
     }
 
     return fail('Failed to verify payment', 500)
-  }
-}
+  },
+})
 
 /**
  * GET: Check payment verification status

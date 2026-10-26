@@ -1,8 +1,7 @@
-import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { getActor } from '@/services/auth'
-import { ok, fail } from '@/lib/api-response'
+import { ok, fail, apiHandler } from '@/lib/api-response'
 import { logger } from '@/lib/config'
 import { reportServerError } from '@/services/error-reporting'
 import { verifyMusdTreasuryTransfer, isMezoHolderOnChain } from '@/services/payments/payment-verifier'
@@ -35,8 +34,8 @@ const ACTION = 'purchase-credits'
 const WEI_PER_CREDIT = 100_000_000_000_000_000n // 1e17
 const MIN_WEI = WEI_PER_CREDIT
 
-export async function POST(request: NextRequest) {
-  try {
+export const POST = apiHandler(async (request) => {
+  {
     const actor = await getActor()
     const wallet = actor?.user.walletAddress?.toLowerCase()
     if (!actor || !wallet) {
@@ -181,7 +180,9 @@ export async function POST(request: NextRequest) {
       mezoHolderBoost,
       message: `Purchased ${creditsGranted} credits with MUSD`,
     })
-  } catch (error) {
+  }
+}, {
+  onError: (error) => {
     logger.error('[Credits Purchase MUSD] Error:', error)
     reportServerError(error, { route: '/api/credits/purchase-musd' })
     if (error instanceof z.ZodError) {
@@ -197,5 +198,5 @@ export async function POST(request: NextRequest) {
       })
     }
     return fail(error instanceof Error ? error.message : 'Failed to purchase credits', 500)
-  }
-}
+  },
+})

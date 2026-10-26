@@ -1,10 +1,9 @@
-import { NextRequest } from 'next/server'
 import { randomBytes } from 'crypto'
 import { prisma } from '@/lib/prisma'
 import { CREDITS_CONFIG } from '@/lib/writer-coins'
 import { getActor } from '@/services/auth'
 import { z } from 'zod'
-import { ok, fail } from '@/lib/api-response'
+import { ok, fail, apiHandler } from '@/lib/api-response'
 import { logger } from '@/lib/config'
 
 const spendSchema = z.object({
@@ -15,8 +14,8 @@ const spendSchema = z.object({
 /** Signal an atomic-spend conflict (insufficient or concurrently-consumed balance). */
 const SPEND_CONFLICT = Symbol('credits-spend-conflict')
 
-export async function POST(request: NextRequest) {
-  try {
+export const POST = apiHandler(async (request) => {
+  {
     const body = await request.json()
     const validated = spendSchema.parse(body)
     const { action } = validated
@@ -109,7 +108,9 @@ export async function POST(request: NextRequest) {
       paymentId: result.payment.id,
       message: `Paid ${cost} credits for ${action}`,
     })
-  } catch (error) {
+  }
+}, {
+  onError: (error) => {
     logger.error('[Credits Spend] Error:', error)
     if (error instanceof z.ZodError) {
       return fail('Invalid request', 400, {
@@ -117,5 +118,5 @@ export async function POST(request: NextRequest) {
       })
     }
     return fail(error instanceof Error ? error.message : 'Failed to spend credits', 500)
-  }
-}
+  },
+})

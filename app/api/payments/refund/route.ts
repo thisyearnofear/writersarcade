@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/database'
 import { logger } from '@/lib/config'
 import { CREDITS_CONFIG } from '@/lib/writer-coins'
+import { ok, fail, apiHandler } from '@/lib/api-response'
 
 /**
  * Refund a generate-game payment as credits when generation failed to
@@ -10,11 +10,11 @@ import { CREDITS_CONFIG } from '@/lib/writer-coins'
  * Covers credits, MUSD, and writer-coin payments alike (crypto refunds
  * aren't feasible on-chain, so we credit the account).
  */
-export async function POST(req: NextRequest) {
-  try {
+export const POST = apiHandler(async (req) => {
+  {
     const { transactionHash, paymentId } = await req.json()
     if (!transactionHash && !paymentId) {
-      return NextResponse.json({ success: false, error: 'Missing payment reference' }, { status: 400 })
+      return fail('Missing payment reference')
     }
 
     const payment = await prisma.payment.findFirst({
@@ -25,10 +25,10 @@ export async function POST(req: NextRequest) {
       select: { id: true, status: true, userId: true, walletAddress: true },
     })
     if (!payment) {
-      return NextResponse.json({ success: false, error: 'Payment not found' }, { status: 404 })
+      return fail('Payment not found', 404)
     }
     if (payment.status !== 'verified') {
-      return NextResponse.json({ success: true, data: { alreadyRefunded: true } })
+      return ok({ alreadyRefunded: true })
     }
 
     // Resolve the account to credit — payment.userId, else by wallet.
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       userId = user?.id ?? null
     }
     if (!userId) {
-      return NextResponse.json({ success: false, error: 'No account found to credit' }, { status: 400 })
+      return fail('No account found to credit')
     }
 
     const cost = Number(CREDITS_CONFIG.cost['generate-game'])
@@ -65,10 +65,12 @@ export async function POST(req: NextRequest) {
       return true
     })
 
-    if (!result) return NextResponse.json({ success: true, data: { alreadyRefunded: true } })
-    return NextResponse.json({ success: true, data: { credited: cost } })
-  } catch (error) {
-    logger.error('Payment refund failed:', error)
-    return NextResponse.json({ success: false, error: 'Refund failed' }, { status: 500 })
+    if (!result) return ok({ alreadyRefunded: true })
+    return ok({ credited: cost })
   }
-}
+}, {
+  onError: (error) => {
+    logger.error('Payment refund failed:', error)
+    return fail('Refund failed', 500)
+  },
+})

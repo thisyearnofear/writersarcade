@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getWriterCoinById } from '@/lib/writer-coins'
 import { fetchCoinConfigOnChain } from '@/lib/contracts'
 import { PaymentCostService } from '@/domains/payments/services/payment-cost.service'
-import { fail } from '@/lib/api-response'
+import { fail, apiHandler } from '@/lib/api-response'
 import { logger } from '@/lib/config'
 import type { PaymentInitiateRequest, PaymentInfo } from '@/domains/payments/types'
 import { z } from 'zod'
@@ -24,8 +24,8 @@ const initiatePaymentSchema = z.object({
   }),
 })
 
-export async function POST(request: NextRequest) {
-  try {
+export const POST = apiHandler(async (request) => {
+  {
     const body = await request.json()
     const validatedData = initiatePaymentSchema.parse(body) as PaymentInitiateRequest
 
@@ -77,7 +77,9 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(paymentInfo)
-  } catch (error) {
+  }
+}, {
+  onError: (error) => {
     logger.error('[Payment Initiate] Error:', error)
 
     if (error instanceof z.ZodError) {
@@ -85,5 +87,5 @@ export async function POST(request: NextRequest) {
     }
 
     return fail('Failed to initiate payment', 500)
-  }
-}
+  },
+})
