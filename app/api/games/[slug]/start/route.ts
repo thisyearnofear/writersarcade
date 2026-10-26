@@ -92,6 +92,14 @@ export async function POST(
     
     const stream = new ReadableStream({
       async start(controller) {
+        // SSE keepalive — the edge drops responses that stay silent before the
+        // first byte (~20-30s); provider latency + model fallbacks make that
+        // window real, and the client reads the drop as a dead stream.
+        const keepalive = setInterval(() => {
+          try {
+            controller.enqueue(encoder.encode('data: {"type":"keepalive"}\n\n'))
+          } catch { /* controller closed */ }
+        }, 10_000)
         try {
           // Get user AI preferences
           const userPreferences = await UserAIPreferenceService.getUserPreferences()
@@ -228,6 +236,8 @@ export async function POST(
           })}\n\n`
           controller.enqueue(encoder.encode(errorData))
           controller.close()
+        } finally {
+          clearInterval(keepalive)
         }
       }
     })

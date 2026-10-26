@@ -118,6 +118,12 @@ export async function POST(request: NextRequest) {
     
     const stream = new ReadableStream({
       async start(controller) {
+        // SSE keepalive — same edge-silent-drop protection as the start route.
+        const keepalive = setInterval(() => {
+          try {
+            controller.enqueue(encoder.encode('data: {"type":"keepalive"}\n\n'))
+          } catch { /* controller closed */ }
+        }, 10_000)
         try {
           // Get user AI preferences
           const userPreferences = await UserAIPreferenceService.getUserPreferences()
@@ -253,6 +259,8 @@ export async function POST(request: NextRequest) {
           })}\n\n`
           controller.enqueue(encoder.encode(errorData))
           controller.close()
+        } finally {
+          clearInterval(keepalive)
         }
       }
     })
