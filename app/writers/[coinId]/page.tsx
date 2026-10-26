@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { getWriterCoinById, WRITER_COINS } from '@/lib/writer-coins'
-import { GameDatabaseService } from '@/domains/games/services/game-database.service'
+import { getTaggedPublicGamesWithClips } from '@/domains/games/services/public-games.service'
 import { WriterPageClient } from './writer-page-client'
 
 export const revalidate = 300
@@ -29,10 +29,9 @@ export default async function WriterPage({ params }: WriterPageProps) {
 
   if (!coin) notFound()
 
-  const { total } = await GameDatabaseService.getGames({
+  const { total } = await getTaggedPublicGamesWithClips({
     writerCoinId: coinId,
-    includePrivate: false,
-    requireArtifact: true,
+    requireProvenance: true,
     limit: 1,
   })
 

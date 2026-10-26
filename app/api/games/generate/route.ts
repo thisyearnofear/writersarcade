@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server'
 import { after } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { ok, fail } from '@/lib/api-response'
 import { GameDatabaseService } from '@/domains/games/services/game-database.service'
 import { ImageGenerationService } from '@/domains/games/services/image-generation.service'
@@ -409,6 +410,11 @@ Your game MUST authentically interpret this article's core themes. Players shoul
 
       logger.info('Story stub created — finishing generation async:', { gameId: stub.id, slug: stub.slug })
 
+      // The stub is already public — flush the 'games' tag so ISR surfaces
+      // (home hero, writer pages) pick it up immediately. { expire: 0 } is
+      // the documented immediate-expiry form for Route Handlers.
+      try { revalidateTag('games', { expire: 0 }) } catch { /* best-effort */ }
+
       after(async () => {
         await runStoryGeneration({
           gameId: stub.id,
@@ -424,6 +430,8 @@ Your game MUST authentically interpret this article's core themes. Players shoul
           canonicalWriterCoinId,
           targetPrivate: validatedData.private ?? false,
         })
+        // Generation settled (ready or failed) — flip the listings again.
+        try { revalidateTag('games', { expire: 0 }) } catch { /* best-effort */ }
       })
 
       return ok({
@@ -431,6 +439,10 @@ Your game MUST authentically interpret this article's core themes. Players shoul
         slug: stub.slug,
         title: stub.title,
         generating: true,
+        // Settlement truth for client telemetry — paymentPath in the store is
+        // a UI selection and misreports credit-funded games as 'musd'.
+        ownershipSource: ownership.ownershipSource,
+        writerCoinId: canonicalWriterCoinId,
       })
     }
 
@@ -514,6 +526,9 @@ Your game MUST authentically interpret this article's core themes. Players shoul
       }
     }
     logger.info('Game saved successfully:', { id: savedGame.id, slug: savedGame.slug })
+
+    // Flush the 'games' tag so ISR surfaces show the new game immediately.
+    try { revalidateTag('games', { expire: 0 }) } catch { /* best-effort */ }
 
     // Generate cover image eagerly (non-blocking — saves to DB when ready)
     const coverImagePromise = savedGame.mode !== 'wordle'

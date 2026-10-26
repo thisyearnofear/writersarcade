@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache'
 import { GameDatabaseService } from './game-database.service'
 import { prisma } from '@/lib/prisma'
 
@@ -12,6 +13,8 @@ export async function getPublicGamesWithClips(options: GetGamesOptions = {}) {
   const result = await GameDatabaseService.getGames({
     ...options,
     includePrivate: false,
+    // Failed generation stubs must never surface in the arcade.
+    excludeFailedGenerations: true,
   })
 
   const ids = result.games.map((g) => g.id)
@@ -33,3 +36,14 @@ export async function getPublicGamesWithClips(options: GetGamesOptions = {}) {
 
   return result
 }
+
+/**
+ * Data-Cache variant for server-rendered surfaces (home page, writer pages).
+ * Tagged 'games' so /api/games/generate can revalidateTag the moment a new
+ * story lands — cross-instance, unlike the old in-process Map cache.
+ */
+export const getTaggedPublicGamesWithClips = unstable_cache(
+  async (options: GetGamesOptions = {}) => getPublicGamesWithClips(options),
+  ['public-games-with-clips'],
+  { tags: ['games'], revalidate: 300 },
+)

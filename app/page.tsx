@@ -1,5 +1,5 @@
 import { HomeClient } from './home-client'
-import { getPublicGamesWithClips } from '@/domains/games/services/public-games.service'
+import { getTaggedPublicGamesWithClips } from '@/domains/games/services/public-games.service'
 import { GameDatabaseService } from '@/domains/games/services/game-database.service'
 import { prisma } from '@/lib/prisma'
 import type { SampleGame } from '@/domains/games/components/hero-game-strip'
@@ -14,8 +14,12 @@ export default async function HomePage() {
   let initialStats: { publicGames: number; totalPlays: number } | null = null
   let featuredArtifact: HeroTransformationProps | undefined
   try {
-    const [gamesResult, stats] = await Promise.all([
-      getPublicGamesWithClips({ limit: 5, requireImage: true, requireArtifact: true }),
+    const [gamesResult, artifactResult, stats] = await Promise.all([
+      // Hero strip: publishable games with a cover — artifact presence is
+      // play-derived, so gating on it hid every freshly generated game.
+      getTaggedPublicGamesWithClips({ limit: 5, requireImage: true, requireProvenance: true }),
+      // The article→comic artifact showcase still needs real panels.
+      getTaggedPublicGamesWithClips({ limit: 15, requireArtifact: true, requireProvenance: true }),
       GameDatabaseService.getGameStats(),
     ])
     initialSampleGames = gamesResult.games.map((g) => ({
@@ -30,7 +34,7 @@ export default async function HomePage() {
     // The hero's article→comic artifact needs one game born from a real
     // article plus its generated panels. First match wins; anything short of
     // three panels falls back to the generic game strip.
-    const sourceGame = gamesResult.games.find((g) => g.articleUrl)
+    const sourceGame = artifactResult.games.find((g) => g.articleUrl)
     if (sourceGame) {
       const panels = await prisma.gameArtifactPanel.findMany({
         where: { gameId: sourceGame.id, imageUrl: { not: null } },

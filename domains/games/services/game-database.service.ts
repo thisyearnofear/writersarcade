@@ -281,6 +281,25 @@ export class GameDatabaseService {
     requireFunding?: boolean
     requireImage?: boolean
     requireArtifact?: boolean
+    /**
+     * Publishable provenance — the game was either paid for (credits, MUSD,
+     * writer coin) or is the free demo tier. Legacy rows created before the
+     * funding model (ownershipSource 'siwe_user' / 'legacy_creator_wallet'
+     * with no coin and no payment) are playable by direct link but are not
+     * promoted into listings.
+     *
+     * NOTE: this is deliberately NOT the same as `requireArtifact`. Artifact
+     * presence is derived from *play* (panel rows are written by the client
+     * mid-playthrough), so gating listings on it hid every freshly generated
+     * game until somebody played it.
+     */
+    requireProvenance?: boolean
+    /**
+     * Hide generation stubs that finished with generationStatus 'failed'.
+     * 'generating' stubs still pass — they render as a "writing your story"
+     * card and go live when the pipeline completes.
+     */
+    excludeFailedGenerations?: boolean
     sortBy?: 'recent' | 'playCount'
   } = {}) {
     const {
@@ -295,6 +314,8 @@ export class GameDatabaseService {
       requireFunding = false,
       requireImage = false,
       requireArtifact = false,
+      requireProvenance = false,
+      excludeFailedGenerations = false,
       sortBy = 'recent',
     } = options
 
@@ -340,6 +361,14 @@ export class GameDatabaseService {
               { nftTransactionHash: { not: null } },
             ],
           } : {},
+          requireProvenance ? {
+            OR: [
+              { writerCoinId: { not: null } },
+              { paymentId: { not: null } },
+              { ownershipSource: { in: ['free_demo', 'credits_user', 'payment_wallet'] } },
+            ],
+          } : {},
+          excludeFailedGenerations ? { generationStatus: { not: 'failed' } } : {},
         ]
       }
 

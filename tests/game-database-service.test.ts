@@ -173,3 +173,67 @@ describe('GameDatabaseService sort logic', () => {
     })
   })
 })
+
+describe('getGames listing filters', () => {
+  let GameDatabaseService: typeof import('@/domains/games/services/game-database.service').GameDatabaseService
+
+  const getWhereClauses = async (options: Parameters<typeof GameDatabaseService.getGames>[0]) => {
+    mockFindMany.mockResolvedValue([])
+    mockCount.mockResolvedValue(0)
+    await GameDatabaseService.getGames(options)
+    return mockFindMany.mock.calls.at(-1)![0].where.AND as Record<string, unknown>[]
+  }
+
+  const hasClause = (clauses: Record<string, unknown>[], key: string) =>
+    clauses.some((c) => key in c)
+
+  beforeEach(async () => {
+    vi.clearAllMocks()
+    const mod = await import('@/domains/games/services/game-database.service')
+    GameDatabaseService = mod.GameDatabaseService
+  })
+
+  it('requireProvenance filters on payment provenance, NOT play-derived artifacts', async () => {
+    const clauses = await getWhereClauses({ requireProvenance: true })
+
+    const provenance = clauses.find((c) => 'OR' in c) as { OR: Record<string, unknown>[] } | undefined
+    expect(provenance).toBeDefined()
+    expect(provenance!.OR).toEqual(
+      expect.arrayContaining([
+        { writerCoinId: { not: null } },
+        { paymentId: { not: null } },
+        { ownershipSource: { in: ['free_demo', 'credits_user', 'payment_wallet'] } },
+      ])
+    )
+    // Regression: a freshly generated game has zero artifact panels — the
+    // listing filter must not require them (that's what hid new games).
+    expect(hasClause(clauses, 'artifactPanels')).toBe(false)
+    expect(
+      provenance!.OR.some((c) => 'artifactPanels' in c || 'artifactManifestUri' in c)
+    ).toBe(false)
+  })
+
+  it('requireArtifact stays opt-in — absent by default, present on request', async () => {
+    const defaultClauses = await getWhereClauses({})
+    expect(
+      defaultClauses.every((c) => {
+        const or = c.OR as Record<string, unknown>[] | undefined
+        return !or || or.every((o) => !('artifactPanels' in o))
+      })
+    ).toBe(true)
+
+    const clauses = await getWhereClauses({ requireArtifact: true })
+    const artifact = clauses.find(
+      (c) => Array.isArray(c.OR) && (c.OR as Record<string, unknown>[]).some((o) => 'artifactPanels' in o)
+    )
+    expect(artifact).toBeDefined()
+  })
+
+  it('excludeFailedGenerations keeps failed stubs out of the listing', async () => {
+    const clauses = await getWhereClauses({ excludeFailedGenerations: true })
+    expect(clauses).toContainEqual({ generationStatus: { not: 'failed' } })
+
+    const off = await getWhereClauses({})
+    expect(hasClause(off, 'generationStatus')).toBe(false)
+  })
+})

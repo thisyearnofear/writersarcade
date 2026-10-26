@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Game } from '../types'
-import { GameCard } from '@/components/ui/game-card'
+import { GameCard } from '@/domains/games/components/game-card'
 import { animationConfig } from '@/lib/animations'
 import { CardSkeleton } from '@/components/effects'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -51,45 +51,64 @@ export function GameGrid({
   // infinite fetch loop if onLoad is defined inline at the call site)
   const onLoadRef = useRef(onLoad)
   onLoadRef.current = onLoad
+  const lastFetchRef = useRef(0)
+
+  const fetchGames = useCallback(async (initial: boolean) => {
+    try {
+      if (initial) setLoading(true)
+      const params = new URLSearchParams()
+      if (limit) params.set('limit', limit.toString())
+      if (page) params.set('offset', ((page - 1) * limit).toString())
+      if (search) params.set('search', search)
+      if (genre) params.set('genre', genre)
+      if (featured) params.set('featured', 'true')
+      if (writerCoinId) params.set('writerCoinId', writerCoinId)
+      if (requireFunding) params.set('requireFunding', 'true')
+      if (requireImage) params.set('requireImage', 'true')
+      if (sortBy) params.set('sortBy', sortBy)
+
+      // BUG FIX: was incorrectly calling /api/games/generate (POST creation endpoint)
+      // via GET. The listing endpoint is /api/games.
+      const response = await fetch(`/api/games?${params}`)
+      const result = await response.json()
+
+      if (result.success) {
+        setGames(result.data.games)
+        setError(null)
+        // Use ref so onLoad is never in the deps array — prevents infinite loop
+        onLoadRef.current?.({ total: result.data.total, count: result.data.games.length })
+      } else if (initial) {
+        // Background refetch failures keep the stale grid rather than
+        // swapping it for an error panel.
+        setError(result.error || 'Failed to load games')
+      }
+    } catch {
+      if (initial) setError('Failed to load games')
+    } finally {
+      setLoading(false)
+      lastFetchRef.current = Date.now()
+    }
+  }, [limit, search, genre, writerCoinId, page, featured, requireFunding, requireImage, sortBy])
 
   useEffect(() => {
-    async function fetchGames() {
-      try {
-        setLoading(true)
-        const params = new URLSearchParams()
-        if (limit) params.set('limit', limit.toString())
-        if (page) params.set('offset', ((page - 1) * limit).toString())
-        if (search) params.set('search', search)
-        if (genre) params.set('genre', genre)
-        if (featured) params.set('featured', 'true')
-        if (writerCoinId) params.set('writerCoinId', writerCoinId)
-        if (requireFunding) params.set('requireFunding', 'true')
-        if (requireImage) params.set('requireImage', 'true')
-        if (sortBy) params.set('sortBy', sortBy)
+    fetchGames(true)
+  }, [fetchGames])
 
-        // BUG FIX: was incorrectly calling /api/games/generate (POST creation endpoint)
-        // via GET. The listing endpoint is /api/games.
-        const response = await fetch(`/api/games?${params}`)
-        const result = await response.json()
-
-        if (result.success) {
-          setGames(result.data.games)
-          // Use ref so onLoad is never in the deps array — prevents infinite loop
-          onLoadRef.current?.({ total: result.data.total, count: result.data.games.length })
-        } else {
-          setError(result.error || 'Failed to load games')
-        }
-      } catch {
-        setError('Failed to load games')
-      } finally {
-        setLoading(false)
+  // Re-fetch when the tab regains focus and the data is stale — a game
+  // generated in another tab/window shows up without a manual reload.
+  useEffect(() => {
+    const refetchIfStale = () => {
+      if (document.visibilityState === 'visible' && Date.now() - lastFetchRef.current > 30_000) {
+        fetchGames(false)
       }
     }
-
-    fetchGames()
-  // onLoad intentionally omitted — use onLoadRef.current inside instead
-   
-  }, [limit, search, genre, writerCoinId, page, featured, requireFunding, requireImage, sortBy])
+    document.addEventListener('visibilitychange', refetchIfStale)
+    window.addEventListener('focus', refetchIfStale)
+    return () => {
+      document.removeEventListener('visibilitychange', refetchIfStale)
+      window.removeEventListener('focus', refetchIfStale)
+    }
+  }, [fetchGames])
 
   if (loading) {
     // Cap skeletons to avoid huge layout shift — never render more than 6

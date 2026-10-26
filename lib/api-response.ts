@@ -28,8 +28,9 @@ import { z } from 'zod'
 export function ok<T>(
   data: T,
   status: number = 200,
+  options?: { headers?: HeadersInit },
 ): NextResponse {
-  return NextResponse.json({ success: true, data }, { status })
+  return NextResponse.json({ success: true, data }, { status, headers: options?.headers })
 }
 
 /**
@@ -120,8 +121,22 @@ type RouteContext = { params: Promise<Record<string, string>> }
 
 type RouteHandler<C = RouteContext> = (
   request: NextRequest,
-  context: C,
+  // Optional: Next.js always passes a context, but route handlers with no
+  // dynamic segments are legitimately callable with the request alone (tests
+  // do exactly that). Handlers that need params still receive them.
+  context?: C,
 ) => Promise<NextResponse | Response>
+
+/**
+ * Route-specific error handling for `apiHandler`.
+ *
+ * `onError` runs before the default mapping. Return a response to take over
+ * (money routes need their own structured logging and status codes), or return
+ * null to fall through to the standard ZodError / HttpError / 500 handling.
+ */
+export interface ApiHandlerOptions {
+  onError?: (error: unknown) => NextResponse | null
+}
 
 /**
  * Wrap a route handler with standard error handling:
@@ -140,11 +155,17 @@ type RouteHandler<C = RouteContext> = (
  */
 export function apiHandler<C = RouteContext>(
   handler: RouteHandler<C>,
+  options?: ApiHandlerOptions,
 ): RouteHandler<C> {
   return async (request, context) => {
     try {
       return await handler(request, context)
     } catch (error) {
+      if (options?.onError) {
+        const handled = options.onError(error)
+        if (handled) return handled
+      }
+
       // Zod validation errors → 400
       if (error instanceof z.ZodError) {
         return fail(
