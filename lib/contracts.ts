@@ -111,6 +111,19 @@ export const NETWORKS = {
     rpcUrl: 'https://mainnet.base.org',
     blockExplorer: 'https://basescan.org',
   },
+  // Mezo chains — same RPC resolution order as services/payments/payment-verifier.ts
+  mezoTestnet: {
+    id: 31611,
+    name: 'Mezo Matsnet',
+    rpcUrl: process.env.NEXT_PUBLIC_MEZO_TESTNET_RPC || 'https://rpc.test.mezo.org',
+    blockExplorer: 'https://explorer.test.mezo.org',
+  },
+  mezoMainnet: {
+    id: 31612,
+    name: 'Mezo',
+    rpcUrl: process.env.NEXT_PUBLIC_MEZO_MAINNET_RPC || 'https://rpc-http.mezo.boar.network',
+    blockExplorer: 'https://explorer.mezo.org',
+  },
 }
 
 /**
@@ -133,6 +146,8 @@ export function getContractAddress(
 export function getNetwork(chainId: number) {
   if (chainId === 84532) return NETWORKS.baseSepolia
   if (chainId === 8453) return NETWORKS.baseMainnet
+  if (chainId === 31611) return NETWORKS.mezoTestnet
+  if (chainId === 31612) return NETWORKS.mezoMainnet
   throw new Error(`Unsupported chain ID: ${chainId}`)
 }
 
