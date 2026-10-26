@@ -5,9 +5,10 @@
  * with WriterCoinPayment and GameNFT contracts on Base network.
  */
 
-import { encodeFunctionData, createPublicClient, http } from 'viem'
+import { encodeFunctionData, createPublicClient, http, fallback } from 'viem'
 import { base as baseChain } from 'viem/chains'
 import { getWriterCoinById } from '@/lib/writer-coins'
+import { MEZO_TESTNET_RPCS, MEZO_MAINNET_RPCS } from '@/lib/wallet/chains'
 import { cacheGet, cacheSet } from './cache'
 import { baseRpcTransport } from './base-rpc'
 
@@ -116,12 +117,14 @@ export const NETWORKS = {
     id: 31611,
     name: 'Mezo Matsnet',
     rpcUrl: process.env.NEXT_PUBLIC_MEZO_TESTNET_RPC || 'https://rpc.test.mezo.org',
+    rpcUrls: [process.env.NEXT_PUBLIC_MEZO_TESTNET_RPC || MEZO_TESTNET_RPCS[0], ...MEZO_TESTNET_RPCS.slice(1)],
     blockExplorer: 'https://explorer.test.mezo.org',
   },
   mezoMainnet: {
     id: 31612,
     name: 'Mezo',
     rpcUrl: process.env.NEXT_PUBLIC_MEZO_MAINNET_RPC || 'https://rpc-http.mezo.boar.network',
+    rpcUrls: [process.env.NEXT_PUBLIC_MEZO_MAINNET_RPC || MEZO_MAINNET_RPCS[0], ...MEZO_MAINNET_RPCS.slice(1)],
     blockExplorer: 'https://explorer.mezo.org',
   },
 }
@@ -195,7 +198,8 @@ export function getPublicClient(chainId: number = getDefaultChainId()) {
     return createPublicClient({ chain: baseChain, transport: baseRpcTransport() })
   }
   const net = getNetwork(chainId)
-  return createPublicClient({ chain: { id: net.id, name: net.name, nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }, rpcUrls: { default: { http: [net.rpcUrl] } } } as import('viem').Chain, transport: http(net.rpcUrl) })
+  const urls = (net as { rpcUrls?: readonly string[] }).rpcUrls ?? [net.rpcUrl]
+  return createPublicClient({ chain: { id: net.id, name: net.name, nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 }, rpcUrls: { default: { http: [...urls] } } } as import('viem').Chain, transport: fallback(urls.map((u) => http(u, { timeout: 15000 }))) })
 }
 
 export function getWriterCoinPaymentAddress(chainId: number = getDefaultChainId()): `0x${string}` {

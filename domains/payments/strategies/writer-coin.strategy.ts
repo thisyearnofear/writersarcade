@@ -72,8 +72,14 @@ export class WriterCoinStrategy implements PaymentStrategy {
     // the MUSD strategy; Base's fast blocks usually mask it).
     const publicClient = getPublicClient()
     step('Waiting for approval to confirm…')
-    const approvalReceipt = await publicClient.waitForTransactionReceipt({ hash: approvalTx, timeout: 90_000, pollingInterval: 3_000 })
-    if (approvalReceipt.status !== 'success') {
+    let approvalReceipt
+    try {
+      approvalReceipt = await publicClient.waitForTransactionReceipt({ hash: approvalTx, timeout: 90_000, pollingInterval: 3_000 })
+    } catch {
+      logger.warn('[WriterCoinStrategy] approve receipt wait timed out — proceeding after settle delay')
+      await new Promise((r) => setTimeout(r, 5000))
+    }
+    if (approvalReceipt && approvalReceipt.status !== 'success') {
       throw new Error('Token approval failed on-chain')
     }
 
@@ -110,8 +116,13 @@ export class WriterCoinStrategy implements PaymentStrategy {
     // Confirm on-chain before verifying — a reverted tx only surfaced as a
     // confusing 400 from the verifier.
     step('Waiting for payment to confirm…')
-    const payReceipt = await publicClient.waitForTransactionReceipt({ hash: txHash, timeout: 90_000, pollingInterval: 3_000 })
-    if (payReceipt.status !== 'success') {
+    let payReceipt
+    try {
+      payReceipt = await publicClient.waitForTransactionReceipt({ hash: txHash, timeout: 90_000, pollingInterval: 3_000 })
+    } catch {
+      logger.warn('[WriterCoinStrategy] pay receipt wait timed out — deferring to backend verify')
+    }
+    if (payReceipt && payReceipt.status !== 'success') {
       throw new Error('Payment reverted on-chain')
     }
 

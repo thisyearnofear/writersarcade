@@ -111,8 +111,17 @@ export class MUSDStrategy implements PaymentStrategy {
     // slow-indexing chains (Mezo) or fails gas estimation.
     const publicClient = getPublicClient(MEZO_ACTIVE_CHAIN_ID)
     step('Waiting for approval to confirm…')
-    const approvalReceipt = await publicClient.waitForTransactionReceipt({ hash: approvalTx, timeout: 90_000, pollingInterval: 3_000 })
-    if (approvalReceipt.status !== 'success') {
+    let approvalReceipt
+    try {
+      approvalReceipt = await publicClient.waitForTransactionReceipt({ hash: approvalTx, timeout: 90_000, pollingInterval: 3_000 })
+    } catch {
+      // Node may not have indexed it yet (flaky public fleet) — give the
+      // approve a settle window and continue; a truly failed approve makes
+      // payForGeneration revert, which surfaces as a real error.
+      logger.warn('[MUSDStrategy] approve receipt wait timed out — proceeding after settle delay')
+      await new Promise((r) => setTimeout(r, 8000))
+    }
+    if (approvalReceipt && approvalReceipt.status !== 'success') {
       throw new Error('MUSD approval failed on-chain')
     }
 
@@ -152,8 +161,15 @@ export class MUSDStrategy implements PaymentStrategy {
     // Confirm on-chain before verifying — a reverted tx would only surface
     // as a confusing 400 from the verifier.
     step('Waiting for payment to confirm…')
-    const payReceipt = await publicClient.waitForTransactionReceipt({ hash: txHash, timeout: 90_000, pollingInterval: 3_000 })
-    if (payReceipt.status !== 'success') {
+    let payReceipt
+    try {
+      payReceipt = await publicClient.waitForTransactionReceipt({ hash: txHash, timeout: 90_000, pollingInterval: 3_000 })
+    } catch {
+      // Server-side verify races all Mezo nodes — it can still find the tx
+      // even when this client-side poll can't. Don't hard-fail here.
+      logger.warn('[MUSDStrategy] pay receipt wait timed out — deferring to backend verify')
+    }
+    if (payReceipt && payReceipt.status !== 'success') {
       throw new Error('MUSD payment reverted on-chain')
     }
 

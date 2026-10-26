@@ -1,8 +1,8 @@
-import { createPublicClient, http, type Chain, type PublicClient } from 'viem'
+import { createPublicClient, http, fallback, type Chain, type PublicClient } from 'viem'
 import { decodeFunctionData, decodeEventLog, keccak256, parseAbi, toBytes } from 'viem'
 import { base as baseChain } from 'viem/chains'
 import { getWriterCoinById, MUSD_CONFIG, MEZO_CONFIG, MEZO_TREASURY_ADDRESS } from '@/lib/writer-coins'
-import { BASE_MAINNET_CHAIN_ID, MEZO_TESTNET_CHAIN_ID, MEZO_MAINNET_CHAIN_ID } from '@/lib/wallet/chains'
+import { BASE_MAINNET_CHAIN_ID, MEZO_TESTNET_CHAIN_ID, MEZO_MAINNET_CHAIN_ID, MEZO_TESTNET_RPCS, MEZO_MAINNET_RPCS } from '@/lib/wallet/chains'
 import { baseRpcTransport } from '@/lib/base-rpc'
 
 export type PaymentAction = 'generate-game' | 'mint-nft'
@@ -132,16 +132,14 @@ function toNativeBigInt(value: unknown): bigint {
   throw new Error('Invalid payment amount')
 }
 
-function getRpcUrl(chainId: number): string | null {
-  if (chainId === MEZO_TESTNET_CHAIN_ID) return process.env.NEXT_PUBLIC_MEZO_TESTNET_RPC || 'https://rpc.test.mezo.org'
-  if (chainId === MEZO_MAINNET_CHAIN_ID) {
-    return (
-      process.env.MEZO_MAINNET_RPC ||
-      process.env.NEXT_PUBLIC_MEZO_MAINNET_RPC ||
-      'https://rpc-http.mezo.boar.network'
-    )
+function getRpcUrls(chainId: number): string[] {
+  if (chainId === MEZO_TESTNET_CHAIN_ID) {
+    return [process.env.NEXT_PUBLIC_MEZO_TESTNET_RPC || MEZO_TESTNET_RPCS[0], ...MEZO_TESTNET_RPCS.slice(1)]
   }
-  return null
+  if (chainId === MEZO_MAINNET_CHAIN_ID) {
+    return [process.env.MEZO_MAINNET_RPC || process.env.NEXT_PUBLIC_MEZO_MAINNET_RPC || MEZO_MAINNET_RPCS[0], ...MEZO_MAINNET_RPCS.slice(1)]
+  }
+  return []
 }
 
 /** Map a Mezo chain id to the MUSD_CONFIG network key. */
@@ -163,15 +161,59 @@ export function createReceiptClient(chainId: number): PublicClient | null {
   if (chainId === BASE_MAINNET_CHAIN_ID) {
     return createPublicClient({ chain: baseChain, transport: baseRpcTransport() }) as PublicClient
   }
-  const rpcUrl = getRpcUrl(chainId)
-  if (!rpcUrl) return null
+  const urls = getRpcUrls(chainId)
+  if (!urls.length) return null
   const chain = {
     id: chainId,
     name: `Chain ${chainId}`,
     nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-    rpcUrls: { default: { http: [rpcUrl] } },
+    rpcUrls: { default: { http: [...urls] } },
   } as Chain
-  return createPublicClient({ chain, transport: http(rpcUrl, { timeout: 15000 }) })
+  return createPublicClient({ chain, transport: fallback(urls.map((u) => http(u, { timeout: 15000 }))) })
+}
+
+/** Resolves with the first non-rejected result; rejects if all reject. */
+function firstNonNull<T>(promises: Promise<T>[]): Promise<T> {
+  return new Promise((resolve, reject) => {
+    let pending = promises.length
+    if (!pending) return reject(new Error('no endpoints'))
+    for (const p of promises) p.then(resolve, () => { if (--pending === 0) reject(new Error('all nodes failed')) })
+  })
+}
+
+/**
+ * Race a read across every RPC for the chain. Null results count as misses —
+ * Mezo's gateway fronts an inconsistent node fleet, so "not found on this
+ * node" must fail over, not just transport errors. Returns null only when no
+ * node has it (same contract as a single-client call).
+ */
+async function fetchAcrossNodes<T>(chainId: number, call: (c: PublicClient) => Promise<T | null>): Promise<T> {
+  const urls = getRpcUrls(chainId)
+  if (!urls.length) {
+    const c = createReceiptClient(chainId)
+    if (!c) throw new Error(`Unsupported payment chain: ${chainId}`)
+    return (await call(c)) as T
+  }
+  try {
+    return await firstNonNull(
+      urls.map(async (url) => {
+        const c = createPublicClient({
+          chain: {
+            id: chainId,
+            name: `Chain ${chainId}`,
+            nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+            rpcUrls: { default: { http: [url] } },
+          } as Chain,
+          transport: http(url, { timeout: 15000 }),
+        }) as PublicClient
+        const r = await call(c)
+        if (r == null) throw new Error('not found on this node')
+        return r
+      })
+    )
+  } catch {
+    return null as T
+  }
 }
 
 export interface PaymentEvidence {
@@ -301,12 +343,12 @@ export async function verifyOnChainPayment(params: VerifyPaymentParams): Promise
   if (!client) throw new Error(`Unsupported payment chain: ${params.chainId}`)
 
   const [receipt, transaction] = await Promise.all([
-    (client as unknown as {
-      getTransactionReceipt: (args: { hash: string }) => Promise<PaymentEvidence>
-    }).getTransactionReceipt({ hash: params.transactionHash }),
-    (client as unknown as {
-      getTransaction: (args: { hash: string }) => Promise<PaymentTransaction>
-    }).getTransaction({ hash: params.transactionHash }),
+    fetchAcrossNodes<PaymentEvidence>(params.chainId, (c) =>
+      (c as unknown as { getTransactionReceipt: (a: { hash: string }) => Promise<PaymentEvidence> })
+        .getTransactionReceipt({ hash: params.transactionHash })),
+    fetchAcrossNodes<PaymentTransaction>(params.chainId, (c) =>
+      (c as unknown as { getTransaction: (a: { hash: string }) => Promise<PaymentTransaction> })
+        .getTransaction({ hash: params.transactionHash })),
   ])
 
   return verifyPaymentEvidence({
@@ -420,12 +462,12 @@ export async function verifyMusdTreasuryTransfer(
   if (!client) throw new Error(`Unsupported payment chain: ${params.chainId}`)
 
   const [receipt, transaction] = await Promise.all([
-    (client as unknown as {
-      getTransactionReceipt: (args: { hash: string }) => Promise<PaymentEvidence>
-    }).getTransactionReceipt({ hash: params.transactionHash }),
-    (client as unknown as {
-      getTransaction: (args: { hash: string }) => Promise<PaymentTransaction>
-    }).getTransaction({ hash: params.transactionHash }),
+    fetchAcrossNodes<PaymentEvidence>(params.chainId, (c) =>
+      (c as unknown as { getTransactionReceipt: (a: { hash: string }) => Promise<PaymentEvidence> })
+        .getTransactionReceipt({ hash: params.transactionHash })),
+    fetchAcrossNodes<PaymentTransaction>(params.chainId, (c) =>
+      (c as unknown as { getTransaction: (a: { hash: string }) => Promise<PaymentTransaction> })
+        .getTransaction({ hash: params.transactionHash })),
   ])
 
   return verifyMusdTransferEvidence({ ...params, receipt, transaction })

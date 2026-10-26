@@ -11,6 +11,24 @@ export const BASE_SEPOLIA_CHAIN_ID = 84532 as const
 export const MEZO_TESTNET_CHAIN_ID = 31611 as const
 export const MEZO_MAINNET_CHAIN_ID = 31612 as const
 
+// Mezo's public gateway fronts an inconsistent node fleet — a tx can be absent
+// on one backend and present on others. Validator nodes expose JSON-RPC on
+// :8545 (documented in mezod). Consumers should fail over across this list; a
+// null result means "try the next node", not "not found".
+export const MEZO_TESTNET_RPCS = [
+  'https://rpc.test.mezo.org',
+  'http://mezo-node-0.test.mezo.org:8545',
+  'http://mezo-node-1.test.mezo.org:8545',
+  'http://mezo-node-2.test.mezo.org:8545',
+  'http://mezo-node-3.test.mezo.org:8545',
+  'http://mezo-node-4.test.mezo.org:8545',
+] as const
+export const MEZO_MAINNET_RPCS = [
+  'https://rpc-http.mezo.boar.network',
+  'https://rpc_evm-mezo.imperator.co',
+  'https://jsonrpc-mezo.boar.network',
+] as const
+
 /** Active Mezo network — flips via NEXT_PUBLIC_MEZO_NETWORK (default testnet). */
 export const MEZO_NETWORK: 'testnet' | 'mainnet' =
   process.env.NEXT_PUBLIC_MEZO_NETWORK === 'mainnet' ? 'mainnet' : 'testnet'
