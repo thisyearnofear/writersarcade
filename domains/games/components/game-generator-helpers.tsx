@@ -22,6 +22,7 @@ export type ImageQuality = 'fast' | 'quality'
 
 // ── Timing constants ──────────────────────────────────────────────────────
 export const ARTICLE_PREVIEW_TIMEOUT_MS = 15000
+export const BASEPAINT_STAGE_TIMEOUT_MS = 10000
 export const GAME_GENERATION_TIMEOUT_MS = 120000
 export const PAYMENT_RECOVERY_TIMEOUT_MS = 45000
 export const PAYMENT_RECOVERY_INTERVAL_MS = 3000

@@ -64,7 +64,12 @@ export function PaymentOption({
 
   const handleTokenChange = useCallback((token: PaymentToken) => {
     setSelectedToken(token)
-    onPaymentPathChange?.(token.type === 'musd' ? 'musd' : 'writercoin')
+    // Only on-chain tokens map to a payment path. Credits are chain-agnostic —
+    // propagating 'writercoin' for them would flip the parent path and remount
+    // this component (key includes paymentPath), discarding the selection.
+    if (token.type === 'musd' || token.type === 'writercoin') {
+      onPaymentPathChange?.(token.type)
+    }
   }, [onPaymentPathChange])
 
   const cost = useMemo(() => {
@@ -155,7 +160,7 @@ export function PaymentOption({
             >
               <ArrowRightLeft className="w-3.5 h-3.5" />
               <span className="font-medium">
-                Pay with Credits on {currentChain.shortName}
+                Pay with {otherToken.type === 'musd' ? 'MUSD' : otherToken.coin.symbol} on {currentChain.shortName}
               </span>
             </button>
           </div>

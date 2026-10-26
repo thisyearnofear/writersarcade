@@ -35,7 +35,6 @@ interface ArticleStepProps {
   stageWithBasePaint?: boolean
   onStageWithBasePaintChange?: (enabled: boolean) => void
   basePaintStage?: BasePaintStagePreview | null
-  isLoadingBasePaintStage?: boolean
 }
 
 /**
@@ -63,7 +62,6 @@ export function ArticleStep({
   stageWithBasePaint = false,
   onStageWithBasePaintChange,
   basePaintStage = null,
-  isLoadingBasePaintStage = false,
 }: ArticleStepProps) {
   if (dailyFlow) {
     const isDual = dailyFlow.sourceType === 'dual'
@@ -241,11 +239,16 @@ export function ArticleStep({
         </motion.div>
       )}
 
+      {/* Hidden until the canvas actually resolves — the opt-in is
+          meaningless without it, and a parked loading/failure state would sit
+          in the critical path. Failure silently keeps article-only (the
+          default anyway). */}
       {showBasePaintStageToggle &&
         mode === 'story' &&
         onStageWithBasePaintChange &&
         articlePreview &&
-        hasPreviewedCurrentUrl && (
+        hasPreviewedCurrentUrl &&
+        basePaintStage && (
         <div className="rounded-xl border border-purple-500/25 bg-purple-950/10 overflow-hidden">
           <div className="px-4 pt-4 pb-2 space-y-1">
             <p className="text-xs font-bold uppercase tracking-wider text-purple-300">
@@ -256,15 +259,7 @@ export function ArticleStep({
             </p>
           </div>
 
-          {isLoadingBasePaintStage && (
-            <div className="flex items-center gap-2 px-4 py-6 text-xs text-muted-foreground">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              Loading today&apos;s canvas…
-            </div>
-          )}
-
-          {!isLoadingBasePaintStage && basePaintStage && (
-            <div className="px-4 pb-3 space-y-3">
+          <div className="px-4 pb-3 space-y-3">
               <div className="overflow-hidden rounded-lg border border-purple-500/20">
                 <img
                   src={getBasePaintCanvasProxyUrl(basePaintStage.day)}
@@ -319,14 +314,7 @@ export function ArticleStep({
                   ? 'Your article stays the plot; panels will lean on today’s canvas palette and world.'
                   : 'Generate from the article alone — you can stage later by switching back.'}
               </p>
-            </div>
-          )}
-
-          {!isLoadingBasePaintStage && !basePaintStage && (
-            <p className="px-4 pb-4 text-xs text-amber-300/90">
-              Couldn&apos;t load today&apos;s canvas. Continuing with article only.
-            </p>
-          )}
+          </div>
         </div>
       )}
 

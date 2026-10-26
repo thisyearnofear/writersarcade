@@ -2,7 +2,6 @@
 
 import { GameGenerationOverlay } from '@/components/game/GameGenerationOverlay'
 import {
-  DesktopStepIndicator,
   MobileStepHeader,
   MobileStepNav,
 } from '@/components/ui/step-indicator'
@@ -40,8 +39,9 @@ export function GameGeneratorForm({
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      {/* Step indicator — desktop phase bar, mobile header */}
-      <DesktopStepIndicator currentStep={g.mobileStep} />
+      {/* Step indicator — mobile wizard header only. Desktop shows all
+          sections on one page, so a "Phase N of 4" position would contradict
+          the single-page layout (sections carry their own labels). */}
       <MobileStepHeader currentStep={g.mobileStep} />
 
       <form onSubmit={g.handleSubmit} className="space-y-6 pb-28 md:pb-0">
@@ -69,7 +69,6 @@ export function GameGeneratorForm({
               stageWithBasePaint={g.stageWithBasePaint}
               onStageWithBasePaintChange={g.handleStageWithBasePaintChange}
               basePaintStage={g.basePaintStage}
-              isLoadingBasePaintStage={g.isLoadingBasePaintStage}
             />
           </div>
 

@@ -17,42 +17,6 @@ export function getStepIndex(step: GenerateStep): number {
 }
 
 /**
- * Desktop phase indicator — shows current step and progress dots.
- * Only visible on md+ screens.
- */
-export function DesktopStepIndicator({ currentStep }: { currentStep: GenerateStep }) {
-  return (
-    <div className="hidden md:flex items-center justify-between px-2 mb-8">
-      <div>
-        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-purple-400">
-          Phase {getStepIndex(currentStep) + 1} of {GENERATE_STEPS.length}
-        </span>
-        <h2 className="text-lg font-bold text-foreground">
-          {GENERATE_STEPS.find(s => s.id === currentStep)?.desktopLabel}
-        </h2>
-      </div>
-      <div className="flex space-x-1.5">
-        {GENERATE_STEPS.map((step, idx) => {
-          const currentIdx = getStepIndex(currentStep)
-          return (
-            <div
-              key={step.id}
-              className={`h-1.5 w-6 rounded-full transition-all duration-500 ${
-                idx === currentIdx
-                  ? 'w-10 bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.6)]'
-                  : idx < currentIdx
-                  ? 'bg-green-500/60'
-                  : 'bg-border'
-              }`}
-            />
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
-/**
  * Mobile step indicator — sticky top bar showing current step name.
  * Only visible on small screens.
  */

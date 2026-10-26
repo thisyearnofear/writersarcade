@@ -262,17 +262,11 @@ export function PaymentFlow({
     }
   }, [action, chainId, networkName, onPaymentError, switchChainAsync, targetChainId, tokenSymbol])
 
-  // Auto-prompt the chain switch the moment an on-chain token on another
-  // network is selected — don't make users discover it at pay time. Fires
-  // once per (token, target chain) pair; the manual button remains as backup.
-  const autoSwitchKeyRef = useRef<string | null>(null)
-  useEffect(() => {
-    if (!isWrongChain || !userAddress) return
-    const key = `${paymentToken.type}-${targetChainId}`
-    if (autoSwitchKeyRef.current === key) return
-    autoSwitchKeyRef.current = key
-    handleNetworkSwitch()
-  }, [isWrongChain, userAddress, paymentToken.type, targetChainId, handleNetworkSwitch])
+  // No auto chain-switch: picking a token remounts this flow (PaymentOption
+  // is keyed on paymentPath-coinId), and an auto-switch fired on mount can
+  // race a wallet prompt already in flight. Chain changes are explicit user
+  // actions only: the "Switch to {chain} and Continue" button below and the
+  // two-path prompt in PaymentOption.
 
   if (creditSuccess) {
     return (

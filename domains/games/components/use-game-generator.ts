@@ -17,6 +17,7 @@ import {
 import {
   type ArticlePreview,
   ARTICLE_PREVIEW_TIMEOUT_MS,
+  BASEPAINT_STAGE_TIMEOUT_MS,
   GAME_GENERATION_TIMEOUT_MS,
   PAYMENT_RECOVERY_TIMEOUT_MS,
   PAYMENT_RECOVERY_INTERVAL_MS,
@@ -55,7 +56,7 @@ interface UseGameGeneratorOptions {
 export function useGameGenerator({
   onGameGenerated,
   initialUrl,
-  initialPaymentPath = 'musd',
+  initialPaymentPath,
   initialMode,
   initialBasePaintDay,
   initialDailyChallenge = false,
@@ -75,6 +76,13 @@ export function useGameGenerator({
   const paymentRequiredRef = useRef(false)
   const autoPreviewedUrlRef = useRef<string | null>(null)
   const paymentPathExposureRef = useRef<string | null>(null)
+  // Coin id the URL auto-detect has already applied for — it fires at most
+  // once per coin so a later manual MUSD pick isn't stomped back to
+  // 'writercoin' (that flips paymentPath, remounts PaymentOption, and yanks
+  // the wallet chain back to Base).
+  const autoDetectedCoinRef = useRef<string | null>(null)
+  // An explicit ?pay= param outranks URL coin auto-detection.
+  const explicitPaymentPathRef = useRef(Boolean(initialPaymentPath))
   const previewTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const stagingOptOutRef = useRef(false)
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -212,7 +220,7 @@ export function useGameGenerator({
       store.setIsLoadingBasePaintStage(true)
       try {
         const day = getBasePaintDay()
-        const response = await fetch(`/api/daily-challenge/basepaint/${day}`)
+        const response = await fetchWithTimeout(`/api/daily-challenge/basepaint/${day}`, {}, BASEPAINT_STAGE_TIMEOUT_MS)
         if (!response.ok) throw new Error('Failed to load BasePaint day')
         const data = await response.json()
         if (cancelled) return
@@ -257,6 +265,9 @@ export function useGameGenerator({
   useEffect(() => {
     if (!detectedCoin) return
     if (store.showAdvancedPayment) return
+    if (autoDetectedCoinRef.current === detectedCoin.id) return
+    autoDetectedCoinRef.current = detectedCoin.id
+    if (explicitPaymentPathRef.current) return
     if (store.paymentPath === 'writercoin' && store.selectedCoin?.id === detectedCoin.id) return
     if (detectedCoin.paymentEnabled) {
       store.setPaymentPath('writercoin')

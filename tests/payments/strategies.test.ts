@@ -6,8 +6,12 @@ vi.stubGlobal('fetch', mockFetch)
 
 // Mock wallet client
 const mockWriteContract = vi.fn()
+const mockWaitForTransactionReceipt = vi.fn().mockResolvedValue({ status: 'success' })
 const mockWalletClient = {
   writeContract: (...args: unknown[]) => mockWriteContract(...args),
+  extend: () => ({
+    waitForTransactionReceipt: (...args: unknown[]) => mockWaitForTransactionReceipt(...args),
+  }),
 }
 
 // Use real implementations for testing
