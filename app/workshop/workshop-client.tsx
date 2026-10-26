@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { ArrowRight } from 'lucide-react'
 import { UndoManager } from '@/lib/undo-manager'
 import { useToast } from '@/components/ui/use-toast'
 import { AssetGenerationResponse } from '@/domains/games/types'
@@ -137,16 +138,50 @@ export function WorkshopClient() {
 
                 <div className="max-w-4xl mx-auto">
                     {state === 'input' && (
-                        <div className="bg-muted/50 p-8 rounded-2xl border border-border">
-                             <input value={url} onChange={e => setUrl(e.target.value)} placeholder="Enter article URL..." className="w-full bg-black border border-border rounded-lg p-3" />
-                             <button onClick={handleDecompose} className="mt-4 px-6 py-3 bg-purple-600 rounded-lg font-bold">Decompose</button>
-                        </div>
+                        /* Command-bar pill — same pattern as the landing hero
+                           SimpleGameForm: borderless input, icon-circle submit
+                           that arms once a URL exists. */
+                        <form
+                            onSubmit={(e) => { e.preventDefault(); if (url.trim()) handleDecompose() }}
+                            className="mx-auto flex w-full max-w-lg items-center rounded-full border border-border bg-card pr-1.5 transition-colors focus-within:border-foreground/30"
+                        >
+                            <input
+                                type="url"
+                                value={url}
+                                onChange={e => setUrl(e.target.value)}
+                                placeholder="https://paragraph.xyz/... (paste any article)"
+                                aria-label="Article URL"
+                                className="h-12 min-w-0 flex-1 bg-transparent pl-5 pr-2 text-sm text-foreground outline-none placeholder:text-muted-foreground"
+                            />
+                            <button
+                                type="submit"
+                                title="Decompose article into game assets"
+                                aria-label="Decompose article into game assets"
+                                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${
+                                    url.trim()
+                                        ? 'bg-foreground text-background hover:opacity-90'
+                                        : 'bg-muted/50 text-muted-foreground'
+                                }`}
+                            >
+                                <ArrowRight className="h-4 w-4" />
+                            </button>
+                        </form>
                     )}
 
                     {state === 'workshop' && assets && (
                         <div className="sticky top-4 z-10 bg-black/80 backdrop-blur p-4 rounded-xl border border-border">
-                            <button onClick={handleUndo} disabled={!undoManager.canUndo()} className="mr-2">Undo</button>
-                            <button onClick={handleMint} disabled={!allChecklistsPassed} className="bg-green-600 px-4 py-2 rounded">Register IP</button>
+                            <button onClick={handleUndo} disabled={!undoManager.canUndo()} className="mr-2 disabled:opacity-50">Undo</button>
+                            <button
+                                onClick={handleMint}
+                                disabled={!allChecklistsPassed}
+                                className={`px-4 py-2 rounded transition-colors ${
+                                    allChecklistsPassed
+                                        ? 'bg-green-600 text-white hover:bg-green-500'
+                                        : 'text-muted-foreground'
+                                }`}
+                            >
+                                Register IP
+                            </button>
 
                             {allChecklistsPassed && (
                                 <div className="mt-4">

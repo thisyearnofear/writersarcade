@@ -487,25 +487,6 @@ export function PaymentFlow({
           <button onClick={() => setLastTxHash(null)} className="text-green-400/60 hover:text-green-300 transition-colors">✕</button>
         </motion.div>
       )}
-
-      {!compact && (
-        <div className={cn(
-          "rounded-xl p-4 text-xs transition-colors",
-          isCredits ? "bg-emerald-900/10 text-emerald-200/60"
-          : isMUSD ? "bg-amber-900/10 text-amber-200/60"
-          : "bg-purple-900/30 text-purple-300"
-        )}>
-          <p className="flex gap-2">
-            <span className="text-base leading-none">💡</span>
-            <span>
-              {isCredits
-                ? 'Credits are purchased via Etherfuse fiat onramp. No crypto wallet needed.'
-                : <><span className="font-bold text-white/80">Payment flow:</span> You&apos;ll approve the {tokenSymbol} spend in your wallet, then process the transaction on {isMUSD ? 'Mezo' : 'Base'}.</>
-              }
-            </span>
-          </p>
-        </div>
-      )}
     </div>
   )
 }

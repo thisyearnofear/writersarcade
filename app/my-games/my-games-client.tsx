@@ -726,15 +726,10 @@ export function MyGamesClient() {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <h2 className="text-lg font-semibold text-foreground">Playable library</h2>
-                    <p className="text-sm text-muted-foreground">
-                      {games.length} game{games.length !== 1 ? 's' : ''} ready to play or manage.
-                    </p>
-                  </div>
-                  <p className="text-xs text-muted-foreground max-w-xs">
-                    Play first. Expand Ownership on a card when you are ready to mint or register IP.
+                <div className="mb-6">
+                  <h2 className="text-lg font-semibold text-foreground">Playable library</h2>
+                  <p className="text-sm text-muted-foreground">
+                    {games.length} game{games.length !== 1 ? 's' : ''} ready to play or manage.
                   </p>
                 </div>
 

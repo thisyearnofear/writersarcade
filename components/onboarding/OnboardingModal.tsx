@@ -24,21 +24,18 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
       title: 'Play first, no wallet needed',
       description:
         'Paste any Paragraph.xyz article URL and play a free 5-panel interactive comic or Wordle. No wallet, no payment, no signup required.',
-      tip: 'Try the free Wordle mode for zero-friction fun.',
     },
     {
       icon: Wand2,
       title: 'Create your own game',
       description:
         'Turn any article or piece of marketing copy into a playable story in seconds. AI reads the source and builds choices, visuals, and a finale.',
-      tip: null,
     },
     {
       icon: Coins,
       title: 'Own and earn',
       description:
         'Ready to go deeper? Connect a wallet to mint your game as an NFT and earn from every play.',
-      tip: 'Wallet connection is only required for on-chain actions — gameplay is free.',
     },
   ]
 
@@ -101,12 +98,6 @@ export function OnboardingModal({ isOpen, onClose }: OnboardingModalProps) {
 
             <h3 className="text-xl font-bold text-card-foreground">{step.title}</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
-
-            {step.tip && (
-              <p className="text-xs text-muted-foreground bg-muted border border-border rounded-lg p-3 leading-relaxed">
-                {step.tip}
-              </p>
-            )}
           </motion.div>
 
           <div className="flex justify-center gap-2 pt-2">

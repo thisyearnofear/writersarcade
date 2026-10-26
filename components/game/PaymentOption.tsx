@@ -179,15 +179,6 @@ export function PaymentOption({
         compact={compact}
       />
      </div>
-
-      {/* Info */}
-      {!compact && (
-        <div className="rounded-lg border border-[color:var(--ia-panel-border)] bg-[color:var(--ia-panel-bg)] p-3 text-xs text-purple-100">
-        <p>
-          💡 <span className="font-semibold">Note:</span> Payment is required to generate games. Your payment supports the platform and content creators.
-        </p>
-        </div>
-      )}
     </div>
   )
 }

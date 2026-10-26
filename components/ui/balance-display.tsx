@@ -194,7 +194,6 @@ function EcosystemSection({
   group,
   mobileLayout,
   isMezoHolder,
-  mezoFormatted,
   switchToMezo,
   isSwitching,
   isOnMezo,
@@ -203,7 +202,6 @@ function EcosystemSection({
   group: EcosystemGroup
   mobileLayout: boolean
   isMezoHolder: boolean
-  mezoFormatted: string
   switchToMezo?: () => void
   isSwitching?: boolean
   isOnMezo?: boolean
@@ -217,7 +215,9 @@ function EcosystemSection({
 
   return (
     <div>
-      {group.chain ? (
+      {/* Chain groups get a badge header; credits is a single self-labeled row
+          so a header would just repeat "Credits" over itself. */}
+      {group.chain && (
         <div className={`flex items-center justify-between gap-2 border-b border-border/50 ${mobileLayout ? 'px-4 py-2' : 'px-3 py-2'}`}>
           <div className="flex items-center gap-2">
             <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest ${group.chain.bgColor} ${group.chain.color}`}>
@@ -233,15 +233,6 @@ function EcosystemSection({
               MEZO Holder
             </span>
           )}
-        </div>
-      ) : (
-        <div className={`flex items-center gap-2 border-b border-border/50 ${mobileLayout ? 'px-4 py-2' : 'px-3 py-2'}`}>
-          <span className="inline-flex items-center rounded-full border border-emerald-400/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-emerald-400">
-            {group.label}
-          </span>
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-            Fiat onramp credits
-          </span>
         </div>
       )}
 
@@ -296,11 +287,15 @@ function EcosystemSection({
         </div>
       )}
 
-      {group.id === 'mezo' && (
+      {group.id === 'mezo' && (!isMezoHolder || (switchToMezo && !isOnMezo)) && (
         <div className={`${mobileLayout ? 'px-4 pb-3' : 'px-3 pb-3'} space-y-2`}>
-          <div className="text-[11px] text-muted-foreground">
-            {isMezoHolder ? `Holder balance: ${mezoFormatted} MEZO` : 'Hold at least 1 MEZO to unlock holder perks.'}
-          </div>
+          {/* Holders already see their MEZO balance in the row above + the
+              header badge — only non-holders need the threshold hint. */}
+          {!isMezoHolder && (
+            <div className="text-[11px] text-muted-foreground">
+              Hold at least 1 MEZO to unlock holder perks.
+            </div>
+          )}
           {switchToMezo && !isOnMezo && (
             <button
               onClick={switchToMezo}
@@ -456,7 +451,6 @@ export function BalanceDisplay({ mobileLayout = false }: BalanceDisplayProps) {
           group={group}
           mobileLayout={mobileLayout}
           isMezoHolder={isMezoHolder}
-          mezoFormatted={mezoFormatted}
           switchToMezo={group.id === 'mezo' ? () => switchChain({ chainId: MEZO_ACTIVE_CHAIN_ID }) : undefined}
           isSwitching={isSwitching}
           isOnMezo={getChainInfo(chainId).ecosystem === 'mezo'}
