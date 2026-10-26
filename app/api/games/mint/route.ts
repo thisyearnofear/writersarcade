@@ -270,8 +270,9 @@ export async function PATCH(request: NextRequest) {
       )
     }
     const mintChainId = getMintConfig(fundingWriterCoinId)?.chainId ?? BASE_MAINNET_CHAIN_ID
+    let verifiedMint: Awaited<ReturnType<typeof verifyOnChainPayment>>
     try {
-      await verifyOnChainPayment({
+      verifiedMint = await verifyOnChainPayment({
         transactionHash: transactionHash as `0x${string}`,
         writerCoinId: fundingWriterCoinId,
         userAddress: actorWallet,
@@ -291,6 +292,11 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
+    // The client has historically omitted nftTokenId (every minted game in
+    // prod has it NULL), which silently disabled the Inco secret-panel path.
+    // The on-chain GameMinted event is the source of truth.
+    const resolvedTokenId = nftTokenId?.toString() ?? verifiedMint.mintedTokenId
+
     const updateData: {
       nftTokenId?: string
       nftTransactionHash: string
@@ -301,7 +307,7 @@ export async function PATCH(request: NextRequest) {
       gameMetadataUri?: string
       artifactManifestUri?: string
     } = {
-      nftTokenId: nftTokenId?.toString(),
+      nftTokenId: resolvedTokenId,
       nftTransactionHash: transactionHash,
       nftMintedAt: new Date(),
       nftContractAddress: typeof contractAddress === 'string' ? contractAddress : undefined,
@@ -368,14 +374,14 @@ export async function PATCH(request: NextRequest) {
 
     // After successful mint, attempt to store the secret panel on-chain via Inco.
     // Non-blocking: if it fails, the game still works. CDR fallback remains for legacy games.
-    if (nftTokenId) {
+    if (resolvedTokenId) {
       try {
         const { config } = await import('@/lib/config')
         if (config.features.inco && game?.slug) {
           await fetch(`${request.nextUrl.origin}/api/games/${game.slug}/inco-store`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nftTokenId: nftTokenId.toString(), walletAddress: actorWallet }),
+            body: JSON.stringify({ nftTokenId: resolvedTokenId, walletAddress: actorWallet }),
           })
         }
       } catch (incoError) {
@@ -387,7 +393,7 @@ export async function PATCH(request: NextRequest) {
       success: true,
       data: {
         gameId,
-        nftTokenId,
+        nftTokenId: resolvedTokenId,
         transactionHash,
         status: 'minted',
         message: 'NFT minting complete!',

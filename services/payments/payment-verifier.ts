@@ -236,6 +236,12 @@ export interface VerifiedPayment {
   amount: string
   /** Fully-qualified on-chain payment function for the action. */
   functionName: string
+  /**
+   * Token ID decoded from the on-chain mint event (Base `GameMinted` only —
+   * the Mezo `GameMintedAndPaid` event carries no tokenId). Callers should
+   * prefer this over any client-supplied value.
+   */
+  mintedTokenId?: string
 }
 
 export interface VerifyEvidenceParams extends VerifyPaymentParams {
@@ -314,10 +320,15 @@ export function verifyPaymentEvidence(params: VerifyEvidenceParams): VerifiedPay
     }
   }
 
-  // Mint: the emitted token ID must match the expected minted token.
-  if (!mezo && params.action === 'mint-nft' && params.expectedTokenId !== undefined) {
+  // Mint: capture the emitted token ID. When the client supplied one it must
+  // match; when it didn't, the on-chain value is the source of truth so the
+  // caller can persist it (clients have historically shipped null tokenIds,
+  // which silently disabled the Inco secret-panel encryption path).
+  let mintedTokenId: string | undefined
+  if (!mezo && params.action === 'mint-nft') {
     const eventTokenId = evArgs.tokenId
-    if (eventTokenId === undefined || toNativeBigInt(eventTokenId).toString() !== params.expectedTokenId) {
+    mintedTokenId = eventTokenId === undefined ? undefined : toNativeBigInt(eventTokenId).toString()
+    if (params.expectedTokenId !== undefined && mintedTokenId !== params.expectedTokenId) {
       throw new Error('Minted token ID does not match the on-chain event')
     }
   }
@@ -332,6 +343,7 @@ export function verifyPaymentEvidence(params: VerifyEvidenceParams): VerifiedPay
     txHash: params.transactionHash,
     amount: expectedAmount.toString(),
     functionName: requiredFn,
+    mintedTokenId,
   }
 }
 
