@@ -8,7 +8,7 @@ import type {
   AssetGenerationResponse
 } from '../types'
 import type { UserAIPreferences } from '@/lib/user-ai-preferences.service'
-import { getModel, hasGeminiConfiguration, hasVeniceConfiguration } from '@/lib/ai-model-compatibility'
+import { getModel, hasGeminiConfiguration, hasVeniceConfiguration, hasOpenAIConfiguration, VENICE_DEFAULT_MODEL } from '@/lib/ai-model-compatibility'
 import { generateStructuredObject } from '@/lib/ai-structured'
 import { isFeatureEnabled, logger } from '@/lib/config'
 import { StoryPlannerService } from './story-planner.service'
@@ -323,6 +323,53 @@ export class GameAIService {
   }
 
   /**
+   * Stream text with provider fallback in the same Venice → Gemini → OpenAI
+   * order as generateGame. Only retries when no content has streamed yet — a
+   * mid-stream failure can't be retried without duplicating text.
+   */
+  private static async* streamTextWithFallback(
+    params: {
+      prompt?: string
+      messages?: Array<{ role: string; content: string }>
+      instructions?: string
+    },
+    model: string,
+    userPreferences?: UserAIPreferences,
+  ): AsyncGenerator<string> {
+    const candidates = [model, ...this.fallbackModelNames(model, userPreferences)]
+    let lastError: unknown
+    for (const candidate of candidates) {
+      let yielded = false
+      try {
+        const { textStream } = await streamText({
+          model: getModel(candidate, userPreferences),
+          ...(params.prompt ? { prompt: params.prompt } : {}),
+          ...(params.messages ? { messages: params.messages } : {}),
+          ...(params.instructions ? { instructions: params.instructions } : {}),
+        } as Parameters<typeof streamText>[0])
+        for await (const delta of textStream) {
+          yielded = true
+          yield delta
+        }
+        return
+      } catch (err) {
+        lastError = err
+        logger.warn(`[AI] stream failed on '${candidate || 'default'}'${yielded ? ' mid-stream' : ''}:`, { error: err instanceof Error ? err.message : String(err) })
+        if (yielded) throw err
+      }
+    }
+    throw lastError
+  }
+
+  private static fallbackModelNames(primary: string, userPreferences?: UserAIPreferences): string[] {
+    const names: string[] = []
+    if (primary !== VENICE_DEFAULT_MODEL && hasVeniceConfiguration()) names.push(VENICE_DEFAULT_MODEL)
+    if (primary !== 'gemini-2.0-flash' && hasGeminiConfiguration(userPreferences)) names.push('gemini-2.0-flash')
+    if (primary !== 'gpt-4o-mini' && hasOpenAIConfiguration()) names.push('gpt-4o-mini')
+    return names
+  }
+
+  /**
    * Start a new game session with initial narrative
    * Enhanced version of original StartGame.js
    *
@@ -337,18 +384,12 @@ export class GameAIService {
     plan?: StoryPlan
   ): AsyncGenerator<GameplayResponse> {
 
-    const aiModel = getModel(model, userPreferences)
     const prompt = this.buildStartGamePrompt(game, articleContext, plan)
 
     try {
-      const { textStream } = await streamText({
-        model: aiModel,
-        prompt,
-      })
-
       let content = ''
 
-      for await (const delta of textStream) {
+      for await (const delta of this.streamTextWithFallback({ prompt }, model, userPreferences)) {
         content += delta
         yield {
           type: 'content',
@@ -396,8 +437,6 @@ export class GameAIService {
     plan?: StoryPlan
   ): AsyncGenerator<GameplayResponse> {
 
-    const aiModel = getModel(model, userPreferences)
-
     // Build story pacing guidance based on position in narrative
     const paceGuidance = this.getPacingGuidance(currentPanel, maxPanels, plan)
 
@@ -408,8 +447,7 @@ export class GameAIService {
     ]
 
     try {
-      const { textStream } = await streamText({
-        model: aiModel,
+      const streamParams = {
         messages: conversationMessages,
         instructions: `You are a comic-style game engine for a ${maxPanels}-panel story (currently at panel ${currentPanel}).
 
@@ -427,11 +465,11 @@ export class GameAIService {
     ? 'FINAL PANEL RULES: This story MUST conclude. The options should lead to different endings/resolutions, not continue the story. Make choices about HOW the story ends, not what happens next.'
     : 'CRITICAL: Always end with exactly 4 numbered options (1. 2. 3. 4.) on separate lines.'
   }`
-      })
+      }
 
       let content = ''
 
-      for await (const delta of textStream) {
+      for await (const delta of this.streamTextWithFallback(streamParams, model, userPreferences)) {
         content += delta
         yield {
           type: 'content',

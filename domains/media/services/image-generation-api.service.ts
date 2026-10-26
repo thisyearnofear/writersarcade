@@ -226,6 +226,13 @@ function defaultModelForProvider(provider: string) {
   return 'venice-sd35'
 }
 
+function placeholderImageDataUri(prompt: string): string {
+  let hue = 0
+  for (let i = 0; i < prompt.length; i++) hue = (hue * 31 + prompt.charCodeAt(i)) % 360
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(${hue},45%,12%)"/><stop offset="1" stop-color="hsl(${(hue + 50) % 360},60%,28%)"/></linearGradient></defs><rect width="1280" height="720" fill="url(#g)"/><text x="640" y="368" font-family="system-ui,sans-serif" font-size="30" fill="rgba(255,255,255,0.5)" text-anchor="middle">the scene is still forming…</text></svg>`
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`
+}
+
 export async function generateImage(payload: ImageGenerationPayload): Promise<ImageGenerationApiResult> {
   const { prompt, type, model, provider } = payload
 
@@ -272,7 +279,9 @@ export async function generateImage(payload: ImageGenerationPayload): Promise<Im
       }
     }
 
-    return { imageUrl: null, model: selectedModel, provider: 'failed' }
+    // Last resort: a deterministic gradient so panels never render blank.
+    // provider stays 'failed' for telemetry; callers display imageUrl.
+    return { imageUrl: placeholderImageDataUri(prompt), model: 'placeholder', provider: 'failed' }
   })()
 
   IN_FLIGHT.set(key, upstreamPromise)
