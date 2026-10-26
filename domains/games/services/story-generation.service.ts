@@ -76,7 +76,11 @@ export async function runStoryGeneration(ctx: StoryFinalizeContext): Promise<voi
     if (savedGame) {
       ImageGenerationService.generateGameImage(savedGame).then(async (result) => {
         if (result.imageUrl) {
-          await GameDatabaseService.updateGameImage(gameId, result.imageUrl)
+          // Re-host on IPFS — provider URLs (fal.media) expire, which would
+          // silently kill covers in the arcade grid and hero backdrop.
+          const { rehostRemoteImage } = await import('@/lib/storage/rehost-image')
+          const hosted = (await rehostRemoteImage(result.imageUrl)) ?? result.imageUrl
+          await GameDatabaseService.updateGameImage(gameId, hosted)
         }
       }).catch((err) => {
         logger.error('Cover image generation failed:', err, { gameId })

@@ -563,6 +563,10 @@ export function useGameSession(game: Game, options?: GameSessionOptions): GameSe
             title: '🎨 Visual Ready',
             description: `Generated using ${result.model} in ~${duration}s`,
           })
+          // Persist every panel, not just the opener — an abandoned run
+          // still leaves a partial comic, and the panel table becomes a real
+          // record of play rather than a minting-only artifact.
+          if (result.imageUrl) void fetch(`/api/games/${game.slug}/panels`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ panelIndex: assistantMessageCount + 1, imageUrl: result.imageUrl, narrativeText: narrative }) }).catch(() => {})
           setResponseReady(prev => ({ ...prev, images: true }))
         }).catch(err => {
           console.error('Image generation error:', err)
