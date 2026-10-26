@@ -123,6 +123,7 @@ export function GameGeneratorForm({
               activePaymentTxHash={g.activePaymentTxHash}
               activePaymentExplorerUrl={g.activePaymentExplorerUrl}
               onContinueGeneration={() => g.generateGame(g.activePaymentTxHash)}
+              onRefund={() => g.refundGenerationPayment()}
               paymentPath={g.paymentPath}
               onPaymentStart={g.handlePaymentStart}
               onPaymentSuccess={g.handlePaymentSuccess}

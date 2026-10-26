@@ -737,6 +737,28 @@ export function useGameGenerator({
     await generateGame(payment.transactionHash)
   }
 
+  // ── Refund a paid-but-failed generation as credits ────────────────
+  const refundGenerationPayment = useCallback(async () => {
+    if (!paymentTxHashRef.current) return
+    try {
+      const res = await fetch('/api/payments/refund', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transactionHash: paymentTxHashRef.current }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        store.setError(paymentError(data.data?.alreadyRefunded
+          ? 'This payment was already refunded.'
+          : `Refunded ${data.data?.credited ?? 10} credits to your account.`))
+        return
+      }
+      store.setError(paymentError(data.error || 'Refund failed'))
+    } catch {
+      store.setError(paymentError('Refund failed — try again or contact support.'))
+    }
+  }, [store])
+
   // ── Cancel generation (user clicked Cancel on the overlay) ────────────
   const handleCancel = useCallback(() => {
     cancelledByUserRef.current = true
@@ -1009,6 +1031,7 @@ export function useGameGenerator({
     handlePaymentStart,
     handlePaymentSuccess,
     handlePaymentError,
+    refundGenerationPayment,
     handleCancel,
     handleStepBack,
     handleStepForward,

@@ -30,6 +30,7 @@ interface PaymentStepProps {
   activePaymentTxHash: string | undefined
   activePaymentExplorerUrl: string | null
   onContinueGeneration: () => void
+  onRefund?: () => void
   paymentPath: PaymentPath
   onPaymentStart: () => void
   onPaymentSuccess: (payment: PaymentResult) => void
@@ -61,6 +62,7 @@ export function PaymentStep({
   activePaymentTxHash,
   activePaymentExplorerUrl,
   onContinueGeneration,
+  onRefund,
   paymentPath,
   onPaymentStart,
   onPaymentSuccess,
@@ -155,6 +157,15 @@ export function PaymentStep({
                     {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                     {isGenerating ? 'Generating...' : 'Continue generation'}
                   </button>
+              {error && onRefund && (
+                <button
+                  onClick={onRefund}
+                  className="w-full text-sm text-muted-foreground hover:text-foreground underline underline-offset-2"
+                >
+                  Or refund as credits
+                </button>
+              )}
+
                 </div>
               </div>
             </div>
