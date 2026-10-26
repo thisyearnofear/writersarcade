@@ -347,9 +347,17 @@ export class GameAIService {
           ...(params.messages ? { messages: params.messages } : {}),
           ...(params.instructions ? { instructions: params.instructions } : {}),
         } as Parameters<typeof streamText>[0])
-        for await (const delta of textStream) {
+        const it = textStream[Symbol.asyncIterator]()
+        for (;;) {
+          // 75s per-read: providers sometimes stall mid-stream rather than
+          // erroring — treat a stall as failure so the fallback can kick in.
+          const step = await Promise.race([
+            it.next(),
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('stream stalled')), 75_000)),
+          ])
+          if (step.done) break
           yielded = true
-          yield delta
+          yield step.value
         }
         return
       } catch (err) {
