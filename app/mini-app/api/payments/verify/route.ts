@@ -1,28 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createPublicClient, http } from 'viem'
-import { base } from 'viem/chains'
+import { verifyOnChainPayment } from '@/services/payments/payment-verifier'
+import { getMintConfig } from '@/lib/writer-coins'
+import { BASE_MAINNET_CHAIN_ID } from '@/lib/wallet/chains'
 
 /**
- * Verify payment transaction (Mini App)
- * 
- * Called after user approves payment in Farcaster wallet.
- * Verifies the transaction hash and confirms payment was processed on Base.
- * Uses same validation logic as web app, with full on-chain verification.
+ * Verify an on-chain payment for a Farcaster mini-app action.
+ *
+ * Hardened: this delegates to the same `verifyOnChainPayment` used by the web
+ * app (`/api/payments/verify`, `/api/games/mint`) instead of the previous
+ * hand-rolled receipt check. That check only confirmed the receipt succeeded
+ * and that `receipt.to` was the payment contract, so any successful
+ * transaction to the contract — wrong function, wrong coin, wrong amount,
+ * wrong sender — was reported to the client as a verified payment.
+ *
+ * The shared verifier enforces, and throws on any mismatch:
+ *   1. Receipt succeeded, sender matches, destination is the payment contract.
+ *   2. Calldata calls the expected payment function for the action, and (Base)
+ *      the writer-coin argument matches the configured coin.
+ *   3. The receipt emits the expected event for the action.
+ *   4. Event sender matches, and the paid amount >= the configured cost.
+ *
+ * Note on auth: the mini-app runs inside a Farcaster client and has no SIWE
+ * session cookie, so this route cannot use the session-bound `getActor()` gate
+ * that `/api/payments/verify` uses. Verification is therefore cryptographic
+ * rather than session-based: the transaction must have been sent *by* the
+ * `userAddress` in the request, and the emitted event sender must match it too.
+ * A caller cannot claim someone else's payment, because the on-chain sender is
+ * checked against the address they claim.
+ *
+ * This route verifies and reports; it deliberately does not write a `Payment`
+ * row. Nothing in the mini-app consumes a payment id — the mint flow confirms
+ * through `/api/games/mint` (PATCH), which does its own verification and
+ * persistence. Writing a second, unauthenticated payment record here would
+ * duplicate that path rather than strengthen it.
  */
 
 const verifyPaymentSchema = z.object({
   transactionHash: z.string().regex(/^0x[a-fA-F0-9]{64}$/, 'Invalid transaction hash'),
   writerCoinId: z.string().min(1, 'Writer coin ID is required'),
   action: z.enum(['generate-game', 'mint-nft']),
+  userAddress: z.string().regex(/^0x[a-fA-F0-9]{40}$/, 'Invalid user address'),
   gameId: z.string().optional(),
-  userAddress: z.string().optional(),
-})
-
-// Create a public client for Base mainnet
-const publicClient = createPublicClient({
-  chain: base,
-  transport: http(process.env.BASE_RPC_URL || 'https://mainnet.base.org'),
 })
 
 export async function POST(request: NextRequest) {
@@ -30,67 +49,29 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = verifyPaymentSchema.parse(body)
 
-    // Validate transaction hash format
-    if (!validatedData.transactionHash.startsWith('0x')) {
-      return NextResponse.json(
-        { error: 'Invalid transaction hash format' },
-        { status: 400 }
-      )
-    }
+    // Resolve the chain from the coin/action config rather than trusting a
+    // client-supplied chainId — the verifier picks its RPC client from this.
+    const chainId = getMintConfig(validatedData.writerCoinId)?.chainId ?? BASE_MAINNET_CHAIN_ID
 
-    // Get transaction receipt from Base network
-    let receipt
-    try {
-      receipt = await publicClient.getTransactionReceipt({
-        hash: validatedData.transactionHash as `0x${string}`,
-      })
-    } catch (err) {
-      console.error('Transaction not found on Base:', err)
-      return NextResponse.json(
-        { error: 'Transaction not found on Base network' },
-        { status: 404 }
-      )
-    }
-
-    // Verify transaction was successful
-    if (!receipt || receipt.status !== 'success') {
-      return NextResponse.json(
-        { error: 'Transaction failed on-chain' },
-        { status: 400 }
-      )
-    }
-
-    // Verify contract address
-    const expectedContractAddress = process.env.NEXT_PUBLIC_WRITER_COIN_PAYMENT_ADDRESS?.toLowerCase()
-    const actualToAddress = receipt.to?.toLowerCase()
-
-    if (expectedContractAddress && actualToAddress !== expectedContractAddress) {
-      console.warn(
-        `Transaction called wrong contract. Expected: ${expectedContractAddress}, Got: ${actualToAddress}`
-      )
-      return NextResponse.json(
-        { error: 'Transaction called wrong contract' },
-        { status: 400 }
-      )
-    }
-
-    // Get block information for timestamp
-    const block = await publicClient.getBlock({
-      blockNumber: receipt.blockNumber,
+    const verified = await verifyOnChainPayment({
+      transactionHash: validatedData.transactionHash as `0x${string}`,
+      writerCoinId: validatedData.writerCoinId,
+      userAddress: validatedData.userAddress,
+      action: validatedData.action,
+      chainId,
     })
 
     return NextResponse.json({
       success: true,
-      transactionHash: validatedData.transactionHash,
+      transactionHash: verified.txHash,
+      action: validatedData.action,
+      writerCoinId: validatedData.writerCoinId,
+      chainId,
+      amount: verified.amount,
+      functionName: verified.functionName,
       message: `Payment for ${validatedData.action} verified`,
-      blockNumber: receipt.blockNumber.toString(),
-      gasUsed: receipt.gasUsed.toString(),
-      timestamp: block.timestamp.toString(),
-      blockHash: receipt.blockHash,
     })
   } catch (error) {
-    console.error('Payment verification error:', error)
-
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         {
@@ -101,9 +82,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    return NextResponse.json(
-      { error: 'Failed to verify payment' },
-      { status: 500 }
-    )
+    // Verification failures are client-actionable (wrong tx, wrong amount,
+    // wrong coin, wrong sender) — surface the reason instead of a generic 500.
+    const message = error instanceof Error ? error.message : 'Failed to verify payment'
+    console.error('Mini-app payment verification failed:', message)
+    return NextResponse.json({ error: message }, { status: 400 })
   }
 }
