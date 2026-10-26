@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog'
-import { MoodIndicator } from '@/components/game/MoodIndicator'
+import { MoodIndicator } from '@/domains/games/components/MoodIndicator'
 import { HiddenHandTeaser } from './hidden-hand-teaser'
 import {
   getModifierCategoryForPanel,

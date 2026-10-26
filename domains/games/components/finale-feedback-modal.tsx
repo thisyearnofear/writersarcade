@@ -1,6 +1,6 @@
 'use client'
 
-import { PostGameFeedback } from '@/components/game/post-game-feedback'
+import { PostGameFeedback } from '@/domains/games/components/post-game-feedback'
 import { disableFeedbackPrompts } from './feedback-prompt'
 import { useOverlay, OverlayPortal } from '@/components/ui/overlay'
 

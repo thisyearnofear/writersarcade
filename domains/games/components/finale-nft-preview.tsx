@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { Zap, Loader2, Wallet, AlertTriangle, X } from 'lucide-react'
-import { UserAttribution } from '@/components/ui/user-attribution'
+import { UserAttribution } from '@/domains/games/components/user-attribution'
 import type { ComicBookFinalePanelData } from './comic-book-finale'
 
 interface NftPreviewViewProps {

@@ -52,6 +52,10 @@ export function GameCard({ slug, title, description, genre, imageUrl, primaryCol
       style={{ borderColor: primaryColor ? `${primaryColor}40` : undefined }}
     >
       <div className="relative aspect-video overflow-hidden">
+        {/* Plain img by design: game covers are dynamic provider URLs (fal / replicate /
+            modal / venice / the VPS image backend). Only basepaint canvas URLs go through
+            /api/image-proxy, so next/image would require widening remotePatterns to every
+            provider host. Route these through the proxy instead of swapping the element. */}
         {imageUrl ? (
           <img src={imageUrl} alt={title} loading="lazy" decoding="async" className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-105" />
         ) : (

@@ -21,7 +21,7 @@ import {
 import dynamic from 'next/dynamic'
 
 const PlayTrendChart = dynamic(
-  () => import('@/components/ui/play-trend-chart').then(m => m.PlayTrendChart),
+  () => import('@/domains/games/components/play-trend-chart').then(m => m.PlayTrendChart),
   { ssr: false }
 )
 

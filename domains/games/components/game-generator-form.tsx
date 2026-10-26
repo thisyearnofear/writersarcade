@@ -1,10 +1,10 @@
 'use client'
 
-import { GameGenerationOverlay } from '@/components/game/GameGenerationOverlay'
+import { GameGenerationOverlay } from '@/domains/games/components/GameGenerationOverlay'
 import {
   MobileStepHeader,
   MobileStepNav,
-} from '@/components/ui/step-indicator'
+} from '@/domains/games/components/step-indicator'
 import { ArticleStep } from './steps/article-step'
 import { CustomizeStep } from './steps/customize-step'
 import { PaymentStep } from './steps/payment-step'

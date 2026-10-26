@@ -33,7 +33,7 @@ export function RecoveryPanel({
   return (
     <div className={`mx-auto max-w-lg px-4 py-16 text-center space-y-6 ${className}`}>
       {Icon && (
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-purple-500/10 text-purple-300">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-brand/10 text-brand">
           <Icon className="h-7 w-7" />
         </div>
       )}
@@ -57,7 +57,7 @@ export function RecoveryPanel({
         <button
           type="button"
           onClick={onRetry}
-          className="inline-flex items-center gap-1.5 text-xs text-purple-400 transition-colors hover:text-purple-300"
+          className="inline-flex items-center gap-1.5 text-xs text-brand transition-colors hover:text-brand/80"
         >
           <RefreshCw className="h-3.5 w-3.5" />
           {retryLabel}

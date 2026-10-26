@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { ChevronDown, ChevronLeft, Clapperboard, Grid3X3, Eye, X, Zap } from 'lucide-react'
 import { useAccount } from 'wagmi'
 import { CREDITS_CONFIG } from '@/lib/writer-coins'
-import { CREDITS_CHANGED_EVENT } from '@/components/ui/buy-credits'
+import { CREDITS_CHANGED_EVENT } from '@/domains/payments/components/buy-credits'
 import { useGameInsights } from '../hooks/use-game-insights'
 import { useVideoMotion } from './finale-video-motion'
 import {
@@ -22,7 +22,7 @@ import { GridView } from './finale-grid-view'
 import { NftPreviewView } from './finale-nft-preview'
 import { FinaleFooter } from './finale-footer'
 import { FinaleFeedbackModal } from './finale-feedback-modal'
-import { ShareDropdown } from '@/components/ui/share-dropdown'
+import { ShareDropdown } from '@/domains/games/components/share-dropdown'
 import { OwnershipExplainer } from '@/components/ownership/ownership-explainer'
 
 export interface ComicBookFinalePanelData {

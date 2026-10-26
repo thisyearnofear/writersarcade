@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useVideoStatus, type VideoPanelStatus } from '../hooks/use-video-status'
 import { trackEvent } from '@/services/analytics'
-import { notifyCreditsChanged } from '@/components/ui/buy-credits'
+import { notifyCreditsChanged } from '@/domains/payments/components/buy-credits'
 import type { VideoStyle } from '../services/video-generation.types'
 
 export interface VideoPanelLike {

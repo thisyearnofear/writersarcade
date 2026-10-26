@@ -8,7 +8,7 @@ import { useToast } from '@/components/ui/use-toast'
 import { AssetGenerationResponse } from '@/domains/games/types'
 import { Header } from '@/components/layout/header'
 import { useOnboarding } from '@/hooks/useOnboarding'
-import { RevenueForecast } from '@/components/ui/revenue-forecast'
+import { RevenueForecast } from '@/domains/payments/components/revenue-forecast'
 import { useOverlay, OverlayPortal } from '@/components/ui/overlay'
 
 type WorkshopState = 'input' | 'processing' | 'workshop' | 'compiling' | 'minting'

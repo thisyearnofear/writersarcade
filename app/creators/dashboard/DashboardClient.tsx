@@ -52,9 +52,9 @@ const attentionMeta: Record<
 }
 
 const toneClasses: Record<'amber' | 'blue' | 'purple' | 'indigo', string> = {
-  amber: 'border-amber-500/30 bg-amber-500/5 text-amber-600 dark:text-amber-400',
-  blue: 'border-blue-500/30 bg-blue-500/5 text-blue-600 dark:text-blue-400',
-  purple: 'border-purple-500/30 bg-purple-500/5 text-purple-600 dark:text-purple-400',
+  amber: 'border-amber-500/30 bg-amber-500/5 text-warning',
+  blue: 'border-blue-500/30 bg-blue-500/5 text-info',
+  purple: 'border-purple-500/30 bg-purple-500/5 text-brand',
   indigo: 'border-indigo-500/30 bg-indigo-500/5 text-indigo-600 dark:text-indigo-400',
 }
 

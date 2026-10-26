@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import type { ButtonHTMLAttributes, HTMLAttributes } from 'react'
 import '@testing-library/jest-dom/vitest'
-import { MobileStepNav } from '@/components/ui/step-indicator'
+import { MobileStepNav } from '@/domains/games/components/step-indicator'
 
 vi.mock('framer-motion', async () => {
   const actual = await vi.importActual<typeof import('framer-motion')>('framer-motion')

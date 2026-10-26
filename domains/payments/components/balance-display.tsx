@@ -6,11 +6,11 @@ import { erc20Abi, formatUnits } from 'viem'
 import { base } from 'viem/chains'
 import { Coins, Loader2, ChevronDown, Sparkles, ArrowRightLeft, Banknote } from 'lucide-react'
 import { WRITER_COINS } from '@/lib/writer-coins'
-import { CopyAddressButton } from '@/components/ui/copy-address-button'
+import { CopyAddressButton } from '@/components/wallet/copy-address-button'
 import type { BalanceData } from '@/hooks/useWriterCoinBalance'
 import { useMezoBalance } from '@/hooks/useMezoBalance'
 import { getChainInfo, MEZO_ACTIVE_CHAIN_ID, type ChainInfo } from '@/lib/wallet/chains'
-import { openBuyCredits, CREDITS_CHANGED_EVENT } from '@/components/ui/buy-credits'
+import { openBuyCredits, CREDITS_CHANGED_EVENT } from '@/domains/payments/components/buy-credits'
 
 interface BalanceDisplayProps {
   mobileLayout?: boolean
@@ -300,7 +300,7 @@ function EcosystemSection({
             <button
               onClick={switchToMezo}
               disabled={isSwitching}
-              className="flex items-center gap-1.5 w-full px-2.5 py-1.5 rounded-md border border-amber-500/30 bg-amber-500/5 text-[11px] font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/50 transition-colors disabled:opacity-50"
+              className="flex items-center gap-1.5 w-full px-2.5 py-1.5 rounded-md border border-amber-500/30 bg-amber-500/5 text-[11px] font-medium text-warning hover:bg-amber-500/10 hover:border-amber-500/50 transition-colors disabled:opacity-50"
             >
               <ArrowRightLeft className="w-3 h-3" />
               {isSwitching ? 'Switching...' : 'Switch to Mezo'}

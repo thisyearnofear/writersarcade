@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { Loader2, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import type { GameGenre } from '@/components/game/GenreSelector'
+import type { GameGenre } from '@/domains/games/components/GenreSelector'
 
 interface GenerateStepProps {
   isGenerating: boolean

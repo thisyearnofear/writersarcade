@@ -106,8 +106,8 @@ export function GameCardEnhanced({
               <span
                 className={`shrink-0 rounded px-2 py-1 text-xs ${
                   game.private
-                    ? 'bg-red-500/20 text-red-700 dark:text-red-400'
-                    : 'bg-green-500/20 text-green-700 dark:text-green-400'
+                    ? 'bg-red-500/20 text-destructive'
+                    : 'bg-green-500/20 text-success'
                 }`}
               >
                 {game.private ? 'Private' : 'Public'}
@@ -198,7 +198,7 @@ export function GameCardEnhanced({
                 {ownershipOpen && (
                   <div className="space-y-2 rounded-lg border border-border bg-muted/20 p-2">
                     {progress.nextStepLabel && (
-                      <p className="px-1 text-xs text-purple-600 dark:text-purple-400">{progress.nextStepLabel}</p>
+                      <p className="px-1 text-xs text-brand">{progress.nextStepLabel}</p>
                     )}
                     <div className="grid grid-cols-2 gap-2">
                       <ActionButton
@@ -235,7 +235,7 @@ export function GameCardEnhanced({
                       />
                     </div>
                     {writerMintReceipt && (
-                      <p className="text-[11px] text-emerald-700 dark:text-emerald-300 px-1">
+                      <p className="text-[11px] text-success px-1">
                         {writerMintReceipt.writerShare} to {writerMintReceipt.writer} on mint
                       </p>
                     )}

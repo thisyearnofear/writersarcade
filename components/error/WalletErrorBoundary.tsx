@@ -1,6 +1,7 @@
 'use client'
 
 import { Component, type ReactNode } from 'react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Wallet, RefreshCw } from 'lucide-react'
 
@@ -46,7 +47,7 @@ export class WalletErrorBoundary extends Component<Props, State> {
           <header className="border-b border-border bg-background/95 backdrop-blur-md">
             <div className="max-w-6xl mx-auto px-4 h-16 flex items-center">
               <a href="/" className="flex items-center space-x-2">
-                <img src="/logo.png" alt="writersarcade" className="h-8 w-auto" />
+                <Image src="/logo.png" alt="writersarcade" width={1024} height={1024} className="h-8 w-auto" priority />
               </a>
             </div>
           </header>

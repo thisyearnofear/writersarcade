@@ -2,9 +2,9 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, ChevronDown, Lightbulb, Sparkles } from 'lucide-react'
-import { GenreSelector, GENRE_LABEL, type GameGenre } from '@/components/game/GenreSelector'
-import { DifficultySelector, DIFFICULTY_LABEL, type GameDifficulty } from '@/components/game/DifficultySelector'
-import { WriterCoinSelector } from '@/components/game/WriterCoinSelector'
+import { GenreSelector, GENRE_LABEL, type GameGenre } from '@/domains/games/components/GenreSelector'
+import { DifficultySelector, DIFFICULTY_LABEL, type GameDifficulty } from '@/domains/games/components/DifficultySelector'
+import { WriterCoinSelector } from '@/domains/games/components/WriterCoinSelector'
 import type { WriterCoin } from '@/lib/writer-coins'
 import {
   type ImageQuality,

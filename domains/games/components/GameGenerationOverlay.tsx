@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useRef, useState, useMemo } from 'react'
 import { Loader2, Sparkles, Gamepad2, X, Lightbulb, BookOpen, Quote } from 'lucide-react'
-import { ProgressBar } from '@/components/ui/ProgressBar'
+import { ProgressBar } from '@/domains/games/components/ProgressBar'
 import { useOverlay, OverlayPortal } from '@/components/ui/overlay'
 
 type LoadingStep = 'payment' | 'validate' | 'extract' | 'generate' | 'save'

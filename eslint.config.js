@@ -16,6 +16,9 @@ module.exports = [
       'test-content-processor.ts',
       'scripts/**',
       'public/client.min.js',
+      // Generated video-render assets (gitignored): vendored GSAP, a render script,
+      // and media. Not source — linting it produced 216 errors and no signal.
+      'videos/**',
       'lib/openzeppelin-contracts/**',
       'contracts/openzeppelin-contracts/**',
       // NOTE: apps/writersarcade-api is intentionally linted now.
@@ -45,6 +48,36 @@ module.exports = [
         },
       ],
       'no-undef': 'off',
+
+      // Token ratchet: new hardcoded palette utilities in className strings
+      // should use the semantic tokens instead (bg-brand, text-success,
+      // text-warning, text-info, text-destructive, text-muted-foreground).
+      //
+      // Warn-level on purpose, matching the existing no-explicit-any /
+      // no-unused-vars ratchet above: pre-existing occurrences are known debt,
+      // and the point is to stop new ones landing. Deliberate exceptions
+      // (chain-identity colors) are listed in the override block below.
+      //
+      // Limitation: this matches string literals in className attributes. A
+      // palette class composed inside a template literal or a variable is not
+      // caught — the guard raises the floor, it does not seal the ceiling.
+      'no-restricted-syntax': [
+        'warn',
+        {
+          selector:
+            "JSXAttribute[name.name='className'] Literal[value=/(^|[\\s\"'`])(bg|text|border|ring|from|to|via|fill|stroke|decoration|shadow|divide|placeholder|outline|caret|accent)-(slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-[0-9]{2,3}/]",
+          message:
+            'Hardcoded palette utility in className. Use a semantic token instead: brand | success | warning | info | destructive | muted-foreground (see app/globals.css).',
+        },
+      ],
+    },
+  },
+  // Deliberate palette exception: NetworkIndicator uses amber/blue for Mezo vs
+  // Base chain identity, which is not a status meaning.
+  {
+    files: ['components/layout/NetworkIndicator.tsx'],
+    rules: {
+      'no-restricted-syntax': 'off',
     },
   },
   // Fastify API and PM2 ecosystem files are plain JS/CJS, not TypeScript.

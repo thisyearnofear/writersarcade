@@ -92,7 +92,7 @@ export function GameOwnershipProgress({ game, variant = 'full' }: GameOwnershipP
     return (
       <div className="flex flex-wrap gap-1.5">
         <span
-          className="inline-flex h-6 items-center rounded border border-purple-500/30 bg-purple-500/10 px-1.5 text-[11px] font-medium text-purple-700 dark:text-purple-300"
+          className="inline-flex h-6 items-center rounded border border-purple-500/30 bg-purple-500/10 px-1.5 text-[11px] font-medium text-brand"
           title={progress.nextStepLabel ?? progress.chipLabel}
         >
           {progress.chipLabel}
@@ -106,9 +106,9 @@ export function GameOwnershipProgress({ game, variant = 'full' }: GameOwnershipP
                 key={step.id}
                 className={`inline-flex h-6 items-center gap-1 rounded border px-1.5 text-[11px] font-medium ${
                   step.state === 'complete'
-                    ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+                    ? 'border-emerald-500/30 bg-emerald-500/10 text-success'
                     : step.state === 'current'
-                      ? 'border-purple-500/40 bg-purple-500/10 text-purple-700 dark:text-purple-300'
+                      ? 'border-purple-500/40 bg-purple-500/10 text-brand'
                       : 'border-border bg-muted text-muted-foreground'
                 }`}
                 title={step.detail}
@@ -138,9 +138,9 @@ export function GameOwnershipProgress({ game, variant = 'full' }: GameOwnershipP
               <span
                 className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 ${
                   step.state === 'complete'
-                    ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
+                    ? 'bg-emerald-500/10 text-success'
                     : step.state === 'current'
-                      ? 'bg-purple-500/10 text-purple-700 dark:text-purple-300 font-medium'
+                      ? 'bg-purple-500/10 text-brand font-medium'
                       : 'bg-muted text-muted-foreground'
                 }`}
               >
@@ -162,7 +162,7 @@ export function GameOwnershipProgress({ game, variant = 'full' }: GameOwnershipP
           Play first, then mint and unlock the <span className="text-foreground">secret epilogue</span>.
         </p>
         {progress.nextStepLabel && (
-          <p className="mt-2 text-sm font-medium text-purple-600 dark:text-purple-400">
+          <p className="mt-2 text-sm font-medium text-brand">
             Next: {progress.nextStepLabel}
           </p>
         )}
@@ -186,9 +186,9 @@ export function GameOwnershipProgress({ game, variant = 'full' }: GameOwnershipP
                 <Icon
                   className={
                     step.state === 'complete'
-                      ? 'h-4 w-4 text-emerald-600 dark:text-emerald-300'
+                      ? 'h-4 w-4 text-success'
                       : step.state === 'current'
-                        ? 'h-4 w-4 text-purple-600 dark:text-purple-300'
+                        ? 'h-4 w-4 text-brand'
                         : 'h-4 w-4 text-muted-foreground'
                   }
                 />

@@ -61,6 +61,10 @@ function GameTile({
         }
         className={`group relative block ${tileSize(density)} overflow-hidden rounded-sm border border-white/15 bg-zinc-950 shadow-lg transition-transform hover:-translate-y-1 hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white`}
       >
+        {/* Plain img by design: these are dynamic provider URLs (fal / replicate /
+            modal / venice / the VPS image backend), and only basepaint canvas URLs
+            are routed through /api/image-proxy. next/image would need every provider
+            host in remotePatterns, so the proxy is the correct fix here, not a swap. */}
         {tile.imageUrl ? (
           <img src={tile.imageUrl} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
         ) : (

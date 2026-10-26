@@ -291,6 +291,8 @@ export function VideoShowcase({
               aria-label={`Go to panel ${idx + 1}`}
               aria-current={idx === currentIndex ? 'true' : undefined}
             >
+              {/* Plain img by design: panel images are dynamic provider URLs. See the
+                  note in game-card.tsx — the fix is the image proxy, not next/image. */}
               {panel.imageUrl ? (
                 <img src={panel.imageUrl} alt={`Panel ${idx + 1}`} loading="lazy" decoding="async" className="h-16 w-24 object-cover" />
               ) : (

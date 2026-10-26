@@ -4,7 +4,7 @@ import { CheckCircle, Copy, Eye, Library, RotateCcw, Share2 } from 'lucide-react
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ShareDropdown } from '@/components/ui/share-dropdown'
+import { ShareDropdown } from '@/domains/games/components/share-dropdown'
 import { trackEvent } from '@/services/analytics'
 import { useOverlay, OverlayPortal } from '@/components/ui/overlay'
 

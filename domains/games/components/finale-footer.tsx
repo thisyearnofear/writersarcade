@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { Download, Zap, Loader2, Wallet, BarChart3 } from 'lucide-react'
-import { AttributionPair } from '@/components/ui/user-attribution'
+import { AttributionPair } from '@/domains/games/components/user-attribution'
 import { NarrationControls } from './finale-narration'
 import { VideoUpsellCTA } from './finale-video-screen'
 import type { useVideoMotion } from './finale-video-motion'

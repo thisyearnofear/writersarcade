@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { ExternalLink } from 'lucide-react'
-import { CopyAddressButton } from '@/components/ui/copy-address-button'
+import { CopyAddressButton } from '@/components/wallet/copy-address-button'
 import { WRITER_COINS } from '@/lib/writer-coins'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'

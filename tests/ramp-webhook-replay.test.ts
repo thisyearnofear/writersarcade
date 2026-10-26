@@ -52,7 +52,8 @@ describe('POST /api/ramp/webhook — replay guard', () => {
     const res = await POST(makeRequest('o-1'))
     expect(res.status).toBe(200)
     const body = await res.json()
-    expect(body.idempotent).toBe(true)
+    // Standardized envelope: apiHandler routes return { success, data }.
+    expect(body.data.idempotent).toBe(true)
     expect(mockTx).not.toHaveBeenCalled()
     expect(mockUserUpdate).not.toHaveBeenCalled()
     expect(mockUpdate).not.toHaveBeenCalled()

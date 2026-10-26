@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import type { GameGenre } from '@/components/game/GenreSelector'
+import type { GameGenre } from '@/domains/games/components/GenreSelector'
 
 interface PanelStripMockupProps {
   genre: GameGenre

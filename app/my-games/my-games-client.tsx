@@ -473,7 +473,7 @@ export function MyGamesClient() {
                   onClick={() => setActiveTab('library')}
                   className={`flex shrink-0 items-center gap-2 px-3 py-3 text-sm font-medium border-b-2 transition-colors sm:px-4 ${
                     activeTab === 'library'
-                      ? 'border-purple-500 text-purple-600 dark:text-purple-400'
+                      ? 'border-purple-500 text-brand'
                       : 'border-transparent text-muted-foreground hover:text-foreground'
                   }`}
                 >
@@ -489,7 +489,7 @@ export function MyGamesClient() {
                       onClick={() => setActiveTab('vault')}
                       className={`flex shrink-0 items-center gap-2 px-3 py-3 text-sm font-medium border-b-2 transition-colors sm:px-4 ${
                         activeTab === 'vault'
-                          ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400'
+                          ? 'border-emerald-500 text-success'
                           : 'border-transparent text-muted-foreground hover:text-foreground'
                       }`}
                     >
@@ -742,7 +742,7 @@ export function MyGamesClient() {
                       onClick={() => setLibraryFilter(filter.id)}
                       className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
                         libraryFilter === filter.id
-                          ? 'border-purple-500 bg-purple-500/10 text-purple-600 dark:text-purple-300'
+                          ? 'border-purple-500 bg-purple-500/10 text-brand'
                           : 'border-border bg-card text-muted-foreground hover:text-foreground'
                       }`}
                     >

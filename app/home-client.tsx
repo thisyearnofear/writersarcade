@@ -353,7 +353,7 @@ export function HomeClient({ initialSampleGames, initialStats, featuredArtifact 
                       title={`${coin.writer} — find an article to turn into a game`}
                       className="inline-flex items-center gap-1.5 rounded-full border border-border/60 px-2.5 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
                     >
-                      <span className="font-mono text-blue-600 dark:text-blue-400">{coin.symbol}</span>
+                      <span className="font-mono text-info">{coin.symbol}</span>
                       <span className="hidden sm:inline truncate max-w-[8rem]">{coin.writer}</span>
                     </Link>
                   ))}

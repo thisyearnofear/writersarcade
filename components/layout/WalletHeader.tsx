@@ -1,8 +1,8 @@
 'use client'
 
 import { UserMenu } from '@/domains/users/components/user-menu'
-import { BalanceDisplay } from '@/components/ui/balance-display'
-import { BuyCreditsButton } from '@/components/ui/buy-credits'
+import { BalanceDisplay } from '@/domains/payments/components/balance-display'
+import { BuyCreditsButton } from '@/domains/payments/components/buy-credits'
 import { WalletProviders } from '@/components/providers/WalletProviders'
 import { useWalletInside } from '@/components/providers/wallet-inside-context'
 

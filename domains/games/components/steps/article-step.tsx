@@ -374,7 +374,7 @@ export function ArticleStep({
               <span className={`text-[10px] font-bold uppercase tracking-wider rounded-sm px-1 py-0.5 ${
                 mode === 'wordle'
                   ? 'bg-white/20 text-white'
-                  : 'bg-amber-500/20 text-amber-700 dark:text-amber-300'
+                  : 'bg-amber-500/20 text-warning'
               }`}>
                 Free
               </span>

@@ -162,9 +162,9 @@ function SectionFaq() {
 
 function ChainOverview({ color, name, role, blurb }: { color: 'amber' | 'blue' | 'emerald'; name: string; role: string; blurb: string }) {
   const colors = {
-    amber: 'border-amber-500/30 bg-amber-500/5 text-amber-700 dark:text-amber-300',
-    blue: 'border-blue-500/30 bg-blue-500/5 text-blue-700 dark:text-blue-300',
-    emerald: 'border-emerald-500/30 bg-emerald-500/5 text-emerald-700 dark:text-emerald-300',
+    amber: 'border-amber-500/30 bg-amber-500/5 text-warning',
+    blue: 'border-blue-500/30 bg-blue-500/5 text-info',
+    emerald: 'border-emerald-500/30 bg-emerald-500/5 text-success',
   }[color]
   return (
     <div className={`rounded-2xl border p-4 ${colors}`}>
@@ -199,13 +199,13 @@ function Tradeoff({ name, icon, color, pros, cons }: { name: string; icon: React
       </div>
       <div className="grid sm:grid-cols-2 gap-3 text-xs">
         <div>
-          <p className="text-emerald-600 dark:text-emerald-400 font-semibold uppercase tracking-wider mb-1">Pros</p>
+          <p className="text-success font-semibold uppercase tracking-wider mb-1">Pros</p>
           <ul className="space-y-1 text-muted-foreground">
             {pros.map((p) => <li key={p}>• {p}</li>)}
           </ul>
         </div>
         <div>
-          <p className="text-amber-600 dark:text-amber-400 font-semibold uppercase tracking-wider mb-1">Tradeoffs</p>
+          <p className="text-warning font-semibold uppercase tracking-wider mb-1">Tradeoffs</p>
           <ul className="space-y-1 text-muted-foreground">
             {cons.map((c) => <li key={c}>• {c}</li>)}
           </ul>

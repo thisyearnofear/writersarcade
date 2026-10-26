@@ -154,7 +154,7 @@ export function Footer() {
         <div className="border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
           <span>© {year} writersarcade. Built on Base and Mezo.</span>
           <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" aria-hidden="true" />
+            <span className="w-1.5 h-1.5 rounded-full bg-success inline-block" aria-hidden="true" />
             Base Mainnet Live
           </span>
         </div>

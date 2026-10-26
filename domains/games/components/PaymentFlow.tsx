@@ -18,7 +18,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { BASE_MAINNET_CHAIN_ID, MEZO_ACTIVE_CHAIN_ID, MEZO_ACTIVE_EXPLORER, MEZO_NETWORK, getChainInfo } from '@/lib/wallet/chains'
 import { trackEvent } from '@/services/analytics'
-import { openBuyCredits, notifyCreditsChanged, CREDITS_CHANGED_EVENT } from '@/components/ui/buy-credits'
+import { openBuyCredits, notifyCreditsChanged, CREDITS_CHANGED_EVENT } from '@/domains/payments/components/buy-credits'
 import type { PaymentResult } from '@/domains/payments/strategies/payment-strategy'
 
 const MEZO_EXPLORER_URL = `${MEZO_ACTIVE_EXPLORER}/tx`

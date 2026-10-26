@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { ExternalLink, ArrowLeft } from 'lucide-react'
-import { CopyAddressButton } from '@/components/ui/copy-address-button'
+import { CopyAddressButton } from '@/components/wallet/copy-address-button'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
@@ -119,7 +119,7 @@ export function WriterPageClient({
                     </Link>
                     <Link
                       href="/generate?pay=musd"
-                      className="inline-flex items-center gap-2 text-sm text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-500/10 hover:bg-amber-100 dark:hover:bg-amber-500/20 border border-amber-200 dark:border-amber-500/20 rounded-md px-4 py-2 transition-colors"
+                      className="inline-flex items-center gap-2 text-sm text-warning bg-warning/10 hover:bg-warning/20 border border-warning/20 rounded-md px-4 py-2 transition-colors"
                     >
                       Generate with MUSD instead →
                     </Link>

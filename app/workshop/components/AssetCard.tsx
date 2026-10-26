@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { AssetEditPanel } from '@/components/ui/asset-edit-panel'
+import { AssetEditPanel } from '@/domains/assets/components/asset-edit-panel'
 import { useAssetHover } from '@/contexts/asset-hover.context'
 
 interface AssetTag {

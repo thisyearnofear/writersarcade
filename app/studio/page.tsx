@@ -7,7 +7,7 @@ import { Loader2, Sparkles, Wand2 } from 'lucide-react'
 import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
 import { Header } from '@/components/layout/header'
 import { Button } from '@/components/ui/button'
-import { openBuyCredits } from '@/components/ui/buy-credits'
+import { openBuyCredits } from '@/domains/payments/components/buy-credits'
 import { cn } from '@/lib/utils'
 
 const GENRES = [

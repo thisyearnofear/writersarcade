@@ -1,10 +1,10 @@
 import { create } from 'zustand'
-import { type GameGenre } from '@/components/game/GenreSelector'
-import { type GameDifficulty } from '@/components/game/DifficultySelector'
+import { type GameGenre } from '@/domains/games/components/GenreSelector'
+import { type GameDifficulty } from '@/domains/games/components/DifficultySelector'
 import type { GameMode } from '@/domains/games/types'
 import type { WriterCoin } from '@/lib/writer-coins'
 import type { PaymentPath, ImageQuality, GenerateErrorState, ArticlePreview } from '@/domains/games/components/game-generator-helpers'
-import type { GenerateStep } from '@/components/ui/step-indicator'
+import type { GenerateStep } from '@/domains/games/components/step-indicator'
 
 export type LoadingStep = 'payment' | 'validate' | 'extract' | 'generate' | 'save'
 export type StepStatus = 'pending' | 'in-progress' | 'completed' | 'error'
