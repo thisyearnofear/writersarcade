@@ -13,7 +13,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery'
 import {
   GENERATE_STEPS,
   getStepIndex,
-} from '@/components/ui/step-indicator'
+} from '@/domains/games/components/step-indicator'
 import {
   type ArticlePreview,
   ARTICLE_PREVIEW_TIMEOUT_MS,
@@ -651,6 +651,10 @@ export function useGameGenerator({
       trackEvent('game_generated', {
         mode: store.mode,
         paymentPath: store.paymentPath,
+        // What actually settled — paymentPath is the UI selection and was
+        // reporting 'musd' for games that were actually paid with credits.
+        settlementSource: result.data.ownershipSource,
+        settledWriterCoinId: result.data.writerCoinId,
         gameSlug: result.data.slug,
         genre: store.genre,
         difficulty: store.difficulty,

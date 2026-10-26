@@ -89,7 +89,39 @@ export async function POST(
     
     // Start streaming response
     const encoder = new TextEncoder()
-    
+
+    // Assistant-row persistence lives outside start() so cancel() can flush
+    // partial content on client disconnect. The row is created lazily on
+    // first content — waiting for 'end' orphaned rows whenever a stream died
+    // mid-flight (leaving 'started' events that never closed, which poisoned
+    // the Resonance funnel).
+    let assistantContent = ''
+    let assistantRowId: Promise<string | null> | null = null
+    const persistAssistant = (): Promise<unknown> => {
+      if (!assistantContent) return Promise.resolve()
+      if (!assistantRowId) {
+        assistantRowId = prisma.chat.create({
+          data: {
+            parentId: systemMessage.id,
+            sessionId: session.id,
+            gameId: game.id,
+            userId: session.userId,
+            role: 'assistant',
+            content: assistantContent,
+            model: game.promptModel,
+          }
+        }).then((row) => row.id).catch((err) => {
+          logger.error('Assistant message persist failed:', err)
+          return null
+        })
+        return assistantRowId
+      }
+      return assistantRowId.then(async (id) => {
+        if (!id) return
+        await prisma.chat.update({ where: { id }, data: { content: assistantContent } })
+      }).catch((err) => logger.error('Assistant message update failed:', err))
+    }
+
     const stream = new ReadableStream({
       async start(controller) {
         // SSE keepalive — the edge drops responses that stay silent before the
@@ -200,36 +232,25 @@ export async function POST(
             )
           }
 
-          let assistantContent = ''
-          
           for await (const response of gameStream) {
             const data = `data: ${JSON.stringify(response)}\n\n`
             controller.enqueue(encoder.encode(data))
-            
-            // Accumulate content for final save
+
             if (response.type === 'content') {
               assistantContent += response.content
+              void persistAssistant()
             }
-            
-            // Save final assistant message when done
+
+            // Final content sync when done
             if (response.type === 'end') {
-              await prisma.chat.create({
-                data: {
-                  parentId: systemMessage.id,
-                  sessionId: session.id,
-                  gameId: game.id,
-                  userId: session.userId,
-                  role: 'assistant',
-                  content: assistantContent,
-                  model: game.promptModel,
-                }
-              })
+              await persistAssistant()
             }
           }
-          
+
           controller.close()
         } catch (error) {
           logger.error('Game start streaming error:', error)
+          await persistAssistant()
           const errorData = `data: ${JSON.stringify({
             type: 'error',
             error: 'Failed to start game'
@@ -239,6 +260,10 @@ export async function POST(
         } finally {
           clearInterval(keepalive)
         }
+      },
+      async cancel() {
+        // Client disconnected mid-stream — flush whatever content arrived.
+        try { await persistAssistant() } catch { /* best-effort */ }
       }
     })
     

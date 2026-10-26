@@ -115,7 +115,38 @@ export async function POST(request: NextRequest) {
     
     // Start streaming response
     const encoder = new TextEncoder()
-    
+
+    // Assistant-row persistence lives outside start() so cancel() can flush
+    // partial content on client disconnect. The row is created lazily on
+    // first content — waiting for 'end' orphaned rows whenever a stream died
+    // mid-flight.
+    let assistantContent = ''
+    let assistantRowId: Promise<string | null> | null = null
+    const persistAssistant = (): Promise<unknown> => {
+      if (!assistantContent) return Promise.resolve()
+      if (!assistantRowId) {
+        assistantRowId = prisma.chat.create({
+          data: {
+            parentId: userMessage.id,
+            sessionId: session.id,
+            gameId,
+            userId: session.userId,
+            role: 'assistant',
+            content: assistantContent,
+            model: game?.promptModel || 'gpt-4o-mini',
+          }
+        }).then((row) => row.id).catch((err) => {
+          console.error('Assistant message persist failed:', err)
+          return null
+        })
+        return assistantRowId
+      }
+      return assistantRowId.then(async (id) => {
+        if (!id) return
+        await prisma.chat.update({ where: { id }, data: { content: assistantContent } })
+      }).catch((err) => console.error('Assistant message update failed:', err))
+    }
+
     const stream = new ReadableStream({
       async start(controller) {
         // SSE keepalive — same edge-silent-drop protection as the start route.
@@ -223,36 +254,25 @@ export async function POST(request: NextRequest) {
             )
           }
           
-          let assistantContent = ''
-          
           for await (const response of chatStream) {
             const data = `data: ${JSON.stringify(response)}\n\n`
             controller.enqueue(encoder.encode(data))
-            
-            // Accumulate content for final save
+
             if (response.type === 'content') {
               assistantContent += response.content
+              void persistAssistant()
             }
-            
-            // Save assistant response when done
+
+            // Final content sync when done
             if (response.type === 'end') {
-              await prisma.chat.create({
-                data: {
-                  parentId: userMessage.id,
-                  sessionId: session.id,
-                  gameId,
-                  userId: session.userId,
-                  role: 'assistant',
-                  content: assistantContent,
-                  model: 'gpt-4o-mini',
-                }
-              })
+              await persistAssistant()
             }
           }
-          
+
           controller.close()
         } catch (error) {
           console.error('Chat streaming error:', error)
+          await persistAssistant()
           const errorData = `data: ${JSON.stringify({
             type: 'error',
             error: 'Failed to process message'
@@ -262,6 +282,10 @@ export async function POST(request: NextRequest) {
         } finally {
           clearInterval(keepalive)
         }
+      },
+      async cancel() {
+        // Client disconnected mid-stream — flush whatever content arrived.
+        try { await persistAssistant() } catch { /* best-effort */ }
       }
     })
     
