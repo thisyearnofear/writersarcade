@@ -677,6 +677,24 @@ export function useGameGenerator({
         )
         return
       }
+      // Recovery: the server creates the game stub early — a timed-out or
+      // failed POST doesn't mean generation failed. Poll briefly for the
+      // finished game before surfacing an error.
+      const articleUrl = store.url.trim()
+      let recoveredSlug: string | null = null
+      for (let i = 0; i < 4 && articleUrl; i++) {
+        try {
+          const res = await fetch(`/api/games/recent?url=${encodeURIComponent(articleUrl)}&within=15`)
+          const data = await res.json()
+          if (data?.success && data.data?.slug) { recoveredSlug = data.data.slug; break }
+        } catch { /* retry */ }
+        await wait(3000)
+      }
+      if (recoveredSlug) {
+        onGameGenerated?.({ slug: recoveredSlug } as never)
+        router.push(`/games/${recoveredSlug}?play=1`)
+        return
+      }
       const message = isAbortError(err)
         ? 'Game generation timed out before the server returned a result.'
         : err instanceof Error ? err.message : 'An unexpected error occurred'
