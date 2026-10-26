@@ -1,5 +1,5 @@
 import type { PaymentStrategy, ExecutePaymentParams, PaymentResult } from './payment-strategy'
-import { publicActions } from 'viem'
+import { getPublicClient } from '@/lib/contracts'
 import { getPaymentTokenConfig } from '@/lib/writer-coins'
 import { MEZO_ACTIVE_CHAIN_ID } from '@/lib/wallet/chains'
 import { logger } from '@/lib/config'
@@ -109,9 +109,9 @@ export class MUSDStrategy implements PaymentStrategy {
     // The splitter's transferFrom needs the approve MINED — writeContract
     // resolves on broadcast, so without this wait the pay call reverts on
     // slow-indexing chains (Mezo) or fails gas estimation.
-    const publicClient = walletClient.extend(publicActions)
+    const publicClient = getPublicClient(MEZO_ACTIVE_CHAIN_ID)
     step('Waiting for approval to confirm…')
-    const approvalReceipt = await publicClient.waitForTransactionReceipt({ hash: approvalTx })
+    const approvalReceipt = await publicClient.waitForTransactionReceipt({ hash: approvalTx, timeout: 90_000, pollingInterval: 3_000 })
     if (approvalReceipt.status !== 'success') {
       throw new Error('MUSD approval failed on-chain')
     }
@@ -152,7 +152,7 @@ export class MUSDStrategy implements PaymentStrategy {
     // Confirm on-chain before verifying — a reverted tx would only surface
     // as a confusing 400 from the verifier.
     step('Waiting for payment to confirm…')
-    const payReceipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+    const payReceipt = await publicClient.waitForTransactionReceipt({ hash: txHash, timeout: 90_000, pollingInterval: 3_000 })
     if (payReceipt.status !== 'success') {
       throw new Error('MUSD payment reverted on-chain')
     }
