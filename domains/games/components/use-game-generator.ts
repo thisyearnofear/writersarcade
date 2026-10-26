@@ -479,6 +479,11 @@ export function useGameGenerator({
       Boolean(currentPaymentId) ||
       Boolean(currentPaymentTxHash)
     )
+    // The 402 flag is a retry circuit-breaker set on an unpaid refusal — it
+    // must not outlive payment. A paid attempt that later fails (timeout, 5xx)
+    // would otherwise be mislabeled "Payment did not complete" next to the
+    // payment-received card. A genuine re-402 below sets it again.
+    if (hasPaymentProof) paymentRequiredRef.current = false
 
     try {
       store.setStepStatuses({ payment: 'completed', validate: 'pending', extract: 'pending', generate: 'pending', save: 'pending' })
@@ -700,6 +705,7 @@ export function useGameGenerator({
   // ── Payment success handler ────────────────────────────────────────
   const handlePaymentSuccess = async (payment: PaymentResult) => {
     paymentCompletedRef.current = true
+    paymentRequiredRef.current = false
     paymentTxHashRef.current = payment.transactionHash
     paymentIdRef.current = payment.paymentId
     trackEvent('payment_succeeded', {

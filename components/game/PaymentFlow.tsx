@@ -250,6 +250,7 @@ export function PaymentFlow({
   }, [action, chainId, isWrongChain, networkName, targetChainId, tokenSymbol, userAddress])
 
   const handleNetworkSwitch = useCallback(async () => {
+    setError(null)
     trackEvent('payment_network_switch_started', { action, token: tokenSymbol, network: networkName, currentChainId: chainId, targetChainId })
     try {
       await switchChainAsync({ chainId: targetChainId })
