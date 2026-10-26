@@ -228,10 +228,19 @@ export function useGameSession(game: Game, options?: GameSessionOptions): GameSe
 
       let currentMessage = ''
       let currentOptions: GameplayOption[] = []
+      // The narrative only completes on an 'end' event — a truncated or
+      // stalled stream must surface an error, not spin forever.
+      let gotEndEvent = false
+      const STREAM_STALL_MS = 90_000
 
       // Process the streaming response
       while (true) {
-        const { done, value } = await reader.read()
+        const { done, value } = await Promise.race([
+          reader.read(),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('Stream stalled')), STREAM_STALL_MS)
+          ),
+        ]).catch((err) => { void reader.cancel().catch(() => {}); throw err })
         if (done) break
 
         const chunk = new TextDecoder().decode(value)
@@ -279,6 +288,7 @@ export function useGameSession(game: Game, options?: GameSessionOptions): GameSe
                   })
                 }
               } else if (data.type === 'end') {
+                gotEndEvent = true
                 setLoadingProgress(prev => ({ ...prev, text: true }))
 
                 // Create the message for image generation
@@ -329,6 +339,13 @@ export function useGameSession(game: Game, options?: GameSessionOptions): GameSe
             }
           }
         }
+      }
+      // Stream closed or stalled without an 'end' event — surface it.
+      if (!gotEndEvent) {
+        const message = 'The story stream ended before it was ready. Try again.'
+        toast({ title: "Failed to start game", description: message, variant: "destructive" })
+        setStartError(message)
+        setIsStarting(false)
       }
     } catch (error) {
       console.error('Failed to start game:', error)

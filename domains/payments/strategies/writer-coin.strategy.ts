@@ -1,4 +1,5 @@
 import type { PaymentStrategy, ExecutePaymentParams, PaymentResult } from './payment-strategy'
+import { publicActions } from 'viem'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { getPaymentTokenConfig } from '@/lib/writer-coins'
 import { BASE_MAINNET_CHAIN_ID } from '@/lib/wallet/chains'
@@ -66,6 +67,16 @@ export class WriterCoinStrategy implements PaymentStrategy {
     })
     logger.info('[WriterCoinStrategy] Approval transaction sent:', { approvalTx })
 
+    // The pay call's transferFrom needs the approve MINED — writeContract
+    // resolves on broadcast, so wait for the receipt first (same race as
+    // the MUSD strategy; Base's fast blocks usually mask it).
+    const publicClient = walletClient.extend(publicActions)
+    step('Waiting for approval to confirm…')
+    const approvalReceipt = await publicClient.waitForTransactionReceipt({ hash: approvalTx })
+    if (approvalReceipt.status !== 'success') {
+      throw new Error('Token approval failed on-chain')
+    }
+
     // 3. Execute Payment Contract
     step('Step 2 of 2: Confirm payment in your wallet…')
     const txHash = await walletClient.writeContract({
@@ -95,6 +106,14 @@ export class WriterCoinStrategy implements PaymentStrategy {
     })
 
     logger.info('[WriterCoinStrategy] Transaction sent:', { txHash })
+
+    // Confirm on-chain before verifying — a reverted tx only surfaced as a
+    // confusing 400 from the verifier.
+    step('Waiting for payment to confirm…')
+    const payReceipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+    if (payReceipt.status !== 'success') {
+      throw new Error('Payment reverted on-chain')
+    }
 
     // 4. Verify via backend (with retry — receipt may not be indexed immediately)
     step('Verifying on-chain…')

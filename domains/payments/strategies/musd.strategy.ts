@@ -1,4 +1,5 @@
 import type { PaymentStrategy, ExecutePaymentParams, PaymentResult } from './payment-strategy'
+import { publicActions } from 'viem'
 import { getPaymentTokenConfig } from '@/lib/writer-coins'
 import { MEZO_ACTIVE_CHAIN_ID } from '@/lib/wallet/chains'
 import { logger } from '@/lib/config'
@@ -105,6 +106,16 @@ export class MUSDStrategy implements PaymentStrategy {
     })
     logger.info('[MUSDStrategy] Approval tx:', { approvalTx })
 
+    // The splitter's transferFrom needs the approve MINED — writeContract
+    // resolves on broadcast, so without this wait the pay call reverts on
+    // slow-indexing chains (Mezo) or fails gas estimation.
+    const publicClient = walletClient.extend(publicActions)
+    step('Waiting for approval to confirm…')
+    const approvalReceipt = await publicClient.waitForTransactionReceipt({ hash: approvalTx })
+    if (approvalReceipt.status !== 'success') {
+      throw new Error('MUSD approval failed on-chain')
+    }
+
     // 2. Execute splitter call. `generate-game` goes through payForGeneration
     // (no NFT is minted for a generation), `mint-nft` through payAndMintGame.
     step('Step 2 of 2: Confirm payment in your wallet…')
@@ -137,6 +148,14 @@ export class MUSDStrategy implements PaymentStrategy {
           chain: null,
         })
     logger.info(`[MUSDStrategy] ${action === 'generate-game' ? 'payForGeneration' : 'payAndMintGame'} tx:`, { txHash })
+
+    // Confirm on-chain before verifying — a reverted tx would only surface
+    // as a confusing 400 from the verifier.
+    step('Waiting for payment to confirm…')
+    const payReceipt = await publicClient.waitForTransactionReceipt({ hash: txHash })
+    if (payReceipt.status !== 'success') {
+      throw new Error('MUSD payment reverted on-chain')
+    }
 
     // Verify via backend (with retry — Mezo blocks may not be indexed immediately)
     step('Verifying on-chain…')
