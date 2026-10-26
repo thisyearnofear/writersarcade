@@ -8,7 +8,7 @@ import type {
   AssetGenerationResponse
 } from '../types'
 import type { UserAIPreferences } from '@/lib/user-ai-preferences.service'
-import { getModel, hasGeminiConfiguration, hasVeniceConfiguration, hasOpenAIConfiguration, VENICE_DEFAULT_MODEL } from '@/lib/ai-model-compatibility'
+import { getModel, hasGeminiConfiguration, hasVeniceConfiguration, hasFeatherlessConfiguration, VENICE_DEFAULT_MODEL, FEATHERLESS_MODEL } from '@/lib/ai-model-compatibility'
 import { generateStructuredObject } from '@/lib/ai-structured'
 import { isFeatureEnabled, logger } from '@/lib/config'
 import { StoryPlannerService } from './story-planner.service'
@@ -365,7 +365,7 @@ export class GameAIService {
     const names: string[] = []
     if (primary !== VENICE_DEFAULT_MODEL && hasVeniceConfiguration()) names.push(VENICE_DEFAULT_MODEL)
     if (primary !== 'gemini-2.0-flash' && hasGeminiConfiguration(userPreferences)) names.push('gemini-2.0-flash')
-    if (primary !== 'gpt-4o-mini' && hasOpenAIConfiguration()) names.push('gpt-4o-mini')
+    if (primary !== FEATHERLESS_MODEL && hasFeatherlessConfiguration()) names.push(FEATHERLESS_MODEL)
     return names
   }
 

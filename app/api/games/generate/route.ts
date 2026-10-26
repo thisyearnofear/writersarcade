@@ -519,8 +519,12 @@ Your game MUST authentically interpret this article's core themes. Players shoul
     const coverImagePromise = savedGame.mode !== 'wordle'
       ? ImageGenerationService.generateGameImage(savedGame).then(async (result) => {
           if (result.imageUrl) {
-            await GameDatabaseService.updateGameImage(savedGame.id, result.imageUrl)
-            return result.imageUrl
+            // Re-host on IPFS — provider URLs (fal.media) can expire, which
+            // would silently kill the hero backdrop.
+            const { rehostRemoteImage } = await import('@/lib/storage/rehost-image')
+            const hosted = (await rehostRemoteImage(result.imageUrl)) ?? result.imageUrl
+            await GameDatabaseService.updateGameImage(savedGame.id, hosted)
+            return hosted
           }
           return null
         }).catch((err) => {

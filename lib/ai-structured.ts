@@ -29,8 +29,8 @@ import { logger } from '@/lib/config'
  *  usable against api.openai.com without a base URL. */
 function hasUsableJsonProvider(userPreferences?: UserAIPreferences): boolean {
   if (hasGeminiConfiguration(userPreferences)) return true
-  const openaiKey = process.env.OPENAI_API_KEY
-  if (openaiKey && /^sk-/.test(openaiKey)) return true
+  const featherlessKey = process.env.FEATHERLESS_API_KEY
+  if (featherlessKey && /^sk-/.test(featherlessKey)) return true
   if (process.env.ANTHROPIC_API_KEY) return true
   return false
 }

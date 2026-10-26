@@ -1,5 +1,5 @@
 import { google } from '@ai-sdk/google';
-import { createOpenAI, openai } from '@ai-sdk/openai';
+import { createOpenAI } from '@ai-sdk/openai';
 import { anthropic } from '@ai-sdk/anthropic';
 import type { UserAIPreferences } from '@/lib/user-ai-preferences.service';
 import type { LanguageModel } from 'ai';
@@ -33,8 +33,19 @@ export function getCompatibleGoogleModel(modelName: string, apiKey?: string): Co
   return model;
 }
 
-export function getCompatibleOpenAIModel(modelName: string): CompatibleLanguageModel {
-  return openai(modelName) as unknown as CompatibleLanguageModel;
+// Featherless — OpenAI-compatible HF inference, replaces the OpenAI provider.
+// OpenAI model ids don't exist there, so gpt-* names map to the default.
+export const FEATHERLESS_MODEL = process.env.FEATHERLESS_MODEL || 'meta-llama/Meta-Llama-3.1-70B-Instruct';
+
+export function getCompatibleFeatherlessModel(modelName: string): CompatibleLanguageModel {
+  const apiKey = process.env.FEATHERLESS_API_KEY;
+  if (!apiKey) throw new Error('Featherless API key is required');
+  const provider = createOpenAI({
+    apiKey,
+    baseURL: 'https://api.featherless.ai/v1',
+  });
+  const effective = modelName.startsWith('gpt') || modelName.startsWith('o') ? FEATHERLESS_MODEL : modelName;
+  return provider.chat(effective) as unknown as CompatibleLanguageModel;
 }
 
 export function hasVeniceConfiguration(): boolean {
@@ -78,9 +89,9 @@ export function getCompatibleAnthropicModel(modelName: string): CompatibleLangua
   return anthropic(modelName) as unknown as CompatibleLanguageModel;
 }
 
-// Check if OpenAI is likely to work (has API key configured)
-export function hasOpenAIConfiguration(): boolean {
-  return !!process.env.OPENAI_API_KEY;
+// Check if Featherless is likely to work (has API key configured)
+export function hasFeatherlessConfiguration(): boolean {
+  return !!process.env.FEATHERLESS_API_KEY;
 }
 
 // Consolidate AI model providers with compatibility
@@ -98,7 +109,7 @@ export function getModel(modelName: string, userPreferences?: UserAIPreferences)
         return getCompatibleGoogleModel('gemini-2.0-flash', apiKey);
       }
     }
-    return getCompatibleOpenAIModel('gpt-4o-mini');
+    return getCompatibleFeatherlessModel(FEATHERLESS_MODEL);
   }
 
   // Route Venice/Llama models to Venice
@@ -128,7 +139,7 @@ export function getModel(modelName: string, userPreferences?: UserAIPreferences)
       logger.info(`Using Venice instead of OpenAI (${modelName}) to avoid quota issues`);
       return getCompatibleVeniceModel(VENICE_DEFAULT_MODEL);
     }
-    return getCompatibleOpenAIModel(modelName);
+    return getCompatibleFeatherlessModel(modelName);
   }
 
   if (modelName.startsWith('claude')) {
@@ -139,7 +150,7 @@ export function getModel(modelName: string, userPreferences?: UserAIPreferences)
   if (hasVeniceConfiguration()) {
     return getCompatibleVeniceModel(VENICE_DEFAULT_MODEL);
   }
-  return getCompatibleOpenAIModel('gpt-4o-mini');
+  return getCompatibleFeatherlessModel(FEATHERLESS_MODEL);
 }
 
 /**
@@ -159,17 +170,15 @@ export function getStructuredOutputModel(userPreferences?: UserAIPreferences): C
       return getCompatibleGoogleModel('gemini-2.0-flash', apiKey);
     }
   }
-  // Only treat OPENAI_API_KEY as usable if it looks like a real OpenAI key —
-  // gateway tokens (e.g. `ogw_live_...`) 401 against api.openai.com.
-  if (hasOpenAIConfiguration() && /^sk-/.test(process.env.OPENAI_API_KEY!)) {
-    return getCompatibleOpenAIModel('gpt-4o-mini');
+  if (hasFeatherlessConfiguration()) {
+    return getCompatibleFeatherlessModel(FEATHERLESS_MODEL);
   }
   // No structured-output-capable external provider configured → Venice model
   // that supports response_format (llama-3.3-70b does NOT).
   if (hasVeniceConfiguration()) {
     return getCompatibleVeniceModel(VENICE_STRUCTURED_MODEL);
   }
-  return getCompatibleOpenAIModel('gpt-4o-mini');
+  return getCompatibleFeatherlessModel(FEATHERLESS_MODEL);
 }
 
 /**
@@ -192,8 +201,8 @@ export function getJsonCapableModel(modelName: string, userPreferences?: UserAIP
     }
     // Not configured — fall through to the structured-output default.
   }
-  if (modelName.startsWith('gpt') && hasOpenAIConfiguration()) {
-    return getCompatibleOpenAIModel(modelName);
+  if (modelName.startsWith('gpt') && hasFeatherlessConfiguration()) {
+    return getCompatibleFeatherlessModel(modelName);
   }
   return getStructuredOutputModel(userPreferences);
 }

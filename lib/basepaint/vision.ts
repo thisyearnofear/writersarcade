@@ -14,17 +14,17 @@ export async function describeBasePaintCanvas(day: number): Promise<string | nul
     if (image.length === 0) return null
 
     const { generateText } = await import('ai')
-    const { getCompatibleGoogleModel, getCompatibleOpenAIModel } = await import(
+    const { getCompatibleGoogleModel, getCompatibleFeatherlessModel, FEATHERLESS_MODEL } = await import(
       '@/lib/ai-model-compatibility'
     )
 
     const model = process.env.GOOGLE_API_KEY
       ? getCompatibleGoogleModel('gemini-2.0-flash')
-      : process.env.OPENAI_API_KEY
-        ? getCompatibleOpenAIModel('gpt-4o-mini')
+      : process.env.FEATHERLESS_API_KEY
+        ? getCompatibleFeatherlessModel(FEATHERLESS_MODEL)
         : null
     if (!model) {
-      console.warn('[BasePaint] No vision provider configured (GOOGLE_API_KEY / OPENAI_API_KEY)')
+      console.warn('[BasePaint] No vision provider configured (GOOGLE_API_KEY / FEATHERLESS_API_KEY)')
       return null
     }
 

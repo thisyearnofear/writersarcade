@@ -124,6 +124,8 @@ export function useGameSession(game: Game, options?: GameSessionOptions): GameSe
   const [epilogueReflection, setEpilogueReflection] = useState<string | null>(null)
   const [epilogueGenerationFailed, setEpilogueGenerationFailed] = useState(false)
   const [startError, setStartError] = useState<string | null>(null)
+  // Persisted panel images (survive replays) — fetched once per start.
+  const panelImagesRef = useRef<Record<number, string>>({})
   const [worldMood, setWorldMood] = useState({ tension: 0, chaos: 0, hope: 0 })
   const [lastChoiceFeedback, setLastChoiceFeedback] = useState<ChoiceFeedback | null>(null)
   const decisionStartedAtRef = useRef<number | null>(null)
@@ -192,6 +194,11 @@ export function useGameSession(game: Game, options?: GameSessionOptions): GameSe
   const startGame = useCallback(async () => {
     setIsStarting(true)
     setStartError(null)
+    try {
+      const pr = await fetch(`/api/games/${game.slug}/panels`)
+      const pd = await pr.json()
+      if (pd.success) for (const p of pd.data) if (p.imageUrl) panelImagesRef.current[p.panelIndex] = p.imageUrl
+    } catch { /* panel persistence is best-effort */ }
     setLoadingProgress({ text: false, images: false })
     imageFiredRef.current = false
 
@@ -272,6 +279,11 @@ export function useGameSession(game: Game, options?: GameSessionOptions): GameSe
                 if (!imageFiredRef.current) {
                   imageFiredRef.current = true
                   const { narrative: firstNarrative } = parsePanel(currentMessage)
+                  const cachedImage = panelImagesRef.current[0]
+                  if (cachedImage) {
+                    handleImageGenerated(`initial-${newSessionId}`, { imageUrl: cachedImage, model: 'persisted', provider: 'persisted', timestamp: Date.now() } as unknown as Parameters<typeof handleImageGenerated>[1])
+                    setLoadingProgress(prev => ({ ...prev, images: true }))
+                  } else
                   ImageGenerationService.generateImage({
                     prompt: firstNarrative,
                     genre: game.genre,
@@ -281,6 +293,7 @@ export function useGameSession(game: Game, options?: GameSessionOptions): GameSe
                   }).then((result) => {
                     handleImageGenerated(`initial-${newSessionId}`, result)
                     setLoadingProgress(prev => ({ ...prev, images: true }))
+                    if (result.imageUrl) void fetch(`/api/games/${game.slug}/panels`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ panelIndex: 0, imageUrl: result.imageUrl, narrativeText: firstNarrative }) }).catch(() => {})
                   }).catch(err => {
                     console.error('Hero screen image preload error:', err)
                     handleImageGenerated(`initial-${newSessionId}`, { imageUrl: null, model: 'failed', provider: 'failed', timestamp: Date.now() })
@@ -318,6 +331,11 @@ export function useGameSession(game: Game, options?: GameSessionOptions): GameSe
                 if (!imageFiredRef.current) {
                   imageFiredRef.current = true
                   const { narrative: firstNarrative } = parsePanel(cleanContent)
+                  const cachedImage = panelImagesRef.current[0]
+                  if (cachedImage) {
+                    handleImageGenerated(finalMessage.id, { imageUrl: cachedImage, model: 'persisted', provider: 'persisted', timestamp: Date.now() } as unknown as Parameters<typeof handleImageGenerated>[1])
+                    setLoadingProgress(prev => ({ ...prev, images: true }))
+                  } else
                   ImageGenerationService.generateImage({
                     prompt: firstNarrative,
                     genre: game.genre,
@@ -327,6 +345,7 @@ export function useGameSession(game: Game, options?: GameSessionOptions): GameSe
                   }).then((result) => {
                     handleImageGenerated(finalMessage.id, result)
                     setLoadingProgress(prev => ({ ...prev, images: true }))
+                    if (result.imageUrl) void fetch(`/api/games/${game.slug}/panels`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ panelIndex: 0, imageUrl: result.imageUrl, narrativeText: firstNarrative }) }).catch(() => {})
                   }).catch(err => {
                     console.error('Hero screen image preload error:', err)
                     handleImageGenerated(finalMessage.id, { imageUrl: null, model: 'failed', provider: 'failed', timestamp: Date.now() })
