@@ -1,6 +1,6 @@
 'use client'
 
-import { Component, Suspense, useMemo, useState, type ReactNode } from 'react'
+import { Component, Suspense, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Text, Billboard, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
@@ -9,6 +9,7 @@ import { getSceneAsset } from '@/lib/scene-assets'
 
 interface DioramaViewerProps {
   scene: ScenePlan
+  slug: string
 }
 
 type SelectedObject = { label: string; narrativeHook?: string; action?: string } | null
@@ -134,10 +135,29 @@ function SceneObjectMesh({ obj, color, isObjective, onSelect }: {
   )
 }
 
-export function DioramaViewer({ scene }: DioramaViewerProps) {
+export function DioramaViewer({ scene, slug }: DioramaViewerProps) {
   const [selected, setSelected] = useState<SelectedObject>(null)
+  const [thumbState, setThumbState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const glRef = useRef<THREE.WebGLRenderer | null>(null)
   const lighting = moodLighting[scene.mood] ?? moodLighting.day
   const objectiveIds = useMemo(() => new Set(scene.game?.objectiveIds ?? []), [scene.game])
+
+  const saveThumbnail = async () => {
+    const gl = glRef.current
+    if (!gl || thumbState === 'saving') return
+    setThumbState('saving')
+    try {
+      const dataUrl = gl.domElement.toDataURL('image/jpeg', 0.85)
+      const res = await fetch(`/api/games/${slug}/scene/thumbnail`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: dataUrl }),
+      })
+      setThumbState(res.ok ? 'saved' : 'error')
+    } catch {
+      setThumbState('error')
+    }
+  }
 
   const zoneCentroids = useMemo(() => {
     const map = new Map<string, { x: number; z: number; count: number; label: string }>()
@@ -156,7 +176,8 @@ export function DioramaViewer({ scene }: DioramaViewerProps) {
       <Canvas
         shadows
         camera={{ position: [26, 22, 30], fov: 50 }}
-        gl={{ antialias: true }}
+        gl={{ antialias: true, preserveDrawingBuffer: true }}
+        onCreated={({ gl }) => { glRef.current = gl }}
         onPointerMissed={() => setSelected(null)}
       >
         <color attach="background" args={[scene.palette.sky[0]]} />
@@ -254,12 +275,21 @@ export function DioramaViewer({ scene }: DioramaViewerProps) {
         </div>
         <div className="flex items-end justify-between">
           <p className="text-xs text-white/60 drop-shadow">Drag to orbit · scroll to zoom · click glowing objects</p>
-          {selected && (
-            <div className="pointer-events-auto max-w-sm rounded-lg border border-white/10 bg-black/70 p-4 text-white backdrop-blur">
-              <p className="font-semibold text-warning">{selected.action ? `${selected.action}: ` : ''}{selected.label}</p>
-              {selected.narrativeHook && <p className="mt-1 text-sm text-white/85">{selected.narrativeHook}</p>}
-            </div>
-          )}
+          <div className="pointer-events-auto flex items-center gap-2">
+            {selected && (
+              <div className="max-w-sm rounded-lg border border-white/10 bg-black/70 p-4 text-white backdrop-blur">
+                <p className="font-semibold text-warning">{selected.action ? `${selected.action}: ` : ''}{selected.label}</p>
+                {selected.narrativeHook && <p className="mt-1 text-sm text-white/85">{selected.narrativeHook}</p>}
+              </div>
+            )}
+            <button
+              onClick={saveThumbnail}
+              disabled={thumbState === 'saving' || thumbState === 'saved'}
+              className="rounded-lg bg-white/10 px-3 py-2 text-xs font-medium text-white backdrop-blur hover:bg-white/20 disabled:opacity-50"
+            >
+              {thumbState === 'saving' ? 'Saving…' : thumbState === 'saved' ? 'Thumbnail saved' : thumbState === 'error' ? 'Retry thumbnail' : 'Save thumbnail'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

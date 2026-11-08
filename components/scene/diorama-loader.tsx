@@ -10,6 +10,6 @@ const DioramaViewer = dynamic(
   { ssr: false, loading: () => <div className="flex h-full items-center justify-center text-white/60">Loading diorama…</div> }
 )
 
-export function DioramaLoader({ scene }: { scene: ScenePlan }) {
-  return <DioramaViewer scene={scene} />
+export function DioramaLoader({ scene, slug }: { scene: ScenePlan; slug: string }) {
+  return <DioramaViewer scene={scene} slug={slug} />
 }

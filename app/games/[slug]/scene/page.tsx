@@ -40,7 +40,7 @@ export default async function GameScenePage({ params }: ScenePageProps) {
         </div>
         <div className="min-h-0 flex-1 bg-black">
           {ready ? (
-            <DioramaLoader scene={scene.sceneJson as unknown as ScenePlan} />
+            <DioramaLoader scene={scene.sceneJson as unknown as ScenePlan} slug={slug} />
           ) : (
             <SceneGate slug={slug} status={scene?.status ?? 'idle'} error={scene?.error} />
           )}
