@@ -57,6 +57,12 @@ export const features = {
   agentTools: process.env.FEATURE_AGENT_TOOLS === 'true',
   /** Agentic: verify-and-fix self-critique (Phase 3) */
   agentRefine: process.env.FEATURE_AGENT_REFINE === 'true',
+  /** 3D diorama — explorable scene generated from a game's story plan.
+   *  NEXT_PUBLIC_ variant lets client components (finale CTA) see the flag;
+   *  the API route still enforces the server-side check. */
+  sceneDiorama:
+    process.env.FEATURE_SCENE_DIORAMA === 'true' ||
+    process.env.NEXT_PUBLIC_FEATURE_SCENE_DIORAMA === 'true',
 } as const
 
 /** Shorthand: is a given feature enabled? */

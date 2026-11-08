@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { Gamepad2, Sparkles, Trophy, BarChart3, ExternalLink, FileText, Image as ImageIcon, Link2, Check, QrCode, Download, Loader2, CalendarDays, ArrowUpRight, ChevronDown } from 'lucide-react'
+import { Gamepad2, Sparkles, Trophy, BarChart3, ExternalLink, FileText, Image as ImageIcon, Link2, Check, QrCode, Download, Loader2, CalendarDays, ArrowUpRight, ChevronDown, Boxes } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 import type { Game } from '../types'
 import type { ChatEntry } from '../hooks/use-game-session'
@@ -406,6 +406,15 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
+          {process.env.NEXT_PUBLIC_FEATURE_SCENE_DIORAMA === 'true' && game.mode !== 'wordle' && (
+            <Link
+              href={`/games/${game.slug}/scene`}
+              className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-info/30 bg-info/5 px-5 py-3 text-sm font-semibold text-info-foreground hover:bg-info/10 hover:border-info/50 transition-all"
+            >
+              <Boxes className="w-4 h-4" />
+              Enter the diorama
+            </Link>
+          )}
           {game.authorParagraphUsername && (
             <Link
               href={`/writers/${game.writerCoinId || ''}`}

@@ -373,6 +373,7 @@ export const CREDITS_CONFIG = {
   videoUpsellCost: 50n,    // 50 credits to animate a completed comic
   videoMontageCost: 100n,  // 100 credits to animate the WHOLE comic (all panels)
   animatePanelCost: 10n,   // 10 credits to animate a single panel (H3 Turbo ~$0.05-0.40 cost)
+  sceneCost: 20n,          // 20 credits to generate a game's explorable 3D diorama (~2 LLM calls + optional textures)
   cost: {
     'generate-game': 10,
     'mint-nft': 5,
@@ -381,6 +382,7 @@ export const CREDITS_CONFIG = {
     'video-montage': 100,
     'animate-panel': 10,
     'agent-panel': 1,
+    'generate-scene': 20,
   } as Record<string, number>,
 } as const
 

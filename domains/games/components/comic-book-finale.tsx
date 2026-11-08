@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
-import { ChevronDown, ChevronLeft, Clapperboard, Grid3X3, Eye, X, Zap } from 'lucide-react'
+import { ChevronDown, ChevronLeft, Clapperboard, Grid3X3, Eye, X, Zap, Boxes } from 'lucide-react'
+import Link from 'next/link'
 import { useAccount } from 'wagmi'
 import { CREDITS_CONFIG } from '@/lib/writer-coins'
 import { CREDITS_CHANGED_EVENT } from '@/domains/payments/components/buy-credits'
@@ -336,6 +337,14 @@ export function ComicBookFinale({
                 primaryColor={primaryColor}
                 onClick={() => setViewMode('cinematic')}
               />
+              {process.env.NEXT_PUBLIC_FEATURE_SCENE_DIORAMA === 'true' && (
+                <Button variant="outline" size="sm" asChild className="gap-2">
+                  <Link href={`/games/${gameSlug}/scene`}>
+                    <Boxes className="w-4 h-4" />
+                    Diorama
+                  </Link>
+                </Button>
+              )}
             </div>
 
             {/* Panel counter (only show in single mode) */}
