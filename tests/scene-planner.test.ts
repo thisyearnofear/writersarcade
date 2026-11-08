@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { scenePlanSchema } from '@/domains/games/services/scene-planner.service'
+import { scenePlanSchema, sanitizeScenePlan } from '@/domains/games/services/scene-planner.service'
 
 const obj = (over: Record<string, unknown> = {}) => ({
   id: 'obj-0',
@@ -78,5 +78,32 @@ describe('scenePlanSchema', () => {
     expect(parsed.npcs).toEqual([])
     expect(parsed.objects[0].status).toBe('ready')
     expect(parsed.objects[0].glbUrl).toBeNull()
+  })
+})
+
+describe('sanitizeScenePlan', () => {
+  it('strips dangling zone/objective refs and unknown assetKeys', () => {
+    const plan = scenePlanSchema.parse({
+      ...validPlan,
+      objects: [
+        obj({ id: 'obj-0', zoneId: 'ghost-zone', assetKey: 'not-a-real-key' }),
+        ...validPlan.objects.slice(1),
+      ],
+      game: { goal: 'x', objectiveIds: ['obj-0', 'missing-id'] },
+    })
+    const clean = sanitizeScenePlan(plan)
+    expect(clean.objects.find((o) => o.id === 'obj-0')).toBeUndefined()
+    expect(clean.objects.every((o) => o.assetKey === undefined)).toBe(true)
+    // obj-0 was filtered out (ghost zone), so its objectiveId dangles too —
+    // with no survivors the game block is dropped entirely.
+    expect(clean.game).toBeUndefined()
+  })
+
+  it('drops the game block when all objectiveIds dangle', () => {
+    const plan = scenePlanSchema.parse({
+      ...validPlan,
+      game: { goal: 'x', objectiveIds: ['missing-id'] },
+    })
+    expect(sanitizeScenePlan(plan).game).toBeUndefined()
   })
 })

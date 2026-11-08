@@ -83,6 +83,32 @@ export const scenePlanSchema = z.object({
 export type ScenePlan = z.infer<typeof scenePlanSchema>
 export type SceneObject = z.infer<typeof sceneObjectSchema>
 
+/**
+ * Referential integrity the schema can't express: zoneIds and game.objectiveIds
+ * must resolve, and assetKey must exist in the manifest — the LLM can
+ * hallucinate either. Mutates and returns the plan. Shared by initial
+ * generation and critique-driven revision.
+ */
+export function sanitizeScenePlan(plan: ScenePlan): ScenePlan {
+  for (const obj of plan.objects) {
+    if (obj.assetKey && !SCENE_ASSETS[obj.assetKey]) obj.assetKey = undefined
+  }
+  for (const npc of plan.npcs) {
+    if (npc.assetKey && (!SCENE_ASSETS[npc.assetKey] || !SCENE_ASSETS[npc.assetKey].categories.includes('npc'))) npc.assetKey = undefined
+  }
+  const zoneIds = new Set(plan.zones.map((z) => z.id))
+  plan.objects = plan.objects.filter((o) => zoneIds.has(o.zoneId))
+  plan.npcs = plan.npcs.filter((n) => zoneIds.has(n.zoneId))
+  // Compute surviving ids AFTER zone filtering — objectiveIds must resolve
+  // to objects that actually render.
+  const objectIds = new Set(plan.objects.map((o) => o.id))
+  if (plan.game) {
+    plan.game.objectiveIds = plan.game.objectiveIds.filter((id) => objectIds.has(id))
+    if (plan.game.objectiveIds.length === 0) delete plan.game
+  }
+  return plan
+}
+
 export interface ScenePlannerInput {
   title: string
   description: string
@@ -129,21 +155,6 @@ Design ONE walkable scene that dramatizes the story plan's world. Rules:
     // Referential integrity the schema can't express: game.objectiveIds and
     // zoneIds must resolve, or the renderer hits dangling references. Same for
     // assetKey — the LLM can hallucinate keys outside the manifest.
-    const objectIds = new Set(output.objects.map((o) => o.id))
-    for (const obj of output.objects) {
-      if (obj.assetKey && !SCENE_ASSETS[obj.assetKey]) obj.assetKey = undefined
-    }
-    for (const npc of output.npcs) {
-      if (npc.assetKey && (!SCENE_ASSETS[npc.assetKey] || !SCENE_ASSETS[npc.assetKey].categories.includes('npc'))) npc.assetKey = undefined
-    }
-    const zoneIds = new Set(output.zones.map((z) => z.id))
-    output.objects = output.objects.filter((o) => zoneIds.has(o.zoneId))
-    output.npcs = output.npcs.filter((n) => zoneIds.has(n.zoneId))
-    if (output.game) {
-      output.game.objectiveIds = output.game.objectiveIds.filter((id) => objectIds.has(id))
-      if (output.game.objectiveIds.length === 0) delete output.game
-    }
-
-    return output
+    return sanitizeScenePlan(output)
   }
 }

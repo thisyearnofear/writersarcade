@@ -6,6 +6,7 @@ import { checkRateLimit } from '@/services/rate-limit'
 import { config, logger } from '@/lib/config'
 import { CREDITS_CONFIG } from '@/lib/writer-coins'
 import { ScenePlannerService, type ScenePlan } from '@/domains/games/services/scene-planner.service'
+import { SceneCritiqueService } from '@/domains/games/services/scene-critique.service'
 import type { StoryPlan } from '@/domains/games/services/story-planner.service'
 
 export const maxDuration = 60
@@ -143,10 +144,31 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ sl
     return NextResponse.json({ error: 'Scene generation failed. Your credits were refunded.' }, { status: 502 })
   }
 
+  // Critique→revise pass (Scenethesis pattern): a second structured call
+  // reviews the plan against the story and may return a corrected plan.
+  // Non-fatal — a critique failure keeps the original plan.
+  let revised = false
+  try {
+    const critique = await SceneCritiqueService.review(scenePlan, {
+      title: game.title,
+      description: game.description,
+      genre: game.genre,
+      articleContext: game.articleContext ?? undefined,
+      storyPlan: (game.agentPlan as StoryPlan | null) ?? null,
+    })
+    if (critique.revisedScenePlan) {
+      scenePlan = critique.revisedScenePlan
+      revised = true
+    }
+    logger.info('Scene critique completed', { gameSlug: slug, score: critique.score, issues: critique.issues.length, revised })
+  } catch (error) {
+    logger.warn('Scene critique failed; keeping original plan', { gameSlug: slug, error: error instanceof Error ? error.message : 'unknown' })
+  }
+
   const scene = await prisma.gameScene.update({
     where: { id: sceneId },
     data: { status: 'completed', sceneJson: scenePlan, error: null },
   })
 
-  return NextResponse.json({ success: true, data: { scene, cached: false } })
+  return NextResponse.json({ success: true, data: { scene, cached: false, revised } })
 }

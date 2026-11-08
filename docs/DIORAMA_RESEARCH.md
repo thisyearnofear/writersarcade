@@ -68,8 +68,12 @@ are free to borrow with attribution.
      story for NFT/IP provenance.
    - v2 (optional): premium objects via image-gen → Meshy/Tripo image→3D → GLB,
      billed as a higher credit tier.
-3. **Critique loop**: port `panel-critique.service.ts` — render thumbnail →
-     VLM pass ("does this read as the story's world?") → revise layout JSON.
+3. **Critique loop**: ✅ implemented as `SceneCritiqueService` — a second
+   structured pass scores the plan against the story (fidelity, layout,
+   interactivity, palette/mood) and emits a sanitized `revisedScenePlan` only
+   when issues are material. Runs inline in `POST /api/games/[slug]/scene`,
+   non-fatally. VLM-on-thumbnail upgrade remains future work (needs a render;
+   client-side thumbnails now exist via the viewer's "Save thumbnail").
 4. **Progressive jobs**: per-object generation with `pending/forging/ready/
    failed`, mirroring `GameArtifactPanel.videoStatus`.
 5. **Hosting**: planner + DB + credits stay in Next.js/Vercel (same weight
