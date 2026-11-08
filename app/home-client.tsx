@@ -44,7 +44,7 @@ const baseSteps = [
   {
     icon: Wand2,
     title: 'Paste an article',
-    description: 'Drop in any Paragraph.xyz article URL. AI reads it and generates a unique 5-panel interactive comic.',
+    description: 'Drop in any Paragraph.xyz article URL. AI reads it and generates a unique interactive comic.',
   },
   {
     icon: Gamepad2,
@@ -257,8 +257,8 @@ export function HomeClient({ initialSampleGames, initialStats, featuredArtifact 
                 >
                   <span className="underline decoration-dotted underline-offset-2 cursor-help text-foreground font-medium">Paragraph</span>
                 </ConceptTooltip>{' '}
-                article into a{' '}
-                <span className="text-foreground font-medium">5-panel interactive comic</span>{' '}
+                article into an{' '}
+                <span className="text-foreground font-medium">interactive comic</span>{' '}
                 you play by making choices.
               </p>
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { Component, Suspense, useMemo, useRef, useState, type ReactNode } from 'react'
+import { Component, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Text, Billboard, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
@@ -10,6 +10,8 @@ import { getSceneAsset } from '@/lib/scene-assets'
 interface DioramaViewerProps {
   scene: ScenePlan
   slug: string
+  /** True when GameScene.thumbnailUrl already exists — skips auto-capture. */
+  hasThumbnail?: boolean
 }
 
 type SelectedObject = { label: string; narrativeHook?: string; action?: string } | null
@@ -135,16 +137,24 @@ function SceneObjectMesh({ obj, color, isObjective, onSelect }: {
   )
 }
 
-export function DioramaViewer({ scene, slug }: DioramaViewerProps) {
+export function DioramaViewer({ scene, slug, hasThumbnail = false }: DioramaViewerProps) {
   const [selected, setSelected] = useState<SelectedObject>(null)
   const [thumbState, setThumbState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [intro, setIntro] = useState(true)
   const glRef = useRef<THREE.WebGLRenderer | null>(null)
   const lighting = moodLighting[scene.mood] ?? moodLighting.day
   const objectiveIds = useMemo(() => new Set(scene.game?.objectiveIds ?? []), [scene.game])
 
-  const saveThumbnail = async () => {
+  // Reveal: slow camera sweep + title card for the first ~3.5s, then hands
+  // control to the user. Any pointer interaction skips the intro early.
+  useEffect(() => {
+    const t = setTimeout(() => setIntro(false), 3500)
+    return () => clearTimeout(t)
+  }, [])
+
+  const captureThumbnail = async () => {
     const gl = glRef.current
-    if (!gl || thumbState === 'saving') return
+    if (!gl || thumbState === 'saving') return false
     setThumbState('saving')
     try {
       const dataUrl = gl.domElement.toDataURL('image/jpeg', 0.85)
@@ -154,10 +164,23 @@ export function DioramaViewer({ scene, slug }: DioramaViewerProps) {
         body: JSON.stringify({ image: dataUrl }),
       })
       setThumbState(res.ok ? 'saved' : 'error')
+      return res.ok
     } catch {
       setThumbState('error')
+      return false
     }
   }
+
+  // Auto-capture once per scene so every viewer generates the share artifact;
+  // skipped entirely when a thumbnail already exists server-side.
+  useEffect(() => {
+    if (hasThumbnail) return
+    const t = setTimeout(() => { void captureThumbnail() }, 3000)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const saveThumbnail = () => { void captureThumbnail() }
 
   const zoneCentroids = useMemo(() => {
     const map = new Map<string, { x: number; z: number; count: number; label: string }>()
@@ -257,8 +280,23 @@ export function DioramaViewer({ scene, slug }: DioramaViewerProps) {
           minDistance={6}
           maxDistance={80}
           maxPolarAngle={Math.PI / 2.05}
+          autoRotate={intro}
+          autoRotateSpeed={0.7}
+          onStart={() => setIntro(false)}
         />
       </Canvas>
+
+      {/* Reveal title card — fades out as the camera sweep ends */}
+      <div
+        className={`pointer-events-none absolute inset-0 flex items-center justify-center transition-opacity duration-700 ${intro ? 'opacity-100' : 'opacity-0'}`}
+        aria-hidden={!intro}
+      >
+        <div className="text-center">
+          <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/60">A walkable diorama</p>
+          <h2 className="mt-2 font-serif text-4xl font-bold text-white drop-shadow-lg sm:text-5xl">{scene.title}</h2>
+          <p className="mt-3 text-sm capitalize text-white/70">{scene.mood} · {scene.ground}</p>
+        </div>
+      </div>
 
       {/* Overlay UI */}
       <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-4">

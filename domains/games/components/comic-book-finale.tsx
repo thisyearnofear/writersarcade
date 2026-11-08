@@ -337,14 +337,12 @@ export function ComicBookFinale({
                 primaryColor={primaryColor}
                 onClick={() => setViewMode('cinematic')}
               />
-              {process.env.NEXT_PUBLIC_FEATURE_SCENE_DIORAMA === 'true' && (
-                <Button variant="outline" size="sm" asChild className="gap-2">
-                  <Link href={`/games/${gameSlug}/scene`}>
-                    <Boxes className="w-4 h-4" />
-                    Diorama
-                  </Link>
-                </Button>
-              )}
+              <Button variant="outline" size="sm" asChild className="gap-2">
+                <Link href={`/games/${gameSlug}/worlds`}>
+                  <Boxes className="w-4 h-4" />
+                  Worlds
+                </Link>
+              </Button>
             </div>
 
             {/* Panel counter (only show in single mode) */}

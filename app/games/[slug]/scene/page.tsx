@@ -33,14 +33,17 @@ export default async function GameScenePage({ params }: ScenePageProps) {
     <ThemeWrapper theme="arcade">
       <Header />
       <main className="flex h-[calc(100vh-4rem)] flex-col">
-        <div className="border-b border-white/10 px-4 py-2">
+        <div className="flex items-center justify-between border-b border-white/10 px-4 py-2">
           <Link href={`/games/${slug}`} className="text-sm text-white/60 hover:text-white">
             ← Back to {game.title}
+          </Link>
+          <Link href={`/games/${slug}/worlds`} className="text-sm text-white/60 hover:text-white">
+            All worlds →
           </Link>
         </div>
         <div className="min-h-0 flex-1 bg-black">
           {ready ? (
-            <DioramaLoader scene={scene.sceneJson as unknown as ScenePlan} slug={slug} />
+            <DioramaLoader scene={scene.sceneJson as unknown as ScenePlan} slug={slug} hasThumbnail={Boolean(scene.thumbnailUrl)} />
           ) : (
             <SceneGate slug={slug} status={scene?.status ?? 'idle'} error={scene?.error} />
           )}
