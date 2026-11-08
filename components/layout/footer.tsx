@@ -8,14 +8,13 @@ import { useReducedMotion } from 'framer-motion'
 const NAV_LINKS = [
   { href: '/games', label: 'Play · The Arcade' },
   { href: '/generate', label: 'Create a game' },
-  { href: '/studio', label: 'Creator insights' },
+  { href: '/studio', label: 'Studio' },
   { href: '/my-games', label: 'My Games' },
 ]
 
 const MORE_LINKS = [
   { href: '/basepaint', label: 'Daily Challenge' },
   { href: '/writers', label: 'Writers' },
-  { href: '/assets', label: 'Marketplace' },
   { href: '/#how-it-works', label: 'How it works' },
   // Flynn's iMessage line only exists when the env var is configured — an
   // empty 'sms:' href would render a dead link.

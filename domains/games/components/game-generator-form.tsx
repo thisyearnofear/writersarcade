@@ -159,7 +159,6 @@ export function GameGeneratorForm({
         <ul className="mt-3 list-disc pl-4 text-sm text-muted-foreground space-y-1.5">
           <li>{g.mode === 'wordle' ? 'Wordle works with public Paragraph.xyz articles and does not require payment.' : g.isMusdPath ? 'Paste any public Paragraph.xyz article to remix with MUSD.' : 'Paste URLs from Paragraph.xyz articles by the selected writer.'}</li>
           <li>Genre and difficulty shape how the AI interprets the article.</li>
-          <li><a href="/workshop" className="text-primary hover:underline font-medium">Use the Workshop</a> for deeper personalization.</li>
         </ul>
       </details>
 

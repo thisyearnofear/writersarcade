@@ -1,11 +1,6 @@
-import { WorkshopClient } from './workshop-client'
+import { redirect } from 'next/navigation'
 
-export const metadata = {
-  title: 'Workshop',
-  description: 'Decompose articles into game assets, refine your interactive fiction, and register IP on-chain.',
-  robots: { index: false, follow: false },
-}
-
-export default function WorkshopPage() {
-  return <WorkshopClient />
+/** The Workshop drove the sunset asset-pack pipeline. Game creation lives at /generate. */
+export default function WorkshopRedirectPage() {
+  redirect('/generate')
 }
