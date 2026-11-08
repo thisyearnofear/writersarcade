@@ -55,7 +55,7 @@ export class SceneCritiqueService {
 Critique the SCENE PLAN against the SOURCE MATERIAL on:
 - Story fidelity: do zones dramatize the arc beats? Do NPC personas and narrativeHooks reference real story moments?
 - Layout readability: are objects spread out, anchored by landmarks, free of obvious overlaps (compare positions numerically)?
-- Interactivity: enough interactables with meaningful hooks? Does the game objective resolve to real objects?
+- Interactivity: enough interactables with meaningful hooks? Does the game objective resolve to real, clickable objects the player can actually find?
 - Palette/mood coherence: does mood/lighting/palette match the story's tone?
 Then decide: if issues materially hurt the scene, emit a corrected revisedScenePlan fixing them (respect all schema constraints — valid zoneIds, assetKeys only from known keys if you keep them, positions within ±40). If the plan is already good, omit revisedScenePlan.`,
       prompt: `GAME: "${input.title}" (${input.genre})\n\nSOURCE MATERIAL:\n${context}\n\nSCENE PLAN TO REVIEW:\n${JSON.stringify(plan, null, 2)}`,

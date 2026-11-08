@@ -8,7 +8,9 @@ import { UserAIPreferenceService } from '@/lib/user-ai-preferences.service'
 import { runStoryGeneration } from '@/domains/games/services/story-generation.service'
 
 export const dynamic = 'force-dynamic'
-export const maxDuration = 60
+// Same headroom as /api/games/generate — the finalize pipeline (story +
+// enrichment + bundled scene) routinely exceeds 60s.
+export const maxDuration = 300
 
 /**
  * POST /api/games/[slug]/retry — re-run the async story pipeline for a game

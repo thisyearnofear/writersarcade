@@ -88,14 +88,17 @@ export async function runStoryGeneration(ctx: StoryFinalizeContext): Promise<voi
       })
     }
 
-    await enrichGameInBackground(gameId, slug, gameData, ctx.articleText)
-
-    // Bundled 3D world — included in the generate-game price. Runs last so
-    // the story is fully persisted first; failures leave a retryable
-    // GameScene row and never affect the game itself.
-    await runBundledSceneGeneration(gameId, ctx.userPreferences).catch((err) => {
-      logger.error('Bundled scene generation threw', err, { gameId })
-    })
+    // Enrichment (secret panel + hypercert) and the bundled 3D world are
+    // independent — run them concurrently to stay inside the after() budget.
+    // Both are internally non-fatal; scene failures leave a retryable row.
+    await Promise.all([
+      enrichGameInBackground(gameId, slug, gameData, ctx.articleText).catch((err) => {
+        logger.error('Background enrichment failed', err, { gameId })
+      }),
+      runBundledSceneGeneration(gameId, ctx.userPreferences).catch((err) => {
+        logger.error('Bundled scene generation threw', err, { gameId })
+      }),
+    ])
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Generation failed'
     logger.error('Async story generation failed', err, { gameId, slug })

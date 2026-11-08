@@ -144,8 +144,8 @@ Design ONE walkable scene that dramatizes the story plan's world. Rules:
 - Every object is EXACTLY ONE physical thing — a single tree, a single chair, never a scene and never "and".
 - Spread objects across zones with breathing room; no overlapping positions.
 - 30-50% of objects should be interactable, each with a narrativeHook that references a panel moment or dilemma.
-- npcs[] are characters from the story placed in zones, each carrying a persona line.
-- Emit a game block only if the story implies a concrete explorable objective.
+- npcs[] are characters from the story placed in zones, each carrying a persona line and, when relevant, the dilemma they embody.
+- ALWAYS emit a game block: derive a concrete explorable objective from the story's central conflict (e.g. "find the three witnesses", "reach the beacon before dusk"). objectiveIds must reference objects the player can click — give each a meaningful interactable.narrativeHook. The player "wins" the world by discovering every objective.
 - assetKey: prefer a curated asset when one fits the object — available keys: ${sceneAssetVocabulary()}. primitive is the guaranteed fallback for anything without a match.
 - Give every object a color chosen from the palette (accent for landmarks/interactables, ground/fog tones for set dressing). Asset-keyed objects ignore color (they use their baked texture).`,
       prompt: `SOURCE MATERIAL:\n${context}\n\nOUTPUT a ScenePlan for a "${input.genre}" diorama (${input.subgenre ?? 'subgenre optional'}) titled "${input.title}".`,

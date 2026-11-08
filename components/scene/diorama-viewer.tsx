@@ -1,6 +1,7 @@
 'use client'
 
 import { Component, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import Link from 'next/link'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Text, Billboard, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
@@ -15,6 +16,19 @@ interface DioramaViewerProps {
 }
 
 type SelectedObject = { label: string; narrativeHook?: string; action?: string } | null
+type NpcDialogue = { name: string; persona: string; dilemma?: string } | null
+
+const visitedStorageKey = (slug: string) => `wa-world-visited-${slug}`
+
+function loadVisited(slug: string): Set<string> {
+  if (typeof window === 'undefined') return new Set()
+  try {
+    const raw = window.localStorage.getItem(visitedStorageKey(slug))
+    return new Set(raw ? (JSON.parse(raw) as string[]) : [])
+  } catch {
+    return new Set()
+  }
+}
 
 const moodLighting = {
   dawn: { ambient: 0.55, sun: 0.9, sunColor: '#ffd9b3', sunPos: [30, 18, -20] as const },
@@ -76,14 +90,16 @@ function AssetMesh({ src, onSelect, clickable }: { src: string; onSelect: () => 
   )
 }
 
-function PrimitiveShape({ obj, color, isObjective, onSelect }: {
+function PrimitiveShape({ obj, color, isObjective, visited, onSelect }: {
   obj: SceneObject
   color: string
   isObjective: boolean
+  visited: boolean
   onSelect: (o: SceneObject) => void
 }) {
-  const clickable = Boolean(obj.interactable)
-  const emissive = isObjective ? '#ffcc00' : clickable ? color : '#000000'
+  const clickable = Boolean(obj.interactable) || isObjective
+  const emissive = visited ? '#34d399' : isObjective ? '#ffcc00' : clickable ? color : '#000000'
+  const emissiveIntensity = visited ? 0.3 : isObjective ? 0.35 : clickable ? 0.18 : 0
   const common = {
     castShadow: true,
     receiveShadow: true,
@@ -94,33 +110,34 @@ function PrimitiveShape({ obj, color, isObjective, onSelect }: {
 
   return (
     <>
-      {obj.primitive === 'box' && <mesh {...common}><boxGeometry args={[1, 1, 1]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={isObjective ? 0.35 : clickable ? 0.18 : 0} /></mesh>}
-      {obj.primitive === 'cylinder' && <mesh {...common}><cylinderGeometry args={[0.5, 0.5, 1, 20]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={isObjective ? 0.35 : clickable ? 0.18 : 0} /></mesh>}
-      {obj.primitive === 'sphere' && <mesh {...common}><sphereGeometry args={[0.5, 24, 24]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={isObjective ? 0.35 : clickable ? 0.18 : 0} /></mesh>}
-      {obj.primitive === 'cone' && <mesh {...common}><coneGeometry args={[0.5, 1, 20]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={isObjective ? 0.35 : clickable ? 0.18 : 0} /></mesh>}
-      {obj.primitive === 'plane' && <mesh {...common} rotation={[-Math.PI / 2, 0, 0]}><planeGeometry args={[2, 2]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={isObjective ? 0.35 : clickable ? 0.18 : 0} side={THREE.DoubleSide} /></mesh>}
-      {obj.primitive === 'torus' && <mesh {...common}><torusGeometry args={[0.5, 0.15, 16, 32]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={isObjective ? 0.35 : clickable ? 0.18 : 0} /></mesh>}
-      {obj.primitive === 'icosahedron' && <mesh {...common}><icosahedronGeometry args={[0.5, 0]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={isObjective ? 0.35 : clickable ? 0.18 : 0} flatShading /></mesh>}
-      {obj.primitive === 'dodecahedron' && <mesh {...common}><dodecahedronGeometry args={[0.5, 0]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={isObjective ? 0.35 : clickable ? 0.18 : 0} flatShading /></mesh>}
+      {obj.primitive === 'box' && <mesh {...common}><boxGeometry args={[1, 1, 1]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={emissiveIntensity} /></mesh>}
+      {obj.primitive === 'cylinder' && <mesh {...common}><cylinderGeometry args={[0.5, 0.5, 1, 20]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={emissiveIntensity} /></mesh>}
+      {obj.primitive === 'sphere' && <mesh {...common}><sphereGeometry args={[0.5, 24, 24]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={emissiveIntensity} /></mesh>}
+      {obj.primitive === 'cone' && <mesh {...common}><coneGeometry args={[0.5, 1, 20]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={emissiveIntensity} /></mesh>}
+      {obj.primitive === 'plane' && <mesh {...common} rotation={[-Math.PI / 2, 0, 0]}><planeGeometry args={[2, 2]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={emissiveIntensity} side={THREE.DoubleSide} /></mesh>}
+      {obj.primitive === 'torus' && <mesh {...common}><torusGeometry args={[0.5, 0.15, 16, 32]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={emissiveIntensity} /></mesh>}
+      {obj.primitive === 'icosahedron' && <mesh {...common}><icosahedronGeometry args={[0.5, 0]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={emissiveIntensity} flatShading /></mesh>}
+      {obj.primitive === 'dodecahedron' && <mesh {...common}><dodecahedronGeometry args={[0.5, 0]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={emissiveIntensity} flatShading /></mesh>}
     </>
   )
 }
 
-function SceneObjectMesh({ obj, color, isObjective, onSelect }: {
+function SceneObjectMesh({ obj, color, isObjective, visited, onSelect }: {
   obj: SceneObject
   color: string
   isObjective: boolean
+  visited: boolean
   onSelect: (o: SceneObject) => void
 }) {
   const asset = getSceneAsset(obj.assetKey)
-  const clickable = Boolean(obj.interactable)
+  const clickable = Boolean(obj.interactable) || isObjective
   const position: [number, number, number] = [obj.position.x, obj.position.y, obj.position.z]
 
   return (
     <group position={position} rotation={[0, obj.rotationY, 0]} scale={obj.scale}>
       {asset ? (
         <AssetBoundary
-          fallback={<PrimitiveShape obj={obj} color={color} isObjective={isObjective} onSelect={onSelect} />}
+          fallback={<PrimitiveShape obj={obj} color={color} isObjective={isObjective} visited={visited} onSelect={onSelect} />}
         >
           <Suspense fallback={null}>
             <AssetMesh
@@ -131,7 +148,14 @@ function SceneObjectMesh({ obj, color, isObjective, onSelect }: {
           </Suspense>
         </AssetBoundary>
       ) : (
-        <PrimitiveShape obj={obj} color={color} isObjective={isObjective} onSelect={onSelect} />
+        <PrimitiveShape obj={obj} color={color} isObjective={isObjective} visited={visited} onSelect={onSelect} />
+      )}
+      {visited && clickable && (
+        <Billboard position={[0, 2.6, 0]}>
+          <Text fontSize={0.45} color="#34d399" anchorX="center" outlineWidth={0.03} outlineColor="#000000">
+            ✓
+          </Text>
+        </Billboard>
       )}
     </group>
   )
@@ -139,11 +163,34 @@ function SceneObjectMesh({ obj, color, isObjective, onSelect }: {
 
 export function DioramaViewer({ scene, slug, hasThumbnail = false }: DioramaViewerProps) {
   const [selected, setSelected] = useState<SelectedObject>(null)
+  const [npcDialogue, setNpcDialogue] = useState<NpcDialogue>(null)
+  const [visitedIds, setVisitedIds] = useState<Set<string>>(() => loadVisited(slug))
+  const [completeDismissed, setCompleteDismissed] = useState(false)
   const [thumbState, setThumbState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [intro, setIntro] = useState(true)
   const glRef = useRef<THREE.WebGLRenderer | null>(null)
   const lighting = moodLighting[scene.mood] ?? moodLighting.day
-  const objectiveIds = useMemo(() => new Set(scene.game?.objectiveIds ?? []), [scene.game])
+  const objectiveIds = useMemo(() => scene.game?.objectiveIds ?? [], [scene.game])
+  const objectiveIdSet = useMemo(() => new Set(objectiveIds), [objectiveIds])
+  const objectivesFound = objectiveIds.filter((id) => visitedIds.has(id)).length
+  const worldComplete = objectiveIds.length > 0 && objectivesFound === objectiveIds.length
+
+  // Persist discovered threads per slug so returning to the world keeps progress.
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(visitedStorageKey(slug), JSON.stringify([...visitedIds]))
+    } catch { /* storage unavailable — progress stays in-memory */ }
+  }, [visitedIds, slug])
+
+  const handleSelect = (o: SceneObject) => {
+    setNpcDialogue(null)
+    setVisitedIds((prev) => (prev.has(o.id) ? prev : new Set(prev).add(o.id)))
+    setSelected({
+      label: o.label,
+      narrativeHook: o.interactable?.narrativeHook ?? (objectiveIdSet.has(o.id) ? 'A thread of this story — found.' : undefined),
+      action: o.interactable?.action,
+    })
+  }
 
   // Reveal: slow camera sweep + title card for the first ~3.5s, then hands
   // control to the user. Any pointer interaction skips the intro early.
@@ -201,7 +248,7 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false }: DioramaView
         camera={{ position: [26, 22, 30], fov: 50 }}
         gl={{ antialias: true, preserveDrawingBuffer: true }}
         onCreated={({ gl }) => { glRef.current = gl }}
-        onPointerMissed={() => setSelected(null)}
+        onPointerMissed={() => { setSelected(null); setNpcDialogue(null) }}
       >
         <color attach="background" args={[scene.palette.sky[0]]} />
         <fog attach="fog" args={[scene.palette.fog, 40, 110]} />
@@ -231,8 +278,9 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false }: DioramaView
             key={obj.id}
             obj={obj}
             color={objectColor(obj, scene.palette)}
-            isObjective={objectiveIds.has(obj.id)}
-            onSelect={(o) => setSelected({ label: o.label, narrativeHook: o.interactable?.narrativeHook, action: o.interactable?.action })}
+            isObjective={objectiveIdSet.has(obj.id)}
+            visited={visitedIds.has(obj.id)}
+            onSelect={handleSelect}
           />
         ))}
 
@@ -262,6 +310,21 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false }: DioramaView
                   {npc.name}
                 </Text>
               </Billboard>
+              {/* Invisible hitbox — NPCs are talkable even though the capsule
+                  fallback has no clickable flag of its own. */}
+              <mesh
+                position={[0, 1.1, 0]}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setSelected(null)
+                  setNpcDialogue({ name: npc.name, persona: npc.persona, dilemma: npc.dilemma })
+                }}
+                onPointerOver={() => { document.body.style.cursor = 'pointer' }}
+                onPointerOut={() => { document.body.style.cursor = 'default' }}
+              >
+                <cylinderGeometry args={[0.9, 0.9, 2.4, 8]} />
+                <meshBasicMaterial visible={false} />
+              </mesh>
             </group>
           )
         })}
@@ -298,6 +361,33 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false }: DioramaView
         </div>
       </div>
 
+      {/* World-complete moment — every objective thread discovered. */}
+      {worldComplete && !completeDismissed && !intro && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-28 flex justify-center px-4">
+          <div className="pointer-events-auto w-full max-w-md rounded-xl border border-emerald-400/30 bg-black/80 p-5 text-center backdrop-blur">
+            <p className="text-xs font-bold uppercase tracking-[0.25em] text-emerald-400">World complete</p>
+            <p className="mt-1 font-serif text-xl text-white">You&rsquo;ve traced every thread of {scene.title}.</p>
+            <div className="mt-3 flex items-center justify-center gap-4">
+              <Link
+                href={`/games/${slug}?play=1`}
+                className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-black transition hover:bg-emerald-400"
+              >
+                Back to the comic
+              </Link>
+              <Link href={`/games/${slug}/worlds`} className="text-sm text-white/60 hover:text-white">
+                All worlds →
+              </Link>
+            </div>
+            <button
+              onClick={() => setCompleteDismissed(true)}
+              className="mt-3 text-xs text-white/40 hover:text-white/70"
+            >
+              Keep exploring
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Overlay UI */}
       <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-4">
         <div className="flex items-start justify-between">
@@ -307,14 +397,30 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false }: DioramaView
           </div>
           {scene.game && (
             <div className="pointer-events-auto rounded-lg bg-black/50 px-3 py-2 text-sm text-warning backdrop-blur">
-              Goal: {scene.game.goal}
+              <p>Goal: {scene.game.goal}</p>
+              {objectiveIds.length > 0 && (
+                <p className={`mt-0.5 text-xs ${worldComplete ? 'text-emerald-400' : 'text-white/60'}`}>
+                  Threads found {objectivesFound}/{objectiveIds.length}{worldComplete ? ' — world complete' : ''}
+                </p>
+              )}
             </div>
           )}
         </div>
-        <div className="flex items-end justify-between">
-          <p className="text-xs text-white/60 drop-shadow">Drag to orbit · scroll to zoom · click glowing objects</p>
+        <div className="flex items-end justify-between gap-3">
+          <p className="text-xs text-white/60 drop-shadow">
+            Drag to orbit · scroll to zoom · click glowing objects{scene.npcs.length > 0 ? ' · click characters to talk' : ''}
+          </p>
           <div className="pointer-events-auto flex items-center gap-2">
-            {selected && (
+            {npcDialogue && (
+              <div className="max-w-sm rounded-lg border border-white/10 bg-black/70 p-4 text-white backdrop-blur">
+                <p className="font-semibold text-warning">{npcDialogue.name}</p>
+                <p className="mt-1 text-sm italic text-white/85">“{npcDialogue.persona}”</p>
+                {npcDialogue.dilemma && (
+                  <p className="mt-2 text-xs text-white/60">At stake: {npcDialogue.dilemma}</p>
+                )}
+              </div>
+            )}
+            {selected && !npcDialogue && (
               <div className="max-w-sm rounded-lg border border-white/10 bg-black/70 p-4 text-white backdrop-blur">
                 <p className="font-semibold text-warning">{selected.action ? `${selected.action}: ` : ''}{selected.label}</p>
                 {selected.narrativeHook && <p className="mt-1 text-sm text-white/85">{selected.narrativeHook}</p>}
