@@ -2,6 +2,7 @@ import { generateText, Output } from 'ai'
 import { z } from 'zod'
 import { getStructuredOutputModel } from '@/lib/ai-model-compatibility'
 import type { UserAIPreferences } from '@/lib/user-ai-preferences.service'
+import { SCENE_ASSETS, sceneAssetVocabulary } from '@/lib/scene-assets'
 import type { StoryPlan } from './story-planner.service'
 import { clampCopy } from './generation-prompts'
 
@@ -23,7 +24,7 @@ export const sceneObjectSchema = z.object({
   label: z.string().describe('Short display name'),
   // Exactly ONE physical thing — never a scene, never "and". Spacing between
   // objects is enforced by the renderer using zone bounds.
-  assetKey: z.string().optional().describe('Curated asset-pack key (v1 retrieval tier); omit for primitive-only'),
+  assetKey: z.string().optional().describe('Curated asset-pack key — MUST be one of the available keys listed in the instructions; omit if none fits'),
   primitive: z.enum(['box', 'cylinder', 'sphere', 'cone', 'plane', 'torus', 'icosahedron', 'dodecahedron'])
     .describe('Fallback geometry when no assetKey resolves'),
   color: hexColor.optional().describe('Object color — must be drawn from the scene palette'),
@@ -67,6 +68,7 @@ export const scenePlanSchema = z.object({
     id: z.string(),
     name: z.string(),
     zoneId: z.string(),
+    assetKey: z.string().optional().describe('Character asset key (e.g. dungeon-character-human, dungeon-character-orc, forest-character-archer); omit for capsule placeholder'),
     position: z.object({ x: z.number(), y: z.number().min(0), z: z.number() }),
     persona: z.string().describe('One-line character voice/personality from the story'),
     dilemma: z.string().optional().describe('The fork this NPC embodies, if any'),
@@ -118,15 +120,22 @@ Design ONE walkable scene that dramatizes the story plan's world. Rules:
 - 30-50% of objects should be interactable, each with a narrativeHook that references a panel moment or dilemma.
 - npcs[] are characters from the story placed in zones, each carrying a persona line.
 - Emit a game block only if the story implies a concrete explorable objective.
-- assetKey is optional — omit it unless a category clearly maps to a standard prop; primitive is the guaranteed fallback.
-- Give every object a color chosen from the palette (accent for landmarks/interactables, ground/fog tones for set dressing).`,
+- assetKey: prefer a curated asset when one fits the object — available keys: ${sceneAssetVocabulary()}. primitive is the guaranteed fallback for anything without a match.
+- Give every object a color chosen from the palette (accent for landmarks/interactables, ground/fog tones for set dressing). Asset-keyed objects ignore color (they use their baked texture).`,
       prompt: `SOURCE MATERIAL:\n${context}\n\nOUTPUT a ScenePlan for a "${input.genre}" diorama (${input.subgenre ?? 'subgenre optional'}) titled "${input.title}".`,
       output: Output.object({ schema: scenePlanSchema }),
     })
 
     // Referential integrity the schema can't express: game.objectiveIds and
-    // zoneIds must resolve, or the renderer hits dangling references.
+    // zoneIds must resolve, or the renderer hits dangling references. Same for
+    // assetKey — the LLM can hallucinate keys outside the manifest.
     const objectIds = new Set(output.objects.map((o) => o.id))
+    for (const obj of output.objects) {
+      if (obj.assetKey && !SCENE_ASSETS[obj.assetKey]) obj.assetKey = undefined
+    }
+    for (const npc of output.npcs) {
+      if (npc.assetKey && (!SCENE_ASSETS[npc.assetKey] || !SCENE_ASSETS[npc.assetKey].categories.includes('npc'))) npc.assetKey = undefined
+    }
     const zoneIds = new Set(output.zones.map((z) => z.id))
     output.objects = output.objects.filter((o) => zoneIds.has(o.zoneId))
     output.npcs = output.npcs.filter((n) => zoneIds.has(n.zoneId))

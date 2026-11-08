@@ -1,10 +1,11 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { Component, Suspense, useMemo, useState, type ReactNode } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Text, Billboard } from '@react-three/drei'
+import { OrbitControls, Text, Billboard, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 import type { ScenePlan, SceneObject } from '@/domains/games/services/scene-planner.service'
+import { getSceneAsset } from '@/lib/scene-assets'
 
 interface DioramaViewerProps {
   scene: ScenePlan
@@ -42,7 +43,37 @@ function objectColor(obj: SceneObject, palette: ScenePlan['palette']): string {
   return `hsl(${hashHue(obj.id) % 40 + 20}, 18%, ${obj.category === 'structure' ? 38 : 52}%)`
 }
 
-function PrimitiveMesh({ obj, color, isObjective, onSelect }: {
+/** Falls back to `fallback` if the GLB fails to load/parse. */
+class AssetBoundary extends Component<{ fallback: ReactNode; children: ReactNode }, { failed: boolean }> {
+  state = { failed: false }
+  static getDerivedStateFromError() { return { failed: true } }
+  render() { return this.state.failed ? this.props.fallback : this.props.children }
+}
+
+function AssetMesh({ src, onSelect, clickable }: { src: string; onSelect: () => void; clickable: boolean }) {
+  const gltf = useGLTF(src)
+  const object = useMemo(() => {
+    const cloned = gltf.scene.clone(true)
+    cloned.traverse((node) => {
+      if (node instanceof THREE.Mesh) {
+        node.castShadow = true
+        node.receiveShadow = true
+      }
+    })
+    return cloned
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [src])
+  return (
+    <primitive
+      object={object}
+      onClick={clickable ? (e: { stopPropagation: () => void }) => { e.stopPropagation(); onSelect() } : undefined}
+      onPointerOver={clickable ? () => { document.body.style.cursor = 'pointer' } : undefined}
+      onPointerOut={clickable ? () => { document.body.style.cursor = 'default' } : undefined}
+    />
+  )
+}
+
+function PrimitiveShape({ obj, color, isObjective, onSelect }: {
   obj: SceneObject
   color: string
   isObjective: boolean
@@ -57,11 +88,9 @@ function PrimitiveMesh({ obj, color, isObjective, onSelect }: {
     onPointerOver: clickable ? () => { document.body.style.cursor = 'pointer' } : undefined,
     onPointerOut: clickable ? () => { document.body.style.cursor = 'default' } : undefined,
   }
-  const position: [number, number, number] = [obj.position.x, obj.position.y, obj.position.z]
-  const scale = obj.scale
 
   return (
-    <group position={position} rotation={[0, obj.rotationY, 0]} scale={scale}>
+    <>
       {obj.primitive === 'box' && <mesh {...common}><boxGeometry args={[1, 1, 1]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={isObjective ? 0.35 : clickable ? 0.18 : 0} /></mesh>}
       {obj.primitive === 'cylinder' && <mesh {...common}><cylinderGeometry args={[0.5, 0.5, 1, 20]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={isObjective ? 0.35 : clickable ? 0.18 : 0} /></mesh>}
       {obj.primitive === 'sphere' && <mesh {...common}><sphereGeometry args={[0.5, 24, 24]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={isObjective ? 0.35 : clickable ? 0.18 : 0} /></mesh>}
@@ -70,6 +99,37 @@ function PrimitiveMesh({ obj, color, isObjective, onSelect }: {
       {obj.primitive === 'torus' && <mesh {...common}><torusGeometry args={[0.5, 0.15, 16, 32]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={isObjective ? 0.35 : clickable ? 0.18 : 0} /></mesh>}
       {obj.primitive === 'icosahedron' && <mesh {...common}><icosahedronGeometry args={[0.5, 0]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={isObjective ? 0.35 : clickable ? 0.18 : 0} flatShading /></mesh>}
       {obj.primitive === 'dodecahedron' && <mesh {...common}><dodecahedronGeometry args={[0.5, 0]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={isObjective ? 0.35 : clickable ? 0.18 : 0} flatShading /></mesh>}
+    </>
+  )
+}
+
+function SceneObjectMesh({ obj, color, isObjective, onSelect }: {
+  obj: SceneObject
+  color: string
+  isObjective: boolean
+  onSelect: (o: SceneObject) => void
+}) {
+  const asset = getSceneAsset(obj.assetKey)
+  const clickable = Boolean(obj.interactable)
+  const position: [number, number, number] = [obj.position.x, obj.position.y, obj.position.z]
+
+  return (
+    <group position={position} rotation={[0, obj.rotationY, 0]} scale={obj.scale}>
+      {asset ? (
+        <AssetBoundary
+          fallback={<PrimitiveShape obj={obj} color={color} isObjective={isObjective} onSelect={onSelect} />}
+        >
+          <Suspense fallback={null}>
+            <AssetMesh
+              src={asset.src}
+              clickable={clickable}
+              onSelect={() => onSelect(obj)}
+            />
+          </Suspense>
+        </AssetBoundary>
+      ) : (
+        <PrimitiveShape obj={obj} color={color} isObjective={isObjective} onSelect={onSelect} />
+      )}
     </group>
   )
 }
@@ -123,7 +183,7 @@ export function DioramaViewer({ scene }: DioramaViewerProps) {
         </mesh>
 
         {scene.objects.map((obj) => (
-          <PrimitiveMesh
+          <SceneObjectMesh
             key={obj.id}
             obj={obj}
             color={objectColor(obj, scene.palette)}
@@ -132,19 +192,35 @@ export function DioramaViewer({ scene }: DioramaViewerProps) {
           />
         ))}
 
-        {scene.npcs.map((npc) => (
-          <group key={npc.id} position={[npc.position.x, npc.position.y, npc.position.z]}>
-            <mesh castShadow position={[0, 0.9, 0]}>
-              <capsuleGeometry args={[0.35, 1.1, 8, 16]} />
-              <meshStandardMaterial color={scene.palette.accent} roughness={0.6} />
-            </mesh>
-            <Billboard position={[0, 2.1, 0]}>
-              <Text fontSize={0.35} color="#ffffff" anchorX="center" outlineWidth={0.02} outlineColor="#000000">
-                {npc.name}
-              </Text>
-            </Billboard>
-          </group>
-        ))}
+        {scene.npcs.map((npc) => {
+          const npcAsset = getSceneAsset(npc.assetKey)
+          return (
+            <group key={npc.id} position={[npc.position.x, npc.position.y, npc.position.z]}>
+              {npcAsset ? (
+                <AssetBoundary fallback={
+                  <mesh castShadow position={[0, 0.9, 0]}>
+                    <capsuleGeometry args={[0.35, 1.1, 8, 16]} />
+                    <meshStandardMaterial color={scene.palette.accent} roughness={0.6} />
+                  </mesh>
+                }>
+                  <Suspense fallback={null}>
+                    <AssetMesh src={npcAsset.src} clickable={false} onSelect={() => {}} />
+                  </Suspense>
+                </AssetBoundary>
+              ) : (
+                <mesh castShadow position={[0, 0.9, 0]}>
+                  <capsuleGeometry args={[0.35, 1.1, 8, 16]} />
+                  <meshStandardMaterial color={scene.palette.accent} roughness={0.6} />
+                </mesh>
+              )}
+              <Billboard position={[0, 2.1, 0]}>
+                <Text fontSize={0.35} color="#ffffff" anchorX="center" outlineWidth={0.02} outlineColor="#000000">
+                  {npc.name}
+                </Text>
+              </Billboard>
+            </group>
+          )
+        })}
 
         {zoneCentroids.map((z) => (
           <Billboard key={z.id} position={[z.x, 6, z.z]}>
