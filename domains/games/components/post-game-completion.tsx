@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { Gamepad2, Sparkles, Trophy, BarChart3, ExternalLink, FileText, Image as ImageIcon, Link2, Check, QrCode, Download, Loader2, CalendarDays, ArrowUpRight, ChevronDown, Boxes } from 'lucide-react'
+import { Gamepad2, Sparkles, Trophy, BarChart3, ExternalLink, FileText, Image as ImageIcon, Link2, Check, QrCode, Download, Loader2, CalendarDays, ArrowUpRight, ChevronDown, Boxes, BookOpen, Clapperboard, Gem } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 import type { Game } from '../types'
 import type { ChatEntry } from '../hooks/use-game-session'
@@ -17,6 +17,14 @@ import { DualSourceCredits } from '@/components/basepaint/dual-source-credits'
 import { loadDailyChallengeState } from '@/lib/daily-challenge/daily-challenge-client'
 import { config, logger } from '@/lib/config'
 import { RelatedPlayStrip } from './related-play-strip'
+import type { WorldArtifact } from '@/lib/game-worlds'
+
+const WORLD_ICONS = {
+  comic: BookOpen,
+  film: Clapperboard,
+  diorama: Boxes,
+  nft: Gem,
+} as const
 
 interface PostGameCompletionProps {
   game: Game
@@ -35,6 +43,18 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
   const [showQr, setShowQr] = useState(false)
   const [pdfLoading, setPdfLoading] = useState(false)
   const { panels: videoPanels, montageVideoUrl, status: videoStatus } = useVideoStatus(game.slug)
+  const [worlds, setWorlds] = useState<WorldArtifact[] | null>(null)
+
+  // Artifact-family manifest — powers the "more forms" card. Silent on
+  // failure: the card simply doesn't render.
+  useEffect(() => {
+    let cancelled = false
+    fetch(`/api/games/${game.slug}/worlds`)
+      .then((r) => r.json())
+      .then((d) => { if (!cancelled && d?.success) setWorlds(d.data.worlds) })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [game.slug])
 
   const copyWithFeedback = async (text: string, format: string) => {
     try {
@@ -228,6 +248,7 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
           (the film ships as the NFT's animation_url). */}
       {(filmUrl || filmRendering) && (
         <motion.div
+          key={filmUrl ?? 'rendering'}
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.38, duration: 0.4 }}
@@ -281,6 +302,54 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
             )}
             {filmRendering && <Loader2 className="h-5 w-5 shrink-0 animate-spin text-cyan-300" />}
           </div>
+        </motion.div>
+      )}
+
+      {/* "More forms" card — the collection moment. One card summarizing the
+          story's artifact family with honest per-form status and cost; the
+          hub (/worlds) remains the full gallery. */}
+      {worlds && worlds.length > 1 && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.39, duration: 0.4 }}
+          className="rounded-2xl border border-white/15 bg-gradient-to-br from-white/[0.06] to-transparent p-5 mb-8"
+        >
+          <h3 className="text-sm font-bold text-white">Your story has more forms</h3>
+          <p className="mt-0.5 text-xs text-muted-foreground">Same story — read it, watch it, walk through it, own it.</p>
+          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {worlds.map((w) => {
+              const Icon = WORLD_ICONS[w.id]
+              const isReady = w.status === 'ready' || w.status === 'minted'
+              return (
+                <Link
+                  key={w.id}
+                  href={w.href}
+                  className="group flex flex-col items-start gap-1.5 rounded-xl border border-white/10 bg-black/30 p-3 transition-colors hover:border-white/30 hover:bg-white/[0.06]"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <Icon className="h-3.5 w-3.5 text-white/60 group-hover:text-white" />
+                    <span className="text-xs font-bold text-white">{w.title}</span>
+                  </span>
+                  <span className={`text-[10px] font-semibold uppercase tracking-wide ${
+                    isReady ? 'text-emerald-400'
+                    : w.status === 'rendering' ? 'text-amber-400'
+                    : w.status === 'failed' ? 'text-red-400'
+                    : 'text-white/40'
+                  }`}>
+                    {w.status === 'rendering' ? 'Rendering…'
+                      : w.status === 'failed' ? 'Retry'
+                      : w.status === 'minted' ? 'Minted'
+                      : w.status === 'ready' ? 'Ready'
+                      : w.costCredits ? `${w.costCredits} credits` : 'Available'}
+                  </span>
+                </Link>
+              )
+            })}
+          </div>
+          <Link href={`/games/${game.slug}/worlds`} className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-white/60 hover:text-white">
+            Open all worlds <ArrowUpRight className="h-3 w-3" />
+          </Link>
         </motion.div>
       )}
 

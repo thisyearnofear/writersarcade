@@ -2,7 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Compass, Eye, Sword, Zap, Brain, Store, BookOpen, Play, TrendingUp, Clock, Clapperboard } from 'lucide-react';
+import { Compass, Eye, Sword, Zap, Brain, Store, BookOpen, Play, TrendingUp, Clock, Clapperboard, Boxes } from 'lucide-react';
 
 const GENRE_STYLES: Record<string, { gradient: string; icon: React.ElementType }> = {
   Adventure:  { gradient: 'from-emerald-800 via-teal-900 to-cyan-950', icon: Compass },
@@ -24,6 +24,8 @@ interface GameCardProps {
   playCount?: number;
   lastPlayedAt?: string | null;
   hasAnimation?: boolean;
+  /** 'film' | 'world' — extra artifact forms this story exists as. */
+  artifactBadges?: string[];
 }
 
 function formatLastPlayed(dateStr: string): string {
@@ -41,7 +43,7 @@ function formatLastPlayed(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString()
 }
 
-export function GameCard({ slug, title, description, genre, imageUrl, primaryColor, symbol, playCount, lastPlayedAt, hasAnimation }: GameCardProps) {
+export function GameCard({ slug, title, description, genre, imageUrl, primaryColor, symbol, playCount, lastPlayedAt, hasAnimation, artifactBadges }: GameCardProps) {
   const genreStyle = GENRE_STYLES[genre] || DEFAULT_STYLE;
   const GenreIcon = genreStyle.icon;
   const displaySymbol = symbol.startsWith('$') ? symbol : `$${symbol}`;
@@ -68,6 +70,20 @@ export function GameCard({ slug, title, description, genre, imageUrl, primaryCol
           <div className="absolute top-3 right-3 z-10 flex items-center gap-1 rounded-full bg-purple-600/90 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-lg backdrop-blur-sm">
             <Clapperboard className="h-3 w-3" />
             Animated
+          </div>
+        )}
+        {artifactBadges && artifactBadges.length > 0 && (
+          <div className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5">
+            {artifactBadges.includes('film') && (
+              <span className="flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-bold text-white/90 backdrop-blur-sm" title="Exists as a film">
+                <Clapperboard className="h-3 w-3" /> Film
+              </span>
+            )}
+            {artifactBadges.includes('world') && (
+              <span className="flex items-center gap-1 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-bold text-white/90 backdrop-blur-sm" title="Exists as a 3D world">
+                <Boxes className="h-3 w-3" /> World
+              </span>
+            )}
           </div>
         )}
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">

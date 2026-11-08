@@ -8,11 +8,29 @@ import { Footer } from '@/components/layout/footer'
 import { DioramaLoader } from '@/components/scene/diorama-loader'
 import { SceneGate } from '@/components/scene/scene-gate'
 import type { ScenePlan } from '@/domains/games/services/scene-planner.service'
+import type { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
 
 interface ScenePageProps {
   params: Promise<{ slug: string }>
+}
+
+export async function generateMetadata({ params }: ScenePageProps): Promise<Metadata> {
+  const { slug } = await params
+  const game = await prisma.game.findUnique({
+    where: { slug },
+    select: { title: true, scene: { select: { thumbnailUrl: true, sceneJson: true } } },
+  })
+  if (!game) return {}
+  const sceneTitle = (game.scene?.sceneJson as { title?: string } | null)?.title
+  const title = sceneTitle ? `${sceneTitle} — 3D world` : `${game.title} — 3D world`
+  const images = game.scene?.thumbnailUrl ? [game.scene.thumbnailUrl] : undefined
+  return {
+    title,
+    openGraph: { title, images },
+    twitter: { card: 'summary_large_image', title, images },
+  }
 }
 
 export default async function GameScenePage({ params }: ScenePageProps) {

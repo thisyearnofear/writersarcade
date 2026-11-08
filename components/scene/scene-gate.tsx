@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface SceneGateProps {
@@ -9,10 +9,29 @@ interface SceneGateProps {
   error?: string | null
 }
 
+// Rotating captions during the ~30-60s generation window — perceived
+// progress beats a bare spinner.
+const GEN_PHASES = [
+  'Reading the story…',
+  'Designing zones…',
+  'Placing landmarks…',
+  'Weaving narrative hooks…',
+  'Critique pass…',
+  'Lighting the world…',
+]
+
 export function SceneGate({ slug, status, error }: SceneGateProps) {
   const router = useRouter()
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const [phase, setPhase] = useState(0)
+
+  const isPending = status === 'pending' || busy
+  useEffect(() => {
+    if (!isPending) return
+    const t = setInterval(() => setPhase((p) => (p + 1) % GEN_PHASES.length), 3500)
+    return () => clearInterval(t)
+  }, [isPending])
 
   const generate = async () => {
     setBusy(true)
@@ -38,10 +57,11 @@ export function SceneGate({ slug, status, error }: SceneGateProps) {
 
   return (
     <div className="flex h-full flex-col items-center justify-center gap-4 p-8 text-center">
-      {status === 'pending' ? (
+      {isPending ? (
         <>
           <div className="h-10 w-10 animate-spin rounded-full border-2 border-warning border-t-transparent" />
-          <p className="text-white/80">Your diorama is being generated…</p>
+          <p className="text-white/80">{GEN_PHASES[phase]}</p>
+          <p className="text-xs text-white/50">Usually under a minute</p>
           <button onClick={() => router.refresh()} className="text-sm text-warning underline">Refresh</button>
         </>
       ) : (

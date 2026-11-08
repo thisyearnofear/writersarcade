@@ -86,6 +86,8 @@ export interface Game {
   montageVideoUrl?: string
   /** First landed panel clip — lightweight ambient-media surface (hero backdrop). */
   clipVideoUrl?: string
+  /** Which artifact "forms" this story exists as — 'film' | 'world'. */
+  artifactBadges?: string[]
   userId?: string
   paymentId?: string
 

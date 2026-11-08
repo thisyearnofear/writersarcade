@@ -18,19 +18,35 @@ export async function getPublicGamesWithClips(options: GetGamesOptions = {}) {
   })
 
   const ids = result.games.map((g) => g.id)
+  const clipByGame = new Map<string, string>()
   if (ids.length > 0) {
     const clips = await prisma.gameArtifactPanel.findMany({
       where: { gameId: { in: ids }, videoUrl: { not: null } },
       select: { gameId: true, videoUrl: true },
       orderBy: { panelIndex: 'asc' },
     })
-    const clipByGame = new Map<string, string>()
     for (const c of clips) {
       if (c.videoUrl && !clipByGame.has(c.gameId)) clipByGame.set(c.gameId, c.videoUrl)
     }
     for (const g of result.games) {
       const clip = clipByGame.get(g.id)
       if (clip) (g as { clipVideoUrl?: string }).clipVideoUrl = clip
+    }
+  }
+
+  // Artifact badges — which "forms" each story already exists as
+  // (film clip, walkable world). Powers the "new form" dot on cards.
+  if (ids.length > 0) {
+    const scenes = await prisma.gameScene.findMany({
+      where: { gameId: { in: ids }, status: 'completed' },
+      select: { gameId: true },
+    })
+    const sceneGames = new Set(scenes.map((s) => s.gameId))
+    for (const g of result.games) {
+      const badges: string[] = []
+      if ((g as { montageVideoUrl?: string | null }).montageVideoUrl || clipByGame.has(g.id)) badges.push('film')
+      if (sceneGames.has(g.id)) badges.push('world')
+      if (badges.length > 0) (g as { artifactBadges?: string[] }).artifactBadges = badges
     }
   }
 

@@ -259,7 +259,14 @@ export function HomeClient({ initialSampleGames, initialStats, featuredArtifact 
                 </ConceptTooltip>{' '}
                 article into an{' '}
                 <span className="text-foreground font-medium">interactive comic</span>{' '}
-                you play by making choices.
+                you play by making choices
+                {process.env.NEXT_PUBLIC_FEATURE_SCENE_DIORAMA === 'true' && (
+                  <>
+                    {' '}— then walk through it as a{' '}
+                    <span className="text-foreground font-medium">3D world</span>
+                  </>
+                )}
+                .
               </p>
 
               {gameCount !== null && gameCount.publicGames >= 10 && (

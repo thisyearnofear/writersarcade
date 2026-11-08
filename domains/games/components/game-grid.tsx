@@ -187,6 +187,7 @@ export function GameGrid({
             playCount={game.playCount}
             lastPlayedAt={game.lastPlayedAt ? new Date(game.lastPlayedAt).toISOString() : null}
             hasAnimation={game.videoUpsellStatus === 'completed'}
+            artifactBadges={game.artifactBadges}
           />
         </motion.div>
       ))}

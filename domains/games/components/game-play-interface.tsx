@@ -236,6 +236,7 @@ export function GamePlayInterface({ game, isOwner = false, onActivePlayChange }:
       dailyDisplay={dailyDisplay}
       dailyPanelsDone={session.assistantMessageCount}
       articleUrl={liveGame.articleUrl}
+      gameMode={liveGame.mode}
     />
   )
 
