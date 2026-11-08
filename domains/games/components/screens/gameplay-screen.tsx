@@ -289,7 +289,7 @@ export function GameplayScreen({
             {!isTerminal && hasSecretEpilogue && (
               <p className="mb-4 w-full max-w-5xl text-[11px] text-muted-foreground/70">
                 Finish all {MAX_COMIC_PANELS} panels
-                {hasMintedNft ? ' to unlock the secret epilogue.' : ' → secret epilogue, mint, and IP unlock.'}
+                {hasMintedNft ? ' to unlock the hidden ending.' : ' → hidden ending, mint, and IP unlock.'}
               </p>
             )}
             {showChoiceFeedback && lastChoiceFeedback && (

@@ -48,21 +48,21 @@ export function PlayWelcomeCoach({ gameSlug }: PlayWelcomeCoachProps) {
     },
     {
       icon: LockKeyhole,
-      title: 'Secret epilogue (after mint)',
+      title: 'Hidden ending (after mint)',
       body: (
         <>
           Finish all 5 panels, then{' '}
           <ConceptTerm concept="mint">
             <span className="underline decoration-dotted underline-offset-2 cursor-help">mint the NFT</span>
           </ConceptTerm>{' '}
-          to decrypt the bonus ending on Base. You will see a checklist during play.
+          to decrypt the bonus ending. You will see a checklist during play.
         </>
       ),
     },
     {
       icon: Coins,
       title: 'Mint when you are ready',
-      body: 'Minting is optional until you want to own the game or unlock the epilogue. Writers earn automatically when you do.',
+      body: 'Minting is optional until you want to own the game or unlock the hidden ending. Writers earn automatically when you do.',
     },
   ]
 
@@ -70,12 +70,12 @@ export function PlayWelcomeCoach({ gameSlug }: PlayWelcomeCoachProps) {
     {
       icon: Gamepad2,
       title: 'Your story starts now',
-      body: 'Make 5 choices — one per panel. Watch the progress bar and epilogue checklist as you go.',
+      body: 'Make 5 choices — one per panel. Watch the progress bar and ending checklist as you go.',
     },
     {
       icon: LockKeyhole,
-      title: 'Epilogue needs mint',
-      body: 'Finish all panels, then mint the game NFT to decrypt the secret epilogue. Optional until you are ready.',
+      title: 'Hidden ending needs mint',
+      body: 'Finish all panels, then mint the game NFT to decrypt the hidden ending. Optional until you are ready.',
     },
   ]
 

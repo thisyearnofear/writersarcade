@@ -18,10 +18,10 @@ export function getGameModeBadge(mode?: string | null): {
   }
   return {
     label: 'Story',
-    hint: '5-panel branching comic · secret epilogue on mint',
+    hint: '5-panel branching comic · hidden ending on mint',
     className: 'border-purple-500/40 bg-purple-500/10 text-purple-700 dark:text-purple-300',
   }
 }
 
 export const GAME_MODE_EXPLOAINER =
-  'Story = 5-panel comic with choices and optional secret epilogue · Wordle = free word puzzle, no wallet needed'
+  'Story = 5-panel comic with choices and optional hidden ending · Wordle = free word puzzle, no wallet needed'

@@ -439,7 +439,7 @@ export function MyGamesClient() {
                 <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Library</p>
                 <h1 className="text-3xl sm:text-4xl font-bold">My Games</h1>
                 <p className="mt-3 max-w-2xl text-muted-foreground">
-                  Play your generated games first. Mint, secret epilogue unlock, and minting live under Ownership on each card.
+                  Play your generated games first. Mint, hidden-ending unlock, and minting live under Ownership on each card.
                 </p>
               </div>
               <Link
@@ -626,7 +626,7 @@ export function MyGamesClient() {
                     </div>
                     <h2 className="text-lg font-semibold text-foreground mb-2">No unlocked secrets yet</h2>
                     <p className="text-sm text-muted-foreground mb-4 max-w-md mx-auto">
-                      Finish a story, mint the NFT, then decrypt the secret epilogue.
+                      Finish a story, mint the NFT, then decrypt the hidden ending.
                     </p>
                     <Link href="/games" className="text-sm font-medium text-emerald-400 hover:text-emerald-300">
                       Browse arcade →
@@ -636,14 +636,14 @@ export function MyGamesClient() {
                   <div className="space-y-4">
                     <div>
                       <h2 className="text-lg font-semibold text-foreground">Unlocked secrets</h2>
-                      <p className="text-sm text-muted-foreground">Secret epilogue receipts on this device.</p>
+                      <p className="text-sm text-muted-foreground">Hidden ending receipts on this device.</p>
                     </div>
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       {unlockedVaults.map((vault) => (
                         <div key={`${vault.gameSlug}-${vault.vaultUuid}`} className="rounded-lg border border-border bg-card p-4">
                           <div className="flex items-start justify-between gap-3">
                             <div>
-                              <p className="text-xs font-bold uppercase tracking-wider text-emerald-400">Secret epilogue</p>
+                              <p className="text-xs font-bold uppercase tracking-wider text-emerald-400">Hidden ending</p>
                               <h3 className="mt-1 text-base font-semibold text-foreground">{vault.gameSlug.replace(/-/g, ' ')}</h3>
                             </div>
                             <Link href={vault.shareUrl || `/games/${vault.gameSlug}`} className="text-xs font-semibold text-purple-400 hover:text-purple-300">

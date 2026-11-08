@@ -128,8 +128,8 @@ export function PlayDetailsSheet({
                   On-chain encrypted
                 </h3>
                 <p className="mb-3 text-xs leading-relaxed text-muted-foreground">
-                  Each panel is shaped by a hidden card that stays encrypted on Base (Inco
-                  confidential compute) until the finale. The hex below is the ciphertext
+                  Each panel is shaped by a hidden card that stays encrypted on Base until
+                  the finale. The hex below is the ciphertext
                   handle — proof it exists, not the card itself.
                 </p>
                 <ul className="space-y-1.5 text-[11px]">

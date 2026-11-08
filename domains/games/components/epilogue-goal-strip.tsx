@@ -30,7 +30,7 @@ export function EpilogueGoalStrip({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
           <LockKeyhole className="w-4 h-4" style={{ color }} />
-          <span className="text-xs font-bold uppercase tracking-wider text-white">Secret epilogue</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-white">Hidden ending</span>
         </div>
         <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs">
           <GoalItem done={panelsComplete} label={`Finish ${maxPanels} panels`} />
@@ -45,7 +45,7 @@ export function EpilogueGoalStrip({
       )}
       {panelsComplete && !hasMintedNft && (
         <p className="mt-2 text-[11px]" style={{ color }}>
-          Story complete. Mint from Ownership on your library card to decrypt the secret epilogue.
+          Story complete. Mint from Ownership on your library card to decrypt the hidden ending.
         </p>
       )}
     </div>

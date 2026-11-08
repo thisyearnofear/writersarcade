@@ -6,6 +6,7 @@ import { ImageGenerationService } from './image-generation.service'
 import { GameDatabaseService } from './game-database.service'
 import { deduplicateGeneration } from '@/lib/ai-cache'
 import { pickAccentColor } from '@/lib/daily-challenge'
+import { runBundledSceneGeneration } from './scene-generation.service'
 import type { GameGenerationResponse, GameGenerationRequest } from '../types'
 import type { UserAIPreferences } from '@/lib/user-ai-preferences.service'
 
@@ -88,6 +89,13 @@ export async function runStoryGeneration(ctx: StoryFinalizeContext): Promise<voi
     }
 
     await enrichGameInBackground(gameId, slug, gameData, ctx.articleText)
+
+    // Bundled 3D world — included in the generate-game price. Runs last so
+    // the story is fully persisted first; failures leave a retryable
+    // GameScene row and never affect the game itself.
+    await runBundledSceneGeneration(gameId, ctx.userPreferences).catch((err) => {
+      logger.error('Bundled scene generation threw', err, { gameId })
+    })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Generation failed'
     logger.error('Async story generation failed', err, { gameId, slug })

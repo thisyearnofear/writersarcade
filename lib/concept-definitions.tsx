@@ -4,17 +4,17 @@ export const CONCEPTS = {
   mint: {
     term: 'Mint',
     explanation:
-      'Create a unique digital collectible on Base that proves you own this game. Required to decrypt the secret epilogue.',
+      'Create a unique digital collectible on Base that proves you own this game. Required to decrypt the hidden ending.',
   },
   secretEpilogue: {
-    term: 'Secret epilogue',
+    term: 'Hidden ending',
     explanation:
-      'A bonus ending encrypted on Base (Inco). Play through all 5 panels, then mint the NFT to reveal it.',
+      'A bonus ending encrypted on Base. Play through all 5 panels, then mint the NFT to reveal it.',
   },
   inco: {
-    term: 'Inco',
+    term: 'Encrypted unlock',
     explanation:
-      'Confidential compute on Base. Your secret epilogue and daily modifier cards stay encrypted until you unlock them.',
+      'Your hidden ending and daily modifier cards stay encrypted until you mint and unlock them.',
   },
   dailyChallenge: {
     term: 'Daily Challenge',

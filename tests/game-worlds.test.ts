@@ -59,6 +59,35 @@ describe('buildGameWorlds', () => {
     expect(diorama.costCredits).toBe(20)
   })
 
+  it('treats bundled scenes as included — no cost on pending or failed retry', () => {
+    const pending = buildGameWorlds(baseGame, {
+      status: 'pending',
+      paymentRef: 'bundled:generation',
+    })
+    const pendingDiorama = pending.find((w) => w.id === 'diorama')!
+    expect(pendingDiorama.status).toBe('rendering')
+    expect(pendingDiorama.costCredits).toBeUndefined()
+
+    const failed = buildGameWorlds(baseGame, {
+      status: 'failed',
+      paymentRef: 'bundled:generation',
+    })
+    const failedDiorama = failed.find((w) => w.id === 'diorama')!
+    expect(failedDiorama.status).toBe('failed')
+    expect(failedDiorama.costCredits).toBeUndefined()
+    expect(failedDiorama.meta).toBe('Retry — included')
+  })
+
+  it('still charges for non-bundled failed scenes', () => {
+    const worlds = buildGameWorlds(baseGame, {
+      status: 'failed',
+      paymentRef: 'credits:abc123',
+    })
+    const diorama = worlds.find((w) => w.id === 'diorama')!
+    expect(diorama.status).toBe('failed')
+    expect(diorama.costCredits).toBe(20)
+  })
+
   it('marks pending panels as film rendering and montage as ready', () => {
     const rendering = buildGameWorlds({
       ...baseGame,

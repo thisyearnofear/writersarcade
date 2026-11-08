@@ -7,6 +7,7 @@ import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { DioramaLoader } from '@/components/scene/diorama-loader'
 import { SceneGate } from '@/components/scene/scene-gate'
+import { BUNDLED_SCENE_PAYMENT_REF } from '@/lib/scene-billing'
 import type { ScenePlan } from '@/domains/games/services/scene-planner.service'
 import type { Metadata } from 'next'
 
@@ -63,7 +64,12 @@ export default async function GameScenePage({ params }: ScenePageProps) {
           {ready ? (
             <DioramaLoader scene={scene.sceneJson as unknown as ScenePlan} slug={slug} hasThumbnail={Boolean(scene.thumbnailUrl)} />
           ) : (
-            <SceneGate slug={slug} status={scene?.status ?? 'idle'} error={scene?.error} />
+            <SceneGate
+              slug={slug}
+              status={scene?.status ?? 'idle'}
+              error={scene?.error}
+              bundled={scene?.paymentRef === BUNDLED_SCENE_PAYMENT_REF}
+            />
           )}
         </div>
       </main>

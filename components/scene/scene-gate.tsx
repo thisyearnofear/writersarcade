@@ -7,6 +7,8 @@ interface SceneGateProps {
   slug: string
   status: 'idle' | 'pending' | 'failed' | string
   error?: string | null
+  /** True when the scene was bundled into generate-game — retries are free. */
+  bundled?: boolean
 }
 
 // Rotating captions during the ~30-60s generation window — perceived
@@ -20,7 +22,7 @@ const GEN_PHASES = [
   'Lighting the world…',
 ]
 
-export function SceneGate({ slug, status, error }: SceneGateProps) {
+export function SceneGate({ slug, status, error, bundled = false }: SceneGateProps) {
   const router = useRouter()
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
@@ -71,15 +73,23 @@ export function SceneGate({ slug, status, error }: SceneGateProps) {
           </h2>
           <p className="max-w-md text-sm text-white/70">
             {status === 'failed'
-              ? (error || 'Something went wrong. Your credits were refunded — try again.')
-              : 'Explore this story as a walkable 3D diorama — every panel becomes a place you can visit.'}
+              ? (error || (bundled
+                  ? 'Something went wrong — it was included with your story, so retry anytime.'
+                  : 'Something went wrong. Your credits were refunded — try again.'))
+              : bundled
+                ? 'Your story’s walkable 3D world is included — every panel becomes a place you can visit.'
+                : 'Explore this story as a walkable 3D world — every panel becomes a place you can visit.'}
           </p>
           <button
             onClick={generate}
             disabled={busy}
             className="rounded-lg bg-warning px-6 py-3 font-semibold text-black transition hover:bg-warning disabled:opacity-50"
           >
-            {busy ? 'Generating…' : status === 'failed' ? 'Retry scene (20 credits)' : 'Generate diorama (20 credits)'}
+            {busy
+              ? 'Generating…'
+              : bundled
+                ? (status === 'failed' ? 'Retry — included with your story' : 'Build your world — included')
+                : (status === 'failed' ? 'Retry scene (20 credits)' : 'Generate 3D world (20 credits)')}
           </button>
           {message && <p className="text-sm text-destructive">{message}</p>}
         </>

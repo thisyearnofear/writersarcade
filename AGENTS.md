@@ -100,12 +100,21 @@ single source of spend prices:
 
 | Action | Credits | Revenue |
 |---|---|---|
-| `generate-game` | 10 | $1.00 |
+| `generate-game` | 25 | $2.50 (story + bundled 3D world) |
 | `mint-nft` | 5 | $0.50 |
 | `play-wordle` | 1 | $0.10 |
 | `video-upsell` (hero) | 50 | $5.00 |
 | `video-montage` (whole comic) | 100 | $10.00 |
 | `animate-panel` (single panel) | 10 | $1.00 |
+| `generate-scene` (legacy upsell only) | 20 | $2.00 |
+
+`generate-game` bundles the 3D world: `runStoryGeneration` calls
+`runBundledSceneGeneration` (`domains/games/services/scene-generation.service.ts`)
+after the story is ready, marking the `GameScene` row `paymentRef:
+'bundled:generation'` / `creditsCharged: 0`. POST `/api/games/[slug]/scene`
+retries bundled scenes without charging; the 20cr `generate-scene` path remains
+only for games generated before bundling. Crypto rails (writer coins/MUSD) keep
+their own on-chain `gameGenerationCost` — the world is included for them too.
 
 Margins are strong (≥70%, mostly 85–99%). Update prices in `CREDITS_CONFIG` (plus
 the `cost` map, `videoUpsellCost`/`videoMontageCost` bigints, and the spend zod enum

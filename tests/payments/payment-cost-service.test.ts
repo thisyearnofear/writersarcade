@@ -101,9 +101,9 @@ describe('PaymentCostService', () => {
       const token: PaymentToken = { type: 'credits' }
 
       const cost = PaymentCostService.calculateCostTokenSync(token, 'generate-game')
-      expect(cost.amount).toBe(10n)
+      expect(cost.amount).toBe(25n)
       expect(cost.writerCoinSymbol).toBe('Credits')
-      expect(cost.amountFormatted).toBe('10 Credits')
+      expect(cost.amountFormatted).toBe('25 Credits')
       expect(cost.decimals).toBe(0)
     })
 

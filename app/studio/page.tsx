@@ -147,7 +147,7 @@ export default function StudioPage() {
                 <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-4 text-sm">
                   <p className="font-semibold text-foreground mb-1">Your free story is used up</p>
                   <p className="text-muted-foreground">
-                    Buy credits to keep creating — 10 credits ($1) per story.{' '}
+                    Buy credits to keep creating — 25 credits ($2.50) per story, world included.{' '}
                     <button
                       type="button"
                       onClick={openBuyCredits}

@@ -368,14 +368,14 @@ export const CREDITS_CONFIG = {
   decimals: 0,
   symbol: 'Credits',
   name: 'Credits',
-    gameGenerationCost: 10n, // 10 credits per game generation
+    gameGenerationCost: 25n, // 25 credits per game generation (story + bundled 3D world)
   mintCost: 5n,            // 5 credits per NFT mint
   videoUpsellCost: 50n,    // 50 credits to animate a completed comic
   videoMontageCost: 100n,  // 100 credits to animate the WHOLE comic (all panels)
   animatePanelCost: 10n,   // 10 credits to animate a single panel (H3 Turbo ~$0.05-0.40 cost)
   sceneCost: 20n,          // 20 credits to generate a game's explorable 3D diorama (~2 LLM calls + optional textures)
   cost: {
-    'generate-game': 10,
+    'generate-game': 25,
     'mint-nft': 5,
     'play-wordle': 1,
     'video-upsell': 50,

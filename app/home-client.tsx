@@ -53,7 +53,7 @@ const baseSteps = [
   },
   {
     icon: LockKeyhole,
-    title: 'Unlock the secret epilogue',
+    title: 'Unlock the hidden ending',
     description: (
       <>
         Finish all panels, then{' '}

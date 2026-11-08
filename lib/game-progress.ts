@@ -45,7 +45,7 @@ export function getGameProgress(game: GameProgressInput): GameProgress {
   let chipLabel = 'Ready to play'
   if (hasDailySession) chipLabel = 'Daily run active'
   else if (phase === 'minted') chipLabel = 'Minted'
-  else if (phase === 'secret_ready') chipLabel = 'Secret epilogue ready'
+  else if (phase === 'secret_ready') chipLabel = 'Hidden ending ready'
   else if (phase === 'played') chipLabel = 'Played'
   else chipLabel = 'Not played yet'
 

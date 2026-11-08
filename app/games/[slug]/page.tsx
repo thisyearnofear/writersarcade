@@ -177,7 +177,7 @@ export default async function GamePage({ params, searchParams }: GamePageProps) 
                 Someone unlocked the secret panel for {game.title}
               </h1>
               <p className="mt-1 text-sm text-emerald-100/75">
-                This share link points to a token-gated epilogue protected by the game NFT and Inco.
+                This share link points to a token-gated hidden ending protected by the game NFT.
               </p>
             </div>
             {game.promptVaultUuid && (

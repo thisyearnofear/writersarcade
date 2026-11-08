@@ -36,13 +36,13 @@ export function getSecretPanelStatus(game: SecretPanelGameFields): SecretPanelSt
 export function getSecretPanelLabel(status: SecretPanelStatus): string {
   switch (status.kind) {
     case 'inco':
-      return 'Secret epilogue · encrypted on Base'
+      return 'Hidden ending · encrypted on Base'
     case 'legacy':
-      return 'Secret epilogue · legacy vault'
+      return 'Hidden ending · legacy vault'
     case 'pending':
-      return 'Secret epilogue · preparing'
+      return 'Hidden ending · preparing'
     case 'none':
-      return 'No secret epilogue'
+      return 'No hidden ending'
   }
 }
 
@@ -66,8 +66,8 @@ export function formatSecretPanelDetail(status: SecretPanelStatus): string {
     case 'legacy':
       return 'Legacy encrypted unlock (pre-Inco)'
     case 'pending':
-      return 'Epilogue generated · stores on mint'
+      return 'Ending generated · unlocks on mint'
     case 'none':
-      return 'Finish the story to generate a secret epilogue'
+      return 'Finish the story to generate a hidden ending'
   }
 }

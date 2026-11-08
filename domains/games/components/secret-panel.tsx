@@ -182,7 +182,7 @@ export function SecretPanel({
             color: primaryColor,
           }}
         >
-          SECRET EPILOGUE
+          HIDDEN ENDING
         </span>
         {unlocked ? (
           <Eye className="w-3.5 h-3.5" style={{ color: primaryColor }} />
@@ -231,7 +231,7 @@ export function SecretPanel({
                 </p>
                 <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
                   <Unlock className="w-3 h-3" />
-                  <span>Secret epilogue unlocked</span>
+                  <span>Hidden ending unlocked</span>
                 </div>
                 {(accessPolicy || promptVaultUuid) && (
                   <details className="mt-4 rounded-md border border-white/10 bg-white/[0.03] p-3 text-left">
@@ -294,9 +294,9 @@ export function SecretPanel({
                         <button
                           type="button"
                           onClick={() => {
-                            const text = `I unlocked the secret epilogue for ${gameSlug}: ${shareUrl}`
+                            const text = `I unlocked the hidden ending for ${gameSlug}: ${shareUrl}`
                             if (navigator.share) {
-                              navigator.share({ title: 'Secret epilogue unlocked', text, url: shareUrl }).catch(() => {})
+                              navigator.share({ title: 'Hidden ending unlocked', text, url: shareUrl }).catch(() => {})
                             } else {
                               copyToClipboard(text, 'share-text')
                             }
@@ -335,10 +335,10 @@ export function SecretPanel({
               </div>
 
               <h3 className="text-lg font-bold text-foreground mb-2">
-                Secret epilogue locked
+                Hidden ending locked
               </h3>
               <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
-                Finish the story and mint the game NFT to reveal a hidden epilogue stored on-chain.
+                Finish the story and mint the game NFT to reveal a hidden ending stored on-chain.
               </p>
 
               {/* Inco encryption indicator */}
@@ -349,7 +349,7 @@ export function SecretPanel({
                     <span className="font-semibold">Encrypted on-chain</span>
                   </div>
                   <p className="mt-2 text-[11px] leading-relaxed text-emerald-200/80">
-                    Only the NFT holder can decrypt this epilogue after completing all 5 panels.
+                    Only the NFT holder can decrypt this ending after completing all 5 panels.
                   </p>
                   <details className="mt-2 group">
                     <summary className="cursor-pointer text-[10px] uppercase tracking-wider font-semibold text-emerald-400/80 hover:text-emerald-300 list-none flex items-center gap-1">
@@ -409,7 +409,7 @@ export function SecretPanel({
                       ) : (
                         <>
                           <Eye className="w-4 h-4" />
-                          Unlock secret epilogue
+                          Unlock hidden ending
                         </>
                       )}
                     </button>
@@ -441,7 +441,7 @@ export function SecretPanel({
                 </div>
               ) : (
                 <p className="text-xs text-muted-foreground">
-                  Secret epilogue not available yet.
+                  Hidden ending not available yet.
                 </p>
               )}
             </motion.div>

@@ -16,7 +16,7 @@ const STEPS = [
     step: '1',
     title: 'Mint',
     headline: 'Own the game as an NFT',
-    body: 'Mint on Base to own a verifiable collectible of your story — and unlock the secret epilogue.',
+    body: 'Mint on Base to own a verifiable collectible of your story — and unlock the hidden ending.',
   },
   {
     icon: Coins,

@@ -159,7 +159,7 @@ export function GameOwnershipProgress({ game, variant = 'full' }: GameOwnershipP
       <div className="mb-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-foreground">Your progress</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Play first, then mint and unlock the <span className="text-foreground">secret epilogue</span>.
+          Play first, then mint and unlock the <span className="text-foreground">hidden ending</span>.
         </p>
         {progress.nextStepLabel && (
           <p className="mt-2 text-sm font-medium text-brand">

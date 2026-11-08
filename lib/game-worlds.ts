@@ -1,5 +1,6 @@
 import { CREDITS_CONFIG } from '@/lib/writer-coins'
 import { config } from '@/lib/config'
+import { BUNDLED_SCENE_PAYMENT_REF } from '@/lib/scene-billing'
 import type { ScenePlan } from '@/domains/games/services/scene-planner.service'
 
 /**
@@ -46,6 +47,7 @@ export interface WorldsSceneInput {
   sceneJson?: unknown
   thumbnailUrl?: string | null
   error?: string | null
+  paymentRef?: string | null
 }
 
 export function buildGameWorlds(game: WorldsGameInput, scene?: WorldsSceneInput | null): WorldArtifact[] {
@@ -87,30 +89,40 @@ export function buildGameWorlds(game: WorldsGameInput, scene?: WorldsSceneInput 
   const sceneTitle = scenePlan?.title
   if (game.mode !== 'wordle' && config.features.sceneDiorama) {
     const sceneStatus = scene?.status ?? 'idle'
+    // Bundled scenes were paid inside generate-game — retries are free.
+    const bundled = scene?.paymentRef === BUNDLED_SCENE_PAYMENT_REF
+    const freeRetry = bundled && (sceneStatus === 'failed' || sceneStatus === 'idle')
     artifacts.push({
       id: 'diorama',
       title: '3D World',
       description: sceneStatus === 'completed'
         ? `Walk through "${sceneTitle ?? game.title}" — every panel becomes a place you can visit.`
-        : 'Explore the story as a walkable 3D diorama — every panel becomes a place you can visit.',
+        : bundled
+          ? 'Your story’s walkable 3D world — every panel becomes a place you can visit. Included with this story.'
+          : 'Explore the story as a walkable 3D world — every panel becomes a place you can visit.',
       status: sceneStatus === 'completed' ? 'ready'
         : sceneStatus === 'pending' ? 'rendering'
         : sceneStatus === 'failed' ? 'failed'
         : 'available',
       href: `${base}/scene`,
-      costCredits: sceneStatus === 'completed' || sceneStatus === 'pending' ? undefined : CREDITS_CONFIG.cost['generate-scene'],
+      costCredits: sceneStatus === 'completed' || sceneStatus === 'pending' || freeRetry
+        ? undefined
+        : CREDITS_CONFIG.cost['generate-scene'],
       imageUrl: scene?.thumbnailUrl ?? null,
-      meta: sceneStatus === 'completed' ? 'Enter' : sceneStatus === 'pending' ? 'Generating…' : sceneStatus === 'failed' ? 'Retry' : undefined,
+      meta: sceneStatus === 'completed' ? 'Enter'
+        : sceneStatus === 'pending' ? 'Generating…'
+        : sceneStatus === 'failed' ? (freeRetry ? 'Retry — included' : 'Retry')
+        : bundled ? 'Included' : undefined,
     })
   }
 
-  // ── NFT — ownership + the encrypted secret epilogue. ──
+  // ── NFT — ownership + the encrypted hidden ending. ──
   artifacts.push({
     id: 'nft',
     title: 'NFT',
     description: game.nftTokenId
       ? `You own this story — token #${game.nftTokenId}.`
-      : 'Mint this story to own it onchain and unlock the encrypted secret epilogue.',
+      : 'Mint this story to own it onchain and unlock the encrypted hidden ending.',
     status: game.nftTokenId ? 'minted' : 'available',
     href: base,
     costCredits: game.nftTokenId ? undefined : CREDITS_CONFIG.cost['mint-nft'],
