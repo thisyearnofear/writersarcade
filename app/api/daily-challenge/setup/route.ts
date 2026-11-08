@@ -4,6 +4,7 @@ import {
   ensureDailyDeckShuffled,
   ensureTodaysFeaturedArticle,
   getBasePaintDay,
+  InsufficientDeckFundsError,
 } from '@/lib/daily-challenge'
 
 export const maxDuration = 60
@@ -15,13 +16,31 @@ function isAuthorizedCron(request: NextRequest): boolean {
   return authHeader === `Bearer ${cronSecret}`
 }
 
+/**
+ * Shuffle the deck, treating an unfunded session wallet as a soft skip:
+ * the featured-article pick is unrelated to Inco and should still run, and
+ * the cron should stay green until the wallet is funded again.
+ */
+async function tryShuffleDeck(day: number) {
+  try {
+    return await ensureDailyDeckShuffled(day)
+  } catch (error) {
+    if (error instanceof InsufficientDeckFundsError) {
+      logger.warn('Daily deck shuffle skipped — session wallet unfunded', { day, error: error.message })
+      return { skipped: 'insufficient_funds' as const, message: error.message }
+    }
+    throw error
+  }
+}
+
 async function runDailySetup(day: number) {
-  const shuffle = await ensureDailyDeckShuffled(day)
+  const shuffle = await tryShuffleDeck(day)
   const featured = await ensureTodaysFeaturedArticle({ day })
 
   logger.info('Daily challenge setup complete', {
     day,
-    shuffleAlready: shuffle.alreadyShuffled,
+    shuffleAlready: 'alreadyShuffled' in shuffle ? shuffle.alreadyShuffled : null,
+    shuffleSkipped: 'skipped' in shuffle ? shuffle.skipped : null,
     featuredStatus: featured.status,
     featuredReason: featured.reason,
     publicationSlug: featured.publicationSlug,
@@ -89,7 +108,7 @@ export async function POST(request: NextRequest) {
     const day = typeof body.day === 'number' ? body.day : getBasePaintDay()
     const forceFeatured = body.forceFeatured === true
 
-    const shuffle = await ensureDailyDeckShuffled(day)
+    const shuffle = await tryShuffleDeck(day)
     const featured = await ensureTodaysFeaturedArticle({ day, force: forceFeatured })
 
     return NextResponse.json({

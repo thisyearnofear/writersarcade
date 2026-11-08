@@ -296,6 +296,22 @@ export type ShuffleDailyDeckResult =
   | { success: true; day: number; alreadyShuffled: true }
   | { success: true; day: number; alreadyShuffled: false; txHash: `0x${string}` }
 
+/**
+ * Thrown when the session-manager wallet lacks Base ETH for Inco fees.
+ * Callers (cron setup) treat this as a soft skip — the deck simply stays
+ * unshuffled until the wallet is funded again; no config change needed.
+ */
+export class InsufficientDeckFundsError extends Error {
+  constructor(
+    message: string,
+    public readonly requiredWei: bigint,
+    public readonly balanceWei: bigint
+  ) {
+    super(message)
+    this.name = 'InsufficientDeckFundsError'
+  }
+}
+
 export async function isDailyDeckShuffled(day: number): Promise<boolean> {
   const publicClient = await createDailyChallengePublicClient()
   const vaultAddress = getVaultAddress()
@@ -335,8 +351,10 @@ export async function shuffleDailyDeck(day: number): Promise<ShuffleDailyDeckRes
   const requiredValue = listFee * 2n
   const balance = await publicClient.getBalance({ address: account.address })
   if (balance < requiredValue) {
-    throw new Error(
-      `Session manager ${account.address} needs Base ETH to shuffle the daily deck (requires ~${Number(requiredValue) / 1e18} ETH incl. Inco fees; balance ${Number(balance) / 1e18} ETH).`
+    throw new InsufficientDeckFundsError(
+      `Session manager ${account.address} needs Base ETH to shuffle the daily deck (requires ~${Number(requiredValue) / 1e18} ETH incl. Inco fees; balance ${Number(balance) / 1e18} ETH).`,
+      requiredValue,
+      balance
     )
   }
 
