@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useRef, useState, useMemo } from 'react'
-import { Loader2, Sparkles, Gamepad2, X, Lightbulb, BookOpen, Quote } from 'lucide-react'
+import { Loader2, Sparkles, Gamepad2, X, Lightbulb, BookOpen, Quote, CreditCard, Search, FileText, Save } from 'lucide-react'
 import { ProgressBar } from '@/domains/games/components/ProgressBar'
 import { useOverlay, OverlayPortal } from '@/components/ui/overlay'
 
@@ -22,32 +22,32 @@ interface GameGenerationOverlayProps {
 const SLOW_WARNING_MS = 45_000
 const STALL_WARNING_MS = 90_000
 
-const stepConfig = {
-  payment: { label: 'Payment Verified', icon: '💳' },
-  validate: { label: 'Validating Article', icon: '🔍' },
-  extract: { label: 'Extracting Content', icon: '📝' },
-  generate: { label: 'Crafting Your Game', icon: '🎮' },
-  save: { label: 'Finalizing', icon: '💾' },
-} as const
+const stepConfig: Record<LoadingStep, { label: string; icon: typeof CreditCard }> = {
+  payment: { label: 'Payment Verified', icon: CreditCard },
+  validate: { label: 'Validating Article', icon: Search },
+  extract: { label: 'Extracting Content', icon: FileText },
+  generate: { label: 'Crafting Your Game', icon: Sparkles },
+  save: { label: 'Finalizing', icon: Save },
+}
 
 const CONTEXTUAL_TIPS = [
   {
-    icon: <Lightbulb className="w-4 h-4 text-warning" />,
+    icon: <Lightbulb className="w-4 h-4 text-warning shrink-0" />,
     title: 'Did you know?',
     text: 'WritersArcade uses specialized AI models to maintain consistency across characters and styles in your story.',
   },
   {
-    icon: <BookOpen className="w-4 h-4 text-info" />,
+    icon: <BookOpen className="w-4 h-4 text-info shrink-0" />,
     title: 'Author Trivia',
     text: 'Paragraph.xyz authors can earn rewards when users play games inspired by their articles.',
   },
   {
-    icon: <Quote className="w-4 h-4 text-brand" />,
+    icon: <Quote className="w-4 h-4 text-brand shrink-0" />,
     title: 'Writing Tip',
     text: 'Great interactive stories often give users 3 distinct choices: one safe, one risky, and one mysterious.',
   },
   {
-    icon: <Sparkles className="w-4 h-4 text-brand" />,
+    icon: <Sparkles className="w-4 h-4 text-brand shrink-0" />,
     title: 'Pro Tip',
     text: 'You can mint your finished comic as an NFT to preserve your unique playthrough forever.',
   },
@@ -131,7 +131,7 @@ export function GameGenerationOverlay({
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-[90] flex items-center justify-center bg-black/90 backdrop-blur-sm"
+          className="fixed inset-0 z-[90] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -157,37 +157,23 @@ export function GameGenerationOverlay({
           </div>
 
           <motion.div
-            className="relative z-10 w-full max-w-lg mx-4 px-5 py-5 max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain bg-gradient-to-br from-brand/90 via-brand/90 to-brand/90 border border-brand/40 rounded-xl shadow-2xl"
-            initial={{ scale: 0.9, y: 20 }}
+            className="relative z-10 w-full max-w-md max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain rounded-2xl border border-border bg-popover text-popover-foreground shadow-2xl"
+            initial={{ scale: 0.95, y: 16 }}
             animate={{ scale: 1, y: 0 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 24 }}
           >
-            <div className="relative space-y-4">
+            <div className="space-y-5 p-6">
               {/* Header */}
               <div className="text-center">
-                <motion.div
-                  className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-brand/30 border-2 border-brand mb-2"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-                >
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-brand/15 border border-brand/30 mb-3">
                   <Gamepad2 className="w-7 h-7 text-brand" />
-                </motion.div>
-                <motion.h2
-                  className="text-xl font-bold text-white"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                >
+                </div>
+                <h2 className="text-xl font-bold text-foreground">
                   Generating Your Game
-                </motion.h2>
-                <motion.p
-                  className="text-sm text-brand"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                >
-                  {genre} • {difficulty}
-                </motion.p>
+                </h2>
+                <p className="mt-1 text-sm text-muted-foreground capitalize">
+                  {genre} · {difficulty}
+                </p>
               </div>
 
               {/* Progress bar */}
@@ -209,64 +195,71 @@ export function GameGenerationOverlay({
               </div>
 
               {/* Steps */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 {steps.map((step, index) => {
                   const status = stepStatuses[step]
                   const config = stepConfig[step]
                   const isActive = currentStep === step
+                  const Icon = config.icon
+                  const isDone = status === 'completed'
+                  const isError = status === 'error'
 
                   return (
                     <motion.div
                       key={step}
-                      className={`flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all ${
-                        status === 'completed'
-                          ? 'bg-success/15'
-                          : status === 'error'
-                          ? 'bg-destructive/15'
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border transition-colors ${
+                        isDone
+                          ? 'border-success/25 bg-success/10'
+                          : isError
+                          ? 'border-destructive/30 bg-destructive/10'
                           : isActive
-                          ? 'bg-brand/30'
-                          : 'opacity-40'
+                          ? 'border-brand/40 bg-brand/10'
+                          : 'border-border/60'
                       }`}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: isActive || status === 'completed' ? 1 : 0.4, x: 0 }}
-                      transition={{ delay: index * 0.08 }}
+                      initial={{ opacity: 0, x: -12 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.06 }}
                     >
-                      <span className="w-5 text-center text-sm">
-                        {status === 'completed' ? (
-                          <span className="text-success font-bold">✓</span>
-                        ) : status === 'error' ? (
-                          <span className="text-destructive">✕</span>
+                      <span className="flex w-6 items-center justify-center">
+                        {isDone ? (
+                          <svg className="w-4 h-4 text-success" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fillRule="evenodd" d="M16.7 5.3a1 1 0 010 1.4l-7.5 7.5a1 1 0 01-1.4 0L3.3 9.7a1 1 0 011.4-1.4l3.8 3.8 6.8-6.8a1 1 0 011.4 0z" clipRule="evenodd" />
+                          </svg>
+                        ) : isError ? (
+                          <X className="w-4 h-4 text-destructive" />
                         ) : isActive ? (
-                          <Loader2 className="w-4 h-4 text-brand animate-spin mx-auto" />
+                          <Loader2 className="w-4 h-4 text-brand animate-spin" />
                         ) : (
-                          <span className="text-muted-foreground">{config.icon}</span>
+                          <Icon className="w-4 h-4 text-muted-foreground" />
                         )}
                       </span>
-                      <span className={`text-sm font-medium ${isActive ? 'text-brand' : 'text-muted-foreground'}`}>
+                      <span className={`text-sm ${isActive || isDone ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
                         {config.label}
                       </span>
-                      <span className="ml-auto text-[11px] text-muted-foreground">{index + 1}/5</span>
+                      <span className="ml-auto text-[11px] tabular-nums text-muted-foreground/70">
+                        {index + 1}/5
+                      </span>
                     </motion.div>
                   )
                 })}
               </div>
 
               {/* Tips — rotating inline */}
-              <div className="relative h-14 overflow-hidden rounded-lg bg-brand/20 border border-brand/20">
+              <div className="relative h-16 overflow-hidden rounded-lg border border-border/60 bg-muted/40">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={tipIndex}
-                    className="absolute inset-0 flex items-center gap-2 px-3"
-                    initial={{ opacity: 0, y: 12 }}
+                    className="absolute inset-0 flex items-start gap-2.5 px-3.5 py-3"
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -12 }}
-                    transition={{ duration: 0.4 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.35 }}
                   >
-                    {CONTEXTUAL_TIPS[tipIndex].icon}
-                    <div className="text-xs text-brand/80 leading-relaxed min-w-0">
-                      <span className="font-semibold text-brand">{CONTEXTUAL_TIPS[tipIndex].title}:</span>{' '}
+                    <span className="mt-0.5">{CONTEXTUAL_TIPS[tipIndex].icon}</span>
+                    <p className="text-xs leading-relaxed text-muted-foreground min-w-0">
+                      <span className="font-semibold text-foreground">{CONTEXTUAL_TIPS[tipIndex].title}:</span>{' '}
                       {CONTEXTUAL_TIPS[tipIndex].text}
-                    </div>
+                    </p>
                   </motion.div>
                 </AnimatePresence>
               </div>
@@ -278,48 +271,48 @@ export function GameGenerationOverlay({
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
-                    className="rounded-lg border border-warning/30 bg-warning/30 p-3"
+                    className="rounded-lg border border-warning/40 bg-warning/10 p-3.5"
                   >
-                    <p className="text-sm text-warning/90 mb-2">
+                    <p className="text-sm text-warning mb-3">
                       This is taking longer than usual. The AI is still working, but you can stop it and try again.
                     </p>
-                    <div className="flex items-center justify-center gap-3">
-                      {onCancel && (
+                    {onCancel && (
+                      <div className="flex justify-center">
                         <button
                           onClick={onCancel}
-                          className="inline-flex items-center gap-1 rounded-md bg-warning/20 px-3 py-1.5 text-xs font-medium text-warning hover:bg-warning/30 transition-colors"
+                          className="inline-flex items-center gap-1.5 rounded-md border border-warning/40 bg-warning/15 px-3 py-1.5 text-xs font-medium text-warning hover:bg-warning/25 transition-colors"
                         >
-                          <X className="w-3 h-3" />
-                          Cancel
+                          <X className="w-3.5 h-3.5" />
+                          Cancel generation
                         </button>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </motion.div>
                 )}
                 {showSlowWarning && !showStallWarning && (
                   <motion.p
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    className="text-center text-xs text-brand/80"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="text-center text-xs text-muted-foreground"
                   >
-                    Still crafting your game… this can take up to two minutes for longer articles.
+                    Still crafting your game — this can take up to two minutes for longer articles.
                   </motion.p>
                 )}
               </AnimatePresence>
 
               {/* Cancel link */}
-              <div className="flex justify-center">
-                {onCancel && !showStallWarning && (
+              {!showStallWarning && onCancel && (
+                <div className="flex justify-center">
                   <button
                     onClick={onCancel}
-                    className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+                    className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    <X className="w-3 h-3" />
+                    <X className="w-3.5 h-3.5" />
                     Cancel
                   </button>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </motion.div>
         </motion.div>
