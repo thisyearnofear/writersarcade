@@ -221,17 +221,17 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
             <div className="flex items-center space-x-2">
                 <span className={cn(
                   "text-[10px] font-black uppercase tracking-widest italic",
-                  isMUSD ? "text-amber-500/60" : "text-purple-400/60"
+                  isMUSD ? "text-warning/60" : "text-brand/60"
                 )}>Arena Active</span>
                 <span className={cn(
                   "h-1 w-1 rounded-full animate-pulse",
-                  isMUSD ? "bg-amber-500" : "bg-purple-500"
+                  isMUSD ? "bg-warning" : "bg-brand"
                 )}></span>
             </div>
             <h2 className="text-xl font-black text-white uppercase italic tracking-tight">{game.title}</h2>
             <p className={cn(
               "text-[10px] font-bold uppercase tracking-[0.2em]",
-              isMUSD ? "text-amber-300/40" : "text-purple-300/40"
+              isMUSD ? "text-warning/40" : "text-brand/40"
             )}>
                 {game.genre} // {game.subgenre}
             </p>
@@ -239,11 +239,11 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
         <button
           onClick={() => { triggerHaptic('medium'); onBack(); }}
           className={cn(
-            "group flex h-10 w-10 items-center justify-center rounded-xl border transition-all hover:border-red-500/50 hover:bg-red-500/10",
-            isMUSD ? "border-amber-500/10 bg-amber-900/5" : "border-white/10 bg-white/5"
+            "group flex h-10 w-10 items-center justify-center rounded-xl border transition-all hover:border-destructive/50 hover:bg-destructive/10",
+            isMUSD ? "border-warning/10 bg-warning/5" : "border-white/10 bg-white/5"
           )}
         >
-          <svg className={cn("h-4 w-4 group-hover:text-red-400", isMUSD ? "text-amber-500" : "text-purple-400")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className={cn("h-4 w-4 group-hover:text-destructive", isMUSD ? "text-warning" : "text-brand")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
@@ -252,7 +252,7 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
       {/* Terminal Display */}
       <div className={cn(
         "relative overflow-hidden rounded-3xl border shadow-2xl transition-all duration-500",
-        isMUSD ? "border-amber-500/20 bg-amber-950/20 shadow-amber-900/10" : "border-white/10 bg-black/40"
+        isMUSD ? "border-warning/20 bg-warning/20 shadow-warning/10" : "border-white/10 bg-black/40"
       )}>
         {/* Terminal Scanline Effect */}
         <div className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%),linear-gradient(90deg,rgba(255,0,0,0.03),rgba(0,255,0,0.01),rgba(0,0,128,0.03))] bg-[length:100%_4px,3px_100%]"></div>
@@ -260,12 +260,12 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
         {/* Terminal Header */}
         <div className={cn(
           "flex items-center justify-between px-4 py-2 border-b",
-          isMUSD ? "bg-amber-500/10 border-amber-500/10" : "bg-white/5 border-white/5"
+          isMUSD ? "bg-warning/10 border-warning/10" : "bg-white/5 border-white/5"
         )}>
             <div className="flex space-x-1.5">
-                <div className="h-2 w-2 rounded-full bg-red-500/40"></div>
-                <div className="h-2 w-2 rounded-full bg-yellow-500/40"></div>
-                <div className="h-2 w-2 rounded-full bg-green-500/40"></div>
+                <div className="h-2 w-2 rounded-full bg-destructive/40"></div>
+                <div className="h-2 w-2 rounded-full bg-warning/40"></div>
+                <div className="h-2 w-2 rounded-full bg-success/40"></div>
             </div>
             <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-white/20">Experience_Buffer_v1.0.4</span>
         </div>
@@ -278,14 +278,14 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
             <p className={cn(
               "whitespace-pre-wrap",
               isMUSD 
-                ? "text-amber-100/90 [text-shadow:0_0_8px_rgba(245,158,11,0.4)]" 
-                : "text-purple-100/90 [text-shadow:0_0_8px_rgba(168,85,247,0.4)]"
+                ? "text-warning/90 [text-shadow:0_0_8px_rgba(245,158,11,0.4)]" 
+                : "text-brand/90 [text-shadow:0_0_8px_rgba(168,85,247,0.4)]"
             )}>
                 {gameContent}
                 {isLoading && (
                     <span className={cn(
                       "inline-block h-4 w-2 animate-pulse ml-1 align-middle",
-                      isMUSD ? "bg-amber-500" : "bg-purple-500"
+                      isMUSD ? "bg-warning" : "bg-brand"
                     )}></span>
                 )}
             </p>
@@ -302,7 +302,7 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
                     <span className="h-px flex-1 bg-white/5"></span>
                     <span className={cn(
                       "text-[9px] font-black uppercase tracking-widest italic",
-                      isMUSD ? "text-amber-500/40" : "text-purple-400/40"
+                      isMUSD ? "text-warning/40" : "text-brand/40"
                     )}>System Input Required</span>
                     <span className="h-px flex-1 bg-white/5"></span>
                   </div>
@@ -317,13 +317,13 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
                       className={cn(
                         "group flex w-full items-start space-x-3 rounded-xl border p-4 text-left transition-all active:scale-[0.98]",
                         isMUSD 
-                          ? "border-amber-500/10 bg-amber-500/5 hover:border-amber-400/50 hover:bg-amber-500/10"
-                          : "border-white/5 bg-white/5 hover:border-purple-500/50 hover:bg-purple-500/10"
+                          ? "border-warning/10 bg-warning/5 hover:border-warning/50 hover:bg-warning/10"
+                          : "border-white/5 bg-white/5 hover:border-brand/50 hover:bg-brand/10"
                       )}
                     >
                       <span className={cn(
                         "text-[10px] font-black",
-                        isMUSD ? "text-amber-500 group-hover:text-amber-400" : "text-purple-400 group-hover:text-purple-300"
+                        isMUSD ? "text-warning group-hover:text-warning" : "text-brand group-hover:text-brand"
                       )}>0{option.id}</span>
                       <span className="text-xs font-medium text-white/80 group-hover:text-white transition-colors">{option.text}</span>
                     </motion.button>
@@ -341,8 +341,8 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
           className={cn(
             "rounded-2xl border py-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all",
             isMUSD 
-              ? "border-amber-500/10 bg-amber-900/10 text-amber-500/60 hover:bg-amber-900/20 hover:text-amber-400"
-              : "border-white/10 bg-white/5 text-purple-400/60 hover:bg-white/10 hover:text-purple-300"
+              ? "border-warning/10 bg-warning/10 text-warning/60 hover:bg-warning/20 hover:text-warning"
+              : "border-white/10 bg-white/5 text-brand/60 hover:bg-white/10 hover:text-brand"
           )}
         >
           Terminate
@@ -353,8 +353,8 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
           className={cn(
             "rounded-2xl py-4 text-[10px] font-black uppercase tracking-[0.2em] italic transition-all active:scale-[0.98] disabled:opacity-50 shadow-lg",
             isMUSD
-              ? "bg-amber-500 text-black shadow-amber-500/20 hover:bg-amber-400"
-              : "bg-green-500 text-black shadow-green-500/20 hover:bg-green-400"
+              ? "bg-warning text-black shadow-warning/20 hover:bg-warning"
+              : "bg-success text-black shadow-success/20 hover:bg-success"
           )}
         >
           Archive NFT
@@ -373,7 +373,7 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
                 <motion.div 
                     initial={{ scale: 0.9, y: 30 }}
                     animate={{ scale: 1, y: 0 }}
-                    className="w-full max-w-sm overflow-hidden rounded-[32px] border border-green-500/30 bg-green-500/5 shadow-[0_0_50px_rgba(34,197,94,0.2)]"
+                    className="w-full max-w-sm overflow-hidden rounded-[32px] border border-success/30 bg-success/5 shadow-[0_0_50px_rgba(34,197,94,0.2)]"
                 >
                     <div className="relative p-8 text-center">
                         <div className="mb-6 flex justify-center">
@@ -381,14 +381,14 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
                                 initial={{ rotate: -15, scale: 0 }}
                                 animate={{ rotate: 0, scale: 1 }}
                                 transition={{ type: "spring", bounce: 0.5 }}
-                                className="h-20 w-20 rounded-full bg-green-500 flex items-center justify-center shadow-[0_0_30px_rgba(34,197,94,0.6)]"
+                                className="h-20 w-20 rounded-full bg-success flex items-center justify-center shadow-[0_0_30px_rgba(34,197,94,0.6)]"
                             >
                                 <Trophy className="h-10 w-10 text-black" />
                             </motion.div>
                         </div>
 
                         <h3 className="text-3xl font-black uppercase italic tracking-tighter text-white">Experience Archived</h3>
-                        <p className="mt-2 text-sm text-green-400/80 font-bold uppercase tracking-widest">Protocol Success</p>
+                        <p className="mt-2 text-sm text-success/80 font-bold uppercase tracking-widest">Protocol Success</p>
                         
                         <div className="mt-8 space-y-3">
                             <button
@@ -406,7 +406,7 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
                                     rel="noopener noreferrer"
                                     className="flex flex-col items-center justify-center rounded-xl bg-white/5 border border-white/10 p-3 hover:bg-white/10 transition-colors"
                                 >
-                                    <ShieldCheck className="h-4 w-4 text-purple-400 mb-1" />
+                                    <ShieldCheck className="h-4 w-4 text-brand mb-1" />
                                     <span className="text-[9px] font-black uppercase text-white/60 tracking-widest">BaseScan</span>
                                 </a>
                             </div>
@@ -439,14 +439,14 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
                     exit={{ scale: 0.9, y: 20 }}
                     className={cn(
                       "w-full max-w-sm rounded-[32px] border p-1 shadow-2xl transition-all duration-500",
-                      isMUSD ? "border-amber-500/20 bg-amber-950/20" : "border-white/10 bg-white/[0.03]"
+                      isMUSD ? "border-warning/20 bg-warning/20" : "border-white/10 bg-white/[0.03]"
                     )}
                 >
                     <div className="rounded-[28px] bg-gradient-to-br from-white/[0.05] to-transparent p-8">
                         <div className="mb-6 text-center space-y-2">
                             <h3 className={cn(
                               "text-2xl font-black uppercase italic tracking-tighter",
-                              isMUSD ? "text-amber-400" : "text-white"
+                              isMUSD ? "text-warning" : "text-white"
                             )}>Permanence Protocol</h3>
                             <p className="text-xs text-white/40 font-medium">
                               Archive your experience on the {isMUSD ? 'Mezo' : 'Base'} network
@@ -455,12 +455,12 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
 
                         <div className={cn(
                           "mb-8 rounded-2xl p-4 border",
-                          isMUSD ? "bg-amber-500/5 border-amber-500/20" : "bg-purple-500/5 border-purple-500/10"
+                          isMUSD ? "bg-warning/5 border-warning/20" : "bg-brand/5 border-brand/10"
                         )}>
                             <div className="flex items-center justify-between">
                                 <span className={cn(
                                   "text-[10px] font-black uppercase tracking-widest",
-                                  isMUSD ? "text-amber-500/60" : "text-purple-400/60"
+                                  isMUSD ? "text-warning/60" : "text-brand/60"
                                 )}>Mint Cost</span>
                                 <div className="flex items-center space-x-2">
                                     <span className="font-mono text-lg font-black text-white">
@@ -468,7 +468,7 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
                                     </span>
                                     <span className={cn(
                                       "text-[10px] font-black",
-                                      isMUSD ? "text-amber-500" : "text-purple-400"
+                                      isMUSD ? "text-warning" : "text-brand"
                                     )}>{isMUSD ? 'MUSD' : writerCoin?.symbol}</span>
                                 </div>
                             </div>
@@ -489,7 +489,7 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
                                 disabled={isMinting}
                                 className={cn(
                                   "w-full py-4 text-[10px] font-black uppercase tracking-widest transition-colors disabled:opacity-50",
-                                  isMUSD ? "text-amber-500/40 hover:text-amber-300" : "text-purple-400/40 hover:text-purple-300"
+                                  isMUSD ? "text-warning/40 hover:text-warning" : "text-brand/40 hover:text-brand"
                                 )}
                             >
                                 Cancel ARCHIVE

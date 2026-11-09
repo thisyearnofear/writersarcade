@@ -68,7 +68,7 @@ export function GenreSelector({ value = 'horror', onChange, disabled = false }: 
 
   return (
     <div className="game-type-selector" role="radiogroup" aria-label="Tone">
-      <label className="mb-3 block text-sm font-medium text-purple-200">Tone</label>
+      <label className="mb-3 block text-sm font-medium text-brand">Tone</label>
       <div className="grid grid-cols-3 gap-3">
         {GENRES.map((genre) => (
           <button
@@ -88,7 +88,7 @@ export function GenreSelector({ value = 'horror', onChange, disabled = false }: 
 >
             <GenreIcon genre={genre} />
             <span className="text-sm">{GENRE_LABEL[genre]}</span>
-            <span className="text-[11px] text-purple-300/80">{GENRE_COPY[genre]}</span>
+            <span className="text-[11px] text-brand/80">{GENRE_COPY[genre]}</span>
           </button>
         ))}
       </div>

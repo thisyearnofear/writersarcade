@@ -139,9 +139,9 @@ export function AssetBalanceAnalysis({
     }, [metrics])
 
     const statusIcon = {
-        good: <CheckCircle className="w-5 h-5 text-green-400" />,
-        warning: <AlertCircle className="w-5 h-5 text-yellow-400" />,
-        critical: <AlertCircle className="w-5 h-5 text-red-400" />
+        good: <CheckCircle className="w-5 h-5 text-success" />,
+        warning: <AlertCircle className="w-5 h-5 text-warning" />,
+        critical: <AlertCircle className="w-5 h-5 text-destructive" />
     }
 
     const statusColor = {
@@ -186,10 +186,10 @@ export function AssetBalanceAnalysis({
                             <span
                                 className={`text-lg font-bold ${
                                     metric.status === 'good'
-                                        ? 'text-green-400'
+                                        ? 'text-success'
                                         : metric.status === 'warning'
-                                            ? 'text-yellow-400'
-                                            : 'text-red-400'
+                                            ? 'text-warning'
+                                            : 'text-destructive'
                                 }`}
                             >
                                 {metric.current}
@@ -209,10 +209,10 @@ export function AssetBalanceAnalysis({
                                 transition={{ duration: 0.5 }}
                                 className={`h-full ${
                                     metric.status === 'good'
-                                        ? 'bg-green-500'
+                                        ? 'bg-success'
                                         : metric.status === 'warning'
-                                            ? 'bg-yellow-500'
-                                            : 'bg-red-500'
+                                            ? 'bg-warning'
+                                            : 'bg-destructive'
                                 }`}
                             />
                         </div>
@@ -247,7 +247,7 @@ export function AssetBalanceAnalysis({
                             </li>
                         ))}
                     {metrics.every(m => m.status === 'good') && (
-                        <li className="text-green-400 font-medium">
+                        <li className="text-success font-medium">
                             ✓ All metrics are well-balanced. Ready to compile!
                         </li>
                     )}

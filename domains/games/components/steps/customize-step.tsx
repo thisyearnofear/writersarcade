@@ -98,14 +98,14 @@ export function CustomizeStep({
                 <div className="space-y-4 border-t border-border p-4">
                   <div className={`rounded-lg border p-3 ${
                     isMusdPath
-                      ? 'border-amber-400/50 bg-amber-500/10'
+                      ? 'border-warning/50 bg-warning/10'
                       : 'border-border bg-muted/30'
                   }`}>
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           <p className="text-sm font-bold text-foreground">MUSD · Mezo</p>
-                          <span className="rounded-full border border-amber-400/40 bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-200">
+                          <span className="rounded-full border border-warning/40 bg-warning/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-warning">
                             Recommended
                           </span>
                         </div>
@@ -114,7 +114,7 @@ export function CustomizeStep({
                         </p>
                       </div>
                       {isMusdPath ? (
-                        <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500/15 px-2.5 py-1 text-xs font-semibold text-emerald-300">
+                        <span className="inline-flex items-center gap-1 rounded-md bg-success/15 px-2.5 py-1 text-xs font-semibold text-success">
                           <CheckCircle2 className="h-3.5 w-3.5" />
                           Selected
                         </span>
@@ -122,7 +122,7 @@ export function CustomizeStep({
                         <button
                           type="button"
                           onClick={onSetMusdPath}
-                          className="inline-flex min-h-10 items-center justify-center rounded-md bg-amber-600 px-3 py-2 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-amber-500"
+                          className="inline-flex min-h-10 items-center justify-center rounded-md bg-warning px-3 py-2 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-warning"
                         >
                           Use MUSD
                         </button>
@@ -133,8 +133,8 @@ export function CustomizeStep({
 
                   <div className={`rounded-lg border p-3 ${
                     !isMusdPath
-                      ? 'border-purple-400/50 bg-purple-500/10'
-                      : 'border-purple-500/20 bg-slate-950/30'
+                      ? 'border-brand/50 bg-brand/10'
+                      : 'border-brand/20 bg-card/30'
                   }`}>
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div className="min-w-0">
@@ -142,14 +142,14 @@ export function CustomizeStep({
                         <p className="text-xs text-muted-foreground">
                           Best when you already know the article belongs to a supported writer.
                         </p>
-                        <p className={`mt-1.5 text-[11px] font-semibold ${writerCoin.paymentEnabled ? 'text-emerald-300/90' : 'text-amber-200/90'}`}>
+                        <p className={`mt-1.5 text-[11px] font-semibold ${writerCoin.paymentEnabled ? 'text-success/90' : 'text-warning/90'}`}>
                           {writerCoin.paymentEnabled
                             ? `${writerCoin.writer} auto-receives 60% of every transaction.`
                             : `${writerCoin.symbol} is not enabled on the Base payment contract yet. Use MUSD.`}
                         </p>
                       </div>
                       {!isMusdPath ? (
-                        <span className="inline-flex items-center gap-1 rounded-md bg-purple-500/15 px-2.5 py-1 text-xs font-semibold text-purple-200">
+                        <span className="inline-flex items-center gap-1 rounded-md bg-brand/15 px-2.5 py-1 text-xs font-semibold text-brand">
                           <CheckCircle2 className="h-3.5 w-3.5" />
                           Selected
                         </span>
@@ -160,8 +160,8 @@ export function CustomizeStep({
                           disabled={!writerCoin.paymentEnabled}
                           className={`inline-flex min-h-10 items-center justify-center rounded-md border px-3 py-2 text-xs font-bold uppercase tracking-wider transition ${
                             writerCoin.paymentEnabled
-                              ? 'border-purple-500/40 bg-purple-500/10 text-purple-100 hover:bg-purple-500/20'
-                              : 'cursor-not-allowed border-slate-600/40 bg-slate-800/40 text-slate-400'
+                              ? 'border-brand/40 bg-brand/10 text-brand hover:bg-brand/20'
+                              : 'cursor-not-allowed border-border/40 bg-card/40 text-muted-foreground'
                           }`}
                         >
                           {writerCoin.paymentEnabled ? 'Use writer coin' : 'Use MUSD instead'}
@@ -181,13 +181,13 @@ export function CustomizeStep({
                           <button
                             type="button"
                             onClick={onToggleWriterSelector}
-                            className="text-xs text-purple-400 hover:text-purple-300 underline decoration-dotted"
+                            className="text-xs text-brand hover:text-brand underline decoration-dotted"
                           >
                             {showWriterSelector ? 'Done' : 'Change writer'}
                           </button>
                         </div>
 
-                        <div className="rounded-lg border border-purple-500/20 bg-purple-950/20 p-3 text-xs text-purple-100/80">
+                        <div className="rounded-lg border border-brand/20 bg-brand/20 p-3 text-xs text-brand/80">
                           {writerCoin.paymentEnabled
                             ? 'The article URL must match this writer. If it does not, switch back to MUSD.'
                             : `${writerCoin.symbol} payments are not active on Base yet. MUSD remains available for this writer's articles.`}
@@ -219,14 +219,14 @@ export function CustomizeStep({
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-xl border border-cyan-500/30 bg-cyan-500/10 p-4"
+          className="rounded-xl border border-info/30 bg-info/10 p-4"
         >
           <div className="flex items-start gap-3">
-            <div className="mt-0.5 rounded-lg bg-cyan-500/20 p-2">
-              <Sparkles className="h-4 w-4 text-cyan-200" />
+            <div className="mt-0.5 rounded-lg bg-info/20 p-2">
+              <Sparkles className="h-4 w-4 text-info" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-bold uppercase tracking-wider text-cyan-200/80">
+              <p className="text-xs font-bold uppercase tracking-wider text-info/80">
                 Story direction
               </p>
               <h3 className="mt-1 text-base font-semibold text-foreground">
@@ -246,7 +246,7 @@ export function CustomizeStep({
                 />
               )}
               <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-                <span className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1 text-cyan-100">
+                <span className="rounded-full border border-info/30 bg-info/10 px-2.5 py-1 text-info">
                   {mode === 'wordle' ? 'Free' : 'Paid'}
                 </span>
                 {mode === 'story' && (
@@ -258,7 +258,7 @@ export function CustomizeStep({
                   <button
                     type="button"
                     onClick={onToggleCustomization}
-                    className="rounded-full border border-cyan-500/30 bg-black/20 px-2.5 py-1 text-cyan-100 transition hover:bg-cyan-500/10"
+                    className="rounded-full border border-info/30 bg-black/20 px-2.5 py-1 text-info transition hover:bg-info/10"
                   >
                     Adjust direction
                   </button>
@@ -287,7 +287,7 @@ export function CustomizeStep({
         >
           <AnimatePresence>
             <motion.div
-              className="mt-4 space-y-4 p-5 rounded-xl border-2 border-indigo-500/40 bg-gradient-to-br from-slate-900/80 to-indigo-950/60 shadow-lg"
+              className="mt-4 space-y-4 p-5 rounded-xl border-2 border-brand/40 bg-gradient-to-br from-card/80 to-brand/60 shadow-lg"
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
@@ -301,11 +301,11 @@ export function CustomizeStep({
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-sm font-semibold text-purple-100">Story direction</span>
+                    <span className="text-sm font-semibold text-brand">Story direction</span>
                   </div>
                   <button
                     type="button"
-                    className="text-xs text-indigo-300 hover:text-indigo-200 underline decoration-dotted disabled:opacity-50"
+                    className="text-xs text-brand hover:text-brand underline decoration-dotted disabled:opacity-50"
                     onClick={onResetDefaults}
                     disabled={isGenerating}
                   >
@@ -316,10 +316,10 @@ export function CustomizeStep({
                 <StylePreview genre={genre} difficulty={difficulty} />
 
                 <div className="flex justify-center gap-2 text-xs">
-                  <span className="inline-flex items-center rounded-full bg-purple-800/80 border border-purple-500/80 px-3 py-1 text-purple-100 font-medium">
+                  <span className="inline-flex items-center rounded-full bg-brand/80 border border-brand/80 px-3 py-1 text-brand font-medium">
                     Tone: {GENRE_LABEL[genre]}
                   </span>
-                  <span className="inline-flex items-center rounded-full bg-purple-800/80 border border-purple-500/80 px-3 py-1 text-purple-100 font-medium">
+                  <span className="inline-flex items-center rounded-full bg-brand/80 border border-brand/80 px-3 py-1 text-brand font-medium">
                     Intensity: {DIFFICULTY_LABEL[difficulty]}
                   </span>
                 </div>
@@ -333,7 +333,7 @@ export function CustomizeStep({
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-purple-100">
+                  <label className="text-sm font-medium text-brand">
                     Visual finish
                   </label>
                   <div className="grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">
@@ -343,8 +343,8 @@ export function CustomizeStep({
                       disabled={isGenerating}
                       className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
                         imageQuality === 'fast'
-                          ? 'bg-purple-600 text-white border-2 border-purple-400'
-                          : 'bg-purple-900/30 text-purple-300 border-2 border-purple-700/50 hover:border-purple-500'
+                          ? 'bg-brand text-white border-2 border-brand'
+                          : 'bg-brand/30 text-brand border-2 border-brand/50 hover:border-brand'
                       }`}                      >
                       Explore quickly
                     </button>
@@ -354,13 +354,13 @@ export function CustomizeStep({
                       disabled={isGenerating}
                       className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
                         imageQuality === 'quality'
-                          ? 'bg-purple-600 text-white border-2 border-purple-400'
-                          : 'bg-purple-900/30 text-purple-300 border-2 border-purple-700/50 hover:border-purple-500'
+                          ? 'bg-brand text-white border-2 border-brand'
+                          : 'bg-brand/30 text-brand border-2 border-brand/50 hover:border-brand'
                       }`}                      >
                       Refined visuals
                     </button>
                   </div>
-                  <p className="text-xs text-purple-300/70">
+                  <p className="text-xs text-brand/70">
                     {imageQuality === 'fast'
                       ? 'Faster generation for exploring the story direction'
                       : 'More visual detail, with a longer generation time'
@@ -369,12 +369,12 @@ export function CustomizeStep({
                 </div>
 
                 <motion.div
-                  className="p-3 rounded-lg bg-purple-900/50 border border-purple-500/30 text-sm text-purple-100 flex items-start gap-2"
+                  className="p-3 rounded-lg bg-brand/50 border border-brand/30 text-sm text-brand flex items-start gap-2"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2, duration: 0.3 }}
                 >
-                  <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0 text-yellow-300" />
+                  <Lightbulb className="w-4 h-4 mt-0.5 flex-shrink-0 text-warning" />
                   <div className="space-y-1 text-xs">
                     <div>• <strong>Tone</strong> shapes narrative mood and visual style</div>
                     <div>• <strong>Story intensity</strong> controls branching complexity</div>

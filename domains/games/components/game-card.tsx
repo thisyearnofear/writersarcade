@@ -67,7 +67,7 @@ export function GameCard({ slug, title, description, genre, imageUrl, primaryCol
           </div>
         )}
         {hasAnimation && (
-          <div className="absolute top-3 right-3 z-10 flex items-center gap-1 rounded-full bg-purple-600/90 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-lg backdrop-blur-sm">
+          <div className="absolute top-3 right-3 z-10 flex items-center gap-1 rounded-full bg-brand/90 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-lg backdrop-blur-sm">
             <Clapperboard className="h-3 w-3" />
             Animated
           </div>
@@ -114,7 +114,7 @@ export function GameCard({ slug, title, description, genre, imageUrl, primaryCol
           </div>
           <div className="flex items-center gap-2">
             {playCount !== undefined && playCount >= 5 && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-500">
+              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-warning">
                 <TrendingUp className="w-3 h-3" />
                 Trending
               </span>

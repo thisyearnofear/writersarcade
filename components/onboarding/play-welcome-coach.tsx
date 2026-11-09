@@ -124,7 +124,7 @@ export function PlayWelcomeCoach({ gameSlug }: PlayWelcomeCoachProps) {
           </div>
 
           <div className="p-6 space-y-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500/10 text-purple-500">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand/10 text-brand">
               <Icon className="h-6 w-6" />
             </div>
             <h2 id="play-welcome-title" className="text-lg font-bold text-foreground">{current.title}</h2>
@@ -138,7 +138,7 @@ export function PlayWelcomeCoach({ gameSlug }: PlayWelcomeCoachProps) {
               </Button>
             )}
             <Button
-              className="flex-1 bg-purple-600 hover:bg-purple-500"
+              className="flex-1 bg-brand hover:bg-brand"
               onClick={() => (isLast ? dismiss() : setStep(step + 1))}
             >
               {isLast ? 'Start playing' : 'Next'}

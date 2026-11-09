@@ -106,9 +106,9 @@ export function HeroScreen({
             ) : null}
 
             {startError && !isStarting && (
-              <div className="w-full max-w-md rounded-lg border border-amber-500/30 bg-black/60 px-4 py-3 text-left backdrop-blur-sm">
-                <p className="text-sm font-semibold text-amber-100">Couldn&apos;t start this story</p>
-                <p className="mt-1 text-xs text-amber-100/75 leading-relaxed">
+              <div className="w-full max-w-md rounded-lg border border-warning/30 bg-black/60 px-4 py-3 text-left backdrop-blur-sm">
+                <p className="text-sm font-semibold text-warning">Couldn&apos;t start this story</p>
+                <p className="mt-1 text-xs text-warning/75 leading-relaxed">
                   {startError} Try again, or explore other games in the arcade.
                 </p>
                 <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -118,14 +118,14 @@ export function HeroScreen({
                       onClearStartError?.()
                       onStartClick()
                     }}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-200 hover:text-white"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-warning hover:text-white"
                   >
                     <RefreshCw className="h-3.5 w-3.5" />
                     Try again
                   </button>
                   <Link
                     href="/games"
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-300 hover:text-purple-200"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand hover:text-brand"
                   >
                     <Gamepad2 className="h-3.5 w-3.5" />
                     Browse arcade
@@ -183,22 +183,22 @@ export function HeroScreen({
                     <div className="space-y-2 w-full max-w-xs">
                       <div className="flex items-center gap-3">
                         <div
-                          className={`w-2 h-2 rounded-full transition-all duration-700 ${loadingProgress.text ? 'bg-green-500' : 'bg-yellow-500 animate-pulse'
+                          className={`w-2 h-2 rounded-full transition-all duration-700 ${loadingProgress.text ? 'bg-success' : 'bg-warning animate-pulse'
                             }`}
                         />
                         <span className="text-xs text-muted-foreground">Crafting narrative</span>
                         {loadingProgress.text && (
-                          <span className="text-xs text-green-400 ml-auto">✓</span>
+                          <span className="text-xs text-success ml-auto">✓</span>
                         )}
                       </div>
                       <div className="flex items-center gap-3">
                         <div
-                          className={`w-2 h-2 rounded-full transition-all duration-700 ${loadingProgress.images ? 'bg-green-500' : 'bg-muted animate-pulse'
+                          className={`w-2 h-2 rounded-full transition-all duration-700 ${loadingProgress.images ? 'bg-success' : 'bg-muted animate-pulse'
                             }`}
                         />
                         <span className="text-xs text-muted-foreground">Generating visuals</span>
                         {loadingProgress.images && (
-                          <span className="text-xs text-green-400 ml-auto">✓</span>
+                          <span className="text-xs text-success ml-auto">✓</span>
                         )}
                       </div>
                     </div>
@@ -216,7 +216,7 @@ export function HeroScreen({
               transition={{ delay: 1, duration: 0.5 }}
             >
               <div className="flex items-start gap-2">
-                <Lightbulb className="w-4 h-4 mt-0.5 text-yellow-400 flex-shrink-0" />
+                <Lightbulb className="w-4 h-4 mt-0.5 text-warning flex-shrink-0" />
                 <p>💡 <span className="text-white font-medium">Pro Tip:</span> Make choices carefully - every decision shapes your story</p>
               </div>
             </motion.div>
@@ -233,10 +233,10 @@ export function HeroScreen({
               aria-labelledby="insert-coin-title"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-card border border-purple-500/30 rounded-xl p-5 sm:p-6 max-w-sm w-full shadow-2xl max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain"
+              className="bg-card border border-brand/30 rounded-xl p-5 sm:p-6 max-w-sm w-full shadow-2xl max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain"
             >
               <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-purple-600/20 rounded-full flex items-center justify-center mx-auto">
+                <div className="w-16 h-16 bg-brand/20 rounded-full flex items-center justify-center mx-auto">
                   <div className="text-3xl">🪙</div>
                 </div>
 
@@ -244,7 +244,7 @@ export function HeroScreen({
 
                 <p className="text-muted-foreground">
                   This arcade cabinet requires a credit of <br />
-                  <span className="text-xl font-bold text-purple-400">{playFee} $DONUT</span>
+                  <span className="text-xl font-bold text-brand">{playFee} $DONUT</span>
                 </p>
 
                 <div className="text-xs text-muted-foreground bg-card p-3 rounded border border-border">
@@ -262,7 +262,7 @@ export function HeroScreen({
                   <Button
                     onClick={onPaymentConfirm}
                     disabled={isPaying}
-                    className="flex-1 bg-purple-600 hover:bg-purple-700"
+                    className="flex-1 bg-brand hover:bg-brand"
                   >
                     {isPaying ? (
                       <>

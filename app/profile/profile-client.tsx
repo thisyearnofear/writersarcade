@@ -99,7 +99,7 @@ export function ProfileClient() {
               <img
                 src={avatarUrl}
                 alt={displayName}
-                className="w-16 h-16 rounded-full border-2 border-purple-500"
+                className="w-16 h-16 rounded-full border-2 border-brand"
               />
               <div>
                 <h1 className="text-3xl font-bold">{displayName}</h1>
@@ -173,7 +173,7 @@ export function ProfileClient() {
                         <div className="flex items-center space-x-2">
                           <a
                             href={`/games/${game.slug}`}
-                            className="px-3 py-1 bg-purple-600 hover:bg-purple-700 rounded text-sm transition-colors"
+                            className="px-3 py-1 bg-brand hover:bg-brand rounded text-sm transition-colors"
                           >
                             Play
                           </a>
@@ -187,7 +187,7 @@ export function ProfileClient() {
                   <p className="text-muted-foreground mb-4">No games created yet</p>
                   <a
                     href="/generate"
-                    className="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded transition-colors"
+                    className="inline-flex items-center px-4 py-2 bg-brand hover:bg-brand rounded transition-colors"
                   >
                     Create Your First Game
                   </a>

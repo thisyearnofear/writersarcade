@@ -89,7 +89,7 @@ export function DashboardClient({ initialSummary }: DashboardClientProps) {
                 </div>
                 <Link
                   href="/my-games"
-                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-purple-700"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand"
                 >
                   Open library
                   <ChevronRight className="w-4 h-4" />
@@ -100,7 +100,7 @@ export function DashboardClient({ initialSummary }: DashboardClientProps) {
                 <span className="font-mono text-foreground">{walletDisplay}</span>
                 {mezoAccount?.totalMats !== undefined && (
                   <span className="inline-flex items-center gap-1.5">
-                    <Coins className="w-3.5 h-3.5 text-amber-500" />
+                    <Coins className="w-3.5 h-3.5 text-warning" />
                     <span className="font-semibold text-foreground">
                       {mezoAccount.totalMats.toLocaleString()}
                     </span>
@@ -183,7 +183,7 @@ function AttentionSection({ items }: { items: AttentionItem[] }) {
   if (items.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-border bg-card/50 px-4 py-10 text-center">
-        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500">
+        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-success/10 text-success">
           <Sparkles className="h-6 w-6" />
         </div>
         <h2 className="text-lg font-semibold text-foreground mb-1">Nothing needs attention</h2>
@@ -197,7 +197,7 @@ function AttentionSection({ items }: { items: AttentionItem[] }) {
   return (
     <section>
       <div className="mb-4 flex items-center gap-2">
-        <AlertTriangle className="h-4 w-4 text-amber-500" />
+        <AlertTriangle className="h-4 w-4 text-warning" />
         <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
           Needs attention
         </h2>
@@ -217,7 +217,7 @@ function AttentionSection({ items }: { items: AttentionItem[] }) {
             <Link
               key={`${item.kind}-${item.game.id}`}
               href={href}
-              className="group flex items-center gap-4 rounded-lg border border-border bg-card p-4 hover:border-purple-500/40 transition-colors"
+              className="group flex items-center gap-4 rounded-lg border border-border bg-card p-4 hover:border-brand/40 transition-colors"
             >
               <div
                 className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${toneClasses[meta.tone]}`}
@@ -265,7 +265,7 @@ function RecentGamesSection({ games }: { games: CreatorStudioSummary['games']['r
           <p className="text-sm text-muted-foreground mb-3">No games yet.</p>
           <Link
             href="/generate"
-            className="inline-flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-purple-700"
+            className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand"
           >
             Create your first game
           </Link>
@@ -275,7 +275,7 @@ function RecentGamesSection({ games }: { games: CreatorStudioSummary['games']['r
           {games.map((game) => (
             <div
               key={game.id}
-              className="group flex items-center gap-3 rounded-lg border border-border bg-card p-3 hover:border-purple-500/40 transition-colors"
+              className="group flex items-center gap-3 rounded-lg border border-border bg-card p-3 hover:border-brand/40 transition-colors"
             >
               <Link href={`/games/${game.slug}`} className="flex min-w-0 flex-1 items-center gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">

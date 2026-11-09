@@ -15,22 +15,22 @@ export function PaymentTokenSelector({ selectedToken, onSelectToken, writerCoin 
   const musdUsable = getActiveMusdConfig().paymentSplitter !== '0x0000000000000000000000000000000000000000'
 
   return (
-    <div className="flex gap-2 p-1 rounded-lg bg-slate-900/50 border border-purple-500/20 mb-4">
+    <div className="flex gap-2 p-1 rounded-lg bg-card/50 border border-brand/20 mb-4">
       <button
         type="button"
         onClick={() => writerCoinEnabled && onSelectToken(writerCoin)}
         disabled={!writerCoinEnabled}
         className={`flex-1 px-3 py-2 rounded-md text-xs font-bold uppercase tracking-wider transition-colors ${
           selectedToken.type === 'writercoin'
-            ? 'bg-purple-600 text-white shadow-lg'
+            ? 'bg-brand text-white shadow-lg'
             : writerCoinEnabled
-              ? 'text-purple-300 hover:bg-purple-800/50'
-              : 'text-slate-500 cursor-not-allowed opacity-60'
+              ? 'text-brand hover:bg-brand/50'
+              : 'text-muted-foreground cursor-not-allowed opacity-60'
         }`}
       >
         <span className="block">{writerCoin.coin.symbol}</span>
         <span className={`block text-[10px] font-normal normal-case tracking-normal mt-0.5 ${
-          selectedToken.type === 'writercoin' ? 'text-purple-200' : 'text-purple-400/60'
+          selectedToken.type === 'writercoin' ? 'text-brand' : 'text-brand/60'
         }`}>
           {writerCoinEnabled ? 'Writer coin · Base' : 'Use MUSD'}
         </span>
@@ -41,15 +41,15 @@ export function PaymentTokenSelector({ selectedToken, onSelectToken, writerCoin 
         disabled={!musdUsable}
         className={`flex-1 px-3 py-2 rounded-md text-xs font-bold uppercase tracking-wider transition-colors ${
           selectedToken.type === 'musd'
-            ? 'bg-orange-600 text-white shadow-lg'
+            ? 'bg-warning text-white shadow-lg'
             : musdUsable
-              ? 'text-orange-300 hover:bg-orange-800/50'
-              : 'text-slate-500 cursor-not-allowed opacity-60'
+              ? 'text-warning hover:bg-warning/50'
+              : 'text-muted-foreground cursor-not-allowed opacity-60'
         }`}
       >
         <span className="block">MUSD</span>
         <span className={`block text-[10px] font-normal normal-case tracking-normal mt-0.5 ${
-          selectedToken.type === 'musd' ? 'text-orange-200' : 'text-orange-400/60'
+          selectedToken.type === 'musd' ? 'text-warning' : 'text-warning/60'
         }`}>
           {musdUsable ? 'Mezo · universal' : 'Use credits (top up with MUSD)'}
         </span>
@@ -59,13 +59,13 @@ export function PaymentTokenSelector({ selectedToken, onSelectToken, writerCoin 
         onClick={() => onSelectToken({ type: 'credits' })}
         className={`flex-1 px-3 py-2 rounded-md text-xs font-bold uppercase tracking-wider transition-colors ${
           selectedToken.type === 'credits'
-            ? 'bg-emerald-600 text-white shadow-lg'
-            : 'text-emerald-300 hover:bg-emerald-800/50'
+            ? 'bg-success text-white shadow-lg'
+            : 'text-success hover:bg-success/50'
         }`}
       >
         <span className="block">Credits</span>
         <span className={`block text-[10px] font-normal normal-case tracking-normal mt-0.5 ${
-          selectedToken.type === 'credits' ? 'text-emerald-200' : 'text-emerald-400/60'
+          selectedToken.type === 'credits' ? 'text-success' : 'text-success/60'
         }`}>
           No crypto needed
         </span>

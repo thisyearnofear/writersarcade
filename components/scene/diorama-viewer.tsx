@@ -364,13 +364,13 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false }: DioramaView
       {/* World-complete moment — every objective thread discovered. */}
       {worldComplete && !completeDismissed && !intro && (
         <div className="pointer-events-none absolute inset-x-0 bottom-28 flex justify-center px-4">
-          <div className="pointer-events-auto w-full max-w-md rounded-xl border border-emerald-400/30 bg-black/80 p-5 text-center backdrop-blur">
-            <p className="text-xs font-bold uppercase tracking-[0.25em] text-emerald-400">World complete</p>
+          <div className="pointer-events-auto w-full max-w-md rounded-xl border border-success/30 bg-black/80 p-5 text-center backdrop-blur">
+            <p className="text-xs font-bold uppercase tracking-[0.25em] text-success">World complete</p>
             <p className="mt-1 font-serif text-xl text-white">You&rsquo;ve traced every thread of {scene.title}.</p>
             <div className="mt-3 flex items-center justify-center gap-4">
               <Link
                 href={`/games/${slug}?play=1`}
-                className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-black transition hover:bg-emerald-400"
+                className="rounded-lg bg-success px-4 py-2 text-sm font-semibold text-black transition hover:bg-success"
               >
                 Back to the comic
               </Link>
@@ -399,7 +399,7 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false }: DioramaView
             <div className="pointer-events-auto rounded-lg bg-black/50 px-3 py-2 text-sm text-warning backdrop-blur">
               <p>Goal: {scene.game.goal}</p>
               {objectiveIds.length > 0 && (
-                <p className={`mt-0.5 text-xs ${worldComplete ? 'text-emerald-400' : 'text-white/60'}`}>
+                <p className={`mt-0.5 text-xs ${worldComplete ? 'text-success' : 'text-white/60'}`}>
                   Threads found {objectivesFound}/{objectiveIds.length}{worldComplete ? ' — world complete' : ''}
                 </p>
               )}

@@ -74,7 +74,7 @@ export function ArticleStep({
   if (dailyFlow) {
     const isDual = dailyFlow.sourceType === 'dual'
     return (
-      <div className="rounded-xl border border-purple-500/25 bg-purple-950/10 p-4 space-y-4">
+      <div className="rounded-xl border border-brand/25 bg-brand/10 p-4 space-y-4">
         <div>
           <h2 className="text-lg font-semibold text-foreground">Today&apos;s source</h2>
           <p className="text-sm text-muted-foreground">
@@ -85,7 +85,7 @@ export function ArticleStep({
         </div>
         {isDual && (
           <div className="rounded-lg border border-border bg-card/80 p-3 text-left space-y-1">
-            <p className="text-xs font-bold uppercase tracking-wider text-purple-400">
+            <p className="text-xs font-bold uppercase tracking-wider text-brand">
               Plot — writer
             </p>
             <p className="text-sm font-medium text-foreground">
@@ -101,7 +101,7 @@ export function ArticleStep({
                 href={dailyFlow.articleUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-purple-300 hover:underline"
+                className="text-xs text-brand hover:underline"
               >
                 Open article
               </a>
@@ -111,12 +111,12 @@ export function ArticleStep({
         {dailyFlow.canvasUrl && (
           <div className="space-y-2">
             {isDual && (
-              <p className="text-xs font-bold uppercase tracking-wider text-purple-400">
+              <p className="text-xs font-bold uppercase tracking-wider text-brand">
                 World — BasePaint Day {dailyFlow.day}
                 {dailyFlow.canvasTheme ? ` — ${dailyFlow.canvasTheme}` : ''}
               </p>
             )}
-            <div className="overflow-hidden rounded-lg border border-purple-500/20">
+            <div className="overflow-hidden rounded-lg border border-brand/20">
               <img
                 src={getBasePaintCanvasProxyUrl(dailyFlow.day)}
                 alt={dailyFlow.canvasTheme || dailyFlow.theme}
@@ -128,7 +128,7 @@ export function ArticleStep({
         )}
         {!isDual && articlePreview && (
           <div className="rounded-lg border border-border bg-card/80 p-3 text-left">
-            <p className="text-xs font-bold uppercase tracking-wider text-purple-400 mb-1">Story seed</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-brand mb-1">Story seed</p>
             <p className="text-sm text-muted-foreground line-clamp-4">{articlePreview.excerpt}</p>
           </div>
         )}
@@ -146,7 +146,7 @@ export function ArticleStep({
             </div>
           </div>
         )}
-        <p className="text-xs text-emerald-400/90">
+        <p className="text-xs text-success/90">
           Source locked in — customize genre below, then generate your daily comic.
         </p>
       </div>
@@ -167,7 +167,7 @@ export function ArticleStep({
             onClick={() => onSourceKindChange(kind)}
             className={`min-h-9 rounded-md px-3 py-1.5 text-sm font-semibold transition-colors ${
               sourceKind === kind
-                ? 'bg-purple-600 text-white shadow'
+                ? 'bg-brand text-white shadow'
                 : 'text-muted-foreground hover:bg-muted hover:text-foreground'
             }`}
           >
@@ -250,26 +250,26 @@ export function ArticleStep({
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
-          className="rounded-lg border border-purple-500/30 bg-purple-500/10 px-4 py-3"
+          className="rounded-lg border border-brand/30 bg-brand/10 px-4 py-3"
         >
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <p className="text-xs font-bold uppercase tracking-wider text-purple-300">
+                <p className="text-xs font-bold uppercase tracking-wider text-brand">
                   {detectedCoin.symbol} detected
                 </p>
-                <span className="rounded-full border border-purple-400/40 bg-purple-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-purple-200">
+                <span className="rounded-full border border-brand/40 bg-brand/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-brand">
                   Writer Coin
                 </span>
               </div>
-              <p className="mt-1 text-xs text-purple-200/70">
+              <p className="mt-1 text-xs text-brand/70">
                 This article is by {detectedCoin.name}. Pay with {detectedCoin.symbol} on Base to support them directly.
               </p>
             </div>
             <button
               type="button"
               onClick={onUseDetectedCoin}
-              className="flex-shrink-0 inline-flex items-center gap-1 rounded-md bg-purple-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-purple-500 transition-colors"
+              className="flex-shrink-0 inline-flex items-center gap-1 rounded-md bg-brand px-3 py-1.5 text-xs font-bold text-white hover:bg-brand transition-colors"
             >
               Use {detectedCoin.symbol}
             </button>
@@ -281,14 +281,14 @@ export function ArticleStep({
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3"
+          className="rounded-lg border border-success/30 bg-success/10 p-3"
         >
           <div className="flex items-start gap-3">
-            <div className="mt-0.5 rounded-md bg-emerald-500/20 p-1.5">
-              <CheckCircle2 className="h-4 w-4 text-emerald-300" />
+            <div className="mt-0.5 rounded-md bg-success/20 p-1.5">
+              <CheckCircle2 className="h-4 w-4 text-success" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-bold uppercase tracking-wider text-emerald-300">Article ready</p>
+              <p className="text-xs font-bold uppercase tracking-wider text-success">Article ready</p>
               <h3 className="mt-1 text-sm font-semibold text-foreground">{articlePreview.title}</h3>
               <p className="mt-1 text-xs text-muted-foreground">
                 {articlePreviewMeta(articlePreview)}
@@ -308,9 +308,9 @@ export function ArticleStep({
         articlePreview &&
         hasPreviewedCurrentUrl &&
         basePaintStage && (
-        <div className="rounded-xl border border-purple-500/25 bg-purple-950/10 overflow-hidden">
+        <div className="rounded-xl border border-brand/25 bg-brand/10 overflow-hidden">
           <div className="px-4 pt-4 pb-2 space-y-1">
-            <p className="text-xs font-bold uppercase tracking-wider text-purple-300">
+            <p className="text-xs font-bold uppercase tracking-wider text-brand">
               Today&apos;s world
             </p>
             <p className="text-sm text-muted-foreground leading-relaxed">
@@ -319,7 +319,7 @@ export function ArticleStep({
           </div>
 
           <div className="px-4 pb-3 space-y-3">
-              <div className="overflow-hidden rounded-lg border border-purple-500/20">
+              <div className="overflow-hidden rounded-lg border border-brand/20">
                 <img
                   src={getBasePaintCanvasProxyUrl(basePaintStage.day)}
                   alt={basePaintStage.theme}
@@ -328,7 +328,7 @@ export function ArticleStep({
                 />
               </div>
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-xs text-purple-200/90">
+                <p className="text-xs text-brand/90">
                   Day {basePaintStage.day}
                   {basePaintStage.theme ? ` — ${basePaintStage.theme}` : ''}
                 </p>
@@ -350,8 +350,8 @@ export function ArticleStep({
                   onClick={() => onStageWithBasePaintChange(true)}
                   className={`min-h-11 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
                     stageWithBasePaint
-                      ? 'bg-purple-600 text-white'
-                      : 'border border-purple-500/40 bg-purple-500/10 text-purple-100 hover:bg-purple-500/20'
+                      ? 'bg-brand text-white'
+                      : 'border border-brand/40 bg-brand/10 text-brand hover:bg-brand/20'
                   }`}
                 >
                   Stage in today&apos;s world
@@ -405,7 +405,7 @@ export function ArticleStep({
               onClick={onSelectStory}
               className={`min-h-11 rounded-md px-3 py-2 text-sm font-semibold transition-colors flex items-center justify-center gap-1.5 ${
                 mode === 'story'
-                  ? 'bg-purple-600 text-white shadow'
+                  ? 'bg-brand text-white shadow'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground'
               }`}
               whileHover={{ scale: 1.05 }}
@@ -413,7 +413,7 @@ export function ArticleStep({
               transition={{ type: 'spring', stiffness: 400, damping: 10 }}
             >
               <span className="font-semibold">Story</span>
-              <span className={`text-[10px] font-bold ${mode === 'story' ? 'text-purple-200' : 'text-purple-400'}`}>
+              <span className={`text-[10px] font-bold ${mode === 'story' ? 'text-brand' : 'text-brand'}`}>
                 {process.env.NEXT_PUBLIC_FEATURE_SCENE_DIORAMA === 'true'
                   ? '5-panel · NFT · 3D world'
                   : '5-panel · NFT'}
@@ -424,7 +424,7 @@ export function ArticleStep({
               onClick={onSelectWordle}
               className={`min-h-11 rounded-md px-3 py-2 text-sm font-semibold transition-colors flex items-center justify-center gap-1.5 ${
                 mode === 'wordle'
-                  ? 'bg-amber-600 text-white shadow'
+                  ? 'bg-warning text-white shadow'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground'
               }`}
               whileHover={{ scale: 1.05 }}
@@ -435,7 +435,7 @@ export function ArticleStep({
               <span className={`text-[10px] font-bold uppercase tracking-wider rounded-sm px-1 py-0.5 ${
                 mode === 'wordle'
                   ? 'bg-white/20 text-white'
-                  : 'bg-amber-500/20 text-warning'
+                  : 'bg-warning/20 text-warning'
               }`}>
                 Free
               </span>

@@ -116,7 +116,7 @@ export function AISettingsPanel({ initialPreferences }: { initialPreferences?: U
           <p className="text-xs text-muted-foreground">Configure your preferred AI models</p>
         </div>
         {isSaved && (
-          <span className="text-xs text-green-500 bg-green-500/10 px-2 py-1 rounded">
+          <span className="text-xs text-success bg-success/10 px-2 py-1 rounded">
             Saved!
           </span>
         )}
@@ -134,7 +134,7 @@ export function AISettingsPanel({ initialPreferences }: { initialPreferences?: U
       </div>
 
       {preferences.geminiEnabled && (
-        <div className="space-y-3 mt-3 pl-2 border-l-2 border-purple-500">
+        <div className="space-y-3 mt-3 pl-2 border-l-2 border-brand">
           <div className="space-y-2">
             <Input
               type="password"
@@ -163,7 +163,7 @@ export function AISettingsPanel({ initialPreferences }: { initialPreferences?: U
               </Button>
             </div>
             {validationError && (
-              <p className="text-xs text-red-400">{validationError}</p>
+              <p className="text-xs text-destructive">{validationError}</p>
             )}
           </div>
 

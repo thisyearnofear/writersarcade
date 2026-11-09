@@ -31,7 +31,7 @@ export function LeaderboardClient() {
           <div className="px-4 py-8 border-b border-border sm:py-10">
             <div className="max-w-7xl mx-auto">
               <div className="flex items-center gap-3 mb-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-400">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-warning/10 text-warning">
                   <Trophy className="h-5 w-5" />
                 </div>
                 <h1 className="font-serif text-3xl md:text-4xl font-semibold text-foreground">
@@ -44,7 +44,7 @@ export function LeaderboardClient() {
 
               <div className="flex flex-wrap items-center gap-6 ml-[3.25rem]">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <TrendingUp className="w-4 h-4 text-emerald-400" />
+                  <TrendingUp className="w-4 h-4 text-success" />
                   <span>Sorted by <span className="text-foreground font-medium">play count</span></span>
                 </div>
                 <Link
@@ -74,7 +74,7 @@ export function LeaderboardClient() {
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className="p-2 rounded-lg border border-border text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed hover:border-purple-500 hover:text-foreground transition-colors"
+                  className="p-2 rounded-lg border border-border text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed hover:border-brand hover:text-foreground transition-colors"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
@@ -86,7 +86,7 @@ export function LeaderboardClient() {
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage >= Math.ceil(totalGames / itemsPerPage)}
-                  className="p-2 rounded-lg border border-border text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed hover:border-purple-500 hover:text-foreground transition-colors"
+                  className="p-2 rounded-lg border border-border text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed hover:border-brand hover:text-foreground transition-colors"
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>

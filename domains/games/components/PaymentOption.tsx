@@ -105,12 +105,12 @@ export function PaymentOption({
   if (!isConnected) {
     return (
       <div className="space-y-4">
-        <div className="rounded-lg border border-amber-600/50 bg-amber-900/20 p-4">
+        <div className="rounded-lg border border-warning/50 bg-warning/20 p-4">
           <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-semibold text-amber-200 mb-2">Connect wallet to pay and generate</p>
-              <p className="text-sm text-amber-300 mb-3">
+              <p className="text-sm font-semibold text-warning mb-2">Connect wallet to pay and generate</p>
+              <p className="text-sm text-warning mb-3">
                 This is the only setup step before the wallet confirmation. We will use the selected payment network.
               </p>
               <WalletConnect />
@@ -137,18 +137,18 @@ export function PaymentOption({
 
       {/* Two-path wrong-chain prompt: switch network OR switch payment token */}
       {isWrongChain && !compact && (
-        <div className="rounded-xl border border-amber-500/30 bg-amber-900/10 p-3 text-xs space-y-2">
-          <div className="flex items-center gap-2 font-semibold text-amber-200">
+        <div className="rounded-xl border border-warning/30 bg-warning/10 p-3 text-xs space-y-2">
+          <div className="flex items-center gap-2 font-semibold text-warning">
             <AlertCircle className="w-4 h-4" />
             <span>You&apos;re on {currentChain.shortName} — this payment needs {isMUSD ? 'Mezo' : 'Base'}.</span>
           </div>
-          <p className="text-amber-200/80">Pick the path that fits what you have:</p>
+          <p className="text-warning/80">Pick the path that fits what you have:</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => switchChain({ chainId: targetChainId })}
               disabled={isSwitchingChain}
-              className="flex items-center justify-center gap-2 rounded-lg border border-blue-500/30 bg-blue-500/5 px-3 py-2 text-blue-200 hover:bg-blue-500/10 transition-colors disabled:opacity-50"
+              className="flex items-center justify-center gap-2 rounded-lg border border-info/30 bg-info/5 px-3 py-2 text-info hover:bg-info/10 transition-colors disabled:opacity-50"
             >
               <ArrowRightLeft className="w-3.5 h-3.5" />
               <span className="font-medium">Switch to {isMUSD ? 'Mezo' : 'Base'}</span>
@@ -156,7 +156,7 @@ export function PaymentOption({
             <button
               type="button"
               onClick={() => handleTokenChange(otherToken)}
-              className="flex items-center justify-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-emerald-200 hover:bg-emerald-500/10 transition-colors"
+              className="flex items-center justify-center gap-2 rounded-lg border border-success/30 bg-success/5 px-3 py-2 text-success hover:bg-success/10 transition-colors"
             >
               <ArrowRightLeft className="w-3.5 h-3.5" />
               <span className="font-medium">

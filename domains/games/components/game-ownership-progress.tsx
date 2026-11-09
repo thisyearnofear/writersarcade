@@ -92,7 +92,7 @@ export function GameOwnershipProgress({ game, variant = 'full' }: GameOwnershipP
     return (
       <div className="flex flex-wrap gap-1.5">
         <span
-          className="inline-flex h-6 items-center rounded border border-purple-500/30 bg-purple-500/10 px-1.5 text-[11px] font-medium text-brand"
+          className="inline-flex h-6 items-center rounded border border-brand/30 bg-brand/10 px-1.5 text-[11px] font-medium text-brand"
           title={progress.nextStepLabel ?? progress.chipLabel}
         >
           {progress.chipLabel}
@@ -106,9 +106,9 @@ export function GameOwnershipProgress({ game, variant = 'full' }: GameOwnershipP
                 key={step.id}
                 className={`inline-flex h-6 items-center gap-1 rounded border px-1.5 text-[11px] font-medium ${
                   step.state === 'complete'
-                    ? 'border-emerald-500/30 bg-emerald-500/10 text-success'
+                    ? 'border-success/30 bg-success/10 text-success'
                     : step.state === 'current'
-                      ? 'border-purple-500/40 bg-purple-500/10 text-brand'
+                      ? 'border-brand/40 bg-brand/10 text-brand'
                       : 'border-border bg-muted text-muted-foreground'
                 }`}
                 title={step.detail}
@@ -138,9 +138,9 @@ export function GameOwnershipProgress({ game, variant = 'full' }: GameOwnershipP
               <span
                 className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 ${
                   step.state === 'complete'
-                    ? 'bg-emerald-500/10 text-success'
+                    ? 'bg-success/10 text-success'
                     : step.state === 'current'
-                      ? 'bg-purple-500/10 text-brand font-medium'
+                      ? 'bg-brand/10 text-brand font-medium'
                       : 'bg-muted text-muted-foreground'
                 }`}
               >
@@ -176,9 +176,9 @@ export function GameOwnershipProgress({ game, variant = 'full' }: GameOwnershipP
               key={step.id}
               className={`rounded-md border p-3 ${
                 step.state === 'complete'
-                  ? 'border-emerald-500/25 bg-emerald-500/[0.08]'
+                  ? 'border-success/25 bg-success/[0.08]'
                   : step.state === 'current'
-                    ? 'border-purple-500/30 bg-purple-500/[0.08]'
+                    ? 'border-brand/30 bg-brand/[0.08]'
                     : 'border-border bg-muted/30'
               }`}
             >

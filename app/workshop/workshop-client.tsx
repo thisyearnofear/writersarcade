@@ -108,15 +108,15 @@ export function WorkshopClient() {
         return (
             <OverlayPortal>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-4">
-                <div role="dialog" aria-modal="true" aria-label="Workshop tour" className="bg-card border border-purple-500 p-6 rounded-2xl max-w-sm w-full max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain">
+                <div role="dialog" aria-modal="true" aria-label="Workshop tour" className="bg-card border border-brand p-6 rounded-2xl max-w-sm w-full max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain">
                     <h3 className="text-white font-bold mb-2">Workshop Tour ({currentStep + 1}/{steps.length})</h3>
                     <p className="text-muted-foreground text-sm mb-6">{steps[currentStep]}</p>
                     <div className="flex justify-between">
                         <button onClick={dismissOnboarding} className="text-muted-foreground text-sm hover:text-white">Skip</button>
                         {currentStep < steps.length - 1 ? (
-                            <button onClick={nextStep} className="bg-purple-600 px-4 py-2 rounded text-white text-sm">Next</button>
+                            <button onClick={nextStep} className="bg-brand px-4 py-2 rounded text-white text-sm">Next</button>
                         ) : (
-                            <button onClick={dismissOnboarding} className="bg-green-600 px-4 py-2 rounded text-white text-sm">Got it!</button>
+                            <button onClick={dismissOnboarding} className="bg-success px-4 py-2 rounded text-white text-sm">Got it!</button>
                         )}
                     </div>
                 </div>
@@ -131,7 +131,7 @@ export function WorkshopClient() {
             <Header />
             <div className="p-4 sm:p-6 lg:p-12">
                 <header className="mb-8 max-w-4xl mx-auto">
-                    <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-500 to-blue-50 gradient-text-purple-blue">
+                    <h1 className="text-4xl font-bold bg-gradient-to-r from-brand to-info gradient-text-purple-blue">
                         Asset Workshop
                     </h1>
                 </header>
@@ -176,7 +176,7 @@ export function WorkshopClient() {
                                 disabled={!allChecklistsPassed}
                                 className={`px-4 py-2 rounded transition-colors ${
                                     allChecklistsPassed
-                                        ? 'bg-green-600 text-white hover:bg-green-500'
+                                        ? 'bg-success text-white hover:bg-success'
                                         : 'text-muted-foreground'
                                 }`}
                             >

@@ -41,7 +41,7 @@ export function GenreFilterList({
             onClick={() => onSelect(id === 'all' ? undefined : id)}
             className={`flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-medium transition-colors ${
               isActive(id)
-                ? 'bg-purple-600/30 text-purple-300 border border-purple-500/50'
+                ? 'bg-brand/30 text-brand border border-brand/50'
                 : 'text-muted-foreground bg-card border border-border hover:border-border'
             }`}
           >
@@ -62,7 +62,7 @@ export function GenreFilterList({
           onClick={() => onSelect(id === 'all' ? undefined : id)}
           className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors text-sm font-medium ${
             isActive(id)
-              ? 'bg-purple-600/20 text-purple-300 border border-purple-500/30'
+              ? 'bg-brand/20 text-brand border border-brand/30'
               : 'text-muted-foreground hover:bg-muted hover:text-foreground'
           }`}
         >

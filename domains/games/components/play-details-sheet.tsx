@@ -61,7 +61,7 @@ export function PlayDetailsSheet({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto bg-zinc-950 border-white/10">
+      <DialogContent className="max-h-[85vh] overflow-y-auto bg-card border-white/10">
         <DialogHeader>
           <DialogTitle className="text-white">Story details</DialogTitle>
           <DialogDescription className="text-muted-foreground">
@@ -119,11 +119,11 @@ export function PlayDetailsSheet({
           </section>
 
           {isDailyActive && (
-            <section className="space-y-4 rounded-xl border border-purple-500/20 bg-purple-950/15 p-4">
+            <section className="space-y-4 rounded-xl border border-brand/20 bg-brand/15 p-4">
               <HiddenHandTeaser panelsDone={panelsDone} />
 
               <div>
-                <h3 className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-purple-300/90">
+                <h3 className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-brand/90">
                   <ShieldCheck className="h-3.5 w-3.5" aria-hidden />
                   On-chain encrypted
                 </h3>

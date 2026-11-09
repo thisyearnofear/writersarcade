@@ -34,7 +34,7 @@ export function WriterCoinSelector({ onSelect }: WriterCoinSelectorProps) {
                         className={`group flex items-center gap-2 rounded-full border px-3 py-1.5 text-left transition-all hover:border-border hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-border ${
                             coin.paymentEnabled
                                 ? 'border-border bg-card'
-                                : 'border-amber-500/25 bg-amber-950/20'
+                                : 'border-warning/25 bg-warning/20'
                         }`}
                     >
                         <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground group-hover:bg-muted/80 transition-colors">
@@ -43,7 +43,7 @@ export function WriterCoinSelector({ onSelect }: WriterCoinSelectorProps) {
                         <span className="text-sm font-medium text-foreground">{coin.writer}</span>
                         <span className="text-xs text-muted-foreground">{coin.symbol}</span>
                         {!coin.paymentEnabled && (
-                            <span className="rounded-full border border-amber-500/30 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-amber-200">
+                            <span className="rounded-full border border-warning/30 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-warning">
                                 MUSD
                             </span>
                         )}
@@ -64,7 +64,7 @@ export function WriterCoinSelector({ onSelect }: WriterCoinSelectorProps) {
                                     Mint {(Number(hovered.mintCost) / 10 ** hovered.decimals).toFixed(0)} {hovered.symbol}
                                 </p>
                             ) : (
-                                <p className="mt-1 text-[10px] text-amber-200/80">
+                                <p className="mt-1 text-[10px] text-warning/80">
                                     Base writer-coin payments are pending for {hovered.symbol}; use MUSD for this writer.
                                 </p>
                             )}

@@ -42,7 +42,7 @@ export function GameWatchView({
           animate={{ opacity: 1, y: 0 }}
           className="text-center"
         >
-          <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-purple-300/80">
+          <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-brand/80">
             A finished run
           </p>
           <h1 className="font-serif text-3xl sm:text-4xl font-bold text-white mt-2">
@@ -77,29 +77,29 @@ export function GameWatchView({
           <motion.div
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-full aspect-video rounded-2xl border border-white/10 bg-zinc-900 flex items-center justify-center"
+            className="w-full aspect-video rounded-2xl border border-white/10 bg-card flex items-center justify-center"
           >
-            <p className="text-zinc-400 text-sm">Every choice writes a different ending.</p>
+            <p className="text-muted-foreground text-sm">Every choice writes a different ending.</p>
           </motion.div>
         )}
 
         {!finished && videoUrls.length > 1 && (
           <div className="flex items-center gap-2">
-            <span className="text-xs text-zinc-500">
+            <span className="text-xs text-muted-foreground">
               Scene {index + 1} of {videoUrls.length}
             </span>
             <div className="flex gap-1">
               {videoUrls.map((_, i) => (
                 <span
                   key={i}
-                  className={`h-1 w-6 rounded-full ${i <= index ? 'bg-purple-400' : 'bg-zinc-800'}`}
+                  className={`h-1 w-6 rounded-full ${i <= index ? 'bg-brand' : 'bg-card'}`}
                 />
               ))}
             </div>
             <button
               type="button"
               onClick={() => setFinished(true)}
-              className="ml-2 inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-white transition-colors"
+              className="ml-2 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-white transition-colors"
             >
               <SkipForward className="h-3 w-3" /> Skip
             </button>
@@ -119,7 +119,7 @@ export function GameWatchView({
             <Play className="h-4 w-4" />
             Play this story yourself
           </Link>
-          <p className="text-xs text-zinc-500">Free · no wallet, no signup</p>
+          <p className="text-xs text-muted-foreground">Free · no wallet, no signup</p>
         </motion.div>
       </div>
     </div>

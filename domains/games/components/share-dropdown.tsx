@@ -121,7 +121,7 @@ export function ShareDropdown({
                 onClick={handleTwitterShare}
                 className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-white/10 rounded-md transition-colors text-left"
               >
-                <Twitter className="w-4 h-4 text-blue-400" />
+                <Twitter className="w-4 h-4 text-info" />
                 <span>Share on Twitter</span>
               </button>
 
@@ -129,7 +129,7 @@ export function ShareDropdown({
                 onClick={handleFarcasterShare}
                 className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-white/10 rounded-md transition-colors text-left"
               >
-                <MessageCircle className="w-4 h-4 text-purple-400" />
+                <MessageCircle className="w-4 h-4 text-brand" />
                 <span>Cast on Farcaster</span>
               </button>
 
@@ -137,7 +137,7 @@ export function ShareDropdown({
                 onClick={handleLinkedInShare}
                 className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-white/10 rounded-md transition-colors text-left"
               >
-                <Linkedin className="w-4 h-4 text-blue-600" />
+                <Linkedin className="w-4 h-4 text-info" />
                 <span>Share on LinkedIn</span>
               </button>
 

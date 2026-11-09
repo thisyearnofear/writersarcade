@@ -96,7 +96,7 @@ export function AssetPalette({ isOpen, onClose, onInject }: AssetPaletteProps) {
 
                     {loading ? (
                         <div className="flex justify-center py-8">
-                            <Loader2 className="animate-spin text-purple-500" size={32} />
+                            <Loader2 className="animate-spin text-brand" size={32} />
                         </div>
                     ) : (
                         <div className="relative">
@@ -104,7 +104,7 @@ export function AssetPalette({ isOpen, onClose, onInject }: AssetPaletteProps) {
                             {canScrollLeft && (
                                 <button
                                     onClick={() => scroll('left')}
-                                    className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-purple-600 hover:bg-purple-500 rounded-full text-white transition-colors"
+                                    className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-brand hover:bg-brand rounded-full text-white transition-colors"
                                     title="Scroll left"
                                 >
                                     <ChevronLeft className="w-5 h-5" />
@@ -122,7 +122,7 @@ export function AssetPalette({ isOpen, onClose, onInject }: AssetPaletteProps) {
                                     <motion.div
                                         key={asset.id}
                                         whileHover={{ scale: 1.05 }}
-                                        className="flex-shrink-0 w-64 bg-card border border-border hover:border-purple-500/50 rounded-xl p-4 cursor-pointer transition-all group"
+                                        className="flex-shrink-0 w-64 bg-card border border-border hover:border-brand/50 rounded-xl p-4 cursor-pointer transition-all group"
                                         onClick={() => onInject(asset)}
                                     >
                                         <div className="flex justify-between items-start mb-2">
@@ -134,7 +134,7 @@ export function AssetPalette({ isOpen, onClose, onInject }: AssetPaletteProps) {
                                         <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
                                             {asset.description}
                                         </p>
-                                        <button className="w-full py-2 bg-muted group-hover:bg-purple-600 group-hover:text-white text-muted-foreground rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-2">
+                                        <button className="w-full py-2 bg-muted group-hover:bg-brand group-hover:text-white text-muted-foreground rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-2">
                                             <Plus size={14} /> Add
                                         </button>
                                     </motion.div>
@@ -144,7 +144,7 @@ export function AssetPalette({ isOpen, onClose, onInject }: AssetPaletteProps) {
                             {canScrollRight && (
                                 <button
                                     onClick={() => scroll('right')}
-                                    className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-purple-600 hover:bg-purple-500 rounded-full text-white transition-colors"
+                                    className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-brand hover:bg-brand rounded-full text-white transition-colors"
                                     title="Scroll right"
                                 >
                                     <ChevronRight className="w-5 h-5" />

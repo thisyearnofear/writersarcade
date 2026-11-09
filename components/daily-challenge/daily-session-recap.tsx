@@ -69,7 +69,7 @@ export function DailySessionRecap({
       }}
     >
       <div className="flex items-center gap-2 mb-2">
-        <Trophy className="w-4 h-4 text-amber-400" />
+        <Trophy className="w-4 h-4 text-warning" />
         <span className="text-xs font-bold uppercase tracking-wider text-foreground">Session recap</span>
       </div>
       <p className="text-sm text-muted-foreground leading-relaxed">{shareText}</p>

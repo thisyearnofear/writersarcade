@@ -26,7 +26,7 @@ export function GetMusdOptions({ className = '' }: { className?: string }) {
             href={o.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-500 transition-colors hover:text-amber-400"
+            className="inline-flex items-center gap-1 text-[10px] font-semibold text-warning transition-colors hover:text-warning"
           >
             {o.label} <ExternalLink className="h-2.5 w-2.5" />
           </a>

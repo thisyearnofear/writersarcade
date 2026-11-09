@@ -78,7 +78,7 @@ function getRemixHref(game: Game) {
 function DetailRow({ label, value, href, title }: { label: string; value: string; href?: string | null; title?: string }) {
   const content = href ? (
     <a href={href} target="_blank" rel="noopener noreferrer"
-      className="inline-flex max-w-full items-center gap-1 text-sm text-white hover:text-emerald-200"
+      className="inline-flex max-w-full items-center gap-1 text-sm text-white hover:text-success"
       title={title || value}>
       <span className="truncate">{value}</span>
       <ExternalLink className="h-3 w-3 shrink-0" />
@@ -119,7 +119,7 @@ function PanelCell({
       onClick={onSelect}
       aria-pressed={selected}
       aria-label={`Panel ${panel.panelNumber}${quote ? `: ${quote}` : ''}`}
-      className={`group relative aspect-[3/4] w-[min(72vw,220px)] shrink-0 snap-start overflow-hidden rounded-sm border bg-zinc-950 text-left transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:w-auto ${
+      className={`group relative aspect-[3/4] w-[min(72vw,220px)] shrink-0 snap-start overflow-hidden rounded-sm border bg-card text-left transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white sm:w-auto ${
         selected ? 'scale-[1.02]' : 'hover:-translate-y-0.5'
       }`}
       style={{ borderColor: selected ? accent : 'rgba(255,255,255,0.16)' }}
@@ -251,7 +251,7 @@ export function GameArtifactView({ game, currentUserWallet }: GameArtifactViewPr
                 ${tokenLabel}
               </span>
               {hasMintRecord ? (
-                <span className="inline-flex items-center gap-1 rounded border border-emerald-400/35 bg-emerald-400/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-200">
+                <span className="inline-flex items-center gap-1 rounded border border-success/35 bg-success/10 px-2 py-0.5 text-[11px] font-semibold text-success">
                   <BadgeCheck className="h-3 w-3" /> Minted
                 </span>
               ) : (
@@ -282,7 +282,7 @@ export function GameArtifactView({ game, currentUserWallet }: GameArtifactViewPr
                 </Link>
               ) : (
                 <Link href={`/games/${game.slug}?play=1`}
-                  className="inline-flex h-12 items-center gap-1.5 rounded-md bg-white px-5 text-sm font-semibold text-black transition-colors hover:bg-emerald-100">
+                  className="inline-flex h-12 items-center gap-1.5 rounded-md bg-white px-5 text-sm font-semibold text-black transition-colors hover:bg-success">
                   <Gamepad2 className="h-4 w-4" /> Play
                 </Link>
               )}
@@ -321,7 +321,7 @@ export function GameArtifactView({ game, currentUserWallet }: GameArtifactViewPr
             </div>
 
             {selectedPanel && selectedParsed ? (
-              <div className="mt-4 overflow-hidden rounded-lg border border-white/12 bg-zinc-950">
+              <div className="mt-4 overflow-hidden rounded-lg border border-white/12 bg-card">
                 <div className="grid gap-0 md:grid-cols-[minmax(0,280px)_1fr]">
                   <div className="relative aspect-[4/5] bg-black md:aspect-auto md:min-h-[280px]">
                     <PanelReaderVisual
@@ -377,7 +377,7 @@ export function GameArtifactView({ game, currentUserWallet }: GameArtifactViewPr
 
       <section id="credits" className="mx-auto max-w-6xl space-y-3 px-4 py-8">
         {game.description ? (
-          <details className="group rounded-lg border border-white/10 bg-zinc-950">
+          <details className="group rounded-lg border border-white/10 bg-card">
             <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm text-white/70 transition-colors hover:text-white [&::-webkit-details-marker]:hidden">
               About this story
               <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
@@ -388,7 +388,7 @@ export function GameArtifactView({ game, currentUserWallet }: GameArtifactViewPr
           </details>
         ) : null}
 
-        <details className="group rounded-lg border border-white/10 bg-zinc-950">
+        <details className="group rounded-lg border border-white/10 bg-card">
           <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm text-white/70 transition-colors hover:text-white [&::-webkit-details-marker]:hidden">
             Credits & collectible
             <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
@@ -424,14 +424,14 @@ export function GameArtifactView({ game, currentUserWallet }: GameArtifactViewPr
                 <div className="pt-3">
                   <p className="mb-2 text-sm text-white/55">Mint as a collectible on SuperRare.</p>
                   <button onClick={handleSuperrareMint} disabled={superrareMinting}
-                    className="inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-pink-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-pink-500 disabled:opacity-50">
+                    className="inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand disabled:opacity-50">
                     {superrareMinting ? (
                       <><Loader2 className="h-4 w-4 animate-spin" /> Preparing…</>
                     ) : (
                       <><GalleryHorizontalEnd className="h-4 w-4" /> Mint on SuperRare</>
                     )}
                   </button>
-                  {superrareError && <p className="mt-1.5 text-xs text-red-400">{superrareError}</p>}
+                  {superrareError && <p className="mt-1.5 text-xs text-destructive">{superrareError}</p>}
                 </div>
               ) : (
                 <p className="pt-2 text-sm text-white/45">Only the owner can mint on SuperRare.</p>

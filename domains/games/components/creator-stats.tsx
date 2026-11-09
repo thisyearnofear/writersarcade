@@ -33,7 +33,7 @@ export function CreatorStats({
   ]
 
   return (
-    <div className="rounded-2xl border border-purple-500/20 bg-gradient-to-br from-purple-950/40 to-black/80 p-5 shadow-lg">
+    <div className="rounded-2xl border border-brand/20 bg-gradient-to-br from-brand/40 to-black/80 p-5 shadow-lg">
       <div className="mb-4 flex items-center gap-2">
         <span className="text-2xl">🎉</span>
         <h3 className="text-base font-bold text-white">Creator Milestones</h3>
@@ -51,7 +51,7 @@ export function CreatorStats({
             className="rounded-xl border border-white/10 bg-white/5 p-3 text-center transition-colors hover:bg-white/10"
             title={stat.tracked ? undefined : 'Coming soon'}
           >
-            <stat.icon className="mx-auto mb-1 h-4 w-4 text-purple-400" />
+            <stat.icon className="mx-auto mb-1 h-4 w-4 text-brand" />
             {isLoading ? (
               <div className="mx-auto my-1 h-6 w-10 animate-pulse rounded-md bg-white/10" />
             ) : (
@@ -68,10 +68,10 @@ export function CreatorStats({
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-4 flex items-center gap-2 rounded-lg border border-purple-500/30 bg-purple-500/10 px-3 py-2"
+          className="mb-4 flex items-center gap-2 rounded-lg border border-brand/30 bg-brand/10 px-3 py-2"
         >
-          <Clapperboard className="h-4 w-4 text-purple-400" />
-          <span className="text-sm font-medium text-purple-200">
+          <Clapperboard className="h-4 w-4 text-brand" />
+          <span className="text-sm font-medium text-brand">
             Animated — your comic now moves
           </span>
         </motion.div>
@@ -84,7 +84,7 @@ export function CreatorStats({
             {milestones.map((milestone, idx) => (
               <span
                 key={idx}
-                className="inline-flex items-center gap-1 rounded-full border border-purple-500/30 bg-purple-500/10 px-2 py-1 text-xs font-medium text-purple-200"
+                className="inline-flex items-center gap-1 rounded-full border border-brand/30 bg-brand/10 px-2 py-1 text-xs font-medium text-brand"
               >
                 ✨ {milestone}
               </span>

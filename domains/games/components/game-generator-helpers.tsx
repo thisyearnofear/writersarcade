@@ -241,20 +241,20 @@ export function StylePreview({ genre, difficulty }: { genre: GameGenre; difficul
     <div className="mx-auto max-w-md w-full">
       <motion.div
         key={`${genre}-${difficulty}`}
-        className={`rounded-lg border border-purple-700/60 p-3 bg-gradient-to-br ${s.gradient} text-purple-100 shadow-md flex items-start gap-2`}
+        className={`rounded-lg border border-brand/60 p-3 bg-gradient-to-br ${s.gradient} text-brand shadow-md flex items-start gap-2`}
         initial={{ opacity: 0 }}
         animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1 }}
         transition={{ duration: 0.25 }}
       >
         <div className="mt-0.5">
           {genre === 'horror' && (
-            <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-400 shadow" />
+            <span className="inline-block w-2.5 h-2.5 rounded-full bg-destructive shadow" />
           )}
           {genre === 'comedy' && (
-            <span className="inline-block w-2.5 h-2.5 rounded-full bg-yellow-300 shadow" />
+            <span className="inline-block w-2.5 h-2.5 rounded-full bg-warning shadow" />
           )}
           {genre === 'mystery' && (
-            <span className="inline-block w-2.5 h-2.5 rounded-full bg-indigo-300 shadow" />
+            <span className="inline-block w-2.5 h-2.5 rounded-full bg-brand shadow" />
           )}
         </div>
         <div className="text-xs">
@@ -277,28 +277,28 @@ export function GenerateErrorPanel({
   onDismiss: () => void
 }) {
   return (
-    <div className="rounded-lg border border-red-600/50 bg-red-950/30 p-4">
+    <div className="rounded-lg border border-destructive/50 bg-destructive/30 p-4">
       <div className="flex items-start gap-3">
-        <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-400" />
+        <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-destructive" />
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-red-300/80">
+              <p className="text-xs font-bold uppercase tracking-wider text-destructive/80">
                 {error.phase}
               </p>
-              <h3 className="mt-1 text-base font-semibold text-red-100">{error.title}</h3>
+              <h3 className="mt-1 text-base font-semibold text-destructive">{error.title}</h3>
             </div>
             <button
               type="button"
               onClick={onDismiss}
-              className="rounded-md p-1 text-red-300/70 transition hover:bg-red-500/10 hover:text-red-200"
+              className="rounded-md p-1 text-destructive/70 transition hover:bg-destructive/10 hover:text-destructive"
               aria-label="Dismiss error"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
-          <p className="mt-2 text-sm text-red-100/85">{error.message}</p>
-          <ul className="mt-3 space-y-1 text-xs text-red-100/70">
+          <p className="mt-2 text-sm text-destructive/85">{error.message}</p>
+          <ul className="mt-3 space-y-1 text-xs text-destructive/70">
             {error.suggestions.map((suggestion) => (
               <li key={suggestion}>- {suggestion}</li>
             ))}
@@ -306,16 +306,16 @@ export function GenerateErrorPanel({
           <button
             type="button"
             onClick={onRetry}
-            className="mt-4 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm font-semibold text-red-100 transition hover:bg-red-500/20 sm:w-auto"
+            className="mt-4 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm font-semibold text-destructive transition hover:bg-destructive/20 sm:w-auto"
           >
             <RefreshCw className="h-4 w-4" />
             {error.retryLabel}
           </button>
 
-          <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-red-500/20 pt-4">
+          <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-destructive/20 pt-4">
             <Link
               href="/games"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-red-100/90 transition hover:text-red-50"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-destructive/90 transition hover:text-destructive"
             >
               <Gamepad2 className="h-3.5 w-3.5" />
               Browse the arcade
@@ -323,7 +323,7 @@ export function GenerateErrorPanel({
             {(error.phase === 'payment' || error.phase === 'generation') && (
               <Link
                 href="/generate?mode=wordle"
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-red-100/90 transition hover:text-red-50"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-destructive/90 transition hover:text-destructive"
               >
                 <Sparkles className="h-3.5 w-3.5" />
                 Try free Wordle

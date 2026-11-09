@@ -12,12 +12,12 @@ export default function NotFound() {
 
         <main id="main-content" className="flex flex-1 flex-col items-center justify-center px-4 py-16">
           <div className="mx-auto max-w-lg text-center space-y-6">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-purple-500/10 text-purple-300">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-brand/10 text-brand">
               <MapPinOff className="h-7 w-7" />
             </div>
 
             <div className="space-y-2">
-              <p className="text-xs font-bold uppercase tracking-widest text-purple-400">404</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-brand">404</p>
               <h1 className="text-2xl font-bold text-foreground">This story isn&apos;t here</h1>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 The page or game may have moved, or the link might be mistyped. The arcade is full of
@@ -28,7 +28,7 @@ export default function NotFound() {
             <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link
                 href="/games"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-purple-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-purple-500 sm:w-auto"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-6 py-3 font-semibold text-white transition-colors hover:bg-brand sm:w-auto"
               >
                 <Gamepad2 className="h-5 w-5" />
                 Browse the arcade
@@ -42,7 +42,7 @@ export default function NotFound() {
               </Link>
               <Link
                 href="/"
-                className="inline-flex items-center justify-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-purple-400"
+                className="inline-flex items-center justify-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-brand"
               >
                 <Home className="h-4 w-4" />
                 Home

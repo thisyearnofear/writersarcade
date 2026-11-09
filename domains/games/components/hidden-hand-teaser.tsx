@@ -16,18 +16,18 @@ interface HiddenHandTeaserProps {
  */
 export function HiddenHandTeaser({ panelsDone, className = '' }: HiddenHandTeaserProps) {
   return (
-    <div className={`rounded-xl border border-purple-500/25 bg-purple-950/25 p-4 ${className}`}>
+    <div className={`rounded-xl border border-brand/25 bg-brand/25 p-4 ${className}`}>
       <div className="mb-3 flex items-center gap-2">
-        <Spade className="h-4 w-4 text-purple-400" aria-hidden />
+        <Spade className="h-4 w-4 text-brand" aria-hidden />
         <h3 className="text-sm font-bold text-white">Hidden Hand</h3>
       </div>
       <div className="flex gap-1.5">
         {[1, 2, 3, 4, 5].map((i) => (
           <div
             key={i}
-            className="flex aspect-[3/4] flex-1 items-center justify-center rounded border border-purple-500/25 bg-purple-950/50"
+            className="flex aspect-[3/4] flex-1 items-center justify-center rounded border border-brand/25 bg-brand/50"
           >
-            <Lock className="h-3 w-3 text-purple-400/50" aria-hidden />
+            <Lock className="h-3 w-3 text-brand/50" aria-hidden />
           </div>
         ))}
       </div>

@@ -51,10 +51,10 @@ export function CostPreview({ paymentToken, action, showBreakdown = true, compac
 
   if (compact) {
     return (
-      <div className="rounded-lg border border-cyan-500/20 bg-cyan-500/10 px-3 py-2 text-sm">
+      <div className="rounded-lg border border-info/20 bg-info/10 px-3 py-2 text-sm">
         <div className="flex items-center justify-between gap-3">
-          <span className="text-cyan-100/80">{actionLabel}</span>
-          <span className="font-bold text-cyan-50">{cost.amountFormatted} {tokenSymbol}</span>
+          <span className="text-info/80">{actionLabel}</span>
+          <span className="font-bold text-info">{cost.amountFormatted} {tokenSymbol}</span>
         </div>
       </div>
     )
@@ -64,13 +64,13 @@ export function CostPreview({ paymentToken, action, showBreakdown = true, compac
     <div className="rounded-xl border border-[color:var(--ia-panel-border)] bg-[color:var(--ia-panel-bg)] p-4 shadow-[0_0_0_1px_var(--ia-outline)]">
       <div className="space-y-2 text-sm">
         <div className="flex items-center justify-between">
-          <span className="text-purple-200">{actionLabel}:</span>
-          <span className="font-semibold text-purple-100">{cost.amountFormatted} {tokenSymbol}</span>
+          <span className="text-brand">{actionLabel}:</span>
+          <span className="font-semibold text-brand">{cost.amountFormatted} {tokenSymbol}</span>
         </div>
 
         {showBreakdown && paymentToken.type === 'credits' && (
-          <div className="border-t border-emerald-700 pt-2 space-y-1.5">
-            <p className="text-[11px] text-emerald-300/80 leading-snug">
+          <div className="border-t border-success pt-2 space-y-1.5">
+            <p className="text-[11px] text-success/80 leading-snug">
               Pay with credits purchased via Etherfuse fiat onramp. No blockchain transaction fees.
             </p>
           </div>
@@ -78,27 +78,27 @@ export function CostPreview({ paymentToken, action, showBreakdown = true, compac
 
         {showBreakdown && paymentToken.type === 'writercoin' && (
           <>
-            <div className="border-t border-purple-700 pt-2 space-y-1.5">
-              <p className="text-[11px] text-purple-300/80 leading-snug">
+            <div className="border-t border-brand pt-2 space-y-1.5">
+              <p className="text-[11px] text-brand/80 leading-snug">
                 Paying with a writer coin auto-routes the original writer a share of this transaction.
               </p>
               {action === 'generate-game' ? (
                 <>
                   <div className="flex items-center justify-between">
-                    <span className="text-purple-300">Writer:</span>
-                    <span className="font-semibold text-green-400">
+                    <span className="text-brand">Writer:</span>
+                    <span className="font-semibold text-success">
                       {(Number(distribution.writerShare) / 10 ** decimals).toFixed(0)} {tokenSymbol}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-purple-300">Platform:</span>
-                    <span className="font-semibold text-blue-400">
+                    <span className="text-brand">Platform:</span>
+                    <span className="font-semibold text-info">
                       {(Number(distribution.platformShare) / 10 ** decimals).toFixed(0)} {tokenSymbol}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-purple-200">Creator Pool:</span>
-                    <span className="font-semibold text-purple-400">
+                    <span className="text-brand">Creator Pool:</span>
+                    <span className="font-semibold text-brand">
                       {(Number(distribution.creatorShare) / 10 ** decimals).toFixed(0)} {tokenSymbol}
                     </span>
                   </div>
@@ -106,20 +106,20 @@ export function CostPreview({ paymentToken, action, showBreakdown = true, compac
               ) : (
                 <>
                   <div className="flex items-center justify-between">
-                    <span className="text-purple-200">Creator:</span>
-                    <span className="font-semibold text-blue-400">
+                    <span className="text-brand">Creator:</span>
+                    <span className="font-semibold text-info">
                       {(Number(distribution.creatorShare) / 10 ** decimals).toFixed(0)} {tokenSymbol}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-purple-300">Writer:</span>
-                    <span className="font-semibold text-green-400">
+                    <span className="text-brand">Writer:</span>
+                    <span className="font-semibold text-success">
                       {(Number(distribution.writerShare) / 10 ** decimals).toFixed(0)} {tokenSymbol}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-purple-300">Platform:</span>
-                    <span className="font-semibold text-orange-400">
+                    <span className="text-brand">Platform:</span>
+                    <span className="font-semibold text-warning">
                       {(Number(distribution.platformShare) / 10 ** decimals).toFixed(0)} {tokenSymbol}
                     </span>
                   </div>

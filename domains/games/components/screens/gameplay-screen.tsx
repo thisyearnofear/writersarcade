@@ -437,7 +437,7 @@ export function GameplayScreen({
 
           {epilogueGenerationFailed && (
             <div className="p-4 rounded-xl border text-sm" style={{ backgroundColor: 'rgba(239,68,68,0.05)', borderColor: 'rgba(239,68,68,0.3)' }}>
-              <p className="font-semibold text-red-300">Reflection unavailable</p>
+              <p className="font-semibold text-destructive">Reflection unavailable</p>
               <p className="text-xs text-muted-foreground mt-1">
                 Couldn't generate an epilogue this time. Your comic is still ready to view.
               </p>

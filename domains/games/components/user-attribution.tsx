@@ -107,7 +107,7 @@ export function UserAttribution({
             }}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-600 to-pink-600">
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand to-brand">
             <User className="w-3 h-3 text-white" />
           </div>
         )}

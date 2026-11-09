@@ -21,7 +21,7 @@ export function ErrorBoundaryFallback({ onRetry, onReload }: ErrorBoundaryFallba
         <button
           type="button"
           onClick={onRetry}
-          className="text-xs text-muted-foreground hover:text-purple-400 transition-colors"
+          className="text-xs text-muted-foreground hover:text-brand transition-colors"
         >
           Try recovering without reload
         </button>

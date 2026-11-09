@@ -106,8 +106,8 @@ export function GameCardEnhanced({
               <span
                 className={`shrink-0 rounded px-2 py-1 text-xs ${
                   game.private
-                    ? 'bg-red-500/20 text-destructive'
-                    : 'bg-green-500/20 text-success'
+                    ? 'bg-destructive/20 text-destructive'
+                    : 'bg-success/20 text-success'
                 }`}
               >
                 {game.private ? 'Private' : 'Public'}
@@ -270,7 +270,7 @@ function ActionButton({
       onClick={onClick}
       disabled={disabled}
       className={`w-full justify-center gap-1.5 text-xs ${
-        variant === 'danger' ? 'text-red-500 hover:text-red-600 hover:border-red-300' : ''
+        variant === 'danger' ? 'text-destructive hover:text-destructive hover:border-destructive' : ''
       }`}
     >
       {icon}

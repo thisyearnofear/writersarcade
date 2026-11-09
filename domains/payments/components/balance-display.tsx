@@ -228,7 +228,7 @@ function EcosystemSection({
             </span>
           </div>
           {group.id === 'mezo' && isMezoHolder && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-amber-400/40 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-300">
+            <span className="inline-flex items-center gap-1 rounded-full border border-warning/40 bg-warning/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-warning">
               <Sparkles className="w-3 h-3" />
               MEZO Holder
             </span>
@@ -269,7 +269,7 @@ function EcosystemSection({
                 isZero={row.isZero}
                 mobileLayout={mobileLayout}
                 accentClass={row.accentClass}
-                icon={group.id === 'credits' ? <Banknote className={`w-4 h-4 shrink-0 ${row.isZero ? 'text-muted-foreground' : 'text-emerald-400'}`} /> : undefined}
+                icon={group.id === 'credits' ? <Banknote className={`w-4 h-4 shrink-0 ${row.isZero ? 'text-muted-foreground' : 'text-success'}`} /> : undefined}
               />
             ))}
         </>
@@ -279,7 +279,7 @@ function EcosystemSection({
         <div className={`${mobileLayout ? 'px-4 pb-3' : 'px-3 pb-3'}`}>
           <button
             onClick={onBuyCredits}
-            className="flex w-full items-center justify-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-400 transition-colors hover:bg-emerald-500/20 hover:border-emerald-500/50"
+            className="flex w-full items-center justify-center gap-1.5 rounded-md border border-success/30 bg-success/10 px-2.5 py-1.5 text-[11px] font-semibold text-success transition-colors hover:bg-success/20 hover:border-success/50"
           >
             <Coins className="w-3 h-3" />
             Buy credits
@@ -300,7 +300,7 @@ function EcosystemSection({
             <button
               onClick={switchToMezo}
               disabled={isSwitching}
-              className="flex items-center gap-1.5 w-full px-2.5 py-1.5 rounded-md border border-amber-500/30 bg-amber-500/5 text-[11px] font-medium text-warning hover:bg-amber-500/10 hover:border-amber-500/50 transition-colors disabled:opacity-50"
+              className="flex items-center gap-1.5 w-full px-2.5 py-1.5 rounded-md border border-warning/30 bg-warning/5 text-[11px] font-medium text-warning hover:bg-warning/10 hover:border-warning/50 transition-colors disabled:opacity-50"
             >
               <ArrowRightLeft className="w-3 h-3" />
               {isSwitching ? 'Switching...' : 'Switch to Mezo'}
@@ -413,20 +413,20 @@ export function BalanceDisplay({ mobileLayout = false }: BalanceDisplayProps) {
       onClick={() => setIsOpen(v => !v)}
       aria-expanded={isOpen}
       aria-haspopup="listbox"
-      className={`${badgeBaseClasses} ${paddingClasses} hover:bg-purple-600/15 cursor-pointer`}
+      className={`${badgeBaseClasses} ${paddingClasses} hover:bg-brand/15 cursor-pointer`}
     >
       {primaryIsLoading ? (
         <>
-          <Loader2 className={`w-4 h-4 text-purple-400 animate-spin ${mobileLayout ? 'w-5 h-5' : ''}`} />
+          <Loader2 className={`w-4 h-4 text-brand animate-spin ${mobileLayout ? 'w-5 h-5' : ''}`} />
           <span className={`text-muted-foreground ${textClasses}`}>Loading...</span>
         </>
       ) : hasPrimaryBalance ? (
         <>
-          <Coins className={`text-purple-400 ${mobileLayout ? 'w-5 h-5' : 'w-4 h-4'}`} />
+          <Coins className={`text-brand ${mobileLayout ? 'w-5 h-5' : 'w-4 h-4'}`} />
           <span className={`text-foreground font-medium ${textClasses}`}>{abbreviateBalance(primary.balance!.formattedBalance)}</span>
           <span className={`text-muted-foreground ${textClasses}`}>{primary.balance!.symbol}</span>
           {nonZeroCount > 1 && (
-            <span className={`text-purple-400 ${textClasses}`}>+{nonZeroCount - 1}</span>
+            <span className={`text-brand ${textClasses}`}>+{nonZeroCount - 1}</span>
           )}
         </>
       ) : (

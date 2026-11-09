@@ -12,7 +12,7 @@ export function AnimatedBackground({ variant = 'gradient', className = '' }: Ani
   const prefersReducedMotion = useReducedMotion()
 
   if (prefersReducedMotion) {
-    return <div className={`absolute inset-0 bg-gradient-to-br from-purple-900/20 to-pink-900/20 ${className}`} />
+    return <div className={`absolute inset-0 bg-gradient-to-br from-brand/20 to-brand/20 ${className}`} />
   }
 
   switch (variant) {

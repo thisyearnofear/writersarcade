@@ -38,7 +38,7 @@ export function WalletLoadingFallback({
       <div className="flex flex-1 flex-col items-center justify-center px-4 py-12">
         {children ?? (
           <>
-            <Loader2 className="h-8 w-8 animate-spin text-purple-400" />
+            <Loader2 className="h-8 w-8 animate-spin text-brand" />
             <p className="mt-3 text-sm text-muted-foreground">{message}</p>
           </>
         )}

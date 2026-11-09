@@ -110,7 +110,7 @@ export function MezoAnalytics() {
 
   if (error || !data) {
     return (
-      <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-6 text-center text-sm text-muted-foreground">
+      <div className="rounded-xl border border-warning/30 bg-warning/5 p-6 text-center text-sm text-muted-foreground">
         <p>Analytics will appear once games have been generated on the MezoBoostedSplitter contract.</p>
       </div>
     )
@@ -184,14 +184,14 @@ export function MezoAnalytics() {
           <div className="divide-y divide-border">
             {data.recentActivity.slice(0, 10).map((event) => (
               <div key={event.txHash} className="px-4 py-3 flex items-center gap-3 text-sm">
-                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${event.boosted ? 'bg-cyan-400' : 'bg-muted-foreground'}`} />
+                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${event.boosted ? 'bg-info' : 'bg-muted-foreground'}`} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-foreground truncate">
                       {event.gameTitle}
                     </span>
                     {event.boosted && (
-                      <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 flex-shrink-0">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-info/10 text-info border border-info/30 flex-shrink-0">
                         Boosted
                       </span>
                     )}

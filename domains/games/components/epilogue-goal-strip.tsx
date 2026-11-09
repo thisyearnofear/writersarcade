@@ -56,7 +56,7 @@ function GoalItem({ done, label, muted }: { done: boolean; label: string; muted?
   const Icon = done ? CheckCircle2 : Circle
   return (
     <span className={`inline-flex items-center gap-1.5 ${muted ? 'text-muted-foreground/60' : 'text-muted-foreground'}`}>
-      <Icon className={`w-3.5 h-3.5 ${done ? 'text-emerald-400' : ''}`} />
+      <Icon className={`w-3.5 h-3.5 ${done ? 'text-success' : ''}`} />
       {label}
     </span>
   )

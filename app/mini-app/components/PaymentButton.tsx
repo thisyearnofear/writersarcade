@@ -164,8 +164,8 @@ export function PaymentButton({
         className={cn(
           "w-full rounded-xl px-6 py-4 font-bold text-white transition-all disabled:cursor-not-allowed disabled:opacity-50 shadow-lg",
           isMUSD 
-            ? "bg-amber-600 hover:bg-amber-500 shadow-amber-900/20" 
-            : "bg-purple-600 hover:bg-purple-500 shadow-purple-900/20"
+            ? "bg-warning hover:bg-warning shadow-warning/20" 
+            : "bg-brand hover:bg-brand shadow-brand/20"
         )}
       >
         {isProcessing ? (
@@ -184,7 +184,7 @@ export function PaymentButton({
       {error && (
         <div className={cn(
           "rounded-lg border p-3 transition-all duration-300",
-          isMUSD ? "bg-amber-500/10 border-amber-500/30 text-amber-200" : "bg-red-500/20 border-red-500/50 text-red-200"
+          isMUSD ? "bg-warning/10 border-warning/30 text-warning" : "bg-destructive/20 border-destructive/50 text-destructive"
         )}>
           <p className="text-xs font-medium leading-relaxed">{error}</p>
         </div>
@@ -193,8 +193,8 @@ export function PaymentButton({
       <div className={cn(
         "rounded-lg border p-3 text-[10px] leading-relaxed transition-all",
         isMUSD 
-          ? "bg-amber-900/10 border-amber-500/10 text-amber-200/50" 
-          : "bg-purple-900/30 border-white/5 text-purple-100/40"
+          ? "bg-warning/10 border-warning/10 text-warning/50" 
+          : "bg-brand/30 border-white/5 text-brand/40"
       )}>
         <p>
           💡 <span className="font-bold text-white/40">Protocol Info:</span> {isMUSD 

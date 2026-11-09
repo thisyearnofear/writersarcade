@@ -351,9 +351,9 @@ export function ComicPanelCard({
                   </div>
                 </div>
               ) : imageFailed && onImageRegenerate ? (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-red-950/30 to-black relative">
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-destructive/30 to-black relative">
                   <div className="text-center px-4 space-y-3">
-                    <AlertCircle className="w-10 h-10 mx-auto text-red-400" />
+                    <AlertCircle className="w-10 h-10 mx-auto text-destructive" />
                     <p className="text-foreground text-sm font-semibold">Image generation failed</p>
                     <p className="text-muted-foreground text-xs max-w-[260px] mx-auto">
                       The image service didn&apos;t return a visual. You can retry with the same prompt or move on.
@@ -362,7 +362,7 @@ export function ComicPanelCard({
                       type="button"
                       onClick={handleRegenerateQuick}
                       disabled={!canRegenerate}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-red-600 hover:bg-red-500 text-white text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-destructive hover:bg-destructive text-white text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <RefreshCw className="w-3 h-3" />
                       {canRegenerate ? 'Try Again' : `Max retries (${maxRegenerations}) used`}
@@ -414,7 +414,7 @@ export function ComicPanelCard({
                           <select
                             value={localTheme}
                             onChange={(e) => setLocalTheme(e.target.value)}
-                            className="bg-transparent text-white text-xs px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-purple-500"
+                            className="bg-transparent text-white text-xs px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-brand"
                             title="Select visual theme"
                           >
                             {availableThemes.map((theme: { value: string, label: string }) => (
@@ -452,7 +452,7 @@ export function ComicPanelCard({
                           <button
                             onClick={handleRegenerateQuick}
                             disabled={isRegenerating || isWaiting || !canRegenerate}
-                            className="ml-auto inline-flex items-center gap-1.5 rounded-md bg-purple-600/80 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-purple-500 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="ml-auto inline-flex items-center gap-1.5 rounded-md bg-brand/80 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-brand disabled:cursor-not-allowed disabled:opacity-50"
                             title={canRegenerate ? 'Regenerate image' : `Max ${maxRegenerations} attempts used`}
                           >
                             <RefreshCw className={`w-3 h-3 ${isRegenerating ? 'animate-spin' : ''}`} />
@@ -472,7 +472,7 @@ export function ComicPanelCard({
                             setIsCustomPromptMode(false)
                             setCustomPrompt('')
                           }}
-                          className={`px-2 py-1 text-xs rounded ${!isCustomPromptMode ? 'bg-purple-600 text-white' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                          className={`px-2 py-1 text-xs rounded ${!isCustomPromptMode ? 'bg-brand text-white' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
                         >
                           Original
                         </button>
@@ -481,7 +481,7 @@ export function ComicPanelCard({
                             setIsCustomPromptMode(true)
                             if (!customPrompt) setCustomPrompt(narrative)
                           }}
-                          className={`px-2 py-1 text-xs rounded ${isCustomPromptMode ? 'bg-purple-600 text-white' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                          className={`px-2 py-1 text-xs rounded ${isCustomPromptMode ? 'bg-brand text-white' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
                         >
                           Custom
                         </button>
@@ -491,7 +491,7 @@ export function ComicPanelCard({
                         <textarea
                           value={customPrompt}
                           onChange={(e) => setCustomPrompt(e.target.value)}
-                          className="w-full bg-card border border-purple-500/50 rounded-lg p-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-purple-400 min-h-[100px] resize-y"
+                          className="w-full bg-card border border-brand/50 rounded-lg p-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-brand min-h-[100px] resize-y"
                           placeholder="Enter your custom prompt..."
                         />
                       ) : (
@@ -503,7 +503,7 @@ export function ComicPanelCard({
                       <button
                         onClick={handleRegenerateWithPrompt}
                         disabled={isRegenerating || isWaiting}
-                        className="w-full py-2 px-4 bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium rounded-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="w-full py-2 px-4 bg-brand hover:bg-brand text-white text-sm font-medium rounded-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         <RefreshCw className={`w-4 h-4 ${isRegenerating ? 'animate-spin' : ''}`} />
                         {isRegenerating ? 'Regenerating...' : isCustomPromptMode ? 'Regenerate with Custom Prompt' : 'Regenerate Image'}
@@ -513,7 +513,7 @@ export function ComicPanelCard({
                       {showAIPromptSuggestions && aiPromptSuggestions && aiPromptSuggestions.length > 0 && (
                         <div className="mt-3 space-y-2">
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Lightbulb className="w-3 h-3 text-yellow-400" />
+                            <Lightbulb className="w-3 h-3 text-warning" />
                             <span>AI Suggestions</span>
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-40 overflow-y-auto">
@@ -576,7 +576,7 @@ export function ComicPanelCard({
                   <textarea
                     value={editedNarrative}
                     onChange={(e) => setEditedNarrative(e.target.value)}
-                    className="w-full bg-card border border-purple-500/50 rounded-lg p-3 text-sm lg:text-base text-foreground focus:outline-none focus:ring-2 focus:ring-purple-400 min-h-[100px] resize-y"
+                    className="w-full bg-card border border-brand/50 rounded-lg p-3 text-sm lg:text-base text-foreground focus:outline-none focus:ring-2 focus:ring-brand min-h-[100px] resize-y"
                     autoFocus
                   />
                   <div className="flex justify-end gap-2">
@@ -598,7 +598,7 @@ export function ComicPanelCard({
                         // In a real app we'd trigger an update, here we just show the change
                         setIsEditingNarrative(false)
                       }}
-                      className="h-8 text-xs bg-green-600 hover:bg-green-500"
+                      className="h-8 text-xs bg-success hover:bg-success"
                     >
                       <Check className="w-3 h-3 mr-1" />
                       Apply
@@ -736,7 +736,7 @@ export function ComicPanelCard({
                       onClick={() => selectImage(idx)}
                       className={`relative group rounded-lg overflow-hidden border-2 transition-all ${
                         currentImageIndex === idx
-                          ? 'border-purple-500 shadow-lg shadow-purple-500/50'
+                          ? 'border-brand shadow-lg shadow-brand/50'
                           : 'border-white/10 hover:border-white/30'
                       }`}
                       whileHover={{ scale: 1.02 }}
@@ -760,7 +760,7 @@ export function ComicPanelCard({
                       </div>
                       {/* Selection indicator */}
                       {currentImageIndex === idx && (
-                        <div className="absolute top-2 right-2 bg-purple-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+                        <div className="absolute top-2 right-2 bg-brand text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
                           ✓
                         </div>
                       )}
@@ -781,7 +781,7 @@ export function ComicPanelCard({
                   <button
                     onClick={handleRegenerateQuick}
                     disabled={isRegenerating}
-                    className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:bg-purple-600/50 text-white rounded-lg transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                    className="flex-1 px-4 py-2 bg-brand hover:bg-brand disabled:bg-brand/50 text-white rounded-lg transition-colors text-sm font-medium flex items-center justify-center gap-2"
                   >
                     <RefreshCw className={`w-4 h-4 ${isRegenerating ? 'animate-spin' : ''}`} />
                     {isRegenerating ? 'Generating...' : 'Try Again'}

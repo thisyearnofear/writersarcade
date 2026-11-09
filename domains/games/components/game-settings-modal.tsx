@@ -69,10 +69,10 @@ export function GameSettingsModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[425px] bg-card text-foreground border-purple-500/30">
+            <DialogContent className="sm:max-w-[425px] bg-card text-foreground border-brand/30">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
-                        <Settings className="w-5 h-5 text-purple-400" />
+                        <Settings className="w-5 h-5 text-brand" />
                         Game Settings
                     </DialogTitle>
                     <DialogDescription className="text-muted-foreground">
@@ -84,7 +84,7 @@ export function GameSettingsModal({
                     {/* Play Fee Section */}
                     <div className="grid gap-2">
                         <Label htmlFor="playFee" className="flex items-center gap-2 text-foreground">
-                            <DollarSign className="w-4 h-4 text-green-400" />
+                            <DollarSign className="w-4 h-4 text-success" />
                             Play Fee ($DONUT)
                         </Label>
                         <div className="relative">
@@ -94,7 +94,7 @@ export function GameSettingsModal({
                                 value={playFee}
                                 onChange={handleFeeChange}
                                 placeholder="0.00"
-                                className="bg-muted border-border text-foreground pl-8 focus:border-purple-500"
+                                className="bg-muted border-border text-foreground pl-8 focus:border-brand"
                                 step="0.1"
                                 min="0"
                             />
@@ -110,7 +110,7 @@ export function GameSettingsModal({
                     <div className="flex items-center justify-between space-x-2 border p-3 rounded-lg border-border bg-muted/50">
                         <div className="flex flex-col space-y-1">
                             <Label htmlFor="visibility" className="flex items-center gap-2 font-medium">
-                                {isPrivate ? <EyeOff className="w-4 h-4 text-red-400" /> : <Eye className="w-4 h-4 text-blue-400" />}
+                                {isPrivate ? <EyeOff className="w-4 h-4 text-destructive" /> : <Eye className="w-4 h-4 text-info" />}
                                 {isPrivate ? 'Private' : 'Public'}
                             </Label>
                             <span className="text-xs text-muted-foreground">
@@ -123,15 +123,15 @@ export function GameSettingsModal({
                             id="visibility"
                             checked={!isPrivate}
                             onCheckedChange={(checked) => setIsPrivate(!checked)}
-                            className="data-[state=checked]:bg-purple-600"
+                            className="data-[state=checked]:bg-brand"
                         />
                     </div>
 
                     {/* Featured Toggle (Admin Only) */}
                     {userIsAdmin && (
-                        <div className="flex items-center justify-between space-x-2 border p-3 rounded-lg border-yellow-500/30 bg-yellow-950/10">
+                        <div className="flex items-center justify-between space-x-2 border p-3 rounded-lg border-warning/30 bg-warning/10">
                             <div className="flex flex-col space-y-1">
-                                <Label htmlFor="featured" className="flex items-center gap-2 font-medium text-yellow-400">
+                                <Label htmlFor="featured" className="flex items-center gap-2 font-medium text-warning">
                                     <Star className="w-4 h-4 fill-current" />
                                     Featured
                                 </Label>
@@ -143,7 +143,7 @@ export function GameSettingsModal({
                                 id="featured"
                                 checked={isFeatured}
                                 onCheckedChange={setIsFeatured}
-                                className="data-[state=checked]:bg-yellow-500"
+                                className="data-[state=checked]:bg-warning"
                             />
                         </div>
                     )}
@@ -153,7 +153,7 @@ export function GameSettingsModal({
                     <Button variant="outline" onClick={onClose} className="border-border hover:bg-muted hover:text-foreground">
                         Cancel
                     </Button>
-                    <Button onClick={handleSave} disabled={isLoading} className="bg-purple-600 hover:bg-purple-700">
+                    <Button onClick={handleSave} disabled={isLoading} className="bg-brand hover:bg-brand">
                         {isLoading ? (
                             <>
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />

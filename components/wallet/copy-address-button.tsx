@@ -56,7 +56,7 @@ export function CopyAddressButton({
       className="inline-flex items-center justify-center rounded text-muted-foreground hover:text-foreground transition-colors"
     >
       {copied ? (
-        <Check className={`${sizeClass} text-green-500`} />
+        <Check className={`${sizeClass} text-success`} />
       ) : (
         <Copy className={sizeClass} />
       )}

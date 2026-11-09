@@ -93,7 +93,7 @@ export default function MiniAppPage() {
             <header className="sticky top-0 z-[60] border-b border-white/5 bg-[#0a0a14]/60 backdrop-blur-2xl">
                 <div className="mx-auto flex max-w-2xl items-center justify-between px-6 py-4">
                     <div className="flex items-center space-x-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-600 font-black text-white italic text-lg shadow-[0_0_15px_rgba(168,85,247,0.4)]">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand font-black text-white italic text-lg shadow-[0_0_15px_rgba(168,85,247,0.4)]">
                             W
                         </div>
                         <h1 className="text-md font-black tracking-tighter text-white uppercase italic hidden sm:block">writersarcade</h1>
@@ -108,10 +108,10 @@ export default function MiniAppPage() {
                                         alt={user.username || 'User'}
                                         width={24}
                                         height={24}
-                                        className="rounded-full ring-1 ring-purple-500/30"
+                                        className="rounded-full ring-1 ring-brand/30"
                                     />
                                 ) : (
-                                    <div className="h-6 w-6 rounded-full bg-purple-500 flex items-center justify-center text-[8px] font-bold">
+                                    <div className="h-6 w-6 rounded-full bg-brand flex items-center justify-center text-[8px] font-bold">
                                         {user.username?.slice(0, 1).toUpperCase() || 'U'}
                                     </div>
                                 )}
@@ -122,7 +122,7 @@ export default function MiniAppPage() {
                         )}
                         
                         {!isInFrame && (
-                            <div className="h-2 w-2 rounded-full bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.5)]" />
+                            <div className="h-2 w-2 rounded-full bg-warning shadow-[0_0_8px_rgba(234,179,8,0.5)]" />
                         )}
                     </div>
                 </div>
@@ -140,8 +140,8 @@ export default function MiniAppPage() {
                                 className="flex flex-col items-center justify-center py-32 text-center"
                             >
                                 <div className="relative mb-8 h-16 w-16">
-                                    <div className="absolute inset-0 animate-ping rounded-full bg-purple-500/20"></div>
-                                    <div className="relative flex h-full w-full items-center justify-center rounded-full border-2 border-purple-500 border-t-transparent animate-spin"></div>
+                                    <div className="absolute inset-0 animate-ping rounded-full bg-brand/20"></div>
+                                    <div className="relative flex h-full w-full items-center justify-center rounded-full border-2 border-brand border-t-transparent animate-spin"></div>
                                 </div>
                                 <h2 className="text-xl font-bold text-white tracking-tight uppercase italic">Synthesizing...</h2>
                             </motion.div>
@@ -156,7 +156,7 @@ export default function MiniAppPage() {
                                 {/* Phase Indicator (Desktop Only) */}
                                 <div className="hidden md:flex items-center justify-between px-2 mb-8">
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-purple-400">Current Phase</span>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand">Current Phase</span>
                                         <h2 className="text-xl font-black text-white uppercase italic tracking-tight">
                                             {step === 'select-coin' && '1. Choose Origin'}
                                             {step === 'input-article' && '2. Load Target'}
@@ -173,9 +173,9 @@ export default function MiniAppPage() {
                                                     (num === 2 && step === 'input-article') ||
                                                     (num === 3 && step === 'customize-game') ||
                                                     (num === 4 && step === 'play-game')
-                                                        ? 'w-10 bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.6)]'
+                                                        ? 'w-10 bg-brand shadow-[0_0_10px_rgba(168,85,247,0.6)]'
                                                         : num < (step === 'select-coin' ? 1 : step === 'input-article' ? 2 : step === 'customize-game' ? 3 : 4)
-                                                        ? 'bg-green-500/60'
+                                                        ? 'bg-success/60'
                                                         : 'bg-white/10'
                                                 }`}
                                             />

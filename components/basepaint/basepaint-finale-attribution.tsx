@@ -96,10 +96,10 @@ export function BasePaintFinaleAttribution({
 
   return (
     <div
-      className={`space-y-4 rounded-xl border border-purple-500/30 bg-purple-950/20 p-5 ${className}`}
+      className={`space-y-4 rounded-xl border border-brand/30 bg-brand/20 p-5 ${className}`}
     >
       <div className="space-y-1">
-        <p className="text-xs font-bold uppercase tracking-widest text-purple-300">
+        <p className="text-xs font-bold uppercase tracking-widest text-brand">
           World — BasePaint Day {day}
         </p>
         <p className="text-sm font-semibold text-foreground">{theme}</p>
@@ -135,7 +135,7 @@ export function BasePaintFinaleAttribution({
                   href={getBasePaintProfileUrl(c.address)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-mono text-purple-200 hover:underline"
+                  className="font-mono text-brand hover:underline"
                 >
                   {shortenAddress(c.address)}
                 </a>

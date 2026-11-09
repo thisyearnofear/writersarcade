@@ -169,19 +169,19 @@ export default async function GamePage({ params, searchParams }: GamePageProps) 
   return (
     <div className="min-h-screen bg-black">
       {isUnlockShare && (
-        <div className="border-b border-emerald-500/20 bg-emerald-950/35 px-4 py-4">
+        <div className="border-b border-success/20 bg-success/35 px-4 py-4">
           <div className="mx-auto flex max-w-4xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-emerald-300">Vault unlocked</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-success">Vault unlocked</p>
               <h1 className="mt-1 text-lg font-semibold text-white">
                 Someone unlocked the secret panel for {game.title}
               </h1>
-              <p className="mt-1 text-sm text-emerald-100/75">
+              <p className="mt-1 text-sm text-success/75">
                 This share link points to a token-gated hidden ending protected by the game NFT.
               </p>
             </div>
             {game.promptVaultUuid && (
-              <div className="rounded-md border border-emerald-500/20 bg-black/30 px-3 py-2 text-xs text-emerald-100">
+              <div className="rounded-md border border-success/20 bg-black/30 px-3 py-2 text-xs text-success">
                 {formatSecretPanelDetail(getSecretPanelStatus(game))}
               </div>
             )}

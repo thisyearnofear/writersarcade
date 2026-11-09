@@ -209,7 +209,7 @@ export function SinglePanelView({
             })()}
           </div>
           {video?.error && (
-            <p className="text-[11px] text-red-400">{video.error}</p>
+            <p className="text-[11px] text-destructive">{video.error}</p>
           )}
           {showCustomPrompt && onPanelImageChange && (
             <div className="space-y-1.5">
@@ -220,7 +220,7 @@ export function SinglePanelView({
                 value={customPrompt}
                 onChange={(e) => setCustomPrompt(e.target.value)}
                 placeholder="Describe the visual you want for this panel…"
-                className="w-full bg-card border border-purple-500/40 rounded-lg p-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-purple-400 min-h-[64px] resize-y"
+                className="w-full bg-card border border-brand/40 rounded-lg p-2 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-brand min-h-[64px] resize-y"
               />
             </div>
           )}
@@ -246,7 +246,7 @@ export function SinglePanelView({
                 <textarea
                   value={editedText}
                   onChange={(e) => setEditedText(e.target.value)}
-                  className="w-full bg-card border border-purple-500 rounded-lg p-3 text-foreground text-base md:text-lg leading-relaxed font-medium focus:outline-none focus:ring-2 focus:ring-purple-400 min-h-[120px] resize-y"
+                  className="w-full bg-card border border-brand rounded-lg p-3 text-foreground text-base md:text-lg leading-relaxed font-medium focus:outline-none focus:ring-2 focus:ring-brand min-h-[120px] resize-y"
                   autoFocus
                 />
                 <div className="flex justify-end gap-2">
@@ -262,7 +262,7 @@ export function SinglePanelView({
                   <Button
                     size="sm"
                     onClick={handleSaveEdit}
-                    className="gap-1 bg-green-600 hover:bg-green-500"
+                    className="gap-1 bg-success hover:bg-success"
                   >
                     <Check className="w-3 h-3" />
                     Save
@@ -295,7 +295,7 @@ export function SinglePanelView({
                 {onPanelTextChange && (
                   <button
                     onClick={handleStartEdit}
-                    className="p-2 md:opacity-0 md:group-hover/text:opacity-100 hover:bg-purple-600/20 rounded text-purple-400 transition-opacity flex-shrink-0"
+                    className="p-2 md:opacity-0 md:group-hover/text:opacity-100 hover:bg-brand/20 rounded text-brand transition-opacity flex-shrink-0"
                     title="Edit narrative text"
                     aria-label="Edit narrative text"
                   >

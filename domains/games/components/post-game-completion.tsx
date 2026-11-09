@@ -197,7 +197,7 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: 'spring', stiffness: 200, damping: 15, delay: 0.2 }}
-          className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg shadow-purple-500/25"
+          className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-brand to-brand shadow-lg shadow-brand/25"
         >
           <Trophy className="w-8 h-8 text-white" />
         </motion.div>
@@ -218,7 +218,7 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.35, duration: 0.4 }}
-        className="rounded-2xl border border-purple-500/20 bg-gradient-to-br from-purple-500/10 to-pink-500/10 p-5 mb-8"
+        className="rounded-2xl border border-brand/20 bg-gradient-to-br from-brand/10 to-brand/10 p-5 mb-8"
       >
         <div className="flex items-start gap-4">
           <div className="flex-1 min-w-0">
@@ -229,9 +229,9 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
               {endingText}
             </p>
             {rarityText && (
-              <p className="mt-2 text-xs font-bold text-amber-300">{rarityText}</p>
+              <p className="mt-2 text-xs font-bold text-warning">{rarityText}</p>
             )}
-            <p className="mt-2 text-xs font-medium text-purple-200/80">{referralText}</p>
+            <p className="mt-2 text-xs font-medium text-brand/80">{referralText}</p>
           </div>
           <ShareDropdown
             data={shareData}
@@ -252,7 +252,7 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.38, duration: 0.4 }}
-          className="rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 p-5 mb-8"
+          className="rounded-2xl border border-info/20 bg-gradient-to-br from-info/10 to-info/10 p-5 mb-8"
         >
           <div className="flex items-start gap-4">
             <div className="flex-1 min-w-0">
@@ -292,7 +292,7 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
                       )
                     }
                     disabled={isClaimingFilm}
-                    className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-cyan-400/40 bg-cyan-500/10 px-3 py-2 text-xs font-bold text-cyan-200 transition-colors hover:bg-cyan-500/20 disabled:opacity-50"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-info/40 bg-info/10 px-3 py-2 text-xs font-bold text-info transition-colors hover:bg-info/20 disabled:opacity-50"
                   >
                     {isClaimingFilm ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trophy className="h-3.5 w-3.5" />}
                     {isClaimingFilm ? 'Claiming…' : 'Claim your film'}
@@ -300,7 +300,7 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
                 )}
               </div>
             )}
-            {filmRendering && <Loader2 className="h-5 w-5 shrink-0 animate-spin text-cyan-300" />}
+            {filmRendering && <Loader2 className="h-5 w-5 shrink-0 animate-spin text-info" />}
           </div>
         </motion.div>
       )}
@@ -332,9 +332,9 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
                     <span className="text-xs font-bold text-white">{w.title}</span>
                   </span>
                   <span className={`text-[10px] font-semibold uppercase tracking-wide ${
-                    isReady ? 'text-emerald-400'
-                    : w.status === 'rendering' ? 'text-amber-400'
-                    : w.status === 'failed' ? 'text-red-400'
+                    isReady ? 'text-success'
+                    : w.status === 'rendering' ? 'text-warning'
+                    : w.status === 'failed' ? 'text-destructive'
                     : 'text-white/40'
                   }`}>
                     {w.status === 'rendering' ? 'Rendering…'
@@ -353,23 +353,33 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
         </motion.div>
       )}
 
+      {/* Beat 3 — everything secondary collapses into one disclosure so the
+          peak (celebration → share → film → worlds) stays uncluttered and the
+          screen ends on the primary CTAs. */}
+      <details className="group mb-8 rounded-2xl border border-white/10 bg-card">
+        <summary className="flex cursor-pointer list-none select-none items-center gap-3 p-5 [&::-webkit-details-marker]:hidden">
+          <div className="min-w-0 flex-1">
+            <span className="block text-sm font-bold text-white">More from this story</span>
+            <span className="mt-0.5 block text-xs text-muted-foreground">
+              Hidden ending, stats, exports, and related plays.
+            </span>
+          </div>
+          <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+        </summary>
+        <div className="space-y-6 border-t border-white/10 p-5">
+
       {showEpilogueCta && (
-        <SecretEpilogueFinaleCta game={game} nftMinted={Boolean(game.nftTokenId)} className="mb-8" />
+        <SecretEpilogueFinaleCta game={game} nftMinted={Boolean(game.nftTokenId)} />
       )}
 
-      <RelatedPlayStrip game={game} density="finale" className="mb-8 px-0 py-0" />
+      <RelatedPlayStrip game={game} density="finale" className="px-0 py-0" />
 
       {/* Post-completion referral loop: secondary actions stay reachable but
           collapsed, so the completion view leads with one primary action. */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.37, duration: 0.4 }}
-        className="mb-8 space-y-3"
-      >
-        <details className="group rounded-2xl border border-amber-500/20 bg-amber-500/[0.06] p-5">
+      <div className="space-y-3">
+        <details className="group rounded-2xl border border-warning/20 bg-warning/[0.06] p-5">
           <summary className="flex cursor-pointer list-none select-none items-center gap-2 [&::-webkit-details-marker]:hidden">
-            <CalendarDays className="h-5 w-5 shrink-0 text-amber-400" />
+            <CalendarDays className="h-5 w-5 shrink-0 text-warning" />
             <span className="min-w-0 flex-1">
               <span className="block text-sm font-bold text-white">Keep the loop going</span>
               <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">Come back tomorrow for a fresh Daily Challenge, or invite someone to play this story and compare endings.</span>
@@ -377,7 +387,7 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
             <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
           </summary>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Link href="/basepaint" className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-2 text-xs font-bold text-black transition-colors hover:bg-amber-400">
+            <Link href="/basepaint" className="inline-flex items-center gap-1.5 rounded-lg bg-warning px-3 py-2 text-xs font-bold text-black transition-colors hover:bg-warning">
               <CalendarDays className="h-3.5 w-3.5" />
               Open Daily Challenge
             </Link>
@@ -400,21 +410,21 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             <button
               onClick={() => copyWithFeedback(markdownStory, 'markdown')}
-              className="inline-flex flex-col items-center justify-center gap-1 rounded-xl border border-border bg-background px-3 py-3 text-xs font-medium text-foreground hover:border-purple-500/30 hover:bg-purple-500/5 transition-colors"
+              className="inline-flex flex-col items-center justify-center gap-1 rounded-xl border border-border bg-background px-3 py-3 text-xs font-medium text-foreground hover:border-brand/30 hover:bg-brand/5 transition-colors"
             >
-              {copiedFormat === 'markdown' ? <Check className="w-4 h-4 text-emerald-400" /> : <FileText className="w-4 h-4 text-muted-foreground" />}
+              {copiedFormat === 'markdown' ? <Check className="w-4 h-4 text-success" /> : <FileText className="w-4 h-4 text-muted-foreground" />}
               {copiedFormat === 'markdown' ? 'Copied' : 'Markdown'}
             </button>
             <button
               onClick={() => copyWithFeedback(gameUrl, 'link')}
-              className="inline-flex flex-col items-center justify-center gap-1 rounded-xl border border-border bg-background px-3 py-3 text-xs font-medium text-foreground hover:border-purple-500/30 hover:bg-purple-500/5 transition-colors"
+              className="inline-flex flex-col items-center justify-center gap-1 rounded-xl border border-border bg-background px-3 py-3 text-xs font-medium text-foreground hover:border-brand/30 hover:bg-brand/5 transition-colors"
             >
-              {copiedFormat === 'link' ? <Check className="w-4 h-4 text-emerald-400" /> : <Link2 className="w-4 h-4 text-muted-foreground" />}
+              {copiedFormat === 'link' ? <Check className="w-4 h-4 text-success" /> : <Link2 className="w-4 h-4 text-muted-foreground" />}
               {copiedFormat === 'link' ? 'Copied' : 'Link'}
             </button>
             <button
               onClick={() => setShowQr((prev) => !prev)}
-              className="inline-flex flex-col items-center justify-center gap-1 rounded-xl border border-border bg-background px-3 py-3 text-xs font-medium text-foreground hover:border-purple-500/30 hover:bg-purple-500/5 transition-colors"
+              className="inline-flex flex-col items-center justify-center gap-1 rounded-xl border border-border bg-background px-3 py-3 text-xs font-medium text-foreground hover:border-brand/30 hover:bg-brand/5 transition-colors"
             >
               <QrCode className="w-4 h-4 text-muted-foreground" />
               {showQr ? 'Hide QR' : 'QR Code'}
@@ -422,16 +432,16 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
             <button
               onClick={handleDownloadPdf}
               disabled={pdfLoading}
-              className="inline-flex flex-col items-center justify-center gap-1 rounded-xl border border-border bg-background px-3 py-3 text-xs font-medium text-foreground hover:border-purple-500/30 hover:bg-purple-500/5 transition-colors disabled:opacity-50"
+              className="inline-flex flex-col items-center justify-center gap-1 rounded-xl border border-border bg-background px-3 py-3 text-xs font-medium text-foreground hover:border-brand/30 hover:bg-brand/5 transition-colors disabled:opacity-50"
             >
-              {pdfLoading ? <Loader2 className="w-4 h-4 animate-spin text-purple-400" /> : <Download className="w-4 h-4 text-muted-foreground" />}
+              {pdfLoading ? <Loader2 className="w-4 h-4 animate-spin text-brand" /> : <Download className="w-4 h-4 text-muted-foreground" />}
               {pdfLoading ? 'Saving...' : 'PDF'}
             </button>
             <a
               href={game.imageUrl || gameUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className={`inline-flex flex-col items-center justify-center gap-1 rounded-xl border border-border bg-background px-3 py-3 text-xs font-medium text-foreground hover:border-purple-500/30 hover:bg-purple-500/5 transition-colors ${!game.imageUrl ? 'pointer-events-none opacity-50' : ''}`}
+              className={`inline-flex flex-col items-center justify-center gap-1 rounded-xl border border-border bg-background px-3 py-3 text-xs font-medium text-foreground hover:border-brand/30 hover:bg-brand/5 transition-colors ${!game.imageUrl ? 'pointer-events-none opacity-50' : ''}`}
             >
               <ImageIcon className="w-4 h-4 text-muted-foreground" />
               {game.imageUrl ? 'Image' : 'No Image'}
@@ -448,9 +458,56 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
           </motion.div>
         )}
         </details>
+      </div>
+
+      {/* Stats row */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5, duration: 0.4 }}
+        className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8"
+      >
+        <div className="rounded-xl border border-brand/20 bg-brand/5 p-4 text-center">
+          <BarChart3 className="w-5 h-5 text-brand mx-auto mb-1" />
+          <p className="text-2xl font-bold text-white">{panelCount}</p>
+          <p className="text-xs text-muted-foreground">Panels played</p>
+        </div>
+        <div className="rounded-xl border border-brand/20 bg-brand/5 p-4 text-center">
+          <Gamepad2 className="w-5 h-5 text-brand mx-auto mb-1" />
+          <p className="text-2xl font-bold text-white">{totalChoices}</p>
+          <p className="text-xs text-muted-foreground">Choices made</p>
+        </div>
+        <div className="rounded-xl border border-brand/20 bg-brand/5 p-4 text-center">
+          <Sparkles className="w-5 h-5 text-brand mx-auto mb-1" />
+          <p className="text-2xl font-bold text-white">
+            {playCount !== null ? `${playCount}` : '—'}
+          </p>
+          <p className="text-xs text-muted-foreground">Games created</p>
+        </div>
       </motion.div>
 
-      {/* CTA buttons */}
+      {/* Source attribution — paired writer + canvas when dual */}
+      {(basePaintDay != null ||
+        (game.articleUrl && !game.articleUrl.startsWith('basepaint://'))) && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6, duration: 0.4 }}
+          className="mt-6 mx-auto max-w-lg"
+        >
+          <DualSourceCredits
+            articleUrl={game.articleUrl}
+            basePaintDay={basePaintDay}
+            primaryColor={game.primaryColor || '#a78bfa'}
+            variant="full"
+          />
+        </motion.div>
+      )}
+
+        </div>
+      </details>
+
+      {/* CTA buttons — the screen ends on the primary actions. */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -460,14 +517,14 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
         <div className="flex flex-col sm:flex-row gap-3">
           <Link
             href="/games"
-            className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 px-5 py-3.5 text-sm font-bold text-white hover:from-purple-500 hover:to-pink-500 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-brand to-brand px-5 py-3.5 text-sm font-bold text-white hover:from-brand hover:to-brand transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             <Gamepad2 className="w-4 h-4" />
             Play another story
           </Link>
           <Link
             href="/generate"
-            className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-purple-500/30 bg-purple-500/5 px-5 py-3.5 text-sm font-bold text-purple-200 hover:bg-purple-500/10 hover:border-purple-500/50 transition-all"
+            className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-brand/30 bg-brand/5 px-5 py-3.5 text-sm font-bold text-brand hover:bg-brand/10 hover:border-brand/50 transition-all"
           >
             <Sparkles className="w-4 h-4" />
             Create your own game
@@ -494,50 +551,6 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
 
         </div>
       </motion.div>
-
-      {/* Stats row */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5, duration: 0.4 }}
-        className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8"
-      >
-        <div className="rounded-xl border border-purple-500/20 bg-purple-500/5 p-4 text-center">
-          <BarChart3 className="w-5 h-5 text-purple-400 mx-auto mb-1" />
-          <p className="text-2xl font-bold text-white">{panelCount}</p>
-          <p className="text-xs text-muted-foreground">Panels played</p>
-        </div>
-        <div className="rounded-xl border border-purple-500/20 bg-purple-500/5 p-4 text-center">
-          <Gamepad2 className="w-5 h-5 text-purple-400 mx-auto mb-1" />
-          <p className="text-2xl font-bold text-white">{totalChoices}</p>
-          <p className="text-xs text-muted-foreground">Choices made</p>
-        </div>
-        <div className="rounded-xl border border-purple-500/20 bg-purple-500/5 p-4 text-center">
-          <Sparkles className="w-5 h-5 text-purple-400 mx-auto mb-1" />
-          <p className="text-2xl font-bold text-white">
-            {playCount !== null ? `${playCount}` : '—'}
-          </p>
-          <p className="text-xs text-muted-foreground">Games created</p>
-        </div>
-      </motion.div>
-
-      {/* Source attribution — paired writer + canvas when dual */}
-      {(basePaintDay != null ||
-        (game.articleUrl && !game.articleUrl.startsWith('basepaint://'))) && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6, duration: 0.4 }}
-          className="mt-6 mx-auto max-w-lg"
-        >
-          <DualSourceCredits
-            articleUrl={game.articleUrl}
-            basePaintDay={basePaintDay}
-            primaryColor={game.primaryColor || '#a78bfa'}
-            variant="full"
-          />
-        </motion.div>
-      )}
 
     </motion.div>
   )

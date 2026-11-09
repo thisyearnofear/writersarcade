@@ -57,9 +57,9 @@ export function BasePaintCollectionView() {
         <Header />
         <DailyChallengeSubnav />
 
-        <main className="mx-auto w-full max-w-4xl flex-1 space-y-8 bg-gradient-to-b from-purple-950/20 via-black to-black px-4 py-10 text-white">
+        <main className="mx-auto w-full max-w-4xl flex-1 space-y-8 bg-gradient-to-b from-brand/20 via-black to-black px-4 py-10 text-white">
           <div className="space-y-2 text-center">
-            <p className="text-xs font-bold uppercase tracking-widest text-purple-400">Daily Challenge</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-brand">Daily Challenge</p>
             <h1 className="text-3xl font-bold">Your BasePaint collection</h1>
             <p className="text-sm text-muted-foreground">
               Canvases you own on BasePaint — and the writersarcade stories they inspired.
@@ -70,19 +70,19 @@ export function BasePaintCollectionView() {
             <button
               type="button"
               onClick={() => openConnectModal?.()}
-              className="mx-auto flex items-center gap-2 rounded-lg bg-purple-600 px-6 py-3 text-sm font-semibold text-white hover:bg-purple-500"
+              className="mx-auto flex items-center gap-2 rounded-lg bg-brand px-6 py-3 text-sm font-semibold text-white hover:bg-brand"
             >
               <Wallet className="h-4 w-4" />
               Connect wallet
             </button>
           ) : loading ? (
             <div className="flex justify-center py-16">
-              <Loader2 className="h-8 w-8 animate-spin text-purple-400" />
+              <Loader2 className="h-8 w-8 animate-spin text-brand" />
             </div>
           ) : totalOwned === 0 ? (
             <div className="rounded-lg border border-white/10 p-8 text-center">
               <p className="text-sm text-muted-foreground">No BasePaint canvases found for this wallet.</p>
-              <Link href="/basepaint" className="mt-4 inline-block text-sm text-purple-300 hover:text-purple-200">
+              <Link href="/basepaint" className="mt-4 inline-block text-sm text-brand hover:text-brand">
                 Play today&apos;s Daily Challenge →
               </Link>
             </div>
@@ -108,7 +108,7 @@ export function BasePaintCollectionView() {
                       </div>
                       <div className="flex flex-1 flex-col justify-between p-4">
                         <div>
-                          <p className="font-mono text-xs text-purple-300">Day {canvas.day}</p>
+                          <p className="font-mono text-xs text-brand">Day {canvas.day}</p>
                           <p className="text-sm text-muted-foreground">
                             {canvas.games.length > 0
                               ? `${canvas.games.length} community ${canvas.games.length === 1 ? 'story' : 'stories'}`
@@ -118,7 +118,7 @@ export function BasePaintCollectionView() {
                         <div className="mt-3 flex flex-wrap gap-2">
                           <Link
                             href={`/basepaint/day/${canvas.day}`}
-                            className="rounded-md border border-purple-500/40 px-3 py-1.5 text-xs font-semibold text-purple-200"
+                            className="rounded-md border border-brand/40 px-3 py-1.5 text-xs font-semibold text-brand"
                           >
                             View archive
                           </Link>
@@ -137,7 +137,7 @@ export function BasePaintCollectionView() {
                               <li key={g.slug}>
                                 <Link
                                   href={`/games/${g.slug}`}
-                                  className="inline-flex items-center gap-1.5 text-xs text-purple-300 hover:underline"
+                                  className="inline-flex items-center gap-1.5 text-xs text-brand hover:underline"
                                 >
                                   <Gamepad2 className="h-3 w-3" />
                                   {g.title}

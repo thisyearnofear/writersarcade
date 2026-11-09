@@ -90,7 +90,7 @@ export function AssetPresets({ currentAssets, onLoadPreset }: AssetPresetsProps)
             {/* Trigger button */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-900/40 hover:bg-blue-800/60 text-blue-200 border border-blue-700/50 rounded-lg text-sm font-bold transition-all"
+                className="flex items-center gap-2 px-4 py-2 bg-info/40 hover:bg-info/60 text-info border border-info/50 rounded-lg text-sm font-bold transition-all"
             >
                 <span>Presets</span>
                 <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -110,30 +110,30 @@ export function AssetPresets({ currentAssets, onLoadPreset }: AssetPresetsProps)
                             {!saveMode ? (
                                 <button
                                     onClick={() => setSaveMode(true)}
-                                    className="w-full py-2 bg-green-900/30 hover:bg-green-900/50 text-green-200 border border-green-700/50 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                                    className="w-full py-2 bg-success/30 hover:bg-success/50 text-success border border-success/50 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
                                 >
                                     <Save className="w-4 h-4" /> Save Current
                                 </button>
                             ) : (
-                                <div className="space-y-2 p-3 bg-card rounded-lg border border-green-700/30">
+                                <div className="space-y-2 p-3 bg-card rounded-lg border border-success/30">
                                     <input
                                         type="text"
                                         placeholder="Preset name"
                                         value={presetName}
                                         onChange={(e) => setPresetName(e.target.value)}
-                                        className="w-full bg-muted border border-border rounded px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-green-500"
+                                        className="w-full bg-muted border border-border rounded px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-success"
                                         autoFocus
                                     />
                                     <textarea
                                         placeholder="Description (optional)"
                                         value={presetDescription}
                                         onChange={(e) => setPresetDescription(e.target.value)}
-                                        className="w-full bg-muted border border-border rounded px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-green-500 resize-none min-h-[50px]"
+                                        className="w-full bg-muted border border-border rounded px-2 py-1 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-success resize-none min-h-[50px]"
                                     />
                                     <div className="flex gap-2">
                                         <button
                                             onClick={handleSavePreset}
-                                            className="flex-1 py-1 bg-green-600 hover:bg-green-500 text-white rounded text-xs font-bold transition-colors"
+                                            className="flex-1 py-1 bg-success hover:bg-success text-white rounded text-xs font-bold transition-colors"
                                         >
                                             Save
                                         </button>
@@ -149,7 +149,7 @@ export function AssetPresets({ currentAssets, onLoadPreset }: AssetPresetsProps)
 
                             {/* Import/Export */}
                             <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border">
-                                <label className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-900/20 hover:bg-blue-900/40 text-blue-300 border border-blue-700/30 rounded-lg text-xs font-medium cursor-pointer transition-colors">
+                                <label className="flex items-center justify-center gap-2 px-3 py-2 bg-info/20 hover:bg-info/40 text-info border border-info/30 rounded-lg text-xs font-medium cursor-pointer transition-colors">
                                     <Upload className="w-3 h-3" /> Import
                                     <input
                                         type="file"
@@ -164,7 +164,7 @@ export function AssetPresets({ currentAssets, onLoadPreset }: AssetPresetsProps)
                                 {presets.length > 0 && (
                                     <button
                                         onClick={() => handleExportPreset(presets[0])}
-                                        className="flex items-center justify-center gap-2 px-3 py-2 bg-purple-900/20 hover:bg-purple-900/40 text-purple-300 border border-purple-700/30 rounded-lg text-xs font-medium transition-colors"
+                                        className="flex items-center justify-center gap-2 px-3 py-2 bg-brand/20 hover:bg-brand/40 text-brand border border-brand/30 rounded-lg text-xs font-medium transition-colors"
                                         title="Export first preset"
                                     >
                                         <Download className="w-3 h-3" /> Export
@@ -178,7 +178,7 @@ export function AssetPresets({ currentAssets, onLoadPreset }: AssetPresetsProps)
                                     {presets.map((preset) => (
                                         <div
                                             key={preset.id}
-                                            className="p-3 bg-muted/50 hover:bg-muted border border-border/50 hover:border-purple-500/30 rounded-lg transition-all group"
+                                            className="p-3 bg-muted/50 hover:bg-muted border border-border/50 hover:border-brand/30 rounded-lg transition-all group"
                                         >
                                             <h4 className="font-bold text-foreground text-sm mb-1">{preset.name}</h4>
                                             {preset.description && (
@@ -189,7 +189,7 @@ export function AssetPresets({ currentAssets, onLoadPreset }: AssetPresetsProps)
                                             <div className="flex gap-2">
                                                 <button
                                                     onClick={() => handleLoadPreset(preset)}
-                                                    className="flex-1 py-1 bg-purple-600 hover:bg-purple-500 text-white rounded text-xs font-medium transition-colors"
+                                                    className="flex-1 py-1 bg-brand hover:bg-brand text-white rounded text-xs font-medium transition-colors"
                                                 >
                                                     Load
                                                 </button>
@@ -204,8 +204,8 @@ export function AssetPresets({ currentAssets, onLoadPreset }: AssetPresetsProps)
                                                     onClick={() => handleDeletePreset(preset.id)}
                                                     className={`px-2 py-1 rounded text-xs transition-colors ${
                                                         confirmDeleteId === preset.id
-                                                            ? 'bg-red-600 text-white hover:bg-red-500'
-                                                            : 'bg-red-900/20 hover:bg-red-900/40 text-red-300'
+                                                            ? 'bg-destructive text-white hover:bg-destructive'
+                                                            : 'bg-destructive/20 hover:bg-destructive/40 text-destructive'
                                                     }`}
                                                     title={confirmDeleteId === preset.id ? 'Confirm delete' : 'Delete'}
                                                 >

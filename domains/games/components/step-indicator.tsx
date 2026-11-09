@@ -30,11 +30,11 @@ export function MobileStepHeader({ currentStep }: { currentStep: GenerateStep })
   return (
     <div className="md:hidden mb-4">
       <div className="flex items-center gap-3 mb-2">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-600/20 border border-purple-500/30">
-          <Icon className="w-4 h-4 text-purple-400" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand/20 border border-brand/30">
+          <Icon className="w-4 h-4 text-brand" />
         </div>
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-wider text-purple-400">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-brand">
             Step {currentIdx + 1} of {GENERATE_STEPS.length}
           </p>
           <p className="text-sm font-semibold text-foreground">{stepInfo.label}</p>
@@ -46,9 +46,9 @@ export function MobileStepHeader({ currentStep }: { currentStep: GenerateStep })
             key={step.id}
             className={`h-1 rounded-full transition-all duration-500 flex-1 ${
               idx === currentIdx
-                ? 'bg-purple-500'
+                ? 'bg-brand'
                 : idx < currentIdx
-                ? 'bg-green-500/60'
+                ? 'bg-success/60'
                 : 'bg-border'
             }`}
           />
@@ -117,9 +117,9 @@ export function MobileStepNav({
               <div
                 className={`flex h-7 w-7 items-center justify-center rounded-lg transition-all duration-300 ${
                   idx === currentIdx
-                    ? 'bg-purple-600 text-white shadow-[0_0_12px_rgba(168,85,247,0.4)] scale-110'
+                    ? 'bg-brand text-white shadow-[0_0_12px_rgba(168,85,247,0.4)] scale-110'
                     : idx < currentIdx
-                    ? 'bg-green-500/20 text-green-400'
+                    ? 'bg-success/20 text-success'
                     : 'bg-muted text-muted-foreground/30'
                 }`}
               >
@@ -128,7 +128,7 @@ export function MobileStepNav({
               {idx === currentIdx && (
                 <motion.span
                   layoutId="mobileStepLabel"
-                  className="absolute -bottom-4 text-[8px] font-bold uppercase tracking-widest text-purple-400 whitespace-nowrap"
+                  className="absolute -bottom-4 text-[8px] font-bold uppercase tracking-widest text-brand whitespace-nowrap"
                 >
                   {step.label}
                 </motion.span>
@@ -146,7 +146,7 @@ export function MobileStepNav({
               animate={{ opacity: 1, scale: 1 }}
               whileTap={{ scale: 0.95 }}
               onClick={onForward}
-              className="inline-flex min-h-12 items-center gap-1.5 rounded-2xl bg-purple-600 px-4 text-xs font-bold text-white shadow-lg shadow-purple-900/30"
+              className="inline-flex min-h-12 items-center gap-1.5 rounded-2xl bg-brand px-4 text-xs font-bold text-white shadow-lg shadow-brand/30"
             >
               {forwardLabel}
               <ArrowRight className="h-4 w-4" />

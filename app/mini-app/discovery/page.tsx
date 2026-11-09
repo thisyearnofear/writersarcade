@@ -35,14 +35,14 @@ export default function DiscoveryPage() {
                 {games.map(game => (
                     <Card 
                         key={game.id} 
-                        className="bg-white/5 border-white/10 cursor-pointer hover:border-purple-500 transition-colors"
+                        className="bg-white/5 border-white/10 cursor-pointer hover:border-brand transition-colors"
                         onClick={() => router.push(`/mini-app/play/${game.slug}`)}
                     >
                         <CardHeader>
                             <CardTitle className="text-white text-lg">{game.title}</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-sm text-purple-200/60 line-clamp-2">{game.description}</p>
+                            <p className="text-sm text-brand/60 line-clamp-2">{game.description}</p>
                         </CardContent>
                     </Card>
                 ))}

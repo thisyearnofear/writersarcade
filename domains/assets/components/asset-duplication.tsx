@@ -37,7 +37,7 @@ export function AssetDuplication({
             <button
                 onClick={handleQuickDuplicate}
                 disabled={isLoading}
-                className="p-2 hover:bg-purple-600/20 rounded text-purple-400 hover:text-purple-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                className="p-2 hover:bg-brand/20 rounded text-brand hover:text-brand transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                 title="Create version (quick duplicate)"
             >
                 <GitBranch className="w-4 h-4" />
@@ -46,7 +46,7 @@ export function AssetDuplication({
             <button
                 onClick={handleQuickDuplicate}
                 disabled={isLoading}
-                className="p-2 hover:bg-blue-600/20 rounded text-blue-400 hover:text-blue-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                className="p-2 hover:bg-info/20 rounded text-info hover:text-info transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                 title="Duplicate asset"
             >
                 <Copy className="w-4 h-4" />

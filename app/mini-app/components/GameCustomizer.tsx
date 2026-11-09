@@ -128,8 +128,8 @@ export function GameCustomizer({ writerCoin, isMUSD, articleUrl, onBack, onGameG
                   className={cn(
                     "absolute inset-0 rounded-full border-4 border-t-transparent",
                     isMUSD 
-                      ? "border-amber-500/20 border-t-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.4)]" 
-                      : "border-purple-500/20 border-t-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.4)]"
+                      ? "border-warning/20 border-t-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.4)]" 
+                      : "border-brand/20 border-t-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.4)]"
                   )}
                 />
                 <motion.div 
@@ -137,7 +137,7 @@ export function GameCustomizer({ writerCoin, isMUSD, articleUrl, onBack, onGameG
                   transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                   className={cn(
                     "absolute inset-4 rounded-full border-4 border-b-transparent",
-                    isMUSD ? "border-amber-600/20 border-b-amber-600" : "border-indigo-500/20 border-b-indigo-500"
+                    isMUSD ? "border-warning/20 border-b-amber-600" : "border-brand/20 border-b-indigo-500"
                   )}
                 />
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -153,23 +153,23 @@ export function GameCustomizer({ writerCoin, isMUSD, articleUrl, onBack, onGameG
               >
                 <h3 className="text-2xl font-black uppercase italic tracking-tighter text-white">Synthesizing Experience</h3>
                 <div className="mt-4 flex items-center justify-center space-x-2">
-                    <span className={cn("h-1 w-12 rounded-full overflow-hidden", isMUSD ? "bg-amber-500/20" : "bg-purple-500/20")}>
+                    <span className={cn("h-1 w-12 rounded-full overflow-hidden", isMUSD ? "bg-warning/20" : "bg-brand/20")}>
                         <motion.div 
                             animate={{ x: [-48, 48] }}
                             transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                            className={cn("h-full w-full", isMUSD ? "bg-amber-500" : "bg-purple-500")}
+                            className={cn("h-full w-full", isMUSD ? "bg-warning" : "bg-brand")}
                         />
                     </span>
-                    <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] italic", isMUSD ? "text-amber-400/80" : "text-purple-400/80")}>Neural Engine Active</p>
-                    <span className={cn("h-1 w-12 rounded-full overflow-hidden", isMUSD ? "bg-amber-500/20" : "bg-purple-500/20")}>
+                    <p className={cn("text-[10px] font-black uppercase tracking-[0.2em] italic", isMUSD ? "text-warning/80" : "text-brand/80")}>Neural Engine Active</p>
+                    <span className={cn("h-1 w-12 rounded-full overflow-hidden", isMUSD ? "bg-warning/20" : "bg-brand/20")}>
                         <motion.div 
                             animate={{ x: [48, -48] }}
                             transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                            className={cn("h-full w-full", isMUSD ? "bg-amber-500" : "bg-purple-500")}
+                            className={cn("h-full w-full", isMUSD ? "bg-warning" : "bg-brand")}
                         />
                     </span>
                 </div>
-                <p className={cn("mt-6 max-w-xs text-xs leading-relaxed font-medium", isMUSD ? "text-amber-200/40" : "text-purple-200/40")}>
+                <p className={cn("mt-6 max-w-xs text-xs leading-relaxed font-medium", isMUSD ? "text-warning/40" : "text-brand/40")}>
                   {isMUSD 
                     ? "Scaling across Mezo Matsnet nodes..." 
                     : "Transforming static content into interactive protocol buffers..."}
@@ -184,7 +184,7 @@ export function GameCustomizer({ writerCoin, isMUSD, articleUrl, onBack, onGameG
         onClick={onBack}
         className={cn(
             "group flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest transition-colors",
-            isMUSD ? "text-amber-500 hover:text-amber-400" : "text-purple-400 hover:text-purple-300"
+            isMUSD ? "text-warning hover:text-warning" : "text-brand hover:text-brand"
         )}
         disabled={isGenerating}
       >
@@ -203,7 +203,7 @@ export function GameCustomizer({ writerCoin, isMUSD, articleUrl, onBack, onGameG
         {/* Mode Selector */}
         <div className={cn(
             "rounded-2xl border p-1 flex",
-            isMUSD ? "border-amber-500/20 bg-amber-900/10" : "border-white/10 bg-white/5"
+            isMUSD ? "border-warning/20 bg-warning/10" : "border-white/10 bg-white/5"
         )}>
             <button
                 onClick={() => setMode('story')}
@@ -211,11 +211,11 @@ export function GameCustomizer({ writerCoin, isMUSD, articleUrl, onBack, onGameG
                     "flex-1 rounded-xl py-2.5 text-[10px] font-black uppercase tracking-widest transition-all",
                     mode === 'story' 
                     ? isMUSD 
-                        ? 'bg-amber-600 text-white shadow-[0_0_15px_rgba(245,158,11,0.4)]'
-                        : 'bg-purple-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]' 
+                        ? 'bg-warning text-white shadow-[0_0_15px_rgba(245,158,11,0.4)]'
+                        : 'bg-brand text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]' 
                     : isMUSD 
-                        ? 'text-amber-400/60 hover:text-amber-300'
-                        : 'text-purple-400/60 hover:text-purple-300'
+                        ? 'text-warning/60 hover:text-warning'
+                        : 'text-brand/60 hover:text-brand'
                 )}
             >
                 Story Mode
@@ -226,11 +226,11 @@ export function GameCustomizer({ writerCoin, isMUSD, articleUrl, onBack, onGameG
                     "flex-1 rounded-xl py-2.5 text-[10px] font-black uppercase tracking-widest transition-all",
                     mode === 'wordle' 
                     ? isMUSD 
-                        ? 'bg-amber-600 text-white shadow-[0_0_15px_rgba(245,158,11,0.4)]'
-                        : 'bg-purple-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]' 
+                        ? 'bg-warning text-white shadow-[0_0_15px_rgba(245,158,11,0.4)]'
+                        : 'bg-brand text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]' 
                     : isMUSD 
-                        ? 'text-amber-400/60 hover:text-amber-300'
-                        : 'text-purple-400/60 hover:text-purple-300'
+                        ? 'text-warning/60 hover:text-warning'
+                        : 'text-brand/60 hover:text-brand'
                 )}
             >
                 Puzzle Mode (Beta)
@@ -239,7 +239,7 @@ export function GameCustomizer({ writerCoin, isMUSD, articleUrl, onBack, onGameG
 
         <div className={cn(
             "space-y-6 rounded-2xl border p-5",
-            isMUSD ? "border-amber-500/10 bg-amber-900/5" : "border-white/5 bg-white/[0.02]"
+            isMUSD ? "border-warning/10 bg-warning/5" : "border-white/5 bg-white/[0.02]"
         )}>
             {isStoryMode ? (
                 <>
@@ -248,7 +248,7 @@ export function GameCustomizer({ writerCoin, isMUSD, articleUrl, onBack, onGameG
                         <DifficultySelector value={difficulty} onChange={setDifficulty} disabled={isGenerating} />
                     </div>
 
-                    <div className={cn("pt-4 border-t", isMUSD ? "border-amber-500/10" : "border-white/5")}>
+                    <div className={cn("pt-4 border-t", isMUSD ? "border-warning/10" : "border-white/5")}>
                         <PaymentTokenSelector 
                           selectedToken={selectedToken}
                           onSelectToken={setSelectedToken}
@@ -264,15 +264,15 @@ export function GameCustomizer({ writerCoin, isMUSD, articleUrl, onBack, onGameG
                 <div className="py-8 text-center space-y-4">
                     <div className={cn(
                         "mx-auto h-12 w-12 rounded-full flex items-center justify-center border",
-                        isMUSD ? "bg-amber-500/10 border-amber-500/20" : "bg-green-500/10 border-green-500/20"
+                        isMUSD ? "bg-warning/10 border-warning/20" : "bg-success/10 border-success/20"
                     )}>
-                        <span className={cn("font-black italic", isMUSD ? "text-amber-400" : "text-green-400")}>!</span>
+                        <span className={cn("font-black italic", isMUSD ? "text-warning" : "text-success")}>!</span>
                     </div>
                     <div>
                         <h4 className="text-sm font-bold text-white uppercase tracking-tight">Free Generation Active</h4>
                         <p className={cn(
                             "mt-1 text-[10px] uppercase tracking-widest leading-relaxed",
-                            isMUSD ? "text-amber-200/40" : "text-purple-300/40"
+                            isMUSD ? "text-warning/40" : "text-brand/40"
                         )}>
                             Puzzle mode is currently available without writer coin authorization during our Farcaster beta phase.
                         </p>
@@ -282,10 +282,10 @@ export function GameCustomizer({ writerCoin, isMUSD, articleUrl, onBack, onGameG
         </div>
 
         {error && (
-            <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-4">
+            <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-4">
                 <div className="flex items-center space-x-3">
-                    <span className="text-red-400 font-bold">FAULT:</span>
-                    <p className="text-xs text-red-200/80">{error}</p>
+                    <span className="text-destructive font-bold">FAULT:</span>
+                    <p className="text-xs text-destructive/80">{error}</p>
                 </div>
             </div>
         )}
@@ -303,9 +303,9 @@ export function GameCustomizer({ writerCoin, isMUSD, articleUrl, onBack, onGameG
                 />
             </div>
           ) : (
-            <div className="rounded-2xl border border-green-500/20 bg-green-500/5 p-4 flex items-center justify-center space-x-3">
-              <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-              <p className="text-xs font-black uppercase tracking-widest text-green-400">Authorization Confirmed</p>
+            <div className="rounded-2xl border border-success/20 bg-success/5 p-4 flex items-center justify-center space-x-3">
+              <span className="h-2 w-2 rounded-full bg-success animate-pulse"></span>
+              <p className="text-xs font-black uppercase tracking-widest text-success">Authorization Confirmed</p>
             </div>
           )
         ) : (
@@ -313,7 +313,7 @@ export function GameCustomizer({ writerCoin, isMUSD, articleUrl, onBack, onGameG
             type="button"
             onClick={() => generateGame()}
             disabled={isGenerating}
-            className="w-full rounded-2xl bg-purple-600 py-4 text-sm font-black uppercase tracking-[0.2em] italic text-white shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all hover:bg-purple-500 hover:shadow-[0_0_25px_rgba(168,85,247,0.5)] active:scale-[0.98] disabled:opacity-50"
+            className="w-full rounded-2xl bg-brand py-4 text-sm font-black uppercase tracking-[0.2em] italic text-white shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all hover:bg-brand hover:shadow-[0_0_25px_rgba(168,85,247,0.5)] active:scale-[0.98] disabled:opacity-50"
           >
             Synthesize Experience
           </button>

@@ -47,7 +47,7 @@ export function BasePaintCanvasMeta({
   const [showTimelapse, setShowTimelapse] = useState(false)
 
   return (
-    <div className="overflow-hidden rounded-xl border border-purple-500/20 bg-purple-950/10">
+    <div className="overflow-hidden rounded-xl border border-brand/20 bg-brand/10">
       {showMedia && (
         <div className="relative aspect-video w-full overflow-hidden">
           {showTimelapse ? (
@@ -72,10 +72,10 @@ export function BasePaintCanvasMeta({
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
           <div className="absolute bottom-4 left-4 flex items-center gap-2">
-            <ImageIcon className="h-4 w-4 text-purple-300" aria-hidden />
+            <ImageIcon className="h-4 w-4 text-brand" aria-hidden />
             <Link
               href={`/basepaint/day/${day}`}
-              className="font-mono text-xs text-purple-200 hover:underline"
+              className="font-mono text-xs text-brand hover:underline"
             >
               BasePaint Day {day}
             </Link>
@@ -92,14 +92,14 @@ export function BasePaintCanvasMeta({
       )}
 
       {stats && (
-        <div className="grid grid-cols-3 gap-px border-b border-purple-500/20 bg-purple-950/30">
+        <div className="grid grid-cols-3 gap-px border-b border-brand/20 bg-brand/30">
           {[
             { icon: Palette, label: 'Pixels', value: formatCount(stats.pixelsCount) },
             { icon: Users, label: 'Artists', value: formatCount(stats.totalArtists) },
             { icon: Coins, label: 'Mints', value: formatCount(stats.totalMints) },
           ].map(({ icon: Icon, label, value }) => (
             <div key={label} className="flex flex-col items-center gap-0.5 bg-black/40 px-3 py-3">
-              <Icon className="h-3.5 w-3.5 text-purple-300/80" aria-hidden />
+              <Icon className="h-3.5 w-3.5 text-brand/80" aria-hidden />
               <span className="font-mono text-sm font-bold text-white">{value}</span>
               <span className="text-[10px] uppercase tracking-wider text-white/50">{label}</span>
             </div>
@@ -125,7 +125,7 @@ export function BasePaintCanvasMeta({
 
       {canvasDescription && (
         <div className="border-b border-white/5 px-6 py-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-purple-300/90">
+          <p className="text-xs font-semibold uppercase tracking-wider text-brand/90">
             What the community painted
           </p>
           <p className="mt-1 text-sm leading-relaxed text-foreground/75">{canvasDescription}</p>
@@ -134,7 +134,7 @@ export function BasePaintCanvasMeta({
 
       {stats && stats.topContributors.length > 0 && (
         <div className="px-6 py-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-purple-300/90">
+          <p className="text-xs font-semibold uppercase tracking-wider text-brand/90">
             Top contributors
           </p>
           <ul className="mt-2 space-y-1.5">
@@ -144,7 +144,7 @@ export function BasePaintCanvasMeta({
                   href={getBasePaintProfileUrl(c.address)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-mono text-purple-200 hover:underline"
+                  className="font-mono text-brand hover:underline"
                 >
                   {shortenAddress(c.address)}
                 </a>
@@ -160,7 +160,7 @@ export function BasePaintCanvasMeta({
           href={getBasePaintDayUrl(day)}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs text-muted-foreground hover:text-purple-200"
+          className="text-xs text-muted-foreground hover:text-brand"
         >
           View & mint on BasePaint →
         </a>

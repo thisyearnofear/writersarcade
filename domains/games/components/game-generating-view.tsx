@@ -95,12 +95,12 @@ export function GameGeneratingView({
       <div className="max-w-md w-full text-center space-y-6">
         {failed ? (
           <>
-            <AlertTriangle className="h-10 w-10 text-amber-400 mx-auto" />
+            <AlertTriangle className="h-10 w-10 text-warning mx-auto" />
             <div className="space-y-2">
               <h1 className="font-serif text-2xl font-bold text-white">
                 The story stalled
               </h1>
-              <p className="text-sm text-zinc-400 leading-relaxed">
+              <p className="text-sm text-muted-foreground leading-relaxed">
                 {failed}
               </p>
             </div>
@@ -116,7 +116,7 @@ export function GameGeneratingView({
           </>
         ) : (
           <>
-            <Loader2 className="h-10 w-10 text-purple-400 animate-spin mx-auto" />
+            <Loader2 className="h-10 w-10 text-brand animate-spin mx-auto" />
             <div className="space-y-2">
               <h1 className="font-serif text-2xl font-bold text-white">
                 {title || 'Your story'}
@@ -128,7 +128,7 @@ export function GameGeneratingView({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.3 }}
-                  className="text-sm text-zinc-400"
+                  className="text-sm text-muted-foreground"
                 >
                   {STAGES[stage]}
                 </motion.p>
@@ -139,12 +139,12 @@ export function GameGeneratingView({
                 <span
                   key={i}
                   className={`h-1 w-8 rounded-full transition-colors ${
-                    i <= stage ? 'bg-purple-400' : 'bg-zinc-800'
+                    i <= stage ? 'bg-brand' : 'bg-card'
                   }`}
                 />
               ))}
             </div>
-            <p className="text-xs text-zinc-600">
+            <p className="text-xs text-muted-foreground">
               You&apos;ll start playing as soon as it&apos;s ready.
             </p>
           </>

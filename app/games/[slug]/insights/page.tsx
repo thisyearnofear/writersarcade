@@ -88,7 +88,7 @@ export default function GameInsightsPage() {
                 <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
                   <Link
                     href={`/games/${slug}?play=1`}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-purple-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-purple-500 sm:w-auto"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-6 py-3 font-semibold text-white transition-colors hover:bg-brand sm:w-auto"
                   >
                     <Gamepad2 className="h-5 w-5" />
                     Play this game
@@ -101,7 +101,7 @@ export default function GameInsightsPage() {
                   </Link>
                   <Link
                     href="/games"
-                    className="text-sm font-medium text-purple-400 hover:text-purple-300"
+                    className="text-sm font-medium text-brand hover:text-brand"
                   >
                     Browse arcade
                   </Link>
@@ -267,7 +267,7 @@ function FunnelBar({
       </div>
       <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
         <div
-          className={`h-full rounded-full transition-all ${accent ? 'bg-emerald-400' : 'bg-primary'}`}
+          className={`h-full rounded-full transition-all ${accent ? 'bg-success' : 'bg-primary'}`}
           style={{ width: `${Math.min((count / max) * 100, 100)}%` }}
         />
       </div>

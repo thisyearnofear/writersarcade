@@ -467,20 +467,20 @@ export function HomeClient({ initialSampleGames, initialStats, featuredArtifact 
           {/* Creator value proposition — moved below the proof. The analytics
               argument lands better once a visitor has seen games work. */}
           <section className="border-t border-border px-4 py-12" aria-labelledby="creator-signal-heading">
-            <div className="mx-auto flex max-w-5xl flex-col gap-5 rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.04] p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+            <div className="mx-auto flex max-w-5xl flex-col gap-5 rounded-2xl border border-success/20 bg-success/[0.04] p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
               <div className="flex items-start gap-4">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-success/10 text-success">
                   <BarChart3 className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-emerald-500">For creators</p>
+                  <p className="text-xs font-bold uppercase tracking-widest text-success">For creators</p>
                   <h2 id="creator-signal-heading" className="mt-1 text-xl font-bold text-foreground">See what your readers actually choose</h2>
                   <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">Turn passive content into a measurable experience. Creator insights show starts, completions, panel drop-off, choice splits, and which placements drive plays.</p>
                 </div>
               </div>
               <Link
                 href="/creators/dashboard"
-                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-emerald-500"
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-success px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-success"
               >
                 See creator insights <ArrowUpRight className="h-4 w-4" />
               </Link>

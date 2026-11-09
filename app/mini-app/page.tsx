@@ -17,7 +17,7 @@ function DesktopGate() {
             className="space-y-8 max-w-md mx-auto"
         >
             <div className="space-y-4">
-                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-purple-600 font-black text-white italic text-4xl shadow-[0_0_30px_rgba(168,85,247,0.4)] mx-auto">
+                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-brand font-black text-white italic text-4xl shadow-[0_0_30px_rgba(168,85,247,0.4)] mx-auto">
                     W
                 </div>
                 <h1 className="text-3xl font-black text-white uppercase italic tracking-tight">Writers Arcade</h1>
@@ -26,7 +26,7 @@ function DesktopGate() {
             <div className="space-y-6 p-8 rounded-2xl border border-white/10 bg-white/5">
                 <div className="space-y-2">
                     <h2 className="text-xl font-bold text-white">Mobile Experience Only</h2>
-                    <p className="text-purple-300/80 text-sm">
+                    <p className="text-brand/80 text-sm">
                         The Writers Arcade mini-app is designed for mobile. 
                         Scan the QR code or open in Warpcast to continue.
                     </p>
@@ -65,7 +65,7 @@ function DesktopGate() {
                         rel="noopener noreferrer"
                     >
                         <Button 
-                            className="w-full h-12 bg-purple-600 hover:bg-purple-500 font-bold uppercase tracking-widest"
+                            className="w-full h-12 bg-brand hover:bg-brand font-bold uppercase tracking-widest"
                         >
                             Open in Warpcast
                         </Button>
@@ -102,19 +102,19 @@ export default function MiniAppPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-6 max-w-sm"
             >
-                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-purple-600 font-black text-white italic text-4xl shadow-[0_0_30px_rgba(168,85,247,0.4)] mx-auto">
+                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-brand font-black text-white italic text-4xl shadow-[0_0_30px_rgba(168,85,247,0.4)] mx-auto">
                     W
                 </div>
                 
                 <div className="space-y-2">
                     <h1 className="text-3xl font-black text-white uppercase italic tracking-tight">Writers Arcade</h1>
-                    <p className="text-purple-300/80">Turn articles into interactive fiction. Play, build, and support your favorite writers.</p>
+                    <p className="text-brand/80">Turn articles into interactive fiction. Play, build, and support your favorite writers.</p>
                 </div>
 
                 <div className="pt-6 space-y-3">
                     <Button 
                         onClick={() => router.push('/mini-app/create')}
-                        className="w-full h-12 bg-purple-600 hover:bg-purple-500 font-bold uppercase tracking-widest"
+                        className="w-full h-12 bg-brand hover:bg-brand font-bold uppercase tracking-widest"
                     >
                         Build a Game
                     </Button>

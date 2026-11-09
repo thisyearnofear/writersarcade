@@ -41,7 +41,7 @@ export function VideoUpsellCTA({
     <>
       <Button
         variant="outline"
-        className="gap-2 border-purple-500/40 text-purple-200 hover:bg-purple-500/10"
+        className="gap-2 border-brand/40 text-brand hover:bg-brand/10"
         onClick={completed ? onWatch : onOpenStyleModal}
         disabled={isStarting || status === 'pending'}
         title={
@@ -64,7 +64,7 @@ export function VideoUpsellCTA({
         ) : (
           <>
             Optional animation
-            <span className="rounded-full bg-purple-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-purple-300">
+            <span className="rounded-full bg-brand/20 px-1.5 py-0.5 text-[10px] font-semibold text-brand">
               {videoCost} credits
             </span>
           </>
@@ -72,7 +72,7 @@ export function VideoUpsellCTA({
       </Button>
 
             {error && (
-        <span className="text-xs text-red-400 px-2 py-1 bg-red-500/10 rounded">{error}</span>
+        <span className="text-xs text-destructive px-2 py-1 bg-destructive/10 rounded">{error}</span>
       )}
 
       {/* Whole-comic montage: animate every panel at once. Mutually exclusive with
@@ -81,14 +81,14 @@ export function VideoUpsellCTA({
         <Button
           variant="outline"
           size="sm"
-          className="gap-2 border-purple-500/40 text-purple-200 hover:bg-purple-500/10"
+          className="gap-2 border-brand/40 text-brand hover:bg-brand/10"
           onClick={onStartMontage}
           disabled={isStarting}
           title={`Animate the whole comic, panel by panel (${montageCost} credits)`}
         >
           <Clapperboard className="w-4 h-4" />
           <span className="hidden sm:inline">Whole comic</span>
-          <span className="rounded-full bg-purple-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-purple-300">{montageCost} credits</span>
+          <span className="rounded-full bg-brand/20 px-1.5 py-0.5 text-[10px] font-semibold text-brand">{montageCost} credits</span>
         </Button>
       )}
     </>
@@ -227,10 +227,10 @@ export function VideoStyleModal({
   // and a built-in close button in the top-right corner.
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose() }}>
-      <DialogContent className="max-w-2xl border-purple-500/30 bg-card">
+      <DialogContent className="max-w-2xl border-brand/30 bg-card">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-white">
-            <Clapperboard className="h-5 w-5 text-purple-400" />
+            <Clapperboard className="h-5 w-5 text-brand" />
             Optional animation
           </DialogTitle>
           <DialogDescription>
@@ -253,7 +253,7 @@ export function VideoStyleModal({
                 alt="Locked animation frame preview"
                 className="w-full rounded-lg border border-white/10"
               />
-              <p className="mt-2 text-xs text-emerald-300">
+              <p className="mt-2 text-xs text-success">
                 ✓ Frame locked. This is the object, light and grade your reveal will animate from.
               </p>
             </div>
@@ -263,13 +263,13 @@ export function VideoStyleModal({
               size="sm"
               onClick={() => void requestPreview()}
               disabled={previewLoading}
-              className="mt-3 gap-2 border-purple-500/40 text-purple-200 hover:bg-purple-500/10"
+              className="mt-3 gap-2 border-brand/40 text-brand hover:bg-brand/10"
             >
               {previewLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
               {previewLoading ? 'Locking…' : 'Preview the look · free'}
             </Button>
           )}
-          {previewError && <p className="mt-2 text-xs text-red-400">{previewError}</p>}
+          {previewError && <p className="mt-2 text-xs text-destructive">{previewError}</p>}
         </div>
 
         <div className="mt-2 rounded-lg border border-white/10 bg-white/[0.02] p-3">
@@ -292,14 +292,14 @@ export function VideoStyleModal({
               size="sm"
               onClick={() => void startDraft()}
               disabled={draftLoading || !previewUrl}
-              className="mt-3 gap-2 border-purple-500/40 text-purple-200 hover:bg-purple-500/10"
+              className="mt-3 gap-2 border-brand/40 text-brand hover:bg-brand/10"
               title={previewUrl ? 'Generate a free 3s motion draft' : 'Lock the look first (free)'}
             >
               {draftLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
               {draftLoading ? 'Checking motion…' : 'Check the motion · free'}
             </Button>
           )}
-          {draftError && <p className="mt-2 text-xs text-red-400">{draftError}</p>}
+          {draftError && <p className="mt-2 text-xs text-destructive">{draftError}</p>}
         </div>
 
         <div className="mt-2 rounded-lg border border-white/10 bg-white/[0.02] p-3">

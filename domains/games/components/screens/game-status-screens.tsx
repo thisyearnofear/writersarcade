@@ -23,7 +23,7 @@ function StatusShell({
   return (
     <div className="flex min-h-screen items-center justify-center bg-black p-4">
       <div className="max-w-md space-y-6 text-center">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-purple-500/10 text-purple-300">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-brand/10 text-brand">
           <Icon className="h-7 w-7" />
         </div>
         <div className="space-y-2">
@@ -34,7 +34,7 @@ function StatusShell({
         <div className="flex flex-col items-center gap-2 pt-2">
           <Link
             href={`/games/${game.slug}`}
-            className="text-xs font-medium text-purple-400 hover:text-purple-300"
+            className="text-xs font-medium text-brand hover:text-brand"
           >
             View game page
           </Link>

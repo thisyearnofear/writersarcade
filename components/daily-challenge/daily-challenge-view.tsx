@@ -235,15 +235,15 @@ export function DailyChallengeView({ variant = 'arcade' }: DailyChallengeViewPro
 
         <main
           id="main-content"
-          className="flex-1 bg-gradient-to-b from-purple-950/20 via-black to-black text-white"
+          className="flex-1 bg-gradient-to-b from-brand/20 via-black to-black text-white"
         >
           {loading ? (
             <div className="flex min-h-[60vh] items-center justify-center">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-purple-500 border-t-transparent" />
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-brand border-t-transparent" />
             </div>
           ) : !challenge ? (
             <div className="mx-auto max-w-lg space-y-6 px-4 py-16 text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-purple-500/10 text-purple-300">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-brand/10 text-brand">
                 <Sparkles className="h-7 w-7" />
               </div>
               <div className="space-y-2">
@@ -258,7 +258,7 @@ export function DailyChallengeView({ variant = 'arcade' }: DailyChallengeViewPro
               <button
                 type="button"
                 onClick={loadChallenge}
-                className="inline-flex items-center gap-1.5 text-xs text-purple-400 hover:text-purple-300"
+                className="inline-flex items-center gap-1.5 text-xs text-brand hover:text-brand"
               >
                 <RefreshCw className="h-3.5 w-3.5" />
                 Try loading again
@@ -374,7 +374,7 @@ export function DailyChallengeView({ variant = 'arcade' }: DailyChallengeViewPro
                           href={challenge.sourceUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-block text-xs text-purple-200/90 hover:underline"
+                          className="inline-block text-xs text-brand/90 hover:underline"
                         >
                           Read the featured article
                         </a>
@@ -405,7 +405,7 @@ export function DailyChallengeView({ variant = 'arcade' }: DailyChallengeViewPro
                 {dailyMode === 'live' && (
                   <Link
                     href="/games"
-                    className="flex items-center justify-center gap-1.5 text-xs font-medium text-purple-300 hover:text-purple-200"
+                    className="flex items-center justify-center gap-1.5 text-xs font-medium text-brand hover:text-brand"
                   >
                     <Gamepad2 className="h-3.5 w-3.5" />
                     Or browse the arcade first
@@ -415,7 +415,7 @@ export function DailyChallengeView({ variant = 'arcade' }: DailyChallengeViewPro
                   <button
                     type="button"
                     onClick={loadChallenge}
-                    className="flex items-center gap-1.5 text-xs text-purple-400 hover:text-purple-300"
+                    className="flex items-center gap-1.5 text-xs text-brand hover:text-brand"
                   >
                     <RefreshCw className="h-3.5 w-3.5" />
                     Check if daily is live
@@ -426,7 +426,7 @@ export function DailyChallengeView({ variant = 'arcade' }: DailyChallengeViewPro
               {leaderboard.length > 0 ? (
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
-                    <Trophy className="h-5 w-5 text-amber-400" />
+                    <Trophy className="h-5 w-5 text-warning" />
                     <h2 className="text-lg font-bold">Today&apos;s Leaderboard</h2>
                     <span className="text-xs text-muted-foreground">
                       ({leaderboard.length} player{leaderboard.length !== 1 ? 's' : ''} revealed)
@@ -444,11 +444,11 @@ export function DailyChallengeView({ variant = 'arcade' }: DailyChallengeViewPro
                         <div
                           className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
                             i === 0
-                              ? 'bg-amber-500/20 text-amber-400'
+                              ? 'bg-warning/20 text-warning'
                               : i === 1
-                                ? 'bg-slate-400/20 text-slate-300'
+                                ? 'bg-muted-foreground/20 text-muted-foreground'
                                 : i === 2
-                                  ? 'bg-orange-700/20 text-orange-400'
+                                  ? 'bg-warning/20 text-warning'
                                   : 'bg-white/5 text-muted-foreground'
                           }`}
                         >
@@ -463,7 +463,7 @@ export function DailyChallengeView({ variant = 'arcade' }: DailyChallengeViewPro
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-lg font-bold text-amber-400">{entry.score}</p>
+                          <p className="text-lg font-bold text-warning">{entry.score}</p>
                           <p className="text-[10px] text-muted-foreground">pts</p>
                         </div>
                       </motion.div>
@@ -492,8 +492,8 @@ export function DailyChallengeView({ variant = 'arcade' }: DailyChallengeViewPro
                           href={d === challenge.day ? '/basepaint' : `/basepaint/day/${d}`}
                           className={`rounded-md border px-2.5 py-1 font-mono text-xs ${
                             d === challenge.day
-                              ? 'border-purple-500/50 bg-purple-950/40 text-purple-200'
-                              : 'border-white/10 text-white/60 hover:border-purple-500/40 hover:text-purple-200'
+                              ? 'border-brand/50 bg-brand/40 text-brand'
+                              : 'border-white/10 text-white/60 hover:border-brand/40 hover:text-brand'
                           }`}
                         >
                           Day {d}
@@ -513,7 +513,7 @@ export function DailyChallengeView({ variant = 'arcade' }: DailyChallengeViewPro
                     { icon: Trophy, title: 'Reveal', body: 'Finale reveals · score ranks on-chain' },
                   ].map((step, i) => (
                     <div key={i} className="flex items-start gap-3 rounded-lg bg-white/[0.02] px-3 py-3">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-purple-500/10 text-purple-300">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-brand/10 text-brand">
                         <step.icon className="h-4 w-4" aria-hidden />
                       </div>
                       <div className="min-w-0">

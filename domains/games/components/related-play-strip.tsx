@@ -59,7 +59,7 @@ function GameTile({
             genre: tile.genre,
           })
         }
-        className={`group relative block ${tileSize(density)} overflow-hidden rounded-sm border border-white/15 bg-zinc-950 shadow-lg transition-transform hover:-translate-y-1 hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white`}
+        className={`group relative block ${tileSize(density)} overflow-hidden rounded-sm border border-white/15 bg-card shadow-lg transition-transform hover:-translate-y-1 hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white`}
       >
         {/* Plain img by design: these are dynamic provider URLs (fal / replicate /
             modal / venice / the VPS image backend), and only basepaint canvas URLs
@@ -103,12 +103,12 @@ function ArticleTile({
             action: 'source_article',
           })
         }
-        className={`group relative flex ${tileSize(density)} flex-col justify-between overflow-hidden rounded-sm border border-amber-200/25 bg-[#f4ecd8] p-2.5 text-zinc-900 shadow-lg transition-transform hover:-translate-y-1 hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white`}
+        className={`group relative flex ${tileSize(density)} flex-col justify-between overflow-hidden rounded-sm border border-warning/25 bg-[#f4ecd8] p-2.5 text-muted-foreground shadow-lg transition-transform hover:-translate-y-1 hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white`}
       >
-        <BookOpen className="h-3.5 w-3.5 text-zinc-700" />
+        <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />
         <span className="min-w-0">
           <span className="block font-serif text-[11px] leading-4 line-clamp-3">{article.writer || article.title}</span>
-          <span className="mt-1 flex items-center gap-1 text-[9px] uppercase tracking-wider text-zinc-600">
+          <span className="mt-1 flex items-center gap-1 text-[9px] uppercase tracking-wider text-muted-foreground">
             {article.host}
             <ExternalLink className="h-2.5 w-2.5" />
           </span>

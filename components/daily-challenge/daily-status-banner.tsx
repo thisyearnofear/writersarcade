@@ -35,16 +35,16 @@ export function DailyStatusBanner({ variant, className = '', detail }: DailyStat
 
   return (
     <div
-      className={`rounded-xl border border-amber-500/25 bg-amber-950/20 px-5 py-4 ${className}`}
+      className={`rounded-xl border border-warning/25 bg-warning/20 px-5 py-4 ${className}`}
       role="status"
     >
       <div className="flex items-start gap-3 text-left">
-        <Icon className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" aria-hidden />
+        <Icon className="mt-0.5 h-5 w-5 shrink-0 text-warning" aria-hidden />
         <div className="space-y-1">
-          <p className="text-sm font-semibold text-amber-100">{title}</p>
-          <p className="text-xs leading-relaxed text-amber-100/75">{body}</p>
+          <p className="text-sm font-semibold text-warning">{title}</p>
+          <p className="text-xs leading-relaxed text-warning/75">{body}</p>
           {detail && (
-            <p className="break-all text-[11px] leading-relaxed text-amber-200/50">{detail}</p>
+            <p className="break-all text-[11px] leading-relaxed text-warning/50">{detail}</p>
           )}
         </div>
       </div>

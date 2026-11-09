@@ -189,17 +189,17 @@ export function NftPreviewView({
               onClick={onFundGame}
               disabled={isFunding}
               size="lg"
-              className="gap-2 bg-emerald-600 hover:bg-emerald-500 text-white"
+              className="gap-2 bg-success hover:bg-success text-white"
             >
               {isFunding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wallet className="w-4 h-4" />}
               {isFunding ? 'Processing payment…' : `Pay ${fundCostLabel || ''} to unlock minting`}
             </Button>
             {fundError && (
-              <div className="mt-2 flex items-center gap-2 text-xs text-red-400 bg-red-900/20 border border-red-500/30 rounded-md px-3 py-1.5">
+              <div className="mt-2 flex items-center gap-2 text-xs text-destructive bg-destructive/20 border border-destructive/30 rounded-md px-3 py-1.5">
                 <AlertTriangle className="w-3 h-3 shrink-0" />
                 <span className="flex-1">{fundError}</span>
                 {onDismissFundError && (
-                  <button onClick={onDismissFundError} className="text-red-300 hover:text-white">
+                  <button onClick={onDismissFundError} className="text-destructive hover:text-white">
                     <X className="w-3 h-3" />
                   </button>
                 )}
@@ -207,7 +207,7 @@ export function NftPreviewView({
             )}
             <p className="mt-2 text-[11px] text-muted-foreground">
               {fundBalanceLabel && (
-                <span className={`font-medium ${hasEnoughToFund === false ? 'text-red-400' : 'text-emerald-400'}`}>
+                <span className={`font-medium ${hasEnoughToFund === false ? 'text-destructive' : 'text-success'}`}>
                   Balance: {fundBalanceLabel}
                   {hasEnoughToFund === false && ' (insufficient)'}
                 </span>
@@ -221,7 +221,7 @@ export function NftPreviewView({
             <Button
               onClick={onConnectWallet}
               size="lg"
-              className="gap-2 bg-purple-600 hover:bg-purple-500 text-white"
+              className="gap-2 bg-brand hover:bg-brand text-white"
             >
               <Wallet className="w-4 h-4" />
               Connect wallet to unlock minting

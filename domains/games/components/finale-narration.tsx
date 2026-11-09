@@ -318,7 +318,7 @@ export function NarrationControls({
   return (
     <>
       {audioError && (
-        <span className="text-xs text-red-400 px-2 py-1 bg-red-500/10 rounded">{audioError}</span>
+        <span className="text-xs text-destructive px-2 py-1 bg-destructive/10 rounded">{audioError}</span>
       )}
 
       {panelAudioUrls.size === 0 && !panels.some((p) => p.audioUrl) ? (

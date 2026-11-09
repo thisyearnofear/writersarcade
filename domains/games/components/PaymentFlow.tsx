@@ -35,7 +35,7 @@ interface PaymentFlowProps {
 }
 
 const MUSDLogo = ({ className }: { className?: string }) => (
-  <div className={cn("flex items-center justify-center bg-amber-500 rounded-full text-black font-bold text-[10px] w-5 h-5", className)}>
+  <div className={cn("flex items-center justify-center bg-warning rounded-full text-black font-bold text-[10px] w-5 h-5", className)}>
     M
   </div>
 )
@@ -274,13 +274,13 @@ export function PaymentFlow({
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-xl border border-emerald-500/30 bg-emerald-900/20 p-4 text-sm text-emerald-200"
+        className="rounded-xl border border-success/30 bg-success/20 p-4 text-sm text-success"
       >
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
           <span className="font-semibold">Paid with credits!</span>
         </div>
-        <p className="mt-2 text-xs text-emerald-300/70">
+        <p className="mt-2 text-xs text-success/70">
           {requiredAmount} credits spent. {creditBalance !== null && `${creditBalance} credits remaining.`}
         </p>
       </motion.div>
@@ -298,14 +298,14 @@ export function PaymentFlow({
             className={cn(
               "rounded-xl border p-4 transition-all duration-300",
               isMUSD
-                ? "bg-slate-900/60 border-amber-500/30 shadow-[0_0_20px_-12px_rgba(245,158,11,0.3)]"
-                : "bg-purple-900/20 border-purple-500/30"
+                ? "bg-card/60 border-warning/30 shadow-[0_0_20px_-12px_rgba(245,158,11,0.3)]"
+                : "bg-brand/20 border-brand/30"
             )}
           >
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
-                {isMUSD ? <MUSDLogo className="shadow-sm" /> : <Wallet className="w-4 h-4 text-purple-400" />}
-                <span className={isMUSD ? "text-amber-200" : "text-purple-200"}>
+                {isMUSD ? <MUSDLogo className="shadow-sm" /> : <Wallet className="w-4 h-4 text-brand" />}
+                <span className={isMUSD ? "text-warning" : "text-brand"}>
                   {isMUSD ? "MUSD Balance" : "Your Balance"}
                 </span>
               </div>
@@ -313,35 +313,35 @@ export function PaymentFlow({
                 {isMUSD ? (
                   <>
                     {isMUSDBalanceLoading ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
+                      <Loader2 className="w-4 h-4 animate-spin text-warning" />
                     ) : (
-                      <span className={cn("font-bold text-base", hasInsufficientBalance ? 'text-red-400' : 'text-amber-400')}>
+                      <span className={cn("font-bold text-base", hasInsufficientBalance ? 'text-destructive' : 'text-warning')}>
                         {musdFormatted} {tokenSymbol}
                       </span>
                     )}
                   </>
                 ) : isLoadingBalance ? (
-                  <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
+                  <Loader2 className="w-4 h-4 animate-spin text-brand" />
                 ) : balanceError ? (
-                  <span className="text-red-400">Unable to load</span>
+                  <span className="text-destructive">Unable to load</span>
                 ) : (
-                  <span className={cn("font-bold text-base", hasInsufficientBalance ? 'text-red-400' : 'text-green-400')}>
+                  <span className={cn("font-bold text-base", hasInsufficientBalance ? 'text-destructive' : 'text-success')}>
                     {balance ? balance.formattedBalance : '0'} {tokenSymbol}
                   </span>
                 )}
               </div>
             </div>
             {isMUSD && (
-              <div className="mt-3 pt-3 border-t border-amber-500/10 space-y-2">
+              <div className="mt-3 pt-3 border-t border-warning/10 space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-[10px] text-amber-200/60 font-medium tracking-wide uppercase">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                  <div className="flex items-center gap-1.5 text-[10px] text-warning/60 font-medium tracking-wide uppercase">
+                    <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
                     Mezo {MEZO_NETWORK === 'mainnet' ? 'Mainnet' : 'Testnet'}
                   </div>
                   {hasInsufficientBalance && <GetMusdOptions />}
                 </div>
                 {isMezoHolder && (
-                  <div className="flex items-center gap-1.5 rounded-md border border-amber-400/30 bg-amber-400/10 px-2 py-1 text-[10px] font-semibold text-amber-300">
+                  <div className="flex items-center gap-1.5 rounded-md border border-warning/30 bg-warning/10 px-2 py-1 text-[10px] font-semibold text-warning">
                     ⚡ MEZO Holder ({mezoFormatted} MEZO) — 10% more of this payment goes to the writer
                   </div>
                 )}
@@ -352,19 +352,19 @@ export function PaymentFlow({
 
         {userAddress && compact && isMUSD && (
           <>
-          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-[11px]">
-            <span className="flex items-center gap-1.5 text-amber-200">
+          <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-lg border border-warning/20 bg-warning/5 px-3 py-2 text-[11px]">
+            <span className="flex items-center gap-1.5 text-warning">
               <MUSDLogo className="w-3.5 h-3.5 text-[8px]" />
               {isMUSDBalanceLoading ? (
-                <Loader2 className="w-3 h-3 animate-spin text-amber-400" />
+                <Loader2 className="w-3 h-3 animate-spin text-warning" />
               ) : (
-                <span className={cn('font-semibold', hasInsufficientBalance ? 'text-red-400' : 'text-amber-300')}>
+                <span className={cn('font-semibold', hasInsufficientBalance ? 'text-destructive' : 'text-warning')}>
                   {musdFormatted} MUSD
                 </span>
               )}
             </span>
             {isMezoHolder && (
-              <span className="rounded border border-amber-400/30 bg-amber-400/10 px-1.5 py-0.5 text-[10px] font-semibold text-amber-300">
+              <span className="rounded border border-warning/30 bg-warning/10 px-1.5 py-0.5 text-[10px] font-semibold text-warning">
                 ⚡ MEZO Holder ({mezoFormatted} MEZO) — 10% more goes to the writer
               </span>
             )}
@@ -378,26 +378,26 @@ export function PaymentFlow({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="rounded-xl border border-emerald-500/30 bg-slate-900/60 p-4"
+            className="rounded-xl border border-success/30 bg-card/60 p-4"
           >
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
-                <Banknote className="w-4 h-4 text-emerald-400" />
-                <span className="text-emerald-200">Credit Balance</span>
+                <Banknote className="w-4 h-4 text-success" />
+                <span className="text-success">Credit Balance</span>
               </div>
               <div className="flex items-center gap-2">
                 {isLoadingCredits ? (
-                  <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+                  <Loader2 className="w-4 h-4 animate-spin text-success" />
                 ) : (
-                  <span className={cn("font-bold text-base", hasInsufficientBalance ? 'text-red-400' : 'text-emerald-400')}>
+                  <span className={cn("font-bold text-base", hasInsufficientBalance ? 'text-destructive' : 'text-success')}>
                     {creditBalance ?? 0} Credits
                   </span>
                 )}
               </div>
             </div>
-            <div className="mt-3 pt-3 border-t border-emerald-500/10 flex items-center justify-between text-[10px] text-emerald-200/60">
+            <div className="mt-3 pt-3 border-t border-success/10 flex items-center justify-between text-[10px] text-success/60">
               <span>No blockchain fees — spend credits directly</span>
-              <span className="font-semibold text-emerald-400">{requiredAmount} credits needed</span>
+              <span className="font-semibold text-success">{requiredAmount} credits needed</span>
             </div>
           </motion.div>
         )}
@@ -412,10 +412,10 @@ export function PaymentFlow({
         size="lg"
         className={cn(
           "w-full whitespace-normal rounded-lg py-4 text-sm font-bold transition-all duration-300 shadow-lg group sm:py-7 sm:text-base",
-          isWrongChain ? "bg-slate-800 hover:bg-slate-700 text-white"
-          : isCredits ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/20"
-          : isMUSD ? "bg-amber-600 hover:bg-amber-500 text-white shadow-amber-900/20"
-          : "bg-purple-600 hover:bg-purple-500 text-white shadow-purple-900/20"
+          isWrongChain ? "bg-card hover:bg-muted text-white"
+          : isCredits ? "bg-success hover:bg-success text-white shadow-success/20"
+          : isMUSD ? "bg-warning hover:bg-warning text-white shadow-warning/20"
+          : "bg-brand hover:bg-brand text-white shadow-brand/20"
         )}
       >
         {isProcessing ? (
@@ -453,7 +453,7 @@ export function PaymentFlow({
           <button
             type="button"
             onClick={openBuyCredits}
-            className="font-semibold text-emerald-400 underline underline-offset-2 hover:text-emerald-300"
+            className="font-semibold text-success underline underline-offset-2 hover:text-success"
           >
             Buy credits
           </button>
@@ -466,20 +466,20 @@ export function PaymentFlow({
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-xl border border-green-500/30 bg-green-900/20 p-3 text-xs flex items-center gap-3"
+          className="rounded-xl border border-success/30 bg-success/20 p-3 text-xs flex items-center gap-3"
         >
-          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shrink-0" />
+          <div className="w-2 h-2 rounded-full bg-success animate-pulse shrink-0" />
           <span className="flex-1">
             Transaction confirmed! View on{' '}
             <a
               href={`${getChainInfo(targetChainId).blockExplorer ?? MEZO_EXPLORER_URL}/tx/${lastTxHash}`}
               target="_blank" rel="noopener noreferrer"
-              className="underline font-semibold hover:text-green-300 transition-colors"
+              className="underline font-semibold hover:text-success transition-colors"
             >
               {getChainInfo(targetChainId).name} Explorer <ExternalLink className="w-3 h-3 inline-block" />
             </a>
           </span>
-          <button onClick={() => setLastTxHash(null)} className="text-green-400/60 hover:text-green-300 transition-colors">✕</button>
+          <button onClick={() => setLastTxHash(null)} className="text-success/60 hover:text-success transition-colors">✕</button>
         </motion.div>
       )}
     </div>

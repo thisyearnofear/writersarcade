@@ -17,7 +17,7 @@ export function DailyChallengeSubnav() {
     <div className="border-b border-border bg-muted/30">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-2">
         <div className="flex items-center gap-1 overflow-x-auto">
-          <span className="mr-2 shrink-0 text-[10px] font-bold uppercase tracking-wider text-purple-400">
+          <span className="mr-2 shrink-0 text-[10px] font-bold uppercase tracking-wider text-brand">
             Daily Challenge
           </span>
           {LINKS.map(({ href, label, title }) => (
@@ -27,7 +27,7 @@ export function DailyChallengeSubnav() {
               title={title}
               className={`shrink-0 rounded-md px-2.5 py-1 text-xs font-semibold transition-colors ${
                 isActive(href)
-                  ? 'bg-purple-500/20 text-purple-200'
+                  ? 'bg-brand/20 text-brand'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground'
               }`}
               aria-current={isActive(href) ? 'page' : undefined}

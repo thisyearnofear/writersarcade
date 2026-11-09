@@ -53,8 +53,8 @@ export class WalletErrorBoundary extends Component<Props, State> {
           </header>
           <main className="flex-1 flex items-center justify-center p-4">
             <div className="max-w-md w-full text-center space-y-4">
-              <div className="w-16 h-16 mx-auto rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center">
-                <Wallet className="w-8 h-8 text-amber-400" />
+              <div className="w-16 h-16 mx-auto rounded-full bg-warning/10 border border-warning/30 flex items-center justify-center">
+                <Wallet className="w-8 h-8 text-warning" />
               </div>
               <h2 className="text-lg font-bold text-foreground">Wallet connection unavailable</h2>
               <p className="text-sm text-muted-foreground">

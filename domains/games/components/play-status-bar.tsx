@@ -96,7 +96,7 @@ export function PlayStatusBar({
               primaryColor={accent}
             />
             {typeof hiddenHandPanelsDone === 'number' && (
-              <span className="hidden md:inline-flex items-center gap-1 text-[10px] text-purple-300/80">
+              <span className="hidden md:inline-flex items-center gap-1 text-[10px] text-brand/80">
                 <Spade className="h-3 w-3" aria-hidden />
                 {Math.min(hiddenHandPanelsDone, MAX_COMIC_PANELS)}/{MAX_COMIC_PANELS}
               </span>

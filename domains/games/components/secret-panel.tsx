@@ -190,7 +190,7 @@ export function SecretPanel({
           <Lock className="w-3.5 h-3.5 text-muted-foreground" />
         )}
         {promptVaultUuid && (
-          <span className="ml-auto text-[10px] font-mono tracking-tight px-1.5 py-0.5 rounded-full border border-emerald-600/40 text-emerald-400 bg-emerald-950/40">
+          <span className="ml-auto text-[10px] font-mono tracking-tight px-1.5 py-0.5 rounded-full border border-success/40 text-success bg-success/40">
             Encrypted via Inco
           </span>
         )}
@@ -239,38 +239,38 @@ export function SecretPanel({
                       Share & verify unlock
                     </summary>
                     {accessPolicy && (
-                      <div className="mt-3 grid gap-2 rounded-md border border-emerald-500/20 bg-emerald-950/20 p-3 text-[11px] text-emerald-100">
+                      <div className="mt-3 grid gap-2 rounded-md border border-success/20 bg-success/20 p-3 text-[11px] text-success">
                         <div className="flex items-center gap-1.5 font-semibold">
                           <ShieldCheck className="h-3.5 w-3.5" />
                           <span>Access verified on-chain</span>
                         </div>
 
-                        <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-emerald-200/80">
-                          <dt className="text-emerald-300/60">Gate NFT</dt>
+                        <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-success/80">
+                          <dt className="text-success/60">Gate NFT</dt>
                           <dd className="font-mono flex items-center gap-1">
                             <span>#{accessPolicy.nftTokenId} on Base</span>
                             <button
                               type="button"
                               onClick={() => copyToClipboard(accessPolicy.nftContract, 'nft')}
-                              className="text-emerald-300/60 hover:text-emerald-200"
+                              className="text-success/60 hover:text-success"
                               aria-label="Copy NFT contract address"
                             >
                               {copiedField === 'nft' ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                             </button>
                           </dd>
 
-                          <dt className="text-emerald-300/60">Panels completed</dt>
+                          <dt className="text-success/60">Panels completed</dt>
                           <dd className="font-mono">{accessPolicy.completedPanels} / 5</dd>
 
                           {promptVaultUuid && (
                             <>
-                              <dt className="text-emerald-300/60">On-chain ref</dt>
+                              <dt className="text-success/60">On-chain ref</dt>
                               <dd className="font-mono flex items-center gap-1 break-all">
                                 <span>{promptVaultUuid.length > 14 ? `${promptVaultUuid.slice(0, 8)}…${promptVaultUuid.slice(-4)}` : promptVaultUuid}</span>
                                 <button
                                   type="button"
                                   onClick={() => copyToClipboard(promptVaultUuid, 'uuid')}
-                                  className="text-emerald-300/60 hover:text-emerald-200"
+                                  className="text-success/60 hover:text-success"
                                   aria-label="Copy on-chain reference"
                                 >
                                   {copiedField === 'uuid' ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
@@ -301,7 +301,7 @@ export function SecretPanel({
                               copyToClipboard(text, 'share-text')
                             }
                           }}
-                          className="inline-flex items-center justify-center gap-1.5 rounded-md bg-emerald-500 px-3 py-2 text-xs font-bold text-black hover:bg-emerald-400"
+                          className="inline-flex items-center justify-center gap-1.5 rounded-md bg-success px-3 py-2 text-xs font-bold text-black hover:bg-success"
                         >
                           <Share2 className="h-3.5 w-3.5" />
                           Share unlock
@@ -343,20 +343,20 @@ export function SecretPanel({
 
               {/* Inco encryption indicator */}
               {promptVaultUuid && (
-                <div className="mb-5 mx-auto max-w-md rounded-lg border border-emerald-500/30 bg-emerald-950/30 px-4 py-3 text-left">
-                  <div className="flex items-center gap-2 text-xs text-emerald-300">
+                <div className="mb-5 mx-auto max-w-md rounded-lg border border-success/30 bg-success/30 px-4 py-3 text-left">
+                  <div className="flex items-center gap-2 text-xs text-success">
                     <Lock className="h-3.5 w-3.5" />
                     <span className="font-semibold">Encrypted on-chain</span>
                   </div>
-                  <p className="mt-2 text-[11px] leading-relaxed text-emerald-200/80">
+                  <p className="mt-2 text-[11px] leading-relaxed text-success/80">
                     Only the NFT holder can decrypt this ending after completing all 5 panels.
                   </p>
                   <details className="mt-2 group">
-                    <summary className="cursor-pointer text-[10px] uppercase tracking-wider font-semibold text-emerald-400/80 hover:text-emerald-300 list-none flex items-center gap-1">
+                    <summary className="cursor-pointer text-[10px] uppercase tracking-wider font-semibold text-success/80 hover:text-success list-none flex items-center gap-1">
                       <span className="group-open:rotate-90 transition-transform">▸</span>
                       How it works (Inco)
                     </summary>
-                    <div className="mt-2 text-[10px] leading-relaxed text-emerald-200/70 space-y-1.5">
+                    <div className="mt-2 text-[10px] leading-relaxed text-success/70 space-y-1.5">
                       <p>
                         Content is encrypted as an on-chain handle on Base. Access is tied to NFT ownership and enforced by Inco confidential compute — no off-chain custody.
                       </p>
@@ -368,7 +368,7 @@ export function SecretPanel({
               <div className="mb-5 grid gap-2 text-left max-w-sm mx-auto">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   {storyComplete ? (
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                    <CheckCircle2 className="h-3.5 w-3.5 text-success" />
                   ) : (
                     <Lock className="h-3.5 w-3.5" />
                   )}
@@ -376,14 +376,14 @@ export function SecretPanel({
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   {nftTokenId ? (
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                    <CheckCircle2 className="h-3.5 w-3.5 text-success" />
                   ) : (
                     <Lock className="h-3.5 w-3.5" />
                   )}
                   <span>Hold the minted Game NFT</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+                  <ShieldCheck className="h-3.5 w-3.5 text-success" />
                   <span>Decrypt via Inco attested decrypt</span>
                 </div>
               </div>
@@ -433,7 +433,7 @@ export function SecretPanel({
                     <motion.p
                       initial={{ opacity: 0, y: 5 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="mt-3 text-xs text-red-400"
+                      className="mt-3 text-xs text-destructive"
                     >
                       {error}
                     </motion.p>

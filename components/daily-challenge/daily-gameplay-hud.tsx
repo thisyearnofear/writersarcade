@@ -215,9 +215,9 @@ export function CompetitiveContextBar({
       )}
       {topScore !== null && (
         <div className="flex items-center gap-1.5">
-          <Flame className="w-3.5 h-3.5 text-amber-400" />
+          <Flame className="w-3.5 h-3.5 text-warning" />
           <span className="text-xs text-muted-foreground">
-            Best: <span className="font-semibold text-amber-400">{topScore}</span>/50
+            Best: <span className="font-semibold text-warning">{topScore}</span>/50
           </span>
         </div>
       )}

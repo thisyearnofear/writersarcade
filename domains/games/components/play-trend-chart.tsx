@@ -51,11 +51,11 @@ export function PlayTrendChart({ slug }: PlayTrendChartProps) {
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-          <Activity className="w-4 h-4 text-purple-400" />
+          <Activity className="w-4 h-4 text-brand" />
           Play activity (7 days)
         </div>
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <TrendingUp className={`w-3.5 h-3.5 ${totalLast7 > 0 ? 'text-emerald-400' : ''}`} />
+          <TrendingUp className={`w-3.5 h-3.5 ${totalLast7 > 0 ? 'text-success' : ''}`} />
           <span>{totalLast7} total</span>
         </div>
       </div>
@@ -79,15 +79,15 @@ export function PlayTrendChart({ slug }: PlayTrendChartProps) {
               <div
                 className={`w-full rounded-sm transition-all duration-500 ${
                   isToday
-                    ? 'bg-purple-500/80'
+                    ? 'bg-brand/80'
                     : day.count > 0
-                    ? 'bg-purple-500/40 hover:bg-purple-500/60'
+                    ? 'bg-brand/40 hover:bg-brand/60'
                     : 'bg-muted/30'
                 }`}
                 style={{ height: `${Math.max(height, 4)}%` }}
                 title={`${day.date}: ${day.count} plays`}
               />
-              <span className={`text-[10px] ${isToday ? 'text-purple-400 font-medium' : 'text-muted-foreground'}`}>
+              <span className={`text-[10px] ${isToday ? 'text-brand font-medium' : 'text-muted-foreground'}`}>
                 {dayName}
               </span>
             </div>

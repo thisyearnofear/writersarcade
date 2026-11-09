@@ -86,11 +86,11 @@ export function PaymentStep({
       )}
 
       {isStoryMode && !isMusdPath && balance && !paymentApproved && userBalance !== null && userBalance < requiredAmount && (
-        <div className="rounded-lg bg-red-900/20 border border-red-500/50 p-3 flex items-start gap-2">
-          <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+        <div className="rounded-lg bg-destructive/20 border border-destructive/50 p-3 flex items-start gap-2">
+          <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0 mt-0.5" />
           <div className="text-sm">
-            <p className="text-red-200 font-medium">Insufficient {writerCoin.symbol} Balance</p>
-            <p className="text-red-300/80">
+            <p className="text-destructive font-medium">Insufficient {writerCoin.symbol} Balance</p>
+            <p className="text-destructive/80">
               You have {balance.formattedBalance} {writerCoin.symbol} but need {requiredAmount} {writerCoin.symbol} to generate a game.
               {!isLoadingBalance && <span className="block mt-1">Your balance will be checked before payment.</span>}
             </p>
@@ -100,40 +100,40 @@ export function PaymentStep({
 
       {/* Payment section — appears after the article is ready. */}
       {isStoryMode && hasPreviewedCurrentUrl && (
-        <div className="space-y-4 rounded-lg border border-cyan-500/40 bg-gradient-to-br from-slate-950/90 to-cyan-950/50 p-4 shadow-xl sm:p-5">
+        <div className="space-y-4 rounded-lg border border-info/40 bg-gradient-to-br from-card/90 to-info/50 p-4 shadow-xl sm:p-5">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center flex-shrink-0">
-              <Sparkles className="w-5 h-5 text-cyan-300" />
+            <div className="w-10 h-10 rounded-lg bg-info/20 border border-info/40 flex items-center justify-center flex-shrink-0">
+              <Sparkles className="w-5 h-5 text-info" />
             </div>
             <div className="flex-1">
-              <p className="text-xs font-bold uppercase tracking-wider text-cyan-200/80 mb-1">Ready to build</p>
-              <p className="text-xs text-cyan-300/70">
+              <p className="text-xs font-bold uppercase tracking-wider text-info/80 mb-1">Ready to build</p>
+              <p className="text-xs text-info/70">
                 Covers AI generation + on-chain registration — the writer gets a share. Free to read after.
               </p>
             </div>
           </div>
 
           {activePaymentTxHash ? (
-            <div className="rounded-lg border border-emerald-500/35 bg-emerald-500/10 p-3">
+            <div className="rounded-lg border border-success/35 bg-success/10 p-3">
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 rounded-md bg-emerald-500/20 p-1.5">
+                <div className="mt-0.5 rounded-md bg-success/20 p-1.5">
                   {isGenerating ? (
-                    <Loader2 className="h-4 w-4 animate-spin text-emerald-300" />
+                    <Loader2 className="h-4 w-4 animate-spin text-success" />
                   ) : (
-                    <CheckCircle2 className="h-4 w-4 text-emerald-300" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold uppercase tracking-wider text-emerald-300">
+                  <p className="text-xs font-bold uppercase tracking-wider text-success">
                     {isGenerating ? 'Generation running' : 'Payment received'}
                   </p>
-                  <p className="mt-1 text-sm text-emerald-50">
+                  <p className="mt-1 text-sm text-success">
                     {paymentApproved
                       ? 'Your payment is confirmed. Continue generation without paying again.'
                       : 'Your transaction is saved for this attempt. Continue generation without paying again.'}
                   </p>
                   <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-                    <span className="rounded-md border border-emerald-400/25 bg-black/20 px-2 py-1 font-mono text-emerald-100">
+                    <span className="rounded-md border border-success/25 bg-black/20 px-2 py-1 font-mono text-success">
                       {shortTxHash(activePaymentTxHash)}
                     </span>
                     {activePaymentExplorerUrl && (
@@ -141,7 +141,7 @@ export function PaymentStep({
                         href={activePaymentExplorerUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1 rounded-md border border-emerald-400/25 px-2 py-1 font-semibold text-emerald-100 transition hover:bg-emerald-500/10"
+                        className="inline-flex items-center gap-1 rounded-md border border-success/25 px-2 py-1 font-semibold text-success transition hover:bg-success/10"
                       >
                         View transaction
                         <ExternalLink className="h-3.5 w-3.5" />
@@ -152,7 +152,7 @@ export function PaymentStep({
                     type="button"
                     onClick={onContinueGeneration}
                     disabled={isGenerating || isPreviewingArticle}
-                    className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                    className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md bg-success px-3 py-2 text-sm font-semibold text-white transition hover:bg-success disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                   >
                     {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                     {isGenerating ? 'Generating...' : 'Continue generation'}
@@ -183,8 +183,8 @@ export function PaymentStep({
               compact
             />
           )}
-          <details className="rounded-lg border border-cyan-500/20 bg-black/20 p-3 text-xs text-cyan-100/75">
-            <summary className="cursor-pointer font-medium text-cyan-100">Details</summary>
+          <details className="rounded-lg border border-info/20 bg-black/20 p-3 text-xs text-info/75">
+            <summary className="cursor-pointer font-medium text-info">Details</summary>
             <p className="mt-2 leading-relaxed">
               {isMusdPath
                 ? 'MUSD supports any public Paragraph article on Mezo.'

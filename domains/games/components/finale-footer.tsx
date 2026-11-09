@@ -140,7 +140,7 @@ export function FinaleFooter({
           {isOwner && (
             <a
               href={`/games/${gameSlug}/insights`}
-              className="inline-flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-xs font-semibold text-emerald-300 transition-colors hover:border-emerald-400/50 hover:bg-emerald-500/10"
+              className="inline-flex items-center gap-2 rounded-lg border border-success/30 bg-success/5 px-3 py-2 text-xs font-semibold text-success transition-colors hover:border-success/50 hover:bg-success/10"
             >
               <BarChart3 className="h-4 w-4" />
               Reader insights
@@ -162,7 +162,7 @@ export function FinaleFooter({
             <Button
               onClick={onFundGame}
               disabled={isFunding}
-              className="gap-2 bg-emerald-600 hover:bg-emerald-500 text-white"
+              className="gap-2 bg-success hover:bg-success text-white"
             >
               {isFunding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wallet className="w-4 h-4" />}
               {isFunding ? 'Paying…' : `Pay ${fundCostLabel || ''} to Own`}
@@ -170,7 +170,7 @@ export function FinaleFooter({
           ) : onConnectWallet ? (
             <Button
               onClick={onConnectWallet}
-              className="gap-2 bg-purple-600 hover:bg-purple-500 text-white"
+              className="gap-2 bg-brand hover:bg-brand text-white"
             >
               <Wallet className="w-4 h-4" />
               Connect to Own

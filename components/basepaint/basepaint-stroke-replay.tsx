@@ -86,7 +86,7 @@ export function BasePaintStrokeReplay({ day, className = '' }: BasePaintStrokeRe
   if (loading) {
     return (
       <div className={`flex items-center justify-center py-12 ${className}`}>
-        <Loader2 className="h-6 w-6 animate-spin text-purple-400" />
+        <Loader2 className="h-6 w-6 animate-spin text-brand" />
       </div>
     )
   }
@@ -101,7 +101,7 @@ export function BasePaintStrokeReplay({ day, className = '' }: BasePaintStrokeRe
 
   return (
     <div className={`space-y-3 ${className}`}>
-      <div className="overflow-hidden rounded-lg border border-purple-500/20 bg-black">
+      <div className="overflow-hidden rounded-lg border border-brand/20 bg-black">
         <canvas
           ref={canvasRef}
           className="mx-auto w-full max-w-md"
@@ -121,7 +121,7 @@ export function BasePaintStrokeReplay({ day, className = '' }: BasePaintStrokeRe
               setPlaying(true)
             }
           }}
-          className="inline-flex items-center gap-1.5 rounded-md border border-purple-500/40 px-3 py-1.5 text-xs font-semibold text-purple-200 hover:bg-purple-500/15"
+          className="inline-flex items-center gap-1.5 rounded-md border border-brand/40 px-3 py-1.5 text-xs font-semibold text-brand hover:bg-brand/15"
         >
           {playing ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
           {playing ? 'Pause' : frameIndex >= frames.length - 1 ? 'Replay' : 'Play strokes'}
@@ -139,7 +139,7 @@ export function BasePaintStrokeReplay({ day, className = '' }: BasePaintStrokeRe
           setPlaying(false)
           setFrameIndex(Number(e.target.value))
         }}
-        className="w-full accent-purple-500"
+        className="w-full accent-brand"
         aria-label="Scrub stroke replay"
       />
       <p className="text-[10px] text-muted-foreground">

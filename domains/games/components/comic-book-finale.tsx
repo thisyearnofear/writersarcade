@@ -450,10 +450,10 @@ export function ComicBookFinale({
         </div>
 
         {video.enabled && video.status === 'completed' && video.firstVideoUrl && (
-          <div aria-live="polite" className="mx-4 mb-5 rounded-2xl border border-emerald-400/25 bg-gradient-to-r from-emerald-400/10 via-purple-500/10 to-pink-500/10 p-4 shadow-lg shadow-purple-950/20 md:mx-auto md:mb-6 md:max-w-4xl md:p-5">
+          <div aria-live="polite" className="mx-4 mb-5 rounded-2xl border border-success/25 bg-gradient-to-r from-success/10 via-brand/10 to-brand/10 p-4 shadow-lg shadow-brand/20 md:mx-auto md:mb-6 md:max-w-4xl md:p-5">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 rounded-full bg-emerald-400/15 p-2 text-emerald-300">
+                <div className="mt-0.5 rounded-full bg-success/15 p-2 text-success">
                   <Clapperboard className="h-5 w-5" aria-hidden />
                 </div>
                 <div>
@@ -556,7 +556,7 @@ export function ComicBookFinale({
 
         {/* One-time video upsell offer (only when the balance covers it) */}
         {showVideoOffer && (
-          <div className="fixed bottom-24 right-4 z-50 max-w-xs rounded-xl border border-purple-500/30 bg-card p-4 shadow-2xl">
+          <div className="fixed bottom-24 right-4 z-50 max-w-xs rounded-xl border border-brand/30 bg-card p-4 shadow-2xl">
             <button
               type="button"
               onClick={() => dismissVideoOffer()}
@@ -566,7 +566,7 @@ export function ComicBookFinale({
               <X className="h-4 w-4" />
             </button>
             <div className="flex items-center gap-2 mb-1">
-              <Clapperboard className="h-4 w-4 text-purple-400" aria-hidden />
+              <Clapperboard className="h-4 w-4 text-brand" aria-hidden />
               <p className="text-sm font-semibold text-white">Make your comic move</p>
             </div>
             <p className="text-xs text-muted-foreground mb-3">
@@ -578,7 +578,7 @@ export function ComicBookFinale({
                 dismissVideoOffer(false)
                 setShowVideoStyleModal(true)
               }}
-              className="w-full gap-2 bg-purple-600 hover:bg-purple-500 text-white"
+              className="w-full gap-2 bg-brand hover:bg-brand text-white"
               size="sm"
             >
               <Clapperboard className="h-4 w-4" />

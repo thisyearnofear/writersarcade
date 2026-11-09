@@ -95,17 +95,17 @@ export function SuccessModal({
   return (
     <OverlayPortal>
     <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[90] p-3 sm:p-4">
-      <div role="dialog" aria-modal="true" className="bg-gradient-to-br from-card to-black border border-green-500/50 rounded-xl max-w-lg w-full shadow-[0_0_0_1px_rgba(34,197,94,0.35)] max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain">
+      <div role="dialog" aria-modal="true" className="bg-gradient-to-br from-card to-black border border-success/50 rounded-xl max-w-lg w-full shadow-[0_0_0_1px_rgba(34,197,94,0.35)] max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain">
         <div className="p-5 sm:p-6 space-y-5">
           <div className="text-center space-y-3">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-500/15 border border-green-500/35">
-              <CheckCircle className="w-7 h-7 text-green-400" />
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-success/15 border border-success/35">
+              <CheckCircle className="w-7 h-7 text-success" />
             </div>
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-green-300/80">
+              <p className="text-xs font-bold uppercase tracking-wider text-success/80">
                 {action === 'mint' ? 'Mint complete' : 'Game ready'}
               </p>
-              <h2 className="mt-1 text-2xl font-bold text-green-300">
+              <h2 className="mt-1 text-2xl font-bold text-success">
                 {action === 'mint' ? 'Minted!' : title}
               </h2>
               <p className="mt-2 text-sm text-muted-foreground">
@@ -131,7 +131,7 @@ export function SuccessModal({
             {gameSlug && (
               <Button
                 onClick={handleViewGame}
-                className="w-full min-h-14 bg-green-600 hover:bg-green-700 flex items-center justify-center gap-2 text-base font-bold"
+                className="w-full min-h-14 bg-success hover:bg-success flex items-center justify-center gap-2 text-base font-bold"
                 size="lg"
               >
                 <Eye className="w-4 h-4" />
@@ -172,8 +172,8 @@ export function SuccessModal({
 
             {action === 'generate' && (
               <>
-              <div className="rounded-lg bg-purple-900/20 border border-purple-500/30 px-3 py-2 text-center">
-                <p className="text-xs text-purple-200/80">
+              <div className="rounded-lg bg-brand/20 border border-brand/30 px-3 py-2 text-center">
+                <p className="text-xs text-brand/80">
                   Play your story first — when you reach the finale, you can mint it as an NFT on Base.
                 </p>
               </div>

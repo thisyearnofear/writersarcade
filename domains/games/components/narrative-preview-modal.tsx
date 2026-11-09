@@ -113,7 +113,7 @@ export function NarrativePreviewModal({
                 {storyboardPanels && storyboardPanels.length > 0 && (
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
-                      <LayoutPanelTop className="w-5 h-5 text-purple-400" />
+                      <LayoutPanelTop className="w-5 h-5 text-brand" />
                       <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                         Visual Storyboard
                       </h3>
@@ -129,7 +129,7 @@ export function NarrativePreviewModal({
                               Panel {index + 1}
                             </span>
                             {panel.previewImage ? (
-                              <ImageIcon className="w-4 h-4 text-green-400" />
+                              <ImageIcon className="w-4 h-4 text-success" />
                             ) : (
                               <ImageIcon className="w-4 h-4 text-muted-foreground" />
                             )}
@@ -168,9 +168,9 @@ export function NarrativePreviewModal({
                       {firstPanelOptions.slice(0, 4).map((option) => (
                         <div
                           key={option.id}
-                          className="bg-muted/30 border border-border/50 rounded-lg p-3 text-muted-foreground text-sm hover:border-purple-500/50 hover:bg-muted/50 transition-all"
+                          className="bg-muted/30 border border-border/50 rounded-lg p-3 text-muted-foreground text-sm hover:border-brand/50 hover:bg-muted/50 transition-all"
                         >
-                          <span className="text-purple-400 font-semibold">
+                          <span className="text-brand font-semibold">
                             {option.id}.
                           </span>{' '}
                           {option.text}
@@ -217,8 +217,8 @@ export function NarrativePreviewModal({
                   onClick={onStart}
                   disabled={isLoading}
                   className={`flex-1 px-4 py-3 rounded-lg text-white font-semibold transition-all flex items-center justify-center gap-2 ${isLoading 
-                    ? 'bg-purple-700 cursor-wait animate-pulse' 
-                    : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 hover:scale-[1.02] active:scale-[0.98]'
+                    ? 'bg-brand cursor-wait animate-pulse' 
+                    : 'bg-gradient-to-r from-brand to-brand hover:from-brand hover:to-brand hover:scale-[1.02] active:scale-[0.98]'
                   } disabled:opacity-70`}
                 >
                   {isLoading ? (

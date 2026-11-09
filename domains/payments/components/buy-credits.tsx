@@ -371,7 +371,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
           >
             {widgetUrl ? (
               <div className="text-center space-y-4">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-success/20 text-success">
                   <ExternalLink className="h-6 w-6" />
                 </div>
                 <h2 className="text-lg font-bold text-foreground">Complete your purchase</h2>
@@ -382,7 +382,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                   href={widgetUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-500"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-success px-4 py-3 font-semibold text-white transition hover:bg-success"
                 >
                   Continue to Etherfuse <ExternalLink className="h-4 w-4" />
                 </a>
@@ -403,7 +403,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                   </p>
                 </div>
                 {emailSent ? (
-                  <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-foreground">
+                  <div className="rounded-lg border border-success/30 bg-success/10 p-4 text-sm text-foreground">
                     Check your inbox — click the link, then come back and buy credits.
                   </div>
                 ) : (
@@ -413,13 +413,13 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                       value={email}
                       onChange={e => setEmail(e.target.value)}
                       placeholder="you@example.com"
-                      className="w-full rounded-lg border border-border bg-background p-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                      className="w-full rounded-lg border border-border bg-background p-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-success/50"
                     />
-                    {error && <p className="text-xs text-red-400">{error}</p>}
+                    {error && <p className="text-xs text-destructive">{error}</p>}
                     <Button
                       onClick={handleSendMagicLink}
                       disabled={quoteLoading || !email.includes('@')}
-                      className="w-full bg-emerald-600 hover:bg-emerald-500 text-white"
+                      className="w-full bg-success hover:bg-success text-white"
                       size="lg"
                     >
                       {quoteLoading ? (
@@ -465,7 +465,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                         className={cn(
                           'rounded-lg border p-3 text-left transition',
                           selectedAmount === amount
-                            ? 'border-emerald-500 bg-emerald-500/10'
+                            ? 'border-success bg-success/10'
                             : 'border-border bg-muted/50 hover:border-muted-foreground/30'
                         )}
                       >
@@ -488,7 +488,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                       className={cn(
                         'rounded-md px-3 py-1.5 transition',
                         effectivePaymentMethod === 'musd'
-                          ? 'bg-amber-500/20 text-amber-300'
+                          ? 'bg-warning/20 text-warning'
                           : 'text-muted-foreground hover:text-foreground'
                       )}
                     >
@@ -500,7 +500,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                       className={cn(
                         'rounded-md px-3 py-1.5 transition',
                         effectivePaymentMethod === 'card'
-                          ? 'bg-emerald-500/20 text-emerald-300'
+                          ? 'bg-success/20 text-success'
                           : 'text-muted-foreground hover:text-foreground'
                       )}
                     >
@@ -510,7 +510,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                 )}
 
                 {error && (
-                  <p className="mt-3 text-xs text-red-400">{error}</p>
+                  <p className="mt-3 text-xs text-destructive">{error}</p>
                 )}
 
                 {effectivePaymentMethod === 'card' && (
@@ -518,7 +518,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                     <Button
                       onClick={handleBuyCredits}
                       disabled={quoteLoading}
-                      className="mt-4 w-full bg-emerald-600 hover:bg-emerald-500 text-white"
+                      className="mt-4 w-full bg-success hover:bg-success text-white"
                       size="lg"
                     >
                       {quoteLoading ? (
@@ -536,7 +536,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                 {isConnected && effectivePaymentMethod === 'musd' && (
                   <>
                     {musdGranted ? (
-                      <div ref={successRef} className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
+                      <div ref={successRef} className="mt-3 rounded-lg border border-warning/30 bg-warning/10 p-3 text-xs text-warning">
                         <p className="font-semibold">
                           {`+${musdGranted.credits} credits added`}
                           {musdGranted.boost && ' — incl. +10% MEZO holder bonus'}
@@ -546,33 +546,33 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                             href={`${MEZO_ACTIVE_EXPLORER}/tx/${musdTxHash}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="mt-1 flex items-center gap-1 underline hover:text-amber-100"
+                            className="mt-1 flex items-center gap-1 underline hover:text-warning"
                           >
                             View on Mezo Explorer <ExternalLink className="w-3 h-3" />
                           </a>
                         )}
                         <a
                           href="/generate"
-                          className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-amber-600 px-4 py-2 font-semibold text-white transition hover:bg-amber-500"
+                          className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-warning px-4 py-2 font-semibold text-white transition hover:bg-warning"
                         >
                           Generate a game now <ArrowRight className="h-3.5 w-3.5" />
                         </a>
                         <button
                           type="button"
                           onClick={() => { setMusdGranted(null); setMusdTxHash(null) }}
-                          className="mt-2 w-full text-center underline hover:text-amber-100"
+                          className="mt-2 w-full text-center underline hover:text-warning"
                         >
                           Buy more credits
                         </button>
                       </div>
                     ) : pendingMusdTx ? (
-                      <div className="mt-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
+                      <div className="mt-3 rounded-lg border border-warning/30 bg-warning/10 p-3 text-xs text-warning">
                         <p className="font-semibold">Payment pending — verify on-chain</p>
-                        <p className="mt-1 text-amber-200/70">
+                        <p className="mt-1 text-warning/70">
                           Your MUSD transfer was sent but the credit grant hasn't confirmed yet.
                         </p>
                         {needsWalletSignIn && (
-                          <p className="mt-1 text-amber-200/70">
+                          <p className="mt-1 text-warning/70">
                             Sign the wallet message to confirm it's you, then verify.
                           </p>
                         )}
@@ -580,7 +580,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                           href={`${MEZO_ACTIVE_EXPLORER}/tx/${pendingMusdTx}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-1 flex items-center gap-1 underline hover:text-amber-100"
+                          className="mt-1 flex items-center gap-1 underline hover:text-warning"
                         >
                           {pendingMusdTx.slice(0, 10)}…{pendingMusdTx.slice(-6)} <ExternalLink className="w-3 h-3" />
                         </a>
@@ -596,7 +596,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                             )
                           }}
                           disabled={musdLoading}
-                          className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-amber-600 px-4 py-2 font-semibold text-white transition hover:bg-amber-500 disabled:opacity-50"
+                          className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-warning px-4 py-2 font-semibold text-white transition hover:bg-warning disabled:opacity-50"
                         >
                           {musdLoading ? (
                             <><Loader2 className="h-3.5 w-3.5 animate-spin" /> {musdStep ?? 'Verifying…'}</>
@@ -610,21 +610,21 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                           type="button"
                           onClick={clearPendingMusdTx}
                           disabled={musdLoading}
-                          className="mt-2 w-full text-center text-[11px] text-amber-200/70 underline hover:text-amber-100 disabled:opacity-50"
+                          className="mt-2 w-full text-center text-[11px] text-warning/70 underline hover:text-warning disabled:opacity-50"
                         >
                           Dismiss and send a new payment
                         </button>
                       </div>
                     ) : (
                       <>
-                        <div className="mt-4 rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-xs text-muted-foreground">
+                        <div className="mt-4 rounded-lg border border-warning/20 bg-warning/5 p-3 text-xs text-muted-foreground">
                           <div className="flex justify-between">
                             <span>You pay</span>
-                            <span className="font-semibold text-amber-300">{musdUnits} MUSD</span>
+                            <span className="font-semibold text-warning">{musdUnits} MUSD</span>
                           </div>
                           <div className="mt-1 flex justify-between">
                             <span>Your MUSD balance</span>
-                            <span className={cn('font-semibold', hasInsufficientMusd ? 'text-red-400' : 'text-amber-300')}>
+                            <span className={cn('font-semibold', hasInsufficientMusd ? 'text-destructive' : 'text-warning')}>
                               {musdFormatted} MUSD
                             </span>
                           </div>
@@ -632,7 +632,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                         <Button
                           onClick={needsWalletSignIn ? () => openWalletConnectModal() : isWrongMezoChain ? () => switchChainAsync({ chainId: MEZO_ACTIVE_CHAIN_ID }).catch(() => {}) : handlePayWithMusd}
                           disabled={musdLoading || (!needsWalletSignIn && !isWrongMezoChain && hasInsufficientMusd)}
-                          className="mt-3 w-full bg-amber-600 hover:bg-amber-500 text-white"
+                          className="mt-3 w-full bg-warning hover:bg-warning text-white"
                           size="lg"
                         >
                           {musdLoading ? (
@@ -652,13 +652,13 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                         )}
                         <p className="mt-2 text-center text-[10px] text-muted-foreground">
                           MUSD on Mezo {MEZO_NETWORK === 'mainnet' ? 'mainnet' : 'testnet'} — verified on-chain, credits granted instantly.
-                          {' '}<span className="text-amber-400/80">
+                          {' '}<span className="text-warning/80">
                             Hold ≥1{' '}
                             <a
                               href={`${MEZO_ACTIVE_EXPLORER}/address/0x7B7c000000000000000000000000000000000001`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="underline decoration-dotted underline-offset-2 hover:text-amber-300"
+                              className="underline decoration-dotted underline-offset-2 hover:text-warning"
                             >
                               MEZO
                             </a>
@@ -683,7 +683,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
         <button
           type="button"
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1.5 text-xs font-semibold text-emerald-400 transition hover:bg-emerald-500/20 hover:border-emerald-400/40"
+          className="flex items-center gap-1.5 rounded-lg border border-success/30 bg-success/10 px-2.5 py-1.5 text-xs font-semibold text-success transition hover:bg-success/20 hover:border-success/40"
         >
           <Coins className="w-3.5 h-3.5" />
           {loading ? (

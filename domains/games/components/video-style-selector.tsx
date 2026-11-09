@@ -34,8 +34,8 @@ export function VideoStyleSelector({ value, onChange, disabled }: VideoStyleSele
               relative rounded-lg border p-3 text-left transition-all
               ${
                 value === key
-                  ? 'border-purple-500 bg-purple-500/10 text-foreground'
-                  : 'border-border bg-card/50 text-muted-foreground hover:border-purple-500/40 hover:bg-card'
+                  ? 'border-brand bg-brand/10 text-foreground'
+                  : 'border-border bg-card/50 text-muted-foreground hover:border-brand/40 hover:bg-card'
               }
               ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
             `}
@@ -45,7 +45,7 @@ export function VideoStyleSelector({ value, onChange, disabled }: VideoStyleSele
               {STYLE_DESCRIPTIONS[key]}
             </span>
             {value === key && (
-              <span className="absolute right-2 top-2 flex h-2 w-2 rounded-full bg-purple-500" />
+              <span className="absolute right-2 top-2 flex h-2 w-2 rounded-full bg-brand" />
             )}
           </button>
         ))}

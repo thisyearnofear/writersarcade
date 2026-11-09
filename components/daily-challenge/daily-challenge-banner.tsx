@@ -104,12 +104,12 @@ export function DailyChallengeBanner({ className = '', compact = false }: DailyC
     return (
       <Link
         href={preview ? '/basepaint' : '/games'}
-        className={`flex items-center justify-between gap-3 rounded-lg border border-purple-500/25 bg-purple-950/10 px-4 py-3 transition-colors hover:border-purple-500/40 ${className}`}
+        className={`flex items-center justify-between gap-3 rounded-lg border border-brand/25 bg-brand/10 px-4 py-3 transition-colors hover:border-brand/40 ${className}`}
       >
         <div className="flex items-center gap-2 min-w-0">
-          <Sparkles className="h-4 w-4 shrink-0 text-purple-400" />
+          <Sparkles className="h-4 w-4 shrink-0 text-brand" />
           <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-wider text-purple-400">
+            <p className="text-xs font-bold uppercase tracking-wider text-brand">
               {preview?.live === false ? "Today's theme" : 'Daily Challenge'}
             </p>
             <p className="truncate text-sm font-medium text-foreground">
@@ -117,17 +117,17 @@ export function DailyChallengeBanner({ className = '', compact = false }: DailyC
             </p>
           </div>
         </div>
-        <ArrowRight className="h-4 w-4 shrink-0 text-purple-400" />
+        <ArrowRight className="h-4 w-4 shrink-0 text-brand" />
       </Link>
     )
   }
 
   return (
     <section className={`py-8 px-4 border-t border-border ${className}`}>
-      <div className="max-w-2xl mx-auto rounded-xl border border-purple-500/20 bg-purple-950/10 p-6 text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/30 bg-purple-950/40 mb-3">
-          <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-          <span className="text-xs font-bold tracking-widest uppercase text-purple-400">
+      <div className="max-w-2xl mx-auto rounded-xl border border-brand/20 bg-brand/10 p-6 text-center">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand/30 bg-brand/40 mb-3">
+          <Sparkles className="w-3.5 h-3.5 text-brand" />
+          <span className="text-xs font-bold tracking-widest uppercase text-brand">
             {preview?.live === false ? "Today's theme" : 'Daily Challenge'}
           </span>
         </div>
@@ -141,7 +141,7 @@ export function DailyChallengeBanner({ className = '', compact = false }: DailyC
         {preview?.day && (
           <Link
             href="/basepaint"
-            className="mx-auto mb-3 mt-3 block w-fit overflow-hidden rounded-lg border border-purple-500/30 shadow-lg transition-transform hover:-translate-y-0.5"
+            className="mx-auto mb-3 mt-3 block w-fit overflow-hidden rounded-lg border border-brand/30 shadow-lg transition-transform hover:-translate-y-0.5"
             title={`Themed world — day ${preview.day}${preview.canvasTheme ? ` · ${preview.canvasTheme}` : ''}`}
           >
             {/* Plain img: proxied remote canvas, matches the rest of the app. */}
@@ -172,7 +172,7 @@ export function DailyChallengeBanner({ className = '', compact = false }: DailyC
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
             href={preview ? '/basepaint' : '/games'}
-            className="inline-flex items-center gap-2 px-5 py-2 rounded-lg font-semibold text-sm bg-purple-600 hover:bg-purple-500 text-white transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2 rounded-lg font-semibold text-sm bg-brand hover:bg-brand text-white transition-colors"
           >
             {preview ? 'Open Daily Challenge' : 'Browse the arcade'}
             <ArrowRight className="w-4 h-4" />

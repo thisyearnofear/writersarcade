@@ -49,8 +49,8 @@ export function NetworkIndicator() {
           </>
         ) : (
           <>
-            <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
-            <span className="text-amber-600 dark:text-amber-400">
+            <AlertCircle className="w-3.5 h-3.5 text-warning" />
+            <span className="text-warning dark:text-warning">
               Unsupported Network
             </span>
           </>
@@ -61,7 +61,7 @@ export function NetworkIndicator() {
         <button
           onClick={() => switchChain({ chainId: MEZO_TESTNET_CHAIN_ID })}
           disabled={isPending}
-          className="flex items-center gap-1 px-2 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/5 text-[11px] font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/50 transition-colors disabled:opacity-50"
+          className="flex items-center gap-1 px-2 py-1.5 rounded-full border border-warning/30 bg-warning/5 text-[11px] font-medium text-warning dark:text-warning hover:bg-warning/10 hover:border-warning/50 transition-colors disabled:opacity-50"
           title="Switch to Mezo for MUSD payments"
         >
           <ArrowRightLeft className="w-3 h-3" />
@@ -73,7 +73,7 @@ export function NetworkIndicator() {
         <button
           onClick={() => switchChain({ chainId: BASE_MAINNET_CHAIN_ID })}
           disabled={isPending}
-          className="flex items-center gap-1 px-2 py-1.5 rounded-full border border-blue-500/30 bg-blue-500/5 text-[11px] font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 hover:border-blue-500/50 transition-colors disabled:opacity-50"
+          className="flex items-center gap-1 px-2 py-1.5 rounded-full border border-info/30 bg-info/5 text-[11px] font-medium text-info dark:text-info hover:bg-info/10 hover:border-info/50 transition-colors disabled:opacity-50"
           title="Switch to Base for Writer Coin payments"
         >
           <ArrowRightLeft className="w-3 h-3" />
@@ -111,10 +111,10 @@ export function NetworkIndicatorCompact() {
       >
         <div className={`w-2 h-2 rounded-full ${
           !chainInfo.isSupported
-            ? 'bg-amber-500'
+            ? 'bg-warning'
             : chainInfo.ecosystem === 'mezo'
-                ? 'bg-amber-400'
-                : 'bg-blue-500'
+                ? 'bg-warning'
+                : 'bg-info'
         }`} />
         <span className={chainInfo.color}>{chainInfo.name}</span>
       </div>
@@ -123,7 +123,7 @@ export function NetworkIndicatorCompact() {
         <button
           onClick={() => switchChain({ chainId: MEZO_TESTNET_CHAIN_ID })}
           disabled={isPending}
-          className="inline-flex items-center gap-1 px-1.5 py-1 rounded-md text-[10px] font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-1 px-1.5 py-1 rounded-md text-[10px] font-medium text-warning dark:text-warning hover:bg-warning/10 transition-colors disabled:opacity-50"
           title="Switch to Mezo"
         >
           <ArrowRightLeft className="w-2.5 h-2.5" />
@@ -134,7 +134,7 @@ export function NetworkIndicatorCompact() {
         <button
           onClick={() => switchChain({ chainId: BASE_MAINNET_CHAIN_ID })}
           disabled={isPending}
-          className="inline-flex items-center gap-1 px-1.5 py-1 rounded-md text-[10px] font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-500/10 transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-1 px-1.5 py-1 rounded-md text-[10px] font-medium text-info dark:text-info hover:bg-info/10 transition-colors disabled:opacity-50"
           title="Switch to Base"
         >
           <ArrowRightLeft className="w-2.5 h-2.5" />

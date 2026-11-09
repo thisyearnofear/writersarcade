@@ -31,7 +31,7 @@ export function MiniAppMobileNav({ step, onBack, canGoBack }: MiniAppMobileNavPr
                             animate={{ opacity: 1, scale: 1 }}
                             whileTap={{ scale: 0.9 }}
                             onClick={onBack}
-                            className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 border border-white/10 text-purple-400"
+                            className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 border border-white/10 text-brand"
                         >
                             <ArrowLeft className="h-5 w-5" strokeWidth={3} />
                         </motion.button>
@@ -49,8 +49,8 @@ export function MiniAppMobileNav({ step, onBack, canGoBack }: MiniAppMobileNavPr
                             <div key={s.id} className="relative flex flex-col items-center">
                                 <div className={`
                                     flex h-8 w-8 items-center justify-center rounded-xl transition-all duration-300
-                                    ${isActive ? 'bg-purple-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.5)] scale-110' : ''}
-                                    ${isPast ? 'bg-green-500/20 text-green-400' : ''}
+                                    ${isActive ? 'bg-brand text-white shadow-[0_0_15px_rgba(168,85,247,0.5)] scale-110' : ''}
+                                    ${isPast ? 'bg-success/20 text-success' : ''}
                                     ${!isActive && !isPast ? 'bg-white/5 text-white/20' : ''}
                                 `}>
                                     <Icon className="h-4 w-4" />
@@ -58,7 +58,7 @@ export function MiniAppMobileNav({ step, onBack, canGoBack }: MiniAppMobileNavPr
                                 {isActive && (
                                     <motion.span 
                                         layoutId="stepLabel"
-                                        className="absolute -bottom-5 text-[8px] font-black uppercase tracking-widest text-purple-400 whitespace-nowrap"
+                                        className="absolute -bottom-5 text-[8px] font-black uppercase tracking-widest text-brand whitespace-nowrap"
                                     >
                                         {s.label}
                                     </motion.span>

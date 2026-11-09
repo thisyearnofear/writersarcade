@@ -91,14 +91,14 @@ export function AssetMintChecklist({
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-xl p-6 border bg-gradient-to-br from-purple-900/20 to-purple-900/5 border-purple-700/30"
+            className="rounded-xl p-6 border bg-gradient-to-br from-brand/20 to-brand/5 border-brand/30"
         >
             {/* Header */}
             <div className="flex items-center gap-3 mb-6">
                 {canMint ? (
-                    <Unlock className="w-5 h-5 text-green-400" />
+                    <Unlock className="w-5 h-5 text-success" />
                 ) : (
-                    <Lock className="w-5 h-5 text-amber-400" />
+                    <Lock className="w-5 h-5 text-warning" />
                 )}
                 <div>
                     <h3 className="font-bold text-white">Mint Readiness</h3>
@@ -114,7 +114,7 @@ export function AssetMintChecklist({
             {criticalItems.length > 0 && (
                 <div className="mb-6">
                     <h4 className="font-bold text-sm text-muted-foreground mb-3 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                        <span className="w-2 h-2 rounded-full bg-destructive"></span>
                         Required
                     </h4>
                     <div className="space-y-2">
@@ -126,12 +126,12 @@ export function AssetMintChecklist({
                                 className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/20 transition-colors"
                             >
                                 {item.passed ? (
-                                    <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0" />
+                                    <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0" />
                                 ) : (
-                                    <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                                    <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0" />
                                 )}
                                 <div className="flex-1">
-                                    <p className={`text-sm font-medium ${item.passed ? 'text-green-400' : 'text-red-400'}`}>
+                                    <p className={`text-sm font-medium ${item.passed ? 'text-success' : 'text-destructive'}`}>
                                         {item.label}
                                     </p>
                                     <p className="text-xs text-muted-foreground">{item.requirement}</p>
@@ -146,7 +146,7 @@ export function AssetMintChecklist({
             {optionalItems.length > 0 && (
                 <div className="mb-6">
                     <h4 className="font-bold text-sm text-muted-foreground mb-3 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                        <span className="w-2 h-2 rounded-full bg-warning"></span>
                         Recommended
                     </h4>
                     <div className="space-y-2">
@@ -158,12 +158,12 @@ export function AssetMintChecklist({
                                 className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/20 transition-colors"
                             >
                                 {item.passed ? (
-                                    <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0" />
+                                    <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0" />
                                 ) : (
-                                    <AlertCircle className="w-5 h-5 text-yellow-400 flex-shrink-0" />
+                                    <AlertCircle className="w-5 h-5 text-warning flex-shrink-0" />
                                 )}
                                 <div className="flex-1">
-                                    <p className={`text-sm font-medium ${item.passed ? 'text-green-400' : 'text-yellow-400'}`}>
+                                    <p className={`text-sm font-medium ${item.passed ? 'text-success' : 'text-warning'}`}>
                                         {item.label}
                                     </p>
                                     <p className="text-xs text-muted-foreground">{item.requirement}</p>
@@ -181,7 +181,7 @@ export function AssetMintChecklist({
                         {checklist.filter(item => item.passed).length} of {checklist.length} checks passed
                     </span>
                     {canMint && (
-                        <span className="text-xs font-bold text-green-400 px-3 py-1 bg-green-900/20 border border-green-700/50 rounded-full">
+                        <span className="text-xs font-bold text-success px-3 py-1 bg-success/20 border border-success/50 rounded-full">
                             Ready to Mint ✓
                         </span>
                     )}

@@ -59,14 +59,14 @@ function GeneratePageContent() {
           <>
             <Link
               href="/basepaint"
-              className="mb-4 inline-flex items-center gap-1.5 text-xs text-purple-400 hover:text-purple-300"
+              className="mb-4 inline-flex items-center gap-1.5 text-xs text-brand hover:text-brand"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               Back to Daily Challenge
             </Link>
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-950/40 px-3 py-1">
-              <Sparkles className="h-3.5 w-3.5 text-purple-400" />
-              <span className="text-xs font-bold uppercase tracking-widest text-purple-400">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/40 px-3 py-1">
+              <Sparkles className="h-3.5 w-3.5 text-brand" />
+              <span className="text-xs font-bold uppercase tracking-widest text-brand">
                 Daily Challenge · BasePaint Day {basePaintDay}
               </span>
             </div>

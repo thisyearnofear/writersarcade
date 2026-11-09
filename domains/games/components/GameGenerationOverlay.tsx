@@ -32,22 +32,22 @@ const stepConfig = {
 
 const CONTEXTUAL_TIPS = [
   {
-    icon: <Lightbulb className="w-4 h-4 text-yellow-400" />,
+    icon: <Lightbulb className="w-4 h-4 text-warning" />,
     title: 'Did you know?',
     text: 'WritersArcade uses specialized AI models to maintain consistency across characters and styles in your story.',
   },
   {
-    icon: <BookOpen className="w-4 h-4 text-blue-400" />,
+    icon: <BookOpen className="w-4 h-4 text-info" />,
     title: 'Author Trivia',
     text: 'Paragraph.xyz authors can earn rewards when users play games inspired by their articles.',
   },
   {
-    icon: <Quote className="w-4 h-4 text-purple-400" />,
+    icon: <Quote className="w-4 h-4 text-brand" />,
     title: 'Writing Tip',
     text: 'Great interactive stories often give users 3 distinct choices: one safe, one risky, and one mysterious.',
   },
   {
-    icon: <Sparkles className="w-4 h-4 text-pink-400" />,
+    icon: <Sparkles className="w-4 h-4 text-brand" />,
     title: 'Pro Tip',
     text: 'You can mint your finished comic as an NFT to preserve your unique playthrough forever.',
   },
@@ -141,7 +141,7 @@ export function GameGenerationOverlay({
             {backgroundParticles.map((particle) => (
               <motion.div
                 key={particle.id}
-                className="absolute w-1 h-1 bg-purple-500/30 rounded-full"
+                className="absolute w-1 h-1 bg-brand/30 rounded-full"
                 initial={{ x: particle.initialX, y: particle.initialY }}
                 animate={{
                   y: [null, particle.animateY],
@@ -157,7 +157,7 @@ export function GameGenerationOverlay({
           </div>
 
           <motion.div
-            className="relative z-10 w-full max-w-lg mx-4 px-5 py-5 max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain bg-gradient-to-br from-purple-950/90 via-indigo-950/90 to-purple-900/90 border border-purple-500/40 rounded-xl shadow-2xl"
+            className="relative z-10 w-full max-w-lg mx-4 px-5 py-5 max-h-[calc(100dvh-2rem)] overflow-y-auto overscroll-contain bg-gradient-to-br from-brand/90 via-brand/90 to-brand/90 border border-brand/40 rounded-xl shadow-2xl"
             initial={{ scale: 0.9, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             transition={{ type: 'spring', stiffness: 200, damping: 20 }}
@@ -166,11 +166,11 @@ export function GameGenerationOverlay({
               {/* Header */}
               <div className="text-center">
                 <motion.div
-                  className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-purple-600/30 border-2 border-purple-500 mb-2"
+                  className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-brand/30 border-2 border-brand mb-2"
                   animate={{ rotate: 360 }}
                   transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
                 >
-                  <Gamepad2 className="w-7 h-7 text-purple-200" />
+                  <Gamepad2 className="w-7 h-7 text-brand" />
                 </motion.div>
                 <motion.h2
                   className="text-xl font-bold text-white"
@@ -181,7 +181,7 @@ export function GameGenerationOverlay({
                   Generating Your Game
                 </motion.h2>
                 <motion.p
-                  className="text-sm text-purple-300"
+                  className="text-sm text-brand"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.3 }}
@@ -194,13 +194,13 @@ export function GameGenerationOverlay({
               <div>
                 <ProgressBar value={progress} label="Progress" percent />
                 {paymentExplorerUrl && (
-                  <p className="mt-2 text-center text-xs text-emerald-300">
+                  <p className="mt-2 text-center text-xs text-success">
                     Payment confirmed on-chain ·{' '}
                     <a
                       href={paymentExplorerUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-semibold underline underline-offset-2 hover:text-emerald-200"
+                      className="font-semibold underline underline-offset-2 hover:text-success"
                     >
                       View transaction ↗
                     </a>
@@ -220,11 +220,11 @@ export function GameGenerationOverlay({
                       key={step}
                       className={`flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all ${
                         status === 'completed'
-                          ? 'bg-green-900/15'
+                          ? 'bg-success/15'
                           : status === 'error'
-                          ? 'bg-red-900/15'
+                          ? 'bg-destructive/15'
                           : isActive
-                          ? 'bg-purple-900/30'
+                          ? 'bg-brand/30'
                           : 'opacity-40'
                       }`}
                       initial={{ opacity: 0, x: -20 }}
@@ -233,16 +233,16 @@ export function GameGenerationOverlay({
                     >
                       <span className="w-5 text-center text-sm">
                         {status === 'completed' ? (
-                          <span className="text-green-400 font-bold">✓</span>
+                          <span className="text-success font-bold">✓</span>
                         ) : status === 'error' ? (
-                          <span className="text-red-400">✕</span>
+                          <span className="text-destructive">✕</span>
                         ) : isActive ? (
-                          <Loader2 className="w-4 h-4 text-purple-300 animate-spin mx-auto" />
+                          <Loader2 className="w-4 h-4 text-brand animate-spin mx-auto" />
                         ) : (
                           <span className="text-muted-foreground">{config.icon}</span>
                         )}
                       </span>
-                      <span className={`text-sm font-medium ${isActive ? 'text-purple-200' : 'text-muted-foreground'}`}>
+                      <span className={`text-sm font-medium ${isActive ? 'text-brand' : 'text-muted-foreground'}`}>
                         {config.label}
                       </span>
                       <span className="ml-auto text-[11px] text-muted-foreground">{index + 1}/5</span>
@@ -252,7 +252,7 @@ export function GameGenerationOverlay({
               </div>
 
               {/* Tips — rotating inline */}
-              <div className="relative h-14 overflow-hidden rounded-lg bg-purple-900/20 border border-purple-500/20">
+              <div className="relative h-14 overflow-hidden rounded-lg bg-brand/20 border border-brand/20">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={tipIndex}
@@ -263,8 +263,8 @@ export function GameGenerationOverlay({
                     transition={{ duration: 0.4 }}
                   >
                     {CONTEXTUAL_TIPS[tipIndex].icon}
-                    <div className="text-xs text-purple-200/80 leading-relaxed min-w-0">
-                      <span className="font-semibold text-purple-100">{CONTEXTUAL_TIPS[tipIndex].title}:</span>{' '}
+                    <div className="text-xs text-brand/80 leading-relaxed min-w-0">
+                      <span className="font-semibold text-brand">{CONTEXTUAL_TIPS[tipIndex].title}:</span>{' '}
                       {CONTEXTUAL_TIPS[tipIndex].text}
                     </div>
                   </motion.div>
@@ -278,16 +278,16 @@ export function GameGenerationOverlay({
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
-                    className="rounded-lg border border-yellow-500/30 bg-yellow-950/30 p-3"
+                    className="rounded-lg border border-warning/30 bg-warning/30 p-3"
                   >
-                    <p className="text-sm text-yellow-200/90 mb-2">
+                    <p className="text-sm text-warning/90 mb-2">
                       This is taking longer than usual. The AI is still working, but you can stop it and try again.
                     </p>
                     <div className="flex items-center justify-center gap-3">
                       {onCancel && (
                         <button
                           onClick={onCancel}
-                          className="inline-flex items-center gap-1 rounded-md bg-yellow-500/20 px-3 py-1.5 text-xs font-medium text-yellow-200 hover:bg-yellow-500/30 transition-colors"
+                          className="inline-flex items-center gap-1 rounded-md bg-warning/20 px-3 py-1.5 text-xs font-medium text-warning hover:bg-warning/30 transition-colors"
                         >
                           <X className="w-3 h-3" />
                           Cancel
@@ -301,7 +301,7 @@ export function GameGenerationOverlay({
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
-                    className="text-center text-xs text-purple-300/80"
+                    className="text-center text-xs text-brand/80"
                   >
                     Still crafting your game… this can take up to two minutes for longer articles.
                   </motion.p>

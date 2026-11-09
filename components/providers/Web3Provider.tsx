@@ -215,7 +215,7 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
   return (
     <Web3AuthContext.Provider value={{ status: authStatus }}>
       {!HAS_WC && (
-        <div className="fixed bottom-2 left-2 z-50 rounded-md bg-yellow-900/80 text-yellow-100 border border-yellow-600/60 px-3 py-2 text-xs shadow">
+        <div className="fixed bottom-2 left-2 z-50 rounded-md bg-warning/80 text-warning border border-warning/60 px-3 py-2 text-xs shadow">
           WalletConnect disabled: set NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID to enable.
         </div>
       )}

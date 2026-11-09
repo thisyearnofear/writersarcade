@@ -64,7 +64,7 @@ export function GamesClient() {
                   <Link
                     key={coin.id}
                     href={`/writers/${coin.id}`}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border bg-muted/40 hover:border-purple-500 hover:bg-purple-500/5 text-xs text-foreground transition-colors"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border bg-muted/40 hover:border-brand hover:bg-brand/5 text-xs text-foreground transition-colors"
                     title={`${coin.writer} — ${WRITER_COINS.length} whitelisted writer coins`}
                   >
                     <span className="font-mono font-semibold">${coin.symbol.replace('$', '')}</span>
@@ -90,12 +90,12 @@ export function GamesClient() {
                 placeholder="Search games..."
                 value={searchQuery}
                 onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1) }}
-                className="w-full bg-muted border border-border rounded-lg pl-10 pr-4 py-2 text-sm text-foreground focus:outline-none focus:border-purple-500 transition-colors placeholder-muted-foreground"
+                className="w-full bg-muted border border-border rounded-lg pl-10 pr-4 py-2 text-sm text-foreground focus:outline-none focus:border-brand transition-colors placeholder-muted-foreground"
               />
             </div>
             <button
               onClick={() => setFilterDrawerOpen(true)}
-              className="flex min-h-10 items-center justify-center gap-2 px-4 py-2 bg-muted border border-border rounded-lg text-sm text-muted-foreground hover:border-purple-500 transition-colors min-[420px]:justify-start"
+              className="flex min-h-10 items-center justify-center gap-2 px-4 py-2 bg-muted border border-border rounded-lg text-sm text-muted-foreground hover:border-brand transition-colors min-[420px]:justify-start"
               aria-label="Open genre filters"
             >
               <Filter className="w-4 h-4" />
@@ -133,8 +133,8 @@ export function GamesClient() {
                       onClick={() => { setSortBy('recent'); setCurrentPage(1); setFilterDrawerOpen(false) }}
                       className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border transition-colors ${
                         sortBy === 'recent'
-                          ? 'bg-card text-foreground border-purple-500 shadow-sm'
-                          : 'bg-muted text-muted-foreground border-border hover:border-purple-500'
+                          ? 'bg-card text-foreground border-brand shadow-sm'
+                          : 'bg-muted text-muted-foreground border-border hover:border-brand'
                       }`}
                     >
                       <Clock className="w-3.5 h-3.5" />
@@ -144,8 +144,8 @@ export function GamesClient() {
                       onClick={() => { setSortBy('playCount'); setCurrentPage(1); setFilterDrawerOpen(false) }}
                       className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border transition-colors ${
                         sortBy === 'playCount'
-                          ? 'bg-card text-foreground border-purple-500 shadow-sm'
-                          : 'bg-muted text-muted-foreground border-border hover:border-purple-500'
+                          ? 'bg-card text-foreground border-brand shadow-sm'
+                          : 'bg-muted text-muted-foreground border-border hover:border-brand'
                       }`}
                     >
                       <BarChart3 className="w-3.5 h-3.5" />
@@ -179,7 +179,7 @@ export function GamesClient() {
                     placeholder="Search games..."
                     value={searchQuery}
                     onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1) }}
-                    className="w-full bg-muted border border-border rounded-lg pl-10 pr-4 py-2 text-sm text-foreground focus:outline-none focus:border-purple-500 transition-colors placeholder-muted-foreground"
+                    className="w-full bg-muted border border-border rounded-lg pl-10 pr-4 py-2 text-sm text-foreground focus:outline-none focus:border-brand transition-colors placeholder-muted-foreground"
                   />
                 </div>
                 <div>
@@ -238,7 +238,7 @@ export function GamesClient() {
                     <button
                       onClick={() => handlePageChange(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className="p-2 rounded-lg border border-border text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed hover:border-purple-500 hover:text-foreground transition-colors"
+                      className="p-2 rounded-lg border border-border text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed hover:border-brand hover:text-foreground transition-colors"
                     >
                       <ChevronLeft className="w-5 h-5" />
                     </button>
@@ -250,7 +250,7 @@ export function GamesClient() {
                     <button
                       onClick={() => handlePageChange(currentPage + 1)}
                       disabled={currentPage >= Math.ceil(totalGames / itemsPerPage)}
-                      className="p-2 rounded-lg border border-border text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed hover:border-purple-500 hover:text-foreground transition-colors"
+                      className="p-2 rounded-lg border border-border text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed hover:border-brand hover:text-foreground transition-colors"
                     >
                       <ChevronRight className="w-5 h-5" />
                     </button>

@@ -99,7 +99,7 @@ export function PostGameFeedback({
             <button
               onClick={handleNext}
               disabled={npsScore === null}
-              className="flex-1 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-all text-sm font-semibold"
+              className="flex-1 px-4 py-2 rounded-lg bg-brand hover:bg-brand disabled:opacity-50 disabled:cursor-not-allowed text-white transition-all text-sm font-semibold"
             >
               Next
             </button>
@@ -130,7 +130,7 @@ export function PostGameFeedback({
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             placeholder="What did you think? What was missing?"
-            className="w-full h-24 bg-muted border border-border rounded-lg px-4 py-3 text-foreground placeholder-muted-foreground focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none resize-none"
+            className="w-full h-24 bg-muted border border-border rounded-lg px-4 py-3 text-foreground placeholder-muted-foreground focus:border-brand focus:ring-1 focus:ring-brand outline-none resize-none"
           />
 
           <div className="flex gap-3 mt-6">
@@ -143,7 +143,7 @@ export function PostGameFeedback({
             <button
               onClick={handleNext}
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-all text-sm font-semibold"
+              className="flex-1 px-4 py-2 rounded-lg bg-brand hover:bg-brand disabled:opacity-50 disabled:cursor-not-allowed text-white transition-all text-sm font-semibold"
             >
               {isSubmitting ? 'Sending...' : 'Send Feedback'}
             </button>
@@ -163,11 +163,11 @@ export function PostGameFeedback({
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
-          className="bg-gradient-to-br from-emerald-900/30 to-teal-900/30 border border-emerald-600/50 rounded-2xl p-8 max-w-md mx-auto text-center"
+          className="bg-gradient-to-br from-success/30 to-success/30 border border-success/50 rounded-2xl p-8 max-w-md mx-auto text-center"
         >
           <div className="mb-4 flex justify-center">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500 flex items-center justify-center">
-              <ThumbsUp className="w-8 h-8 text-emerald-400" />
+            <div className="w-16 h-16 rounded-full bg-success/20 border border-success flex items-center justify-center">
+              <ThumbsUp className="w-8 h-8 text-success" />
             </div>
           </div>
           <h3 className="text-2xl font-bold text-white mb-2">Thanks for playing!</h3>
@@ -176,7 +176,7 @@ export function PostGameFeedback({
           </p>
           <button
             onClick={onSkip}
-            className="w-full px-4 py-3 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-semibold transition-all"
+            className="w-full px-4 py-3 rounded-lg bg-brand hover:bg-brand text-white font-semibold transition-all"
           >
             Continue
           </button>

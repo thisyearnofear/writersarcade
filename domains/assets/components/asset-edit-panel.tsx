@@ -116,19 +116,19 @@ export function AssetEditPanel({
             value={editedTitle}
             onChange={(e) => setEditedTitle(e.target.value)}
             onKeyDown={handleKeyDown}
-            className="flex-1 bg-card border border-purple-500 rounded px-3 py-2 text-foreground font-bold text-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+            className="flex-1 bg-card border border-brand rounded px-3 py-2 text-foreground font-bold text-lg focus:outline-none focus:ring-2 focus:ring-brand"
             autoFocus
           />
           <button
             onClick={handleSaveTitle}
-            className="p-2 hover:bg-green-600/20 rounded text-green-400"
+            className="p-2 hover:bg-success/20 rounded text-success"
             title="Save title"
           >
             <Check className="w-4 h-4" />
           </button>
           <button
             onClick={handleCancelEdit}
-            className="p-2 hover:bg-red-600/20 rounded text-red-400"
+            className="p-2 hover:bg-destructive/20 rounded text-destructive"
             title="Cancel"
           >
             <X className="w-4 h-4" />
@@ -140,7 +140,7 @@ export function AssetEditPanel({
           {editable && onTitleChange && (
             <button
               onClick={() => setIsEditingTitle(true)}
-              className="p-1 opacity-0 group-hover:opacity-100 hover:bg-purple-600/20 rounded text-purple-400 transition-opacity"
+              className="p-1 opacity-0 group-hover:opacity-100 hover:bg-brand/20 rounded text-brand transition-opacity"
               title="Edit title"
             >
               <Pencil className="w-3 h-3" />
@@ -160,19 +160,19 @@ export function AssetEditPanel({
                 onKeyDown={(e) => {
                   if (e.key === 'Escape') handleCancelDescriptionEdit()
                 }}
-                className="w-full bg-card border border-purple-500 rounded px-3 py-2 text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 min-h-[80px] resize-y"
+                className="w-full bg-card border border-brand rounded px-3 py-2 text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-brand min-h-[80px] resize-y"
                 autoFocus
               />
               <div className="flex justify-end gap-2">
                 <button
                   onClick={handleCancelDescriptionEdit}
-                  className="px-3 py-1 text-xs hover:bg-red-600/20 rounded text-red-400 flex items-center gap-1"
+                  className="px-3 py-1 text-xs hover:bg-destructive/20 rounded text-destructive flex items-center gap-1"
                 >
                   <X className="w-3 h-3" /> Cancel
                 </button>
                 <button
                   onClick={handleSaveDescription}
-                  className="px-3 py-1 text-xs hover:bg-green-600/20 rounded text-green-400 flex items-center gap-1"
+                  className="px-3 py-1 text-xs hover:bg-success/20 rounded text-success flex items-center gap-1"
                 >
                   <Check className="w-3 h-3" /> Save
                 </button>
@@ -184,7 +184,7 @@ export function AssetEditPanel({
               {editable && (
                 <button
                   onClick={() => setIsEditingDescription(true)}
-                  className="p-1 opacity-0 group-hover:opacity-100 hover:bg-purple-600/20 rounded text-purple-400 transition-opacity flex-shrink-0"
+                  className="p-1 opacity-0 group-hover:opacity-100 hover:bg-brand/20 rounded text-brand transition-opacity flex-shrink-0"
                   title="Edit description"
                 >
                   <Pencil className="w-3 h-3" />
@@ -209,7 +209,7 @@ export function AssetEditPanel({
               {tags.map((tag, i) => (
                 <div
                   key={i}
-                  className="bg-purple-900/30 border border-purple-700/50 px-2 py-1 rounded text-xs text-purple-200 flex items-center gap-2 group/tag"
+                  className="bg-brand/30 border border-brand/50 px-2 py-1 rounded text-xs text-brand flex items-center gap-2 group/tag"
                 >
                   <span>
                     <span className="font-semibold">{tag.key}:</span>
@@ -218,7 +218,7 @@ export function AssetEditPanel({
                   {editable && (
                     <button
                       onClick={() => handleRemoveTag(i)}
-                      className="opacity-0 group-hover/tag:opacity-100 text-purple-400 hover:text-red-400 transition-opacity"
+                      className="opacity-0 group-hover/tag:opacity-100 text-brand hover:text-destructive transition-opacity"
                       title="Remove tag"
                     >
                       <X className="w-3 h-3" />
@@ -239,7 +239,7 @@ export function AssetEditPanel({
                   value={newTagKey}
                   onChange={(e) => setNewTagKey(e.target.value)}
                   placeholder="e.g., tone"
-                  className="w-full bg-card border border-border rounded px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  className="w-full bg-card border border-border rounded px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-brand"
                   autoFocus
                 />
               </div>
@@ -250,12 +250,12 @@ export function AssetEditPanel({
                   value={newTagValue}
                   onChange={(e) => setNewTagValue(e.target.value)}
                   placeholder="e.g., dark"
-                  className="w-full bg-card border border-border rounded px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  className="w-full bg-card border border-border rounded px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-brand"
                 />
               </div>
               <button
                 onClick={handleAddTag}
-                className="px-2 py-1 bg-green-600/20 hover:bg-green-600/40 rounded text-green-400 text-xs transition-colors"
+                className="px-2 py-1 bg-success/20 hover:bg-success/40 rounded text-success text-xs transition-colors"
               >
                 Add
               </button>
@@ -265,7 +265,7 @@ export function AssetEditPanel({
                   setNewTagKey('')
                   setNewTagValue('')
                 }}
-                className="px-2 py-1 bg-red-600/20 hover:bg-red-600/40 rounded text-red-400 text-xs transition-colors"
+                className="px-2 py-1 bg-destructive/20 hover:bg-destructive/40 rounded text-destructive text-xs transition-colors"
               >
                 Done
               </button>
@@ -273,7 +273,7 @@ export function AssetEditPanel({
           ) : (
             <button
               onClick={() => setIsEditingTags(true)}
-              className="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1 transition-colors"
+              className="text-xs text-brand hover:text-brand flex items-center gap-1 transition-colors"
             >
               <Plus className="w-3 h-3" /> Add Tag
             </button>
@@ -285,7 +285,7 @@ export function AssetEditPanel({
       {characterData && (
         <div className="mt-4 p-3 bg-muted/50 border border-border rounded-lg">
           <h4 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
-            <Pencil className="w-4 h-4 text-purple-400" />
+            <Pencil className="w-4 h-4 text-brand" />
             Character Customization
           </h4>
 

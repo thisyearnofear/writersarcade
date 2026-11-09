@@ -310,6 +310,9 @@ model GameScene {
   error     String? // Failure reason for support/debugging
 
   thumbnailUrl   String?
+  // VLM review of the persisted thumbnail (score, issues, verdict) — written
+  // async after the client snapshot lands. Null until reviewed.
+  thumbnailCritique Json?
   creditsCharged Int?    // CreditTransaction linkage for refunds
   paymentRef     String?
   userId         String?

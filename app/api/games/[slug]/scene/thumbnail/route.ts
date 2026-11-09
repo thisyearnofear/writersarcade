@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getActor } from '@/services/auth'
 import { logger } from '@/lib/config'
 import { persistMediaBuffer } from '@/lib/storage/media-upload'
+import { reviewSceneThumbnail } from '@/domains/games/services/scene-thumbnail-critique.service'
 
 const MAX_DATA_URL_CHARS = 8 * 1024 * 1024 // ~6MB binary — generous for a JPEG frame
 
@@ -40,5 +41,35 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
 
   await prisma.gameScene.update({ where: { id: game.scene.id }, data: { thumbnailUrl: url } })
+
+  // VLM review of the actual pixels — runs after the response so the client
+  // isn't blocked on a second model call. Null result = no critique stored.
+  const scene = game.scene.sceneJson as {
+    zones?: Array<{ label?: string }>
+    npcs?: Array<{ name?: string }>
+    game?: { objectiveIds?: string[] }
+  } | null
+  const sceneSummary = scene
+    ? [
+        scene.zones?.length ? `zones: ${scene.zones.map((z) => z.label).filter(Boolean).join(', ')}` : '',
+        scene.npcs?.length ? `npcs: ${scene.npcs.map((n) => n.name).filter(Boolean).join(', ')}` : '',
+        scene.game?.objectiveIds?.length ? `objectives: ${scene.game.objectiveIds.length}` : '',
+      ].filter(Boolean).join(' | ')
+    : undefined
+
+  after(async () => {
+    const critique = await reviewSceneThumbnail({
+      image: buffer,
+      mimeType: contentType,
+      title: game.title,
+      genre: game.genre,
+      sceneSummary,
+    })
+    if (!critique) return
+    await prisma.gameScene
+      .update({ where: { id: game.scene!.id }, data: { thumbnailCritique: critique } })
+      .catch((err) => logger.warn('Failed to store thumbnail critique', { gameId: game.id, err }))
+  })
+
   return NextResponse.json({ success: true, data: { thumbnailUrl: url } })
 }

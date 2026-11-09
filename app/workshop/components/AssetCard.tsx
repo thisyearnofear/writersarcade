@@ -101,7 +101,7 @@ export function AssetCard({
             {/* Delete button */}
             <button
                 onClick={onDelete}
-                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-600 rounded-full text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                className="absolute -top-2 -right-2 w-6 h-6 bg-destructive hover:bg-destructive rounded-full text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                 title="Delete asset"
             >
                 ×

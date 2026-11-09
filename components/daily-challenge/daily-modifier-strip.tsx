@@ -98,14 +98,14 @@ export function DailyModifierStrip({
 /** Small network pill showing the Inco shield + "On-chain" */
 function IncoNetworkPill() {
   return (
-    <div className="inline-flex items-center gap-1.5 rounded-full border border-purple-500/25 bg-purple-500/8 px-2.5 py-1">
-      <ShieldCheck className="w-3 h-3 text-purple-400" />
-      <span className="text-[10px] font-semibold text-purple-300">
+    <div className="inline-flex items-center gap-1.5 rounded-full border border-brand/25 bg-brand/8 px-2.5 py-1">
+      <ShieldCheck className="w-3 h-3 text-brand" />
+      <span className="text-[10px] font-semibold text-brand">
         On-chain encrypted
       </span>
       <span className="relative flex h-1.5 w-1.5">
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
+        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-success" />
       </span>
     </div>
   )

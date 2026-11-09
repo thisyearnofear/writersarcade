@@ -69,7 +69,7 @@ export function AssetCanvas({
                                 title="Grid layout"
                                 className={`p-2 rounded transition-colors ${
                                     layoutMode === 'grid'
-                                        ? 'bg-purple-600/20 text-purple-400'
+                                        ? 'bg-brand/20 text-brand'
                                         : 'bg-muted/50 text-muted-foreground hover:bg-muted/80'
                                 }`}
                             >
@@ -80,7 +80,7 @@ export function AssetCanvas({
                                 title="Flow layout"
                                 className={`p-2 rounded transition-colors ${
                                     layoutMode === 'flow'
-                                        ? 'bg-purple-600/20 text-purple-400'
+                                        ? 'bg-brand/20 text-brand'
                                         : 'bg-muted/50 text-muted-foreground hover:bg-muted/80'
                                 }`}
                             >
@@ -99,7 +99,7 @@ export function AssetCanvas({
                 onMouseDown={() => setIsDragging(true)}
                 onMouseUp={() => setIsDragging(false)}
                 className={`space-y-0 p-4 rounded-2xl border-2 ${colorClass} bg-muted/20 transition-all ${
-                    isDragging ? 'bg-purple-900/10 border-purple-500/50' : ''
+                    isDragging ? 'bg-brand/10 border-brand/50' : ''
                 }`}
             >
                 {layoutMode === 'grid' ? (

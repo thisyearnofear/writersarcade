@@ -124,13 +124,13 @@ export function WordleGameInterface({ game, maxAttempts }: WordleGameInterfacePr
             <button
               type="button"
               onClick={() => openConnectModal?.()}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-amber-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-amber-500 sm:w-auto"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-warning px-6 py-3 font-semibold text-white transition-colors hover:bg-warning sm:w-auto"
             >
               Connect wallet
             </button>
             <a
               href="/games"
-              className="text-sm font-medium text-purple-400 hover:text-purple-300"
+              className="text-sm font-medium text-brand hover:text-brand"
             >
               Browse the arcade instead
             </a>
@@ -144,11 +144,11 @@ export function WordleGameInterface({ game, maxAttempts }: WordleGameInterfacePr
     return (
       <div className="min-h-screen flex items-center justify-center bg-black px-4 text-white">
         <div className="text-center space-y-4 max-w-sm">
-          <div className="animate-spin w-6 h-6 border-2 border-amber-400 border-t-transparent rounded-full mx-auto" />
+          <div className="animate-spin w-6 h-6 border-2 border-warning border-t-transparent rounded-full mx-auto" />
           <p className="text-sm text-muted-foreground">Decrypting secure game data from vault...</p>
           <p className="text-xs text-muted-foreground/80">
             Taking a while?{' '}
-            <a href="/games" className="text-purple-400 hover:text-purple-300 underline underline-offset-2">
+            <a href="/games" className="text-brand hover:text-brand underline underline-offset-2">
               Browse the arcade
             </a>{' '}
             while this finishes.
@@ -243,7 +243,7 @@ export function WordleGameInterface({ game, maxAttempts }: WordleGameInterfacePr
               Wordle • Article Puzzle
             </div>
             {game.wordleAnswerVaultUuid && (
-              <span className="text-[10px] font-mono tracking-tight px-1.5 py-0.5 rounded-full border border-emerald-600/40 text-emerald-400 bg-emerald-950/40">
+              <span className="text-[10px] font-mono tracking-tight px-1.5 py-0.5 rounded-full border border-success/40 text-success bg-success/40">
                 Encrypted via Inco
               </span>
             )}
@@ -256,17 +256,17 @@ export function WordleGameInterface({ game, maxAttempts }: WordleGameInterfacePr
           </p>
 
           {/* Article context strip */}
-          <div className="mt-2 rounded-lg bg-zinc-900/80 border border-zinc-700/70 px-3 py-2 text-left flex flex-col gap-1 text-xs">
+          <div className="mt-2 rounded-lg bg-card/80 border border-border/70 px-3 py-2 text-left flex flex-col gap-1 text-xs">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-zinc-300 truncate">
-                <span className="text-zinc-400">From</span>{' '}
-                <span className="font-medium text-zinc-100">{publication}</span>
+              <span className="text-muted-foreground truncate">
+                <span className="text-muted-foreground">From</span>{' '}
+                <span className="font-medium text-muted-foreground">{publication}</span>
                 {author && (
-                  <span className="text-zinc-400"> • by </span>
+                  <span className="text-muted-foreground"> • by </span>
                 )}
-                {author && <span className="font-medium text-zinc-100">@{author}</span>}
+                {author && <span className="font-medium text-muted-foreground">@{author}</span>}
                 {publishedDate && (
-                  <span className="text-zinc-500"> • {publishedDate}</span>
+                  <span className="text-muted-foreground"> • {publishedDate}</span>
                 )}
               </span>
               {game.articleUrl && (
@@ -274,7 +274,7 @@ export function WordleGameInterface({ game, maxAttempts }: WordleGameInterfacePr
                   href={game.articleUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="shrink-0 text-[11px] font-medium text-amber-300 hover:text-amber-200 underline-offset-2 hover:underline"
+                  className="shrink-0 text-[11px] font-medium text-warning hover:text-warning underline-offset-2 hover:underline"
                 >
                   View article
                 </a>
@@ -301,12 +301,12 @@ export function WordleGameInterface({ game, maxAttempts }: WordleGameInterfacePr
               <Button
                 type="submit"
                 disabled={status !== 'in_progress'}
-                className="bg-purple-600 hover:bg-purple-700"
+                className="bg-brand hover:bg-brand"
               >
                 Guess
               </Button>
             </div>
-            {error && <p className="text-xs text-red-400">{error}</p>}
+            {error && <p className="text-xs text-destructive">{error}</p>}
           </form>
 
           <section className="text-xs text-muted-foreground space-y-1">
@@ -317,32 +317,32 @@ export function WordleGameInterface({ game, maxAttempts }: WordleGameInterfacePr
             )}
             {status === 'won' && (
               <div className="space-y-2">
-                <p className="text-green-400 font-medium">
+                <p className="text-success font-medium">
                   Correct! You solved this article Wordle in {guesses.length} guesses.
                 </p>
                 <Button
                   type="button"
                   onClick={() => shareGame(game)}
-                  className="bg-sky-600 hover:bg-sky-700 text-xs"
+                  className="bg-info hover:bg-info text-xs"
                 >
                   Share to Farcaster
                 </Button>
               </div>
             )}
             {status === 'lost' && (
-              <p className="text-red-400 font-medium">
+              <p className="text-destructive font-medium">
                 Out of guesses. The answer was <span className="font-mono uppercase">{normalizedAnswer}</span>.
               </p>
             )}
           </section>
 
           {/* About this puzzle */}
-          <section className="mt-2 rounded-lg border border-zinc-800 bg-zinc-950/70 p-3 text-xs text-zinc-300">
+          <section className="mt-2 rounded-lg border border-border bg-card/70 p-3 text-xs text-muted-foreground">
             <details className="group">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-2">
-                <span className="font-medium text-zinc-100">About this puzzle</span>
-                <span className="text-[10px] text-zinc-500 group-open:hidden">tap to expand</span>
-                <span className="text-[10px] text-zinc-500 hidden group-open:inline">tap to collapse</span>
+                <span className="font-medium text-muted-foreground">About this puzzle</span>
+                <span className="text-[10px] text-muted-foreground group-open:hidden">tap to expand</span>
+                <span className="text-[10px] text-muted-foreground hidden group-open:inline">tap to collapse</span>
               </summary>
               <div className="mt-2 space-y-1 text-[11px] leading-relaxed">
                 <p>
