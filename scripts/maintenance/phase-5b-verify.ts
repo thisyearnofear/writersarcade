@@ -8,9 +8,8 @@
  * - Code consolidation metrics
  */
 
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/database";
 
-const prisma = new PrismaClient();
 
 interface VerificationResult {
   name: string;

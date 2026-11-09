@@ -1,7 +1,6 @@
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/database';
 
-const prisma = new PrismaClient();
 
 async function reproduce() {
   console.log('--- Starting Reproduction ---');

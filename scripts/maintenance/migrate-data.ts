@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/database'
 import { DataMigrator } from '@/lib/migrations/data-migrator'
 import { createConnection } from 'mysql2/promise'
 import * as dotenv from 'dotenv'
@@ -15,7 +15,6 @@ dotenv.config({ path: '.env.local' })
  */
 
 async function main() {
-  const prisma = new PrismaClient()
   
   try {
     console.log('🔄 Starting writersarcade data migration...')

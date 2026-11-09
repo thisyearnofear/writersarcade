@@ -11,17 +11,17 @@ import ws from 'ws'
 neonConfig.webSocketConstructor = ws
 
 function createClient(): PrismaClient {
-  const connectionString = process.env.DATABASE_URL
-  if (connectionString) {
-    // adapter-neon 6.x: PrismaNeon is a factory taking PoolConfig — it
-    // creates the Pool internally on connect(). Do NOT pass a Pool instance.
-    return new PrismaClient({
-      adapter: new PrismaNeon({ connectionString }),
-      log: ['query', 'error', 'warn'],
-    })
-  }
-  // No DATABASE_URL (e.g. build-time envs) — fall back to the engine client.
-  return new PrismaClient({ log: ['query', 'error', 'warn'] })
+  // engineType "client" requires a driver adapter always — there is no
+  // engine fallback. Without DATABASE_URL (build-time/test envs) use a
+  // placeholder: the Neon Pool is lazy and only connects on first query.
+  const connectionString =
+    process.env.DATABASE_URL ?? 'postgresql://localhost:5432/writersarcade'
+  // adapter-neon 6.x: PrismaNeon is a factory taking PoolConfig — it
+  // creates the Pool internally on connect(). Do NOT pass a Pool instance.
+  return new PrismaClient({
+    adapter: new PrismaNeon({ connectionString }),
+    log: ['query', 'error', 'warn'],
+  })
 }
 
 const globalForPrisma = globalThis as unknown as {

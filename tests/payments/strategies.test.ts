@@ -14,6 +14,15 @@ const mockWalletClient = {
   }),
 }
 
+// Strategies poll receipts via getPublicClient() (real viem clients against
+// live RPCs). Mock it so waitForTransactionReceipt resolves instantly —
+// otherwise tests hang on the 90s receipt timeout / fake-timer freeze.
+vi.mock('@/lib/contracts', () => ({
+  getPublicClient: () => ({
+    waitForTransactionReceipt: vi.fn().mockResolvedValue({ status: 'success' }),
+  }),
+}))
+
 // Use real implementations for testing
 import { WriterCoinStrategy } from '@/domains/payments/strategies/writer-coin.strategy'
 import { MUSDStrategy } from '@/domains/payments/strategies/musd.strategy'
