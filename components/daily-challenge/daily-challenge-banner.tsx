@@ -82,12 +82,12 @@ function supportingCopy(preview: DailyPreview | null): string {
   }
   if (preview.sourceType === 'dual') {
     return preview.live === false
-      ? `A featured writer’s piece staged in today’s BasePaint canvas${preview.canvasTheme ? ` (${preview.canvasTheme})` : ''}.`
-      : `A featured writer’s piece inside today’s BasePaint canvas — same world, your secret hand of five encrypted modifiers.`
+      ? `A featured writer’s piece staged in today’s themed world${preview.canvasTheme ? ` (${preview.canvasTheme})` : ''}.`
+      : `A featured writer’s piece inside today’s themed world — same article for everyone, five hidden modifier cards make your run different.`
   }
   return preview.live === false
-    ? "Today's BasePaint canvas is ready to preview — open it below."
-    : "writersarcade Daily Challenge — today's BasePaint canvas, 5 encrypted modifier cards on Base. Same source, different story."
+    ? "Today's themed world is ready to preview — open it below."
+    : "writersarcade Daily Challenge — today's themed world and five hidden modifier cards. Same source, different story."
 }
 
 export function DailyChallengeBanner({ className = '', compact = false }: DailyChallengeBannerProps) {
@@ -142,12 +142,12 @@ export function DailyChallengeBanner({ className = '', compact = false }: DailyC
           <Link
             href="/basepaint"
             className="mx-auto mb-3 mt-3 block w-fit overflow-hidden rounded-lg border border-purple-500/30 shadow-lg transition-transform hover:-translate-y-0.5"
-            title={`BasePaint Day ${preview.day}${preview.canvasTheme ? ` · ${preview.canvasTheme}` : ''}`}
+            title={`Themed world — day ${preview.day}${preview.canvasTheme ? ` · ${preview.canvasTheme}` : ''}`}
           >
             {/* Plain img: proxied remote canvas, matches the rest of the app. */}
             <img
               src={getBasePaintCanvasProxyUrl(preview.day)}
-              alt={`BasePaint canvas for day ${preview.day}${preview.canvasTheme ? `: ${preview.canvasTheme}` : ''}`}
+              alt={`Themed world artwork for day ${preview.day}${preview.canvasTheme ? `: ${preview.canvasTheme}` : ''}`}
               width={160}
               height={160}
               loading="lazy"
@@ -162,7 +162,7 @@ export function DailyChallengeBanner({ className = '', compact = false }: DailyC
         {preview?.day && (
           <p className="text-xs text-muted-foreground mb-2">
             {preview.sourceType === 'dual'
-              ? `World · BasePaint Day ${preview.day}${preview.canvasTheme ? ` · ${preview.canvasTheme}` : ''}`
+              ? `Themed world · Day ${preview.day}${preview.canvasTheme ? ` · ${preview.canvasTheme}` : ''}`
               : `Day ${preview.day}`}
           </p>
         )}

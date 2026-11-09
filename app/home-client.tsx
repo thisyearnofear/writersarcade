@@ -19,7 +19,6 @@ import { OnboardingModal } from '@/components/onboarding/OnboardingModal'
 import { ConceptTooltip } from '@/components/ui/concept-tooltip'
 import { useOnboarding } from '@/hooks/useOnboarding'
 import {
-  Puzzle,
   Wand2,
   Gamepad2,
   Coins,
@@ -329,10 +328,6 @@ export function HomeClient({ initialSampleGames, initialStats, featuredArtifact 
                   <Wand2 className="h-3.5 w-3.5" />
                   No article handy? Start from a sample
                 </button>
-                <Link href="/generate?mode=wordle" className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground">
-                  <Puzzle className="h-3.5 w-3.5" />
-                  Make a word puzzle
-                </Link>
                 <button
                   type="button"
                   onClick={() => startTour('welcome')}
