@@ -279,7 +279,7 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
               "whitespace-pre-wrap",
               isMUSD 
                 ? "text-warning/90 [text-shadow:0_0_8px_rgba(245,158,11,0.4)]" 
-                : "text-brand/90 [text-shadow:0_0_8px_rgba(168,85,247,0.4)]"
+                : "text-brand/90 [text-shadow:0_0_8px_hsl(var(--brand) / 0.4)]"
             )}>
                 {gameContent}
                 {isLoading && (
@@ -323,7 +323,7 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
                     >
                       <span className={cn(
                         "text-[10px] font-black",
-                        isMUSD ? "text-warning group-hover:text-warning" : "text-brand group-hover:text-brand"
+                        isMUSD ? "text-warning group-hover:text-foreground" : "text-brand group-hover:text-foreground"
                       )}>0{option.id}</span>
                       <span className="text-xs font-medium text-white/80 group-hover:text-white transition-colors">{option.text}</span>
                     </motion.button>
@@ -368,7 +368,7 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[10000] flex items-center justify-center bg-[#0a0a14]/95 backdrop-blur-3xl px-4"
+                className="fixed inset-0 z-[10000] flex items-center justify-center bg-background/95 backdrop-blur-3xl px-4"
             >
                 <motion.div 
                     initial={{ scale: 0.9, y: 30 }}
@@ -431,7 +431,7 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[10000] flex items-center justify-center bg-[#0a0a14]/90 backdrop-blur-2xl px-4"
+                className="fixed inset-0 z-[10000] flex items-center justify-center bg-background/90 backdrop-blur-2xl px-4"
             >
                 <motion.div 
                     initial={{ scale: 0.9, y: 20 }}

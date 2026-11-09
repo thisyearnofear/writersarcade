@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Clock, XCircle, Sparkles } from 'lucide-react'
 import { Game } from '../../types'
 import { ArcadeFunnelCTAs } from '@/components/daily-challenge/arcade-funnel-ctas'
+import { IconChip } from '@/components/ui/icon-chip'
 
 interface GameStatusScreensProps {
   game: Game
@@ -23,9 +24,7 @@ function StatusShell({
   return (
     <div className="flex min-h-screen items-center justify-center bg-black p-4">
       <div className="max-w-md space-y-6 text-center">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-brand/10 text-brand">
-          <Icon className="h-7 w-7" />
-        </div>
+        <IconChip icon={Icon} className="mx-auto" />
         <div className="space-y-2">
           <h2 className="text-2xl font-bold text-white">{title}</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
@@ -34,7 +33,7 @@ function StatusShell({
         <div className="flex flex-col items-center gap-2 pt-2">
           <Link
             href={`/games/${game.slug}`}
-            className="text-xs font-medium text-brand hover:text-brand"
+            className="text-xs font-medium text-brand hover:text-foreground"
           >
             View game page
           </Link>

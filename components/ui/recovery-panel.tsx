@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import { RefreshCw } from 'lucide-react'
 import { ArcadeFunnelCTAs } from '@/components/daily-challenge/arcade-funnel-ctas'
+import { IconChip } from '@/components/ui/icon-chip'
 
 interface RecoveryPanelProps {
   icon?: LucideIcon
@@ -33,9 +34,7 @@ export function RecoveryPanel({
   return (
     <div className={`mx-auto max-w-lg px-4 py-16 text-center space-y-6 ${className}`}>
       {Icon && (
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-brand/10 text-brand">
-          <Icon className="h-7 w-7" />
-        </div>
+        <IconChip icon={Icon} className="mx-auto" />
       )}
 
       <div className="space-y-2">

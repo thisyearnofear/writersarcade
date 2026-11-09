@@ -36,7 +36,7 @@ export default function EmbedError({
             href={gameHref}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-brand hover:text-brand"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-brand hover:text-foreground"
           >
             <ExternalLink className="h-4 w-4" />
             Open full game

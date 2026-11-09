@@ -69,6 +69,18 @@ module.exports = [
           message:
             'Hardcoded palette utility in className. Use a semantic token instead: brand | success | warning | info | destructive | muted-foreground (see app/globals.css).',
         },
+        {
+          // White text on a semantic fill fails contrast in dark mode (the
+          // palette lightens brand/success/warning/info to pastels). Pair the
+          // fill with its -foreground token, or use the matching Button
+          // variant (brand | success | warning | info). Alpha fills below 50%
+          // are subtle tints where white text is acceptable, so only solid and
+          // >=50% fills are flagged.
+          selector:
+            "JSXAttribute[name.name='className'] Literal[value=/(bg-(brand|primary|success|warning|info)(\\x2f(5[0-9]|[6-9][0-9]|100))?[^\\w\\x2f-][^\"']*text-white|text-white[^\"']*bg-(brand|primary|success|warning|info)(\\x2f(5[0-9]|[6-9][0-9]|100))?[^\\w\\x2f-])/]",
+          message:
+            'text-white on a semantic fill fails dark-mode contrast. Use the matching -foreground token (text-brand-foreground, text-success-foreground, ...) or the Button variant instead.',
+        },
       ],
     },
   },

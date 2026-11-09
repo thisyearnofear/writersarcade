@@ -778,14 +778,15 @@ export function ComicPanelCard({
                   Keep Selected
                 </button>
                 {canRegenerate && (
-                  <button
+                  <Button
+                    variant="brand"
                     onClick={handleRegenerateQuick}
                     disabled={isRegenerating}
-                    className="flex-1 px-4 py-2 bg-brand hover:bg-brand/90 disabled:bg-brand/50 text-brand-foreground rounded-lg transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                    className="h-auto flex-1 gap-2 rounded-lg px-4 py-2 text-sm font-medium"
                   >
                     <RefreshCw className={`w-4 h-4 ${isRegenerating ? 'animate-spin' : ''}`} />
                     {isRegenerating ? 'Generating...' : 'Try Again'}
-                  </button>
+                  </Button>
                 )}
               </div>
             </motion.div>

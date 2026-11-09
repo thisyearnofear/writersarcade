@@ -232,7 +232,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
                 className="flex items-center space-x-3 w-full p-3 rounded-lg hover:bg-warning/10 transition-colors group"
                 onClick={() => setIsOpen(false)}
               >
-                <LayoutDashboard className="w-4 h-4 text-warning group-hover:text-warning" />
+                <LayoutDashboard className="w-4 h-4 text-warning group-hover:text-foreground" />
                 <span className="text-muted-foreground group-hover:text-foreground font-bold uppercase tracking-widest text-[10px]">Creator Studio</span>
               </Link>
 
@@ -240,7 +240,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
                 onClick={() => { setIsOpen(false); openBuyCredits() }}
                 className="flex items-center space-x-3 w-full p-3 rounded-lg hover:bg-success/10 transition-colors group text-left"
               >
-                <Coins className="w-4 h-4 text-success group-hover:text-success" />
+                <Coins className="w-4 h-4 text-success group-hover:text-foreground" />
                 <span className="text-muted-foreground group-hover:text-foreground">Buy credits</span>
               </button>
 
@@ -249,7 +249,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
                 className="flex items-center space-x-3 w-full p-3 rounded-lg hover:bg-brand/10 transition-colors group"
                 onClick={() => setIsOpen(false)}
               >
-                <Settings className="w-4 h-4 text-brand group-hover:text-brand" />
+                <Settings className="w-4 h-4 text-brand group-hover:text-foreground" />
                 <span className="text-muted-foreground group-hover:text-foreground">Preferences</span>
               </Link>
 
@@ -258,7 +258,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
                 className="flex items-center space-x-3 w-full p-3 rounded-lg hover:bg-brand/10 transition-colors group"
                 onClick={() => setIsOpen(false)}
               >
-                <GamepadIcon className="w-4 h-4 text-brand group-hover:text-brand" />
+                <GamepadIcon className="w-4 h-4 text-brand group-hover:text-foreground" />
                 <span className="text-muted-foreground group-hover:text-foreground">My Games</span>
               </Link>
 
@@ -267,7 +267,7 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
                 className="flex items-center space-x-3 w-full p-3 rounded-lg hover:bg-brand/10 transition-colors group"
                 onClick={() => setIsOpen(false)}
               >
-                <HelpCircle className="w-4 h-4 text-brand group-hover:text-brand" />
+                <HelpCircle className="w-4 h-4 text-brand group-hover:text-foreground" />
                 <span className="text-muted-foreground group-hover:text-foreground">How it works</span>
               </Link>
 
@@ -279,9 +279,9 @@ export function UserMenu({ mobileLayout = false }: UserMenuProps) {
                     className="flex items-center space-x-3 w-full p-3 rounded-lg hover:bg-brand/10 transition-colors group text-left"
                   >
                     {isDarkMode ? (
-                      <Moon className="w-4 h-4 text-brand group-hover:text-brand" />
+                      <Moon className="w-4 h-4 text-brand group-hover:text-foreground" />
                     ) : (
-                      <Sun className="w-4 h-4 text-brand group-hover:text-brand" />
+                      <Sun className="w-4 h-4 text-brand group-hover:text-foreground" />
                     )}
                     <span className="text-muted-foreground group-hover:text-foreground">
                       {isDarkMode ? 'Switch to Light' : 'Switch to Dark'}

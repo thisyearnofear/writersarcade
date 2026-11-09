@@ -33,6 +33,7 @@ import {
   getDailyVaultAddress,
   readStartSessionFee,
 } from '@/lib/daily-challenge/daily-challenge-client'
+import { IconChip } from '@/components/ui/icon-chip'
 
 export type DailyChallengeVariant = 'arcade' | 'basepaint'
 
@@ -243,9 +244,7 @@ export function DailyChallengeView({ variant = 'arcade' }: DailyChallengeViewPro
             </div>
           ) : !challenge ? (
             <div className="mx-auto max-w-lg space-y-6 px-4 py-16 text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-brand/10 text-brand">
-                <Sparkles className="h-7 w-7" />
-              </div>
+              <IconChip icon={Sparkles} className="mx-auto" />
               <div className="space-y-2">
                 <h1 className="text-2xl font-bold">Daily Challenge is taking a breather</h1>
                 <p className="text-sm leading-relaxed text-muted-foreground">
@@ -258,7 +257,7 @@ export function DailyChallengeView({ variant = 'arcade' }: DailyChallengeViewPro
               <button
                 type="button"
                 onClick={loadChallenge}
-                className="inline-flex items-center gap-1.5 text-xs text-brand hover:text-brand"
+                className="inline-flex items-center gap-1.5 text-xs text-brand hover:text-foreground"
               >
                 <RefreshCw className="h-3.5 w-3.5" />
                 Try loading again
@@ -405,7 +404,7 @@ export function DailyChallengeView({ variant = 'arcade' }: DailyChallengeViewPro
                 {dailyMode === 'live' && (
                   <Link
                     href="/games"
-                    className="flex items-center justify-center gap-1.5 text-xs font-medium text-brand hover:text-brand"
+                    className="flex items-center justify-center gap-1.5 text-xs font-medium text-brand hover:text-foreground"
                   >
                     <Gamepad2 className="h-3.5 w-3.5" />
                     Or browse the arcade first
@@ -415,7 +414,7 @@ export function DailyChallengeView({ variant = 'arcade' }: DailyChallengeViewPro
                   <button
                     type="button"
                     onClick={loadChallenge}
-                    className="flex items-center gap-1.5 text-xs text-brand hover:text-brand"
+                    className="flex items-center gap-1.5 text-xs text-brand hover:text-foreground"
                   >
                     <RefreshCw className="h-3.5 w-3.5" />
                     Check if daily is live

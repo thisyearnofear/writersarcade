@@ -2,6 +2,7 @@
 
 import { useGetCurrentAccount } from '@mezo-org/passport'
 import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 import { Header } from '@/components/layout/header'
 import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
 import { Badge } from '@/components/ui/badge'
@@ -87,13 +88,12 @@ export function DashboardClient({ initialSummary }: DashboardClientProps) {
                     publishing, minting, or IP registration.
                   </p>
                 </div>
-                <Link
-                  href="/my-games"
-                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground transition-colors hover:bg-brand/90"
-                >
-                  Open library
-                  <ChevronRight className="w-4 h-4" />
-                </Link>
+                <Button asChild variant="brand" size="sm" className="gap-2 rounded-lg px-4 py-2 font-semibold">
+                  <Link href="/my-games">
+                    Open library
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
+                </Button>
               </div>
 
               <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
@@ -263,12 +263,9 @@ function RecentGamesSection({ games }: { games: CreatorStudioSummary['games']['r
       {games.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border bg-card/50 px-4 py-10 text-center">
           <p className="text-sm text-muted-foreground mb-3">No games yet.</p>
-          <Link
-            href="/generate"
-            className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground transition-colors hover:bg-brand/90"
-          >
-            Create your first game
-          </Link>
+          <Button asChild variant="brand" size="sm" className="gap-2 rounded-lg px-4 py-2 font-semibold">
+            <Link href="/generate">Create your first game</Link>
+          </Button>
         </div>
       ) : (
         <div className="space-y-2">

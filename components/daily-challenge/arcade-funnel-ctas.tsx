@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 import { ArrowRight, Gamepad2, Sparkles, Home } from 'lucide-react'
 
 interface ArcadeFunnelCTAsProps {
@@ -24,14 +25,13 @@ export function ArcadeFunnelCTAs({
     <div
       className={`flex ${stack ? 'flex-col' : 'flex-col sm:flex-row'} items-center justify-center gap-3 ${className}`}
     >
-      <Link
-        href={primaryHref}
-        className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-6 py-3 font-semibold text-brand-foreground transition-colors hover:bg-brand/90 w-full sm:w-auto"
-      >
-        <Gamepad2 className="h-5 w-5" />
-        {primaryLabel}
-        <ArrowRight className="h-4 w-4" />
-      </Link>
+      <Button asChild variant="brand" className="h-auto w-full gap-2 rounded-lg px-6 py-3 font-semibold sm:w-auto">
+        <Link href={primaryHref}>
+          <Gamepad2 className="h-5 w-5" />
+          {primaryLabel}
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </Button>
 
       {showSecondary && (
         <>

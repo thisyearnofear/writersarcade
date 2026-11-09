@@ -6,6 +6,7 @@ import { useAccount, useWalletClient, useSwitchChain } from 'wagmi'
 import { useWeb3Auth, openWalletConnectModal } from '@/components/providers/web3-auth-context'
 import { Coins, Loader2, Plus, ExternalLink, X, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CREDITS_CONFIG, MEZO_TREASURY_ADDRESS, getActiveMusdConfig } from '@/lib/writer-coins'
@@ -378,14 +379,11 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                 <p className="text-sm text-muted-foreground">
                   You'll be redirected to Etherfuse to complete the onramp.
                 </p>
-                <a
-                  href={widgetUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-success px-4 py-3 font-semibold text-success-foreground transition hover:bg-success/90"
-                >
-                  Continue to Etherfuse <ExternalLink className="h-4 w-4" />
-                </a>
+                <Button asChild variant="success" className="h-auto w-full gap-2 rounded-lg px-4 py-3 font-semibold">
+                  <a href={widgetUrl} target="_blank" rel="noopener noreferrer">
+                    Continue to Etherfuse <ExternalLink className="h-4 w-4" />
+                  </a>
+                </Button>
                 <button
                   onClick={() => { setShowModal(false); setWidgetUrl(null) }}
                   className="text-sm text-muted-foreground hover:text-foreground"
@@ -419,7 +417,8 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                     <Button
                       onClick={handleSendMagicLink}
                       disabled={quoteLoading || !email.includes('@')}
-                      className="w-full bg-success hover:bg-success/90 text-success-foreground"
+                      variant="success"
+                      className="w-full"
                       size="lg"
                     >
                       {quoteLoading ? (
@@ -518,7 +517,8 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                     <Button
                       onClick={handleBuyCredits}
                       disabled={quoteLoading}
-                      className="mt-4 w-full bg-success hover:bg-success/90 text-success-foreground"
+                      variant="success"
+                      className="mt-4 w-full"
                       size="lg"
                     >
                       {quoteLoading ? (
@@ -551,12 +551,11 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                             View on Mezo Explorer <ExternalLink className="w-3 h-3" />
                           </a>
                         )}
-                        <a
-                          href="/generate"
-                          className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-warning px-4 py-2 font-semibold text-warning-foreground transition hover:bg-warning/90"
-                        >
-                          Generate a game now <ArrowRight className="h-3.5 w-3.5" />
-                        </a>
+                        <Button asChild variant="warning" className="mt-3 h-auto w-full gap-2 rounded-lg px-4 py-2 font-semibold">
+                          <Link href="/generate">
+                            Generate a game now <ArrowRight className="h-3.5 w-3.5" />
+                          </Link>
+                        </Button>
                         <button
                           type="button"
                           onClick={() => { setMusdGranted(null); setMusdTxHash(null) }}
@@ -584,8 +583,8 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                         >
                           {pendingMusdTx.slice(0, 10)}…{pendingMusdTx.slice(-6)} <ExternalLink className="w-3 h-3" />
                         </a>
-                        <button
-                          type="button"
+                        <Button
+                          variant="warning"
                           onClick={() => {
                             if (needsWalletSignIn) {
                               openWalletConnectModal()
@@ -596,7 +595,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                             )
                           }}
                           disabled={musdLoading}
-                          className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-warning px-4 py-2 font-semibold text-warning-foreground transition hover:bg-warning/90 disabled:opacity-50"
+                          className="mt-3 h-auto w-full gap-2 rounded-lg px-4 py-2 text-sm font-semibold"
                         >
                           {musdLoading ? (
                             <><Loader2 className="h-3.5 w-3.5 animate-spin" /> {musdStep ?? 'Verifying…'}</>
@@ -605,7 +604,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                           ) : (
                             'Verify payment'
                           )}
-                        </button>
+                        </Button>
                         <button
                           type="button"
                           onClick={clearPendingMusdTx}
@@ -632,7 +631,8 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                         <Button
                           onClick={needsWalletSignIn ? () => openWalletConnectModal() : isWrongMezoChain ? () => switchChainAsync({ chainId: MEZO_ACTIVE_CHAIN_ID }).catch(() => {}) : handlePayWithMusd}
                           disabled={musdLoading || (!needsWalletSignIn && !isWrongMezoChain && hasInsufficientMusd)}
-                          className="mt-3 w-full bg-warning hover:bg-warning/90 text-warning-foreground"
+                          variant="warning"
+                          className="mt-3 w-full"
                           size="lg"
                         >
                           {musdLoading ? (

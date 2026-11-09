@@ -8,6 +8,7 @@ import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
 import { Header } from '@/components/layout/header'
 import { EmbedSnippet } from '@/components/embed/EmbedSnippet'
 import { RecoveryPanel } from '@/components/ui/recovery-panel'
+import { Button } from '@/components/ui/button'
 import type { GameInsights } from '@/domains/games/services/game-insights.service'
 
 export default function GameInsightsPage() {
@@ -86,13 +87,12 @@ export default function GameInsightsPage() {
                 className="py-8"
               >
                 <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-                  <Link
-                    href={`/games/${slug}?play=1`}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-6 py-3 font-semibold text-brand-foreground transition-colors hover:bg-brand/90 sm:w-auto"
-                  >
-                    <Gamepad2 className="h-5 w-5" />
-                    Play this game
-                  </Link>
+                  <Button asChild variant="brand" className="h-auto w-full gap-2 rounded-lg px-6 py-3 font-semibold sm:w-auto">
+                    <Link href={`/games/${slug}?play=1`}>
+                      <Gamepad2 className="h-5 w-5" />
+                      Play this game
+                    </Link>
+                  </Button>
                   <Link
                     href="/my-games"
                     className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-card px-6 py-3 font-semibold text-foreground transition-colors hover:bg-muted sm:w-auto"
@@ -101,7 +101,7 @@ export default function GameInsightsPage() {
                   </Link>
                   <Link
                     href="/games"
-                    className="text-sm font-medium text-brand hover:text-brand"
+                    className="text-sm font-medium text-brand hover:text-foreground"
                   >
                     Browse arcade
                   </Link>

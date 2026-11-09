@@ -88,12 +88,12 @@ export default function MiniAppPage() {
     const canGoBack = step !== 'select-coin'
 
     return (
-        <div className="flex flex-col min-h-[100dvh] bg-[#0a0a14]">
+        <div className="flex flex-col min-h-[100dvh] bg-background">
             {/* Minimal Header for Mobile / Desktop Consistency */}
-            <header className="sticky top-0 z-[60] border-b border-white/5 bg-[#0a0a14]/60 backdrop-blur-2xl">
+            <header className="sticky top-0 z-[60] border-b border-white/5 bg-background/60 backdrop-blur-2xl">
                 <div className="mx-auto flex max-w-2xl items-center justify-between px-6 py-4">
                     <div className="flex items-center space-x-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand font-black text-brand-foreground italic text-lg shadow-[0_0_15px_rgba(168,85,247,0.4)]">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand font-black text-brand-foreground italic text-lg shadow-[0_0_15px_hsl(var(--brand) / 0.4)]">
                             W
                         </div>
                         <h1 className="text-md font-black tracking-tighter text-white uppercase italic hidden sm:block">writersarcade</h1>
@@ -173,7 +173,7 @@ export default function MiniAppPage() {
                                                     (num === 2 && step === 'input-article') ||
                                                     (num === 3 && step === 'customize-game') ||
                                                     (num === 4 && step === 'play-game')
-                                                        ? 'w-10 bg-brand shadow-[0_0_10px_rgba(168,85,247,0.6)]'
+                                                        ? 'w-10 bg-brand shadow-[0_0_10px_hsl(var(--brand) / 0.6)]'
                                                         : num < (step === 'select-coin' ? 1 : step === 'input-article' ? 2 : step === 'customize-game' ? 3 : 4)
                                                         ? 'bg-success/60'
                                                         : 'bg-white/10'

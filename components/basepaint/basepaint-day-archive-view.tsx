@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 import { ArrowLeft, Gamepad2, Loader2 } from 'lucide-react'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
@@ -51,7 +52,7 @@ export function BasePaintDayArchiveView({ day }: { day: number }) {
         <main className="mx-auto w-full max-w-4xl flex-1 space-y-8 bg-gradient-to-b from-brand/20 via-black to-black px-4 py-10 text-white">
           <Link
             href="/basepaint"
-            className="inline-flex items-center gap-1.5 text-xs text-brand hover:text-brand"
+            className="inline-flex items-center gap-1.5 text-xs text-brand hover:text-foreground"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Back to Daily Challenge
@@ -128,12 +129,9 @@ export function BasePaintDayArchiveView({ day }: { day: number }) {
               )}
 
               {isToday && (
-                <Link
-                  href="/basepaint"
-                  className="block w-full rounded-lg bg-brand py-3 text-center text-sm font-semibold text-brand-foreground hover:bg-brand/90"
-                >
-                  Play today&apos;s Daily Challenge
-                </Link>
+                <Button asChild variant="brand" className="h-auto w-full rounded-lg py-3 text-center text-sm font-semibold">
+                  <Link href="/basepaint">Play today&apos;s Daily Challenge</Link>
+                </Button>
               )}
             </>
           )}

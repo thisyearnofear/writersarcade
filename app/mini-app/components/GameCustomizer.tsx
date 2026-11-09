@@ -117,7 +117,7 @@ export function GameCustomizer({ writerCoin, isMUSD, articleUrl, onBack, onGameG
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[10000] flex items-center justify-center bg-[#0a0a14]/90 backdrop-blur-2xl"
+            className="fixed inset-0 z-[10000] flex items-center justify-center bg-background/90 backdrop-blur-2xl"
           >
             <div className="relative flex flex-col items-center">
               {/* Animated Rings */}
@@ -129,7 +129,7 @@ export function GameCustomizer({ writerCoin, isMUSD, articleUrl, onBack, onGameG
                     "absolute inset-0 rounded-full border-4 border-t-transparent",
                     isMUSD 
                       ? "border-warning/20 border-t-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.4)]" 
-                      : "border-brand/20 border-t-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.4)]"
+                      : "border-brand/20 border-t-brand shadow-[0_0_20px_hsl(var(--brand) / 0.4)]"
                   )}
                 />
                 <motion.div 
@@ -184,7 +184,7 @@ export function GameCustomizer({ writerCoin, isMUSD, articleUrl, onBack, onGameG
         onClick={onBack}
         className={cn(
             "group flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest transition-colors",
-            isMUSD ? "text-warning hover:text-warning" : "text-brand hover:text-brand"
+            isMUSD ? "text-warning hover:text-foreground" : "text-brand hover:text-foreground"
         )}
         disabled={isGenerating}
       >
@@ -212,7 +212,7 @@ export function GameCustomizer({ writerCoin, isMUSD, articleUrl, onBack, onGameG
                     mode === 'story' 
                     ? isMUSD 
                         ? 'bg-warning text-warning-foreground shadow-[0_0_15px_rgba(245,158,11,0.4)]'
-                        : 'bg-brand text-brand-foreground shadow-[0_0_15px_rgba(168,85,247,0.4)]' 
+                        : 'bg-brand text-brand-foreground shadow-[0_0_15px_hsl(var(--brand) / 0.4)]' 
                     : isMUSD 
                         ? 'text-warning/60 hover:text-warning'
                         : 'text-brand/60 hover:text-brand'
@@ -227,7 +227,7 @@ export function GameCustomizer({ writerCoin, isMUSD, articleUrl, onBack, onGameG
                     mode === 'wordle' 
                     ? isMUSD 
                         ? 'bg-warning text-warning-foreground shadow-[0_0_15px_rgba(245,158,11,0.4)]'
-                        : 'bg-brand text-brand-foreground shadow-[0_0_15px_rgba(168,85,247,0.4)]' 
+                        : 'bg-brand text-brand-foreground shadow-[0_0_15px_hsl(var(--brand) / 0.4)]' 
                     : isMUSD 
                         ? 'text-warning/60 hover:text-warning'
                         : 'text-brand/60 hover:text-brand'
@@ -313,7 +313,7 @@ export function GameCustomizer({ writerCoin, isMUSD, articleUrl, onBack, onGameG
             type="button"
             onClick={() => generateGame()}
             disabled={isGenerating}
-            className="w-full rounded-2xl bg-brand py-4 text-sm font-black uppercase tracking-[0.2em] italic text-brand-foreground shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all hover:bg-brand/90 hover:shadow-[0_0_25px_rgba(168,85,247,0.5)] active:scale-[0.98] disabled:opacity-50"
+            className="w-full rounded-2xl bg-brand py-4 text-sm font-black uppercase tracking-[0.2em] italic text-brand-foreground shadow-[0_0_20px_hsl(var(--brand) / 0.3)] transition-all hover:bg-brand/90 hover:shadow-[0_0_25px_hsl(var(--brand) / 0.5)] active:scale-[0.98] disabled:opacity-50"
           >
             Synthesize Experience
           </button>

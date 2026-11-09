@@ -2,6 +2,7 @@
 
 import { Loader2, RefreshCw, AlertTriangle, CheckCircle2, ExternalLink, Sparkles } from 'lucide-react'
 import { PaymentOption } from '@/domains/games/components/PaymentOption'
+import { Button } from '@/components/ui/button'
 import type { WriterCoin } from '@/lib/writer-coins'
 import type { PaymentResult } from '@/domains/payments/strategies/payment-strategy'
 import {
@@ -148,15 +149,16 @@ export function PaymentStep({
                       </a>
                     )}
                   </div>
-                  <button
+                  <Button
+                    variant="success"
                     type="button"
                     onClick={onContinueGeneration}
                     disabled={isGenerating || isPreviewingArticle}
-                    className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md bg-success px-3 py-2 text-sm font-semibold text-success-foreground transition hover:bg-success/90 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                    className="mt-3 h-auto min-h-10 w-full gap-2 rounded-md px-3 py-2 text-sm font-semibold sm:w-auto"
                   >
                     {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                     {isGenerating ? 'Generating...' : 'Continue generation'}
-                  </button>
+                  </Button>
               {error && onRefund && (
                 <button
                   onClick={onRefund}

@@ -117,7 +117,7 @@ export function MobileStepNav({
               <div
                 className={`flex h-7 w-7 items-center justify-center rounded-lg transition-all duration-300 ${
                   idx === currentIdx
-                    ? 'bg-brand text-brand-foreground shadow-[0_0_12px_rgba(168,85,247,0.4)] scale-110'
+                    ? 'bg-brand text-brand-foreground shadow-[0_0_12px_hsl(var(--brand) / 0.4)] scale-110'
                     : idx < currentIdx
                     ? 'bg-success/20 text-success'
                     : 'bg-muted text-muted-foreground/30'

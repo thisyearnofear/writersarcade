@@ -59,7 +59,7 @@ function GeneratePageContent() {
           <>
             <Link
               href="/basepaint"
-              className="mb-4 inline-flex items-center gap-1.5 text-xs text-brand hover:text-brand"
+              className="mb-4 inline-flex items-center gap-1.5 text-xs text-brand hover:text-foreground"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               Back to Daily Challenge

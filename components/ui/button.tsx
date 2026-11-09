@@ -15,6 +15,13 @@ const buttonVariants = cva(
         outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
+        // Semantic fills pair each background with its -foreground token so
+        // contrast survives the lightened dark-mode palette. Never hand-roll
+        // `bg-brand text-white` — use these variants instead.
+        brand: "bg-brand text-brand-foreground hover:bg-brand/90",
+        success: "bg-success text-success-foreground hover:bg-success/90",
+        warning: "bg-warning text-warning-foreground hover:bg-warning/90",
+        info: "bg-info text-info-foreground hover:bg-info/90",
       },
       size: {
         default: "h-10 px-4 py-2",

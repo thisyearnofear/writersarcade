@@ -31,6 +31,7 @@ import { parsePanel, pullQuote } from '../utils/text-parser'
 import { coverFocalClass, getPanelMedia } from '../utils/artifact-media'
 import { RelatedPlayStrip } from './related-play-strip'
 import { trackEvent } from '@/services/analytics'
+import { Button } from '@/components/ui/button'
 
 interface GameArtifactViewProps {
   game: Game
@@ -423,14 +424,14 @@ export function GameArtifactView({ game, currentUserWallet }: GameArtifactViewPr
               ) : isOwner ? (
                 <div className="pt-3">
                   <p className="mb-2 text-sm text-white/55">Mint as a collectible on SuperRare.</p>
-                  <button onClick={handleSuperrareMint} disabled={superrareMinting}
-                    className="inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground transition-colors hover:bg-brand/90 disabled:opacity-50">
+                  <Button variant="brand" onClick={handleSuperrareMint} disabled={superrareMinting}
+                    className="h-auto w-full gap-1.5 rounded-md px-4 py-2 text-sm font-semibold">
                     {superrareMinting ? (
                       <><Loader2 className="h-4 w-4 animate-spin" /> Preparing…</>
                     ) : (
                       <><GalleryHorizontalEnd className="h-4 w-4" /> Mint on SuperRare</>
                     )}
-                  </button>
+                  </Button>
                   {superrareError && <p className="mt-1.5 text-xs text-destructive">{superrareError}</p>}
                 </div>
               ) : (

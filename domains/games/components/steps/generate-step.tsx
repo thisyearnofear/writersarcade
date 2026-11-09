@@ -41,7 +41,8 @@ export function GenerateStep({
       <Button
         type="submit"
         disabled={isGenerating || isPreviewingArticle}
-        className="relative w-full whitespace-normal bg-brand text-brand-foreground hover:bg-brand/90 disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100 focus:ring-2 focus:ring-brand focus:ring-offset-2 focus:ring-offset-black"
+        variant="brand"
+        className="relative w-full whitespace-normal disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100 focus:ring-2 focus:ring-brand focus:ring-offset-2 focus:ring-offset-black"
         size="mobile"
         arcade
       >
@@ -52,7 +53,7 @@ export function GenerateStep({
             <motion.div
               className="absolute inset-0 rounded-lg opacity-0"
               style={{
-                background: 'radial-gradient(circle, rgba(168, 85, 247, 0.3) 0%, rgba(168, 85, 247, 0) 70%)',
+                background: 'radial-gradient(circle, hsl(var(--brand) / 0.3) 0%, hsl(var(--brand) / 0) 70%)',
                 filter: 'blur(10px)',
               }}
               animate={{

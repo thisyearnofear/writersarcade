@@ -73,7 +73,7 @@ export function ArticleInput({ writerCoin, isMUSD, onSubmit, onBack }: ArticleIn
                 onClick={onBack}
                 className={cn(
                     "group flex items-center space-x-2 text-[10px] font-black uppercase tracking-widest transition-colors",
-                    isMUSD ? "text-warning hover:text-warning" : "text-brand hover:text-brand"
+                    isMUSD ? "text-warning hover:text-foreground" : "text-brand hover:text-foreground"
                 )}
             >
                 <svg className="h-3 w-3 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -120,7 +120,7 @@ export function ArticleInput({ writerCoin, isMUSD, onSubmit, onBack }: ArticleIn
                                 "h-full rounded-xl px-4 text-xs font-black uppercase tracking-widest text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95",
                                 isMUSD
                                     ? "bg-warning hover:bg-warning/90 shadow-[0_0_15px_rgba(245,158,11,0.3)] hover:shadow-[0_0_20px_rgba(245,158,11,0.5)]"
-                                    : "bg-brand hover:bg-brand/90 shadow-[0_0_15px_rgba(168,85,247,0.3)] hover:shadow-[0_0_20px_rgba(168,85,247,0.5)]"
+                                    : "bg-brand hover:bg-brand/90 shadow-[0_0_15px_hsl(var(--brand) / 0.3)] hover:shadow-[0_0_20px_hsl(var(--brand) / 0.5)]"
                             )}
                         >
                             {loading ? (

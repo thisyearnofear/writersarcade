@@ -121,16 +121,16 @@ export function WordleGameInterface({ game, maxAttempts }: WordleGameInterfacePr
           className="text-white [&_h1]:text-white [&_p]:text-muted-foreground"
         >
           <div className="flex flex-col items-center gap-3">
-            <button
-              type="button"
+            <Button
+              variant="warning"
               onClick={() => openConnectModal?.()}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-warning px-6 py-3 font-semibold text-warning-foreground transition-colors hover:bg-warning/90 sm:w-auto"
+              className="h-auto w-full gap-2 rounded-lg px-6 py-3 font-semibold sm:w-auto"
             >
               Connect wallet
-            </button>
+            </Button>
             <a
               href="/games"
-              className="text-sm font-medium text-brand hover:text-brand"
+              className="text-sm font-medium text-brand hover:text-foreground"
             >
               Browse the arcade instead
             </a>
@@ -148,7 +148,7 @@ export function WordleGameInterface({ game, maxAttempts }: WordleGameInterfacePr
           <p className="text-sm text-muted-foreground">Decrypting secure game data from vault...</p>
           <p className="text-xs text-muted-foreground/80">
             Taking a while?{' '}
-            <a href="/games" className="text-brand hover:text-brand underline underline-offset-2">
+            <a href="/games" className="text-brand hover:text-foreground underline underline-offset-2">
               Browse the arcade
             </a>{' '}
             while this finishes.
@@ -274,7 +274,7 @@ export function WordleGameInterface({ game, maxAttempts }: WordleGameInterfacePr
                   href={game.articleUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="shrink-0 text-[11px] font-medium text-warning hover:text-warning underline-offset-2 hover:underline"
+                  className="shrink-0 text-[11px] font-medium text-warning hover:text-foreground underline-offset-2 hover:underline"
                 >
                   View article
                 </a>

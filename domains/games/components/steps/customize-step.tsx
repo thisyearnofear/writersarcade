@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, ChevronDown, Lightbulb, Sparkles } from 'lucide-react'
 import { GenreSelector, GENRE_LABEL, type GameGenre } from '@/domains/games/components/GenreSelector'
+import { Button } from '@/components/ui/button'
 import { DifficultySelector, DIFFICULTY_LABEL, type GameDifficulty } from '@/domains/games/components/DifficultySelector'
 import { WriterCoinSelector } from '@/domains/games/components/WriterCoinSelector'
 import type { WriterCoin } from '@/lib/writer-coins'
@@ -119,13 +120,14 @@ export function CustomizeStep({
                           Selected
                         </span>
                       ) : (
-                        <button
+                        <Button
+                          variant="warning"
                           type="button"
                           onClick={onSetMusdPath}
-                          className="inline-flex min-h-10 items-center justify-center rounded-md bg-warning px-3 py-2 text-xs font-bold uppercase tracking-wider text-warning-foreground transition hover:bg-warning/90"
+                          className="h-auto min-h-10 rounded-md px-3 py-2 text-xs font-bold uppercase tracking-wider"
                         >
                           Use MUSD
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </div>

@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import { UndoManager } from '@/lib/undo-manager'
 import { useToast } from '@/components/ui/use-toast'
+import { Button } from '@/components/ui/button'
 import { AssetGenerationResponse } from '@/domains/games/types'
 import { Header } from '@/components/layout/header'
 import { useOnboarding } from '@/hooks/useOnboarding'
@@ -114,9 +115,9 @@ export function WorkshopClient() {
                     <div className="flex justify-between">
                         <button onClick={dismissOnboarding} className="text-muted-foreground text-sm hover:text-white">Skip</button>
                         {currentStep < steps.length - 1 ? (
-                            <button onClick={nextStep} className="bg-brand px-4 py-2 rounded text-brand-foreground text-sm">Next</button>
+                            <Button variant="brand" size="sm" onClick={nextStep} className="rounded px-4 py-2 text-sm">Next</Button>
                         ) : (
-                            <button onClick={dismissOnboarding} className="bg-success px-4 py-2 rounded text-success-foreground text-sm">Got it!</button>
+                            <Button variant="success" size="sm" onClick={dismissOnboarding} className="rounded px-4 py-2 text-sm">Got it!</Button>
                         )}
                     </div>
                 </div>

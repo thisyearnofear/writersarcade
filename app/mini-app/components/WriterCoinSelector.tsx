@@ -91,7 +91,7 @@ export function WriterCoinSelector({ onSelect }: WriterCoinSelectorProps) {
                         <div className="w-full border-t border-white/5"></div>
                     </div>
                     <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest">
-                        <span className="bg-[#0a0a14] px-3 text-brand/40">Classic Writer Coins</span>
+                        <span className="bg-background px-3 text-brand/40">Classic Writer Coins</span>
                     </div>
                 </div>
 
@@ -111,7 +111,7 @@ export function WriterCoinSelector({ onSelect }: WriterCoinSelectorProps) {
 
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-4">
-                                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand/20 text-2xl font-black text-brand ring-1 ring-brand/30 group-hover:bg-brand/30 group-hover:text-brand transition-colors">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand/20 text-2xl font-black text-brand ring-1 ring-brand/30 group-hover:bg-brand/30 group-hover:text-foreground transition-colors">
                                     {coin.symbol.slice(0, 1)}
                                 </div>
                                 <div>

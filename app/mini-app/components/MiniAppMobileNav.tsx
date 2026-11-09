@@ -20,7 +20,7 @@ export function MiniAppMobileNav({ step, onBack, canGoBack }: MiniAppMobileNavPr
     return (
         <div className="fixed bottom-0 left-0 right-0 z-[100] md:hidden">
             {/* Background Blur / Gradient */}
-            <div className="absolute inset-0 bg-[#0a0a14]/80 backdrop-blur-2xl border-t border-white/10" />
+            <div className="absolute inset-0 bg-background/80 backdrop-blur-2xl border-t border-white/10" />
             
             <div className="relative flex items-center justify-between px-6 py-4">
                 {/* Back Button - Positioned for easy thumb reach */}
@@ -49,7 +49,7 @@ export function MiniAppMobileNav({ step, onBack, canGoBack }: MiniAppMobileNavPr
                             <div key={s.id} className="relative flex flex-col items-center">
                                 <div className={`
                                     flex h-8 w-8 items-center justify-center rounded-xl transition-all duration-300
-                                    ${isActive ? 'bg-brand text-brand-foreground shadow-[0_0_15px_rgba(168,85,247,0.5)] scale-110' : ''}
+                                    ${isActive ? 'bg-brand text-brand-foreground shadow-[0_0_15px_hsl(var(--brand) / 0.5)] scale-110' : ''}
                                     ${isPast ? 'bg-success/20 text-success' : ''}
                                     ${!isActive && !isPast ? 'bg-white/5 text-white/20' : ''}
                                 `}>

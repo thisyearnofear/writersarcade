@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { GameGrid } from '@/domains/games/components/game-grid'
@@ -485,12 +486,11 @@ export function HomeClient({ initialSampleGames, initialStats, featuredArtifact,
                   <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">Turn passive content into a measurable experience. Creator insights show starts, completions, panel drop-off, choice splits, and which placements drive plays.</p>
                 </div>
               </div>
-              <Link
-                href="/creators/dashboard"
-                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-success px-4 py-2.5 text-sm font-bold text-success-foreground transition-colors hover:bg-success/90"
-              >
-                See creator insights <ArrowUpRight className="h-4 w-4" />
-              </Link>
+              <Button asChild variant="success" className="h-auto shrink-0 gap-2 rounded-lg px-4 py-2.5 text-sm font-bold">
+                <Link href="/creators/dashboard">
+                  See creator insights <ArrowUpRight className="h-4 w-4" />
+                </Link>
+              </Button>
             </div>
           </section>
         </main>

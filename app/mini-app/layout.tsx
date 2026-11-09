@@ -41,7 +41,7 @@ export default function MiniAppLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-screen bg-[#0a0a14] text-white selection:bg-brand/30 overflow-x-hidden">
+    <div className="min-h-screen bg-background text-white selection:bg-brand/30 overflow-x-hidden">
       {/* Dynamic Background */}
       <div className="fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute -inset-[100%] opacity-30">

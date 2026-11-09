@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import { ArrowRight, CheckCircle2, Info, Loader2 } from 'lucide-react'
 import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
 import type { WriterCoin } from '@/lib/writer-coins'
 import {
   type ArticlePreview,
@@ -266,13 +267,14 @@ export function ArticleStep({
                 This article is by {detectedCoin.name}. Pay with {detectedCoin.symbol} on Base to support them directly.
               </p>
             </div>
-            <button
+            <Button
+              variant="brand"
               type="button"
               onClick={onUseDetectedCoin}
-              className="flex-shrink-0 inline-flex items-center gap-1 rounded-md bg-brand px-3 py-1.5 text-xs font-bold text-brand-foreground hover:bg-brand/90 transition-colors"
+              className="h-auto flex-shrink-0 gap-1 rounded-md px-3 py-1.5 text-xs font-bold"
             >
               Use {detectedCoin.symbol}
-            </button>
+            </Button>
           </div>
         </motion.div>
       )}

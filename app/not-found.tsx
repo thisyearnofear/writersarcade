@@ -3,6 +3,8 @@ import { Gamepad2, Home, Sparkles, MapPinOff } from 'lucide-react'
 import { Header } from '@/components/layout/header'
 import { Footer } from '@/components/layout/footer'
 import { ThemeWrapper } from '@/components/layout/ThemeWrapper'
+import { Button } from '@/components/ui/button'
+import { IconChip } from '@/components/ui/icon-chip'
 
 export default function NotFound() {
   return (
@@ -12,9 +14,7 @@ export default function NotFound() {
 
         <main id="main-content" className="flex flex-1 flex-col items-center justify-center px-4 py-16">
           <div className="mx-auto max-w-lg text-center space-y-6">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-brand/10 text-brand">
-              <MapPinOff className="h-7 w-7" />
-            </div>
+            <IconChip icon={MapPinOff} className="mx-auto" />
 
             <div className="space-y-2">
               <p className="text-xs font-bold uppercase tracking-widest text-brand">404</p>
@@ -26,13 +26,12 @@ export default function NotFound() {
             </div>
 
             <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link
-                href="/games"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-6 py-3 font-semibold text-brand-foreground transition-colors hover:bg-brand/90 sm:w-auto"
-              >
-                <Gamepad2 className="h-5 w-5" />
-                Browse the arcade
-              </Link>
+              <Button asChild variant="brand" className="h-auto w-full gap-2 rounded-lg px-6 py-3 font-semibold sm:w-auto">
+                <Link href="/games">
+                  <Gamepad2 className="h-5 w-5" />
+                  Browse the arcade
+                </Link>
+              </Button>
               <Link
                 href="/generate"
                 className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-card px-6 py-3 font-semibold text-foreground transition-colors hover:bg-muted sm:w-auto"

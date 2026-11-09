@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 import { useAccount } from 'wagmi'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { Loader2, Wallet, Gamepad2 } from 'lucide-react'
@@ -67,14 +68,14 @@ export function BasePaintCollectionView() {
           </div>
 
           {!isConnected ? (
-            <button
-              type="button"
+            <Button
+              variant="brand"
               onClick={() => openConnectModal?.()}
-              className="mx-auto flex items-center gap-2 rounded-lg bg-brand px-6 py-3 text-sm font-semibold text-brand-foreground hover:bg-brand/90"
+              className="mx-auto h-auto gap-2 rounded-lg px-6 py-3 text-sm font-semibold"
             >
               <Wallet className="h-4 w-4" />
               Connect wallet
-            </button>
+            </Button>
           ) : loading ? (
             <div className="flex justify-center py-16">
               <Loader2 className="h-8 w-8 animate-spin text-brand" />
@@ -82,7 +83,7 @@ export function BasePaintCollectionView() {
           ) : totalOwned === 0 ? (
             <div className="rounded-lg border border-white/10 p-8 text-center">
               <p className="text-sm text-muted-foreground">No BasePaint canvases found for this wallet.</p>
-              <Link href="/basepaint" className="mt-4 inline-block text-sm text-brand hover:text-brand">
+              <Link href="/basepaint" className="mt-4 inline-block text-sm text-brand hover:text-foreground">
                 Play today&apos;s Daily Challenge →
               </Link>
             </div>

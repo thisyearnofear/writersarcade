@@ -95,7 +95,7 @@ export function CardSkeleton({ className = '' }: CardSkeletonProps) {
         <motion.div
           className="absolute inset-0"
           style={{
-            background: 'linear-gradient(90deg, transparent 0%, rgba(168,85,247,0.35) 50%, transparent 100%)',
+            background: 'linear-gradient(90deg, transparent 0%, hsl(var(--brand) / 0.35) 50%, transparent 100%)',
           }}
           animate={{ x: ['-100%', '100%'] }}
           transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}

@@ -273,7 +273,7 @@ export function AssetEditPanel({
           ) : (
             <button
               onClick={() => setIsEditingTags(true)}
-              className="text-xs text-brand hover:text-brand flex items-center gap-1 transition-colors"
+              className="text-xs text-brand hover:text-foreground flex items-center gap-1 transition-colors"
             >
               <Plus className="w-3 h-3" /> Add Tag
             </button>
