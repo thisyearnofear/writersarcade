@@ -11,6 +11,8 @@ export interface HeroTransformationProps {
   worldImage?: string
   /** Destination for the world tile — defaults to this game's scene page. */
   worldHref?: string
+  /** First animated panel clip — makes the artifact move, not just sit there. */
+  clipUrl?: string
 }
 
 /** Below this we render nothing — a two-panel "transformation" reads as a bug, not proof. */
@@ -28,7 +30,7 @@ const TILT = [-3, 1.5, -1, 2.5, -2]
  *
  * Server component — statically rendered with the page's first paint.
  */
-export function HeroTransformation({ slug, title, panels, author, publication, worldImage, worldHref }: HeroTransformationProps) {
+export function HeroTransformation({ slug, title, panels, author, publication, worldImage, worldHref, clipUrl }: HeroTransformationProps) {
   if (panels.length < MIN_PANELS) return null
 
   return (
@@ -112,10 +114,39 @@ export function HeroTransformation({ slug, title, panels, author, publication, w
             </Link>
           </>
         )}
+
+        {/* The film form — a real animated panel clip, muted + deferred so it
+            reads as motion without competing with the CTA. */}
+        {clipUrl && (
+          <>
+            <ArrowRight
+              className="h-5 w-5 shrink-0 rotate-90 text-muted-foreground/60 sm:rotate-0"
+              aria-hidden="true"
+            />
+            <Link
+              href={`/games/${slug}`}
+              title={`${title} — animated panel`}
+              className="group block shrink-0 overflow-hidden rounded-md border-2 border-white/90 shadow-md transition-all hover:-translate-y-1 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              <video
+                src={clipUrl}
+                poster={panels[0]}
+                preload="metadata"
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="h-16 w-16 object-cover transition-transform duration-500 group-hover:scale-105 sm:h-[4.5rem] sm:w-[4.5rem]"
+              />
+              <span className="sr-only">{title} — animated panel</span>
+            </Link>
+          </>
+        )}
       </div>
       <p className="text-[11px] text-muted-foreground">
         From a real Paragraph article{author ? ` — @${author}` : ''}
         {worldImage ? ' · walkable world included' : ''}
+        {clipUrl ? ' · animated panels' : ''}
       </p>
     </div>
   )

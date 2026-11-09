@@ -8,6 +8,7 @@ import { GameGrid } from '@/domains/games/components/game-grid'
 import { SimpleGameForm } from '@/domains/games/components/simple-game-form'
 import { HeroGameStrip, type SampleGame } from '@/domains/games/components/hero-game-strip'
 import { HeroTransformation, type HeroTransformationProps } from '@/domains/games/components/hero-transformation'
+import { ManyFormsStrip, type ManyFormsData } from '@/domains/games/components/many-forms-strip'
 import { HeroBackdrop } from '@/domains/games/components/hero-backdrop'
 import { RecentlyPlayedSection } from '@/domains/games/components/recently-played-section'
 import { DailyChallengeBanner } from '@/components/daily-challenge/daily-challenge-banner'
@@ -209,9 +210,11 @@ interface HomeClientProps {
   initialStats: HomeStats | null
   /** Article→comic artifact for the hero; absent falls back to the game strip. */
   featuredArtifact?: HeroTransformationProps
+  /** Real artifacts for the "one story, many forms" strip; daily card always present. */
+  manyForms?: ManyFormsData
 }
 
-export function HomeClient({ initialSampleGames, initialStats, featuredArtifact }: HomeClientProps) {
+export function HomeClient({ initialSampleGames, initialStats, featuredArtifact, manyForms }: HomeClientProps) {
   // The hero explains the product, so the tour is opt-in via "New here?" rather
   // than auto-opening a modal over the first impression.
   const { showOnboarding, dismissOnboarding, startTour } = useOnboarding()
@@ -371,6 +374,10 @@ export function HomeClient({ initialSampleGames, initialStats, featuredArtifact 
               </motion.div>
             </div>
           </section>
+
+          {/* "One story, many forms" — real artifacts per modality, right
+              after the hero makes the single-modality promise. */}
+          {manyForms && <ManyFormsStrip data={manyForms} />}
 
           {/* BasePaint Daily sits directly under the hero: it's the most distinctive
               thing the product does, and the reason to come back tomorrow. */}
