@@ -26,6 +26,10 @@ const mockPreview: ArticlePreview = {
 const baseProps = {
   url: 'https://paragraph.xyz/test/article',
   onUrlChange: vi.fn(),
+  sourceKind: 'article' as const,
+  sourceText: '',
+  onSourceKindChange: vi.fn(),
+  onSourceTextChange: vi.fn(),
   isMusdPath: true,
   detectedCoin: undefined,
   isAutoDetected: false,

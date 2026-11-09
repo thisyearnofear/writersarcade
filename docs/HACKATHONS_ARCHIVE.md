@@ -41,6 +41,13 @@
 - Mainnet deploy: `scripts/deploy/deploy-mezo-mainnet.sh` (needs deployer
   funded with mainnet BTC for gas).
 
+**Wave 1 result (Nov 5, 2026):** did not place. Top 5 were all
+protocol-depth projects (4 DeFi on veBTC/MUSD-vault/veMEZO primitives +
+Mezonk prediction markets with contract-locked MUSD). Judges = Mezo core
+team; they reward MUSD held/routed through contracts, not checkout rails.
+**Wave 2 (Nov 2–15, $5k, proportional rewards) strategy:**
+[`MEZO_BUILDATHON_W2.md`](./MEZO_BUILDATHON_W2.md).
+
 ## 4. CDR Hackathon by Story Protocol (May 27–Jun 5, 2026, $3k)
 
 **What it was:** Move "Secret Panel" logic from Lit Protocol to Story Confidential Data Rails — TEE-backed vaults (`promptVaultUuid`), `tokenGate` on the Game NFT contract, unlock on completed 5-panel session + exact `nftTokenId` ownership. Superseded by Inco.

@@ -49,6 +49,9 @@ const initialStepStatuses: Record<LoadingStep, StepStatus> = {
 interface GameGeneratorState {
   // ── Core form state ──────────────────────────────────────────────────
   url: string
+  /** 'article' = Paragraph URL flow; 'text' = pasted copy (studio fold-in). */
+  sourceKind: 'article' | 'text'
+  sourceText: string
   mode: GameMode
   genre: GameGenre
   difficulty: GameDifficulty
@@ -85,6 +88,8 @@ interface GameGeneratorState {
 
   // ── Actions ─────────────────────────────────────────────────────────
   setUrl: (url: string) => void
+  setSourceKind: (kind: 'article' | 'text') => void
+  setSourceText: (text: string) => void
   setMode: (mode: GameMode) => void
   setGenre: (genre: GameGenre) => void
   setDifficulty: (difficulty: GameDifficulty) => void
@@ -122,6 +127,8 @@ interface GameGeneratorState {
 export const useGameGeneratorStore = create<GameGeneratorState>((set) => ({
   // ── Initial state ────────────────────────────────────────────────────
   url: '',
+  sourceKind: 'article',
+  sourceText: '',
   mode: 'story',
   genre: 'horror' as GameGenre,
   difficulty: 'easy' as GameDifficulty,
@@ -151,6 +158,8 @@ export const useGameGeneratorStore = create<GameGeneratorState>((set) => ({
 
   // ── Actions ─────────────────────────────────────────────────────────
   setUrl: (url) => set({ url }),
+  setSourceKind: (sourceKind) => set({ sourceKind }),
+  setSourceText: (sourceText) => set({ sourceText }),
   setMode: (mode) => set({ mode }),
   setGenre: (genre) => set({ genre }),
   setDifficulty: (difficulty) => set({ difficulty }),
@@ -197,6 +206,8 @@ export const useGameGeneratorStore = create<GameGeneratorState>((set) => ({
 
   resetForm: () => set({
     url: '',
+    sourceKind: 'article',
+    sourceText: '',
     paymentApproved: false,
     articlePreview: null,
     previewedUrl: '',

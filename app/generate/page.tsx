@@ -42,6 +42,7 @@ function GeneratePageContent() {
   const urlParam = searchParams.get('url')
   const payParam = paymentPathFromParam(searchParams.get('pay'))
   const isWordleMode = searchParams.get('mode') === 'wordle'
+  const isTextSource = searchParams.get('source') === 'text'
   const sourceParam = searchParams.get('source')
   const isDailyChallenge = searchParams.get('daily') === '1'
   const isBasePaintSource = sourceParam === 'basepaint' || sourceParam === 'daily'
@@ -86,7 +87,9 @@ function GeneratePageContent() {
             <p className="mx-auto mb-2 max-w-md text-center text-sm text-muted-foreground">
               {isWordleMode
                 ? 'Paste a Paragraph article URL to create a free word puzzle. No wallet needed.'
-                : 'Paste a Paragraph article URL. AI turns it into a playable 5-panel comic.'}
+                : isTextSource
+                  ? 'Paste your copy — AI turns it into a playable story and a walkable 3D world.'
+                  : 'Paste a Paragraph article URL. AI turns it into a playable 5-panel comic.'}
             </p>
             {flynnSmsHref || !isWordleMode ? (
               <p className="mx-auto mb-6 max-w-md px-4 text-center text-xs text-muted-foreground sm:mb-8">
@@ -117,6 +120,7 @@ function GeneratePageContent() {
         <WalletProviders fallback={<WalletLoadingFallback showHeader={false} className="min-h-[50vh] py-12"><CardSkeleton /><CardSkeleton /></WalletLoadingFallback>}>
           <GameGenerator
             initialUrl={urlParam || undefined}
+            initialSourceKind={isTextSource ? 'text' : undefined}
             initialPaymentPath={payParam}
             initialMode={isWordleMode ? 'wordle' : undefined}
             initialBasePaintDay={isBasePaintSource && basePaintDay && !Number.isNaN(basePaintDay) ? basePaintDay : undefined}

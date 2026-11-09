@@ -36,9 +36,15 @@ import { getBasePaintDay } from '@/lib/basepaint/day'
 
 const DEFAULT_WRITER_COIN = WRITER_COINS[0]
 
+/** Sentinel previewedUrl for pasted-text sources — there is no URL to match. */
+const TEXT_PREVIEW_KEY = 'pasted-text'
+const MIN_SOURCE_TEXT_CHARS = 50
+const MAX_SOURCE_TEXT_CHARS = 20_000
+
 interface UseGameGeneratorOptions {
   onGameGenerated?: (game: { id: string; title: string; slug: string; genre: string }) => void
   initialUrl?: string
+  initialSourceKind?: 'article' | 'text'
   initialPaymentPath?: 'musd' | 'writercoin'
   initialMode?: 'story' | 'wordle'
   initialBasePaintDay?: number
@@ -56,6 +62,7 @@ interface UseGameGeneratorOptions {
 export function useGameGenerator({
   onGameGenerated,
   initialUrl,
+  initialSourceKind,
   initialPaymentPath,
   initialMode,
   initialBasePaintDay,
@@ -94,10 +101,13 @@ export function useGameGenerator({
   // ── Derived values ──────────────────────────────────────────────────
   const detectedCoin = useMemo(() => detectWriterCoinFromUrl(store.url), [store.url])
   const isAutoDetected = Boolean(detectedCoin) && store.paymentPath === 'musd' && !store.showAdvancedPayment
+  const isDailyFlow = Boolean(store.dailyFlow)
+  const isTextSource = !isDailyFlow && store.sourceKind === 'text'
   const hasPreviewedCurrentUrl = store.dailyFlow
     ? true
-    : !!store.articlePreview && store.previewedUrl === store.url.trim()
-  const isDailyFlow = Boolean(store.dailyFlow)
+    : isTextSource
+      ? !!store.articlePreview && store.previewedUrl === TEXT_PREVIEW_KEY
+      : !!store.articlePreview && store.previewedUrl === store.url.trim()
   const isStoryMode = store.mode === 'story'
   const isMusdPath = store.paymentPath === 'musd'
   const writerCoin = !isMusdPath && detectedCoin ? detectedCoin : (store.selectedCoin ?? DEFAULT_WRITER_COIN)
@@ -141,6 +151,7 @@ export function useGameGenerator({
   // ── Initialize from props ───────────────────────────────────────────
   useEffect(() => {
     if (initialUrl) store.setUrl(initialUrl)
+    if (initialSourceKind) store.setSourceKind(initialSourceKind)
     if (initialPaymentPath) store.setPaymentPath(initialPaymentPath)
     if (initialMode) store.setMode(initialMode)
     if (initialPaymentPath === 'writercoin') store.toggleAdvancedPayment()
@@ -210,7 +221,7 @@ export function useGameGenerator({
   // Create: prefetch today's world after article preview; default-suggest staging
   useEffect(() => {
     if (!config.features.dailyChallenge || store.dailyFlow) return
-    if (store.mode !== 'story') return
+    if (store.mode !== 'story' || store.sourceKind === 'text') return
     if (!hasPreviewedCurrentUrl) return
     if (store.basePaintStage || store.isLoadingBasePaintStage) return
 
@@ -404,6 +415,37 @@ export function useGameGenerator({
 
   // ── Preview article ────────────────────────────────────────────────
   const previewArticle = useCallback(async () => {
+    // Pasted-text source: no fetch — synthesize the preview card locally so
+    // the rest of the wizard (customize → payment → generate) is unchanged.
+    if (isTextSource) {
+      const text = store.sourceText.trim()
+      if (text.length < MIN_SOURCE_TEXT_CHARS || text.length > MAX_SOURCE_TEXT_CHARS) {
+        store.setError(articleError(`Paste at least ${MIN_SOURCE_TEXT_CHARS} characters of your copy (max ${MAX_SOURCE_TEXT_CHARS.toLocaleString()}).`))
+        return null
+      }
+      const words = text.split(/\s+/).filter(Boolean)
+      const firstLine = text.split('\n').map((l) => l.trim()).find(Boolean) || 'Pasted story'
+      const preview: ArticlePreview = {
+        title: firstLine.length > 80 ? `${firstLine.slice(0, 77)}…` : firstLine,
+        author: 'Pasted copy',
+        wordCount: words.length,
+        estimatedReadTime: Math.max(1, Math.ceil(words.length / 200)),
+        excerpt: text.slice(0, 240),
+        sourceUrl: TEXT_PREVIEW_KEY,
+      }
+      store.setArticlePreview(preview)
+      store.setPreviewedUrl(TEXT_PREVIEW_KEY)
+      store.setError(null)
+      trackEvent('article_preview_succeeded', {
+        paymentPath: store.paymentPath,
+        mode: store.mode,
+        writerCoinId: isMusdPath ? undefined : writerCoin.id,
+        wordCount: preview.wordCount,
+        sourceKind: 'text',
+      })
+      return preview
+    }
+
     if (!store.url.trim()) {
       store.setError(articleError('Please provide a Paragraph.xyz article URL.'))
       return null
@@ -462,7 +504,7 @@ export function useGameGenerator({
     } finally {
       store.setIsPreviewingArticle(false)
     }
-  }, [store, isMusdPath, writerCoin.id])
+  }, [store, isTextSource, isMusdPath, writerCoin.id])
 
   // ── Generate game ─────────────────────────────────────────────────
   // generateGame intentionally reads live store state and is NOT memoized;
@@ -491,12 +533,17 @@ export function useGameGenerator({
       store.setStepStatus('validate', 'in-progress')
       await wait(700)
 
-      if (!store.dailyFlow && !store.url.trim()) {
+      if (!store.dailyFlow && !isTextSource && !store.url.trim()) {
         throw new Error('Please provide a Paragraph.xyz article URL')
+      }
+
+      if (isTextSource && store.sourceText.trim().length < MIN_SOURCE_TEXT_CHARS) {
+        throw new Error(`Paste at least ${MIN_SOURCE_TEXT_CHARS} characters of your copy first.`)
       }
 
       if (
         !store.dailyFlow &&
+        !isTextSource &&
         store.stageWithBasePaint &&
         (store.isLoadingBasePaintStage || !store.basePaintStage)
       ) {
@@ -507,7 +554,7 @@ export function useGameGenerator({
         )
       }
 
-      if (!store.dailyFlow && store.mode !== 'wordle' && !isMusdPath && !validateArticleUrl(store.url.trim(), writerCoin.id)) {
+      if (!store.dailyFlow && !isTextSource && store.mode !== 'wordle' && !isMusdPath && !validateArticleUrl(store.url.trim(), writerCoin.id)) {
         throw new Error(`This URL does not match ${writerCoin.name}. Pick a matching article or switch to MUSD for any Paragraph article.`)
       }
 
@@ -562,7 +609,12 @@ export function useGameGenerator({
                       palette: store.dailyFlow.palette,
                       canvasUrl: store.dailyFlow.canvasUrl,
                     }
-                : store.stageWithBasePaint && store.basePaintStage
+                : isTextSource
+                  ? {
+                      contentType: 'marketing-copy' as const,
+                      promptText: store.sourceText.trim(),
+                    }
+                  : store.stageWithBasePaint && store.basePaintStage
                   ? {
                       contentType: 'dual' as const,
                       url: store.url.trim(),
@@ -779,7 +831,7 @@ export function useGameGenerator({
       await generateGame(paymentTxHashRef.current)
       return
     }
-    if (!store.url.trim()) {
+    if (!store.dailyFlow && !isTextSource && !store.url.trim()) {
       store.setError(articleError('Please provide a Paragraph.xyz article URL.'))
       return
     }
@@ -832,6 +884,37 @@ export function useGameGenerator({
   // ── URL change handler ─────────────────────────────────────────────
   const handleUrlChange = useCallback((value: string) => {
     store.setUrl(value)
+    resetPaymentProgress()
+    store.setError(null)
+    store.setArticlePreview(null)
+    store.setPreviewedUrl('')
+    paymentPathExposureRef.current = null
+    stagingOptOutRef.current = false
+    store.setStageWithBasePaint(false)
+    store.setBasePaintStage(null)
+  }, [store, resetPaymentProgress])
+
+  // ── Source kind / pasted-text handlers ─────────────────────────────
+  const handleSourceKindChange = useCallback((kind: 'article' | 'text') => {
+    if (store.sourceKind === kind) return
+    store.setSourceKind(kind)
+    resetPaymentProgress()
+    store.setError(null)
+    store.setArticlePreview(null)
+    store.setPreviewedUrl('')
+    paymentPathExposureRef.current = null
+    stagingOptOutRef.current = false
+    store.setStageWithBasePaint(false)
+    store.setBasePaintStage(null)
+    if (kind === 'text') {
+      // Pasted copy has no URL — clear it so coin auto-detect and the
+      // Paragraph-URL validation don't fire on stale input.
+      store.setUrl('')
+    }
+  }, [store, resetPaymentProgress])
+
+  const handleSourceTextChange = useCallback((value: string) => {
+    store.setSourceText(value)
     resetPaymentProgress()
     store.setError(null)
     store.setArticlePreview(null)
@@ -971,6 +1054,8 @@ export function useGameGenerator({
   return {
     // State
     url: store.url,
+    sourceKind: store.sourceKind,
+    sourceText: store.sourceText,
     mode: store.mode,
     genre: store.genre,
     difficulty: store.difficulty,
@@ -996,9 +1081,10 @@ export function useGameGenerator({
     isAutoDetected,
     hasPreviewedCurrentUrl,
     isDailyFlow,
+    isTextSource,
     dailyFlow: store.dailyFlow,
     showBasePaintStageToggle:
-      config.features.dailyChallenge && !isDailyFlow && isStoryMode,
+      config.features.dailyChallenge && !isDailyFlow && isStoryMode && !isTextSource,
     stageWithBasePaint: store.stageWithBasePaint,
     basePaintStage: store.basePaintStage,
     isLoadingBasePaintStage: store.isLoadingBasePaintStage,
@@ -1019,6 +1105,8 @@ export function useGameGenerator({
     // Handlers
     handleSubmit,
     handleUrlChange,
+    handleSourceKindChange,
+    handleSourceTextChange,
     handleUseDetectedCoin,
     handleSetMusdPath,
     handleSetWriterCoinPath,

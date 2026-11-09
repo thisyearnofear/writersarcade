@@ -17,6 +17,10 @@ import { getBasePaintCanvasProxyUrl } from '@/lib/daily-challenge'
 interface ArticleStepProps {
   url: string
   onUrlChange: (value: string) => void
+  sourceKind: 'article' | 'text'
+  sourceText: string
+  onSourceKindChange: (kind: 'article' | 'text') => void
+  onSourceTextChange: (value: string) => void
   isMusdPath: boolean
   detectedCoin: WriterCoin | undefined
   isAutoDetected: boolean
@@ -45,6 +49,10 @@ interface ArticleStepProps {
 export function ArticleStep({
   url,
   onUrlChange,
+  sourceKind,
+  sourceText,
+  onSourceKindChange,
+  onSourceTextChange,
   isMusdPath,
   detectedCoin,
   isAutoDetected,
@@ -145,8 +153,58 @@ export function ArticleStep({
     )
   }
 
+  const isTextSource = sourceKind === 'text'
+
   return (
     <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+      {/* Source picker — article URL (default) or pasted copy (the old
+          Studio flow, folded in here). */}
+      <div className="grid grid-cols-2 gap-1 rounded-lg bg-muted/40 border border-border p-1">
+        {(['article', 'text'] as const).map((kind) => (
+          <button
+            key={kind}
+            type="button"
+            onClick={() => onSourceKindChange(kind)}
+            className={`min-h-9 rounded-md px-3 py-1.5 text-sm font-semibold transition-colors ${
+              sourceKind === kind
+                ? 'bg-purple-600 text-white shadow'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+            }`}
+          >
+            {kind === 'article' ? 'Article URL' : 'Paste your copy'}
+          </button>
+        ))}
+      </div>
+
+      {isTextSource ? (
+        <div>
+          <Label htmlFor="source-text" className="mb-2 block text-sm font-medium">
+            Your copy
+          </Label>
+          <textarea
+            id="source-text"
+            value={sourceText}
+            onChange={(e) => onSourceTextChange(e.target.value)}
+            maxLength={20_000}
+            rows={8}
+            placeholder="Paste your landing page, email, essay, or campaign copy here… (50+ characters)"
+            className="w-full rounded-lg border border-border bg-background p-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 resize-y"
+          />
+          <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
+            <span>No article needed — AI turns your words into the story.</span>
+            <span>{sourceText.length.toLocaleString()} / 20,000</span>
+          </div>
+          <button
+            type="button"
+            onClick={onPreview}
+            disabled={isPreviewingArticle || sourceText.trim().length < 50}
+            className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {isPreviewingArticle ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
+            Preview story
+          </button>
+        </div>
+      ) : (
       <div>
         <Label htmlFor="url" className="mb-2 block text-sm font-medium">
           Article URL
@@ -184,9 +242,10 @@ export function ArticleStep({
           )}
         </div>
       </div>
+      )}
 
-      {/* Auto-detected writer coin recommendation */}
-      {isAutoDetected && detectedCoin && (
+      {/* Auto-detected writer coin recommendation — URL sources only. */}
+      {!isTextSource && isAutoDetected && detectedCoin && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}

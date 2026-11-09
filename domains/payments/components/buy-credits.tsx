@@ -331,7 +331,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
-          redirect: typeof window !== 'undefined' ? window.location.pathname : '/studio',
+          redirect: typeof window !== 'undefined' ? window.location.pathname : '/generate',
         }),
       })
       const data = await res.json()

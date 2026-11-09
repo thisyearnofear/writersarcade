@@ -14,6 +14,7 @@ import { useGameGenerator } from './use-game-generator'
 interface GameGeneratorFormProps {
   onGameGenerated?: (game: { id: string; title: string; slug: string; genre: string }) => void
   initialUrl?: string
+  initialSourceKind?: 'article' | 'text'
   initialPaymentPath?: 'musd' | 'writercoin'
   initialMode?: 'story' | 'wordle'
   initialBasePaintDay?: number
@@ -23,6 +24,7 @@ interface GameGeneratorFormProps {
 export function GameGeneratorForm({
   onGameGenerated,
   initialUrl,
+  initialSourceKind,
   initialPaymentPath,
   initialMode,
   initialBasePaintDay,
@@ -31,6 +33,7 @@ export function GameGeneratorForm({
   const g = useGameGenerator({
     onGameGenerated,
     initialUrl,
+    initialSourceKind,
     initialPaymentPath,
     initialMode,
     initialBasePaintDay,
@@ -52,6 +55,10 @@ export function GameGeneratorForm({
             <ArticleStep
               url={g.url}
               onUrlChange={g.handleUrlChange}
+              sourceKind={g.sourceKind}
+              sourceText={g.sourceText}
+              onSourceKindChange={g.handleSourceKindChange}
+              onSourceTextChange={g.handleSourceTextChange}
               isMusdPath={g.isMusdPath}
               detectedCoin={g.detectedCoin}
               isAutoDetected={g.isAutoDetected}

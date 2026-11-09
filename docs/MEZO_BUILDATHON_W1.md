@@ -103,3 +103,19 @@ app. Explorer evidence:
   → explorer shows `boosted=true`.
 - 1:40–2:00 — Close: "MUSD funds the whole arcade. MEZO holders get more.
   Live on Mezo testnet, mainnet-ready." Show contract addresses + live URL.
+
+## Outcome (announced Nov 5, 2026)
+
+**Did not place.** Wave 1 judges' top 5 (all Mezo core team picks):
+
+- DeFi 1st — Doji (veBTC collateral → fixed-rate MUSD loans)
+- DeFi 2nd — Surety (veBTC-directed MUSD lending vault)
+- DeFi joint 3rd — Janus (veMEZO/veBTC boost-matching market), Keel
+  (lending strategy on the MUSD savings vault)
+- Adoption joint 3rd — Mezonk (MUSD prediction markets; MUSD locked in
+  contract + in-app BTC borrow)
+
+Takeaway: judges rewarded projects where MUSD/MEZO/veBTC are **structurally
+central — held or routed through contracts** — not used as a payment rail.
+Our integration (MUSD → off-chain Postgres credits) was real but shallow on
+that axis. Wave 2 strategy: [`MEZO_BUILDATHON_W2.md`](./MEZO_BUILDATHON_W2.md).

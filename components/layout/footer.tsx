@@ -8,11 +8,12 @@ import { useReducedMotion } from 'framer-motion'
 const NAV_LINKS = [
   { href: '/games', label: 'Play · The Arcade' },
   { href: '/generate', label: 'Create a game' },
-  { href: '/studio', label: 'Studio' },
+  { href: '/generate?source=text', label: 'Paste your copy' },
   { href: '/my-games', label: 'My Games' },
 ]
 
 const MORE_LINKS = [
+  { href: '/creators/dashboard', label: 'Creator insights' },
   { href: '/basepaint', label: 'Daily Challenge' },
   { href: '/writers', label: 'Writers' },
   { href: '/#how-it-works', label: 'How it works' },
