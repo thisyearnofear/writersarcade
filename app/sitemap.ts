@@ -25,10 +25,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ]
 
-  const publicGames = await prisma.game.findMany({
-    where: { private: false },
-    select: { slug: true, updatedAt: true },
-  })
+  let publicGames: { slug: string; updatedAt: Date }[] = []
+  try {
+    publicGames = await prisma.game.findMany({
+      where: { private: false },
+      select: { slug: true, updatedAt: true },
+    })
+  } catch (error) {
+    // No reachable DB (e.g. CI builds) — serve static pages only.
+    console.error('sitemap: failed to load games, serving static pages only', error)
+  }
 
   const gamePages: MetadataRoute.Sitemap = publicGames.map((game) => ({
     url: `${baseUrl}/games/${game.slug}`,
