@@ -167,7 +167,7 @@ export function ArticleStep({
             onClick={() => onSourceKindChange(kind)}
             className={`min-h-9 rounded-md px-3 py-1.5 text-sm font-semibold transition-colors ${
               sourceKind === kind
-                ? 'bg-brand text-white shadow'
+                ? 'bg-brand text-brand-foreground shadow'
                 : 'text-muted-foreground hover:bg-muted hover:text-foreground'
             }`}
           >
@@ -269,7 +269,7 @@ export function ArticleStep({
             <button
               type="button"
               onClick={onUseDetectedCoin}
-              className="flex-shrink-0 inline-flex items-center gap-1 rounded-md bg-brand px-3 py-1.5 text-xs font-bold text-white hover:bg-brand transition-colors"
+              className="flex-shrink-0 inline-flex items-center gap-1 rounded-md bg-brand px-3 py-1.5 text-xs font-bold text-brand-foreground hover:bg-brand/90 transition-colors"
             >
               Use {detectedCoin.symbol}
             </button>
@@ -350,7 +350,7 @@ export function ArticleStep({
                   onClick={() => onStageWithBasePaintChange(true)}
                   className={`min-h-11 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
                     stageWithBasePaint
-                      ? 'bg-brand text-white'
+                      ? 'bg-brand text-brand-foreground'
                       : 'border border-brand/40 bg-brand/10 text-brand hover:bg-brand/20'
                   }`}
                 >
@@ -405,7 +405,7 @@ export function ArticleStep({
               onClick={onSelectStory}
               className={`min-h-11 rounded-md px-3 py-2 text-sm font-semibold transition-colors flex items-center justify-center gap-1.5 ${
                 mode === 'story'
-                  ? 'bg-brand text-white shadow'
+                  ? 'bg-brand text-brand-foreground shadow'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground'
               }`}
               whileHover={{ scale: 1.05 }}
@@ -424,7 +424,7 @@ export function ArticleStep({
               onClick={onSelectWordle}
               className={`min-h-11 rounded-md px-3 py-2 text-sm font-semibold transition-colors flex items-center justify-center gap-1.5 ${
                 mode === 'wordle'
-                  ? 'bg-warning text-white shadow'
+                  ? 'bg-warning text-warning-foreground shadow'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground'
               }`}
               whileHover={{ scale: 1.05 }}

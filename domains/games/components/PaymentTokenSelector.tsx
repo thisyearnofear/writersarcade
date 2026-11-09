@@ -22,7 +22,7 @@ export function PaymentTokenSelector({ selectedToken, onSelectToken, writerCoin 
         disabled={!writerCoinEnabled}
         className={`flex-1 px-3 py-2 rounded-md text-xs font-bold uppercase tracking-wider transition-colors ${
           selectedToken.type === 'writercoin'
-            ? 'bg-brand text-white shadow-lg'
+            ? 'bg-brand text-brand-foreground shadow-lg'
             : writerCoinEnabled
               ? 'text-brand hover:bg-brand/50'
               : 'text-muted-foreground cursor-not-allowed opacity-60'
@@ -41,7 +41,7 @@ export function PaymentTokenSelector({ selectedToken, onSelectToken, writerCoin 
         disabled={!musdUsable}
         className={`flex-1 px-3 py-2 rounded-md text-xs font-bold uppercase tracking-wider transition-colors ${
           selectedToken.type === 'musd'
-            ? 'bg-warning text-white shadow-lg'
+            ? 'bg-warning text-warning-foreground shadow-lg'
             : musdUsable
               ? 'text-warning hover:bg-warning/50'
               : 'text-muted-foreground cursor-not-allowed opacity-60'
@@ -59,7 +59,7 @@ export function PaymentTokenSelector({ selectedToken, onSelectToken, writerCoin 
         onClick={() => onSelectToken({ type: 'credits' })}
         className={`flex-1 px-3 py-2 rounded-md text-xs font-bold uppercase tracking-wider transition-colors ${
           selectedToken.type === 'credits'
-            ? 'bg-success text-white shadow-lg'
+            ? 'bg-success text-success-foreground shadow-lg'
             : 'text-success hover:bg-success/50'
         }`}
       >

@@ -452,7 +452,7 @@ export function ComicPanelCard({
                           <button
                             onClick={handleRegenerateQuick}
                             disabled={isRegenerating || isWaiting || !canRegenerate}
-                            className="ml-auto inline-flex items-center gap-1.5 rounded-md bg-brand/80 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-brand disabled:cursor-not-allowed disabled:opacity-50"
+                            className="ml-auto inline-flex items-center gap-1.5 rounded-md bg-brand/80 px-2.5 py-1 text-xs font-medium text-brand-foreground transition-colors hover:bg-brand disabled:cursor-not-allowed disabled:opacity-50"
                             title={canRegenerate ? 'Regenerate image' : `Max ${maxRegenerations} attempts used`}
                           >
                             <RefreshCw className={`w-3 h-3 ${isRegenerating ? 'animate-spin' : ''}`} />
@@ -472,7 +472,7 @@ export function ComicPanelCard({
                             setIsCustomPromptMode(false)
                             setCustomPrompt('')
                           }}
-                          className={`px-2 py-1 text-xs rounded ${!isCustomPromptMode ? 'bg-brand text-white' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                          className={`px-2 py-1 text-xs rounded ${!isCustomPromptMode ? 'bg-brand text-brand-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
                         >
                           Original
                         </button>
@@ -481,7 +481,7 @@ export function ComicPanelCard({
                             setIsCustomPromptMode(true)
                             if (!customPrompt) setCustomPrompt(narrative)
                           }}
-                          className={`px-2 py-1 text-xs rounded ${isCustomPromptMode ? 'bg-brand text-white' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
+                          className={`px-2 py-1 text-xs rounded ${isCustomPromptMode ? 'bg-brand text-brand-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
                         >
                           Custom
                         </button>
@@ -503,7 +503,7 @@ export function ComicPanelCard({
                       <button
                         onClick={handleRegenerateWithPrompt}
                         disabled={isRegenerating || isWaiting}
-                        className="w-full py-2 px-4 bg-brand hover:bg-brand text-white text-sm font-medium rounded-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="w-full py-2 px-4 bg-brand hover:bg-brand/90 text-brand-foreground text-sm font-medium rounded-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         <RefreshCw className={`w-4 h-4 ${isRegenerating ? 'animate-spin' : ''}`} />
                         {isRegenerating ? 'Regenerating...' : isCustomPromptMode ? 'Regenerate with Custom Prompt' : 'Regenerate Image'}
@@ -598,7 +598,7 @@ export function ComicPanelCard({
                         // In a real app we'd trigger an update, here we just show the change
                         setIsEditingNarrative(false)
                       }}
-                      className="h-8 text-xs bg-success hover:bg-success"
+                      className="h-8 text-xs bg-success hover:bg-success/90"
                     >
                       <Check className="w-3 h-3 mr-1" />
                       Apply
@@ -760,7 +760,7 @@ export function ComicPanelCard({
                       </div>
                       {/* Selection indicator */}
                       {currentImageIndex === idx && (
-                        <div className="absolute top-2 right-2 bg-brand text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+                        <div className="absolute top-2 right-2 bg-brand text-brand-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
                           ✓
                         </div>
                       )}
@@ -781,7 +781,7 @@ export function ComicPanelCard({
                   <button
                     onClick={handleRegenerateQuick}
                     disabled={isRegenerating}
-                    className="flex-1 px-4 py-2 bg-brand hover:bg-brand disabled:bg-brand/50 text-white rounded-lg transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                    className="flex-1 px-4 py-2 bg-brand hover:bg-brand/90 disabled:bg-brand/50 text-brand-foreground rounded-lg transition-colors text-sm font-medium flex items-center justify-center gap-2"
                   >
                     <RefreshCw className={`w-4 h-4 ${isRegenerating ? 'animate-spin' : ''}`} />
                     {isRegenerating ? 'Generating...' : 'Try Again'}

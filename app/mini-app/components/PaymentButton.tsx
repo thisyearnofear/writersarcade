@@ -164,8 +164,8 @@ export function PaymentButton({
         className={cn(
           "w-full rounded-xl px-6 py-4 font-bold text-white transition-all disabled:cursor-not-allowed disabled:opacity-50 shadow-lg",
           isMUSD 
-            ? "bg-warning hover:bg-warning shadow-warning/20" 
-            : "bg-brand hover:bg-brand shadow-brand/20"
+            ? "bg-warning hover:bg-warning/90 shadow-warning/20" 
+            : "bg-brand hover:bg-brand/90 shadow-brand/20"
         )}
       >
         {isProcessing ? (

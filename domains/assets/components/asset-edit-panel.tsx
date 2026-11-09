@@ -209,7 +209,7 @@ export function AssetEditPanel({
               {tags.map((tag, i) => (
                 <div
                   key={i}
-                  className="bg-brand/30 border border-brand/50 px-2 py-1 rounded text-xs text-brand flex items-center gap-2 group/tag"
+                  className="bg-brand/15 border border-brand/40 px-2 py-1 rounded text-xs text-brand flex items-center gap-2 group/tag"
                 >
                   <span>
                     <span className="font-semibold">{tag.key}:</span>

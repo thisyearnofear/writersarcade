@@ -49,7 +49,7 @@ export function MiniAppMobileNav({ step, onBack, canGoBack }: MiniAppMobileNavPr
                             <div key={s.id} className="relative flex flex-col items-center">
                                 <div className={`
                                     flex h-8 w-8 items-center justify-center rounded-xl transition-all duration-300
-                                    ${isActive ? 'bg-brand text-white shadow-[0_0_15px_rgba(168,85,247,0.5)] scale-110' : ''}
+                                    ${isActive ? 'bg-brand text-brand-foreground shadow-[0_0_15px_rgba(168,85,247,0.5)] scale-110' : ''}
                                     ${isPast ? 'bg-success/20 text-success' : ''}
                                     ${!isActive && !isPast ? 'bg-white/5 text-white/20' : ''}
                                 `}>

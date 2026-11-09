@@ -41,7 +41,7 @@ export function GenreFilterList({
             onClick={() => onSelect(id === 'all' ? undefined : id)}
             className={`flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-medium transition-colors ${
               isActive(id)
-                ? 'bg-brand/30 text-brand border border-brand/50'
+                ? 'bg-brand/15 text-brand border border-brand/40'
                 : 'text-muted-foreground bg-card border border-border hover:border-border'
             }`}
           >

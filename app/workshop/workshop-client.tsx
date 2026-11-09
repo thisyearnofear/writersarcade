@@ -114,9 +114,9 @@ export function WorkshopClient() {
                     <div className="flex justify-between">
                         <button onClick={dismissOnboarding} className="text-muted-foreground text-sm hover:text-white">Skip</button>
                         {currentStep < steps.length - 1 ? (
-                            <button onClick={nextStep} className="bg-brand px-4 py-2 rounded text-white text-sm">Next</button>
+                            <button onClick={nextStep} className="bg-brand px-4 py-2 rounded text-brand-foreground text-sm">Next</button>
                         ) : (
-                            <button onClick={dismissOnboarding} className="bg-success px-4 py-2 rounded text-white text-sm">Got it!</button>
+                            <button onClick={dismissOnboarding} className="bg-success px-4 py-2 rounded text-success-foreground text-sm">Got it!</button>
                         )}
                     </div>
                 </div>
@@ -176,7 +176,7 @@ export function WorkshopClient() {
                                 disabled={!allChecklistsPassed}
                                 className={`px-4 py-2 rounded transition-colors ${
                                     allChecklistsPassed
-                                        ? 'bg-success text-white hover:bg-success'
+                                        ? 'bg-success text-success-foreground hover:bg-success/90'
                                         : 'text-muted-foreground'
                                 }`}
                             >

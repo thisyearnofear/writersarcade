@@ -28,7 +28,7 @@ export default function NotFound() {
             <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link
                 href="/games"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-6 py-3 font-semibold text-white transition-colors hover:bg-brand sm:w-auto"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-6 py-3 font-semibold text-brand-foreground transition-colors hover:bg-brand/90 sm:w-auto"
               >
                 <Gamepad2 className="h-5 w-5" />
                 Browse the arcade

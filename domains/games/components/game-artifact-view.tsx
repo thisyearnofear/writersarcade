@@ -424,7 +424,7 @@ export function GameArtifactView({ game, currentUserWallet }: GameArtifactViewPr
                 <div className="pt-3">
                   <p className="mb-2 text-sm text-white/55">Mint as a collectible on SuperRare.</p>
                   <button onClick={handleSuperrareMint} disabled={superrareMinting}
-                    className="inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand disabled:opacity-50">
+                    className="inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground transition-colors hover:bg-brand/90 disabled:opacity-50">
                     {superrareMinting ? (
                       <><Loader2 className="h-4 w-4 animate-spin" /> Preparing…</>
                     ) : (

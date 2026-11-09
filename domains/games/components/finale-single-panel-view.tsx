@@ -262,7 +262,7 @@ export function SinglePanelView({
                   <Button
                     size="sm"
                     onClick={handleSaveEdit}
-                    className="gap-1 bg-success hover:bg-success"
+                    className="gap-1 bg-success hover:bg-success/90"
                   >
                     <Check className="w-3 h-3" />
                     Save

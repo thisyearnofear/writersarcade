@@ -487,7 +487,7 @@ export function HomeClient({ initialSampleGames, initialStats, featuredArtifact,
               </div>
               <Link
                 href="/creators/dashboard"
-                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-success px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-success"
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-success px-4 py-2.5 text-sm font-bold text-success-foreground transition-colors hover:bg-success/90"
               >
                 See creator insights <ArrowUpRight className="h-4 w-4" />
               </Link>

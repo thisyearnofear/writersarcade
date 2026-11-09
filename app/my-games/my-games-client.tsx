@@ -399,7 +399,7 @@ export function MyGamesClient() {
                 <button
                   type="button"
                   onClick={() => openConnectModal?.()}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-6 py-3 font-semibold text-white transition-colors hover:bg-brand sm:w-auto"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-6 py-3 font-semibold text-brand-foreground transition-colors hover:bg-brand/90 sm:w-auto"
                 >
                   <Wallet className="h-5 w-5" />
                   Connect wallet
@@ -444,7 +444,7 @@ export function MyGamesClient() {
               </div>
               <Link
                 href="/generate"
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground transition-colors hover:bg-brand/90"
               >
                 <Plus className="w-4 h-4" />
                 Create New Game
@@ -580,7 +580,7 @@ export function MyGamesClient() {
                     </p>
                     <Link
                       href="/games"
-                      className="inline-flex items-center gap-2 rounded-lg bg-brand px-6 py-3 font-semibold text-white transition-colors hover:bg-brand"
+                      className="inline-flex items-center gap-2 rounded-lg bg-brand px-6 py-3 font-semibold text-brand-foreground transition-colors hover:bg-brand/90"
                     >
                       Browse Games
                     </Link>
@@ -717,7 +717,7 @@ export function MyGamesClient() {
                   </Link>
                   <Link
                     href="/generate"
-                    className="inline-flex items-center gap-2 rounded-lg bg-brand px-6 py-3 font-semibold text-white transition-colors hover:bg-brand"
+                    className="inline-flex items-center gap-2 rounded-lg bg-brand px-6 py-3 font-semibold text-brand-foreground transition-colors hover:bg-brand/90"
                   >
                     <Plus className="w-5 h-5" />
                     Create first game
@@ -859,7 +859,7 @@ export function MyGamesClient() {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setMintConfirmGame(null)}>Cancel</Button>
-            <Button onClick={handleMintConfirmed} className="bg-brand hover:bg-brand">
+            <Button onClick={handleMintConfirmed} className="bg-brand hover:bg-brand/90">
               <Sparkles className="w-4 h-4 mr-1.5" />
               Confirm Mint
             </Button>

@@ -353,8 +353,8 @@ export function GamePlayer({ game, onBack, writerCoin, isMUSD }: GamePlayerProps
           className={cn(
             "rounded-2xl py-4 text-[10px] font-black uppercase tracking-[0.2em] italic transition-all active:scale-[0.98] disabled:opacity-50 shadow-lg",
             isMUSD
-              ? "bg-warning text-black shadow-warning/20 hover:bg-warning"
-              : "bg-success text-black shadow-success/20 hover:bg-success"
+              ? "bg-warning text-black shadow-warning/20 hover:bg-warning/90"
+              : "bg-success text-black shadow-success/20 hover:bg-success/90"
           )}
         >
           Archive NFT

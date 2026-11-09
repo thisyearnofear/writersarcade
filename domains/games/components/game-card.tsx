@@ -67,7 +67,7 @@ export function GameCard({ slug, title, description, genre, imageUrl, primaryCol
           </div>
         )}
         {hasAnimation && (
-          <div className="absolute top-3 right-3 z-10 flex items-center gap-1 rounded-full bg-brand/90 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-lg backdrop-blur-sm">
+          <div className="absolute top-3 right-3 z-10 flex items-center gap-1 rounded-full bg-brand/90 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-brand-foreground shadow-lg backdrop-blur-sm">
             <Clapperboard className="h-3 w-3" />
             Animated
           </div>

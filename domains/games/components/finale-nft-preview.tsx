@@ -189,7 +189,7 @@ export function NftPreviewView({
               onClick={onFundGame}
               disabled={isFunding}
               size="lg"
-              className="gap-2 bg-success hover:bg-success text-white"
+              className="gap-2 bg-success hover:bg-success/90 text-success-foreground"
             >
               {isFunding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wallet className="w-4 h-4" />}
               {isFunding ? 'Processing payment…' : `Pay ${fundCostLabel || ''} to unlock minting`}
@@ -221,7 +221,7 @@ export function NftPreviewView({
             <Button
               onClick={onConnectWallet}
               size="lg"
-              className="gap-2 bg-brand hover:bg-brand text-white"
+              className="gap-2 bg-brand hover:bg-brand/90 text-brand-foreground"
             >
               <Wallet className="w-4 h-4" />
               Connect wallet to unlock minting

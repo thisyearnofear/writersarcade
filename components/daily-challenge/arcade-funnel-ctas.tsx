@@ -26,7 +26,7 @@ export function ArcadeFunnelCTAs({
     >
       <Link
         href={primaryHref}
-        className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-6 py-3 font-semibold text-white transition-colors hover:bg-brand w-full sm:w-auto"
+        className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-6 py-3 font-semibold text-brand-foreground transition-colors hover:bg-brand/90 w-full sm:w-auto"
       >
         <Gamepad2 className="h-5 w-5" />
         {primaryLabel}

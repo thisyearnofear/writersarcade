@@ -130,7 +130,7 @@ export function BasePaintDayArchiveView({ day }: { day: number }) {
               {isToday && (
                 <Link
                   href="/basepaint"
-                  className="block w-full rounded-lg bg-brand py-3 text-center text-sm font-semibold text-white hover:bg-brand"
+                  className="block w-full rounded-lg bg-brand py-3 text-center text-sm font-semibold text-brand-foreground hover:bg-brand/90"
                 >
                   Play today&apos;s Daily Challenge
                 </Link>

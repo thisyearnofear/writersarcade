@@ -153,7 +153,7 @@ export function GameSettingsModal({
                     <Button variant="outline" onClick={onClose} className="border-border hover:bg-muted hover:text-foreground">
                         Cancel
                     </Button>
-                    <Button onClick={handleSave} disabled={isLoading} className="bg-brand hover:bg-brand">
+                    <Button onClick={handleSave} disabled={isLoading} className="bg-brand hover:bg-brand/90">
                         {isLoading ? (
                             <>
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />

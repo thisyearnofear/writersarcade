@@ -104,7 +104,7 @@ export function AssetPalette({ isOpen, onClose, onInject }: AssetPaletteProps) {
                             {canScrollLeft && (
                                 <button
                                     onClick={() => scroll('left')}
-                                    className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-brand hover:bg-brand rounded-full text-white transition-colors"
+                                    className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-brand hover:bg-brand/90 rounded-full text-brand-foreground transition-colors"
                                     title="Scroll left"
                                 >
                                     <ChevronLeft className="w-5 h-5" />
@@ -134,7 +134,7 @@ export function AssetPalette({ isOpen, onClose, onInject }: AssetPaletteProps) {
                                         <p className="text-xs text-muted-foreground line-clamp-2 mb-3">
                                             {asset.description}
                                         </p>
-                                        <button className="w-full py-2 bg-muted group-hover:bg-brand group-hover:text-white text-muted-foreground rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-2">
+                                        <button className="w-full py-2 bg-muted group-hover:bg-brand group-hover:text-brand-foreground text-muted-foreground rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-2">
                                             <Plus size={14} /> Add
                                         </button>
                                     </motion.div>
@@ -144,7 +144,7 @@ export function AssetPalette({ isOpen, onClose, onInject }: AssetPaletteProps) {
                             {canScrollRight && (
                                 <button
                                     onClick={() => scroll('right')}
-                                    className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-brand hover:bg-brand rounded-full text-white transition-colors"
+                                    className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-brand hover:bg-brand/90 rounded-full text-brand-foreground transition-colors"
                                     title="Scroll right"
                                 >
                                     <ChevronRight className="w-5 h-5" />

@@ -131,7 +131,7 @@ export function SuccessModal({
             {gameSlug && (
               <Button
                 onClick={handleViewGame}
-                className="w-full min-h-14 bg-success hover:bg-success flex items-center justify-center gap-2 text-base font-bold"
+                className="w-full min-h-14 bg-success hover:bg-success/90 flex items-center justify-center gap-2 text-base font-bold"
                 size="lg"
               >
                 <Eye className="w-4 h-4" />

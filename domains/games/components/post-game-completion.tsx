@@ -387,7 +387,7 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
             <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
           </summary>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Link href="/basepaint" className="inline-flex items-center gap-1.5 rounded-lg bg-warning px-3 py-2 text-xs font-bold text-black transition-colors hover:bg-warning">
+            <Link href="/basepaint" className="inline-flex items-center gap-1.5 rounded-lg bg-warning px-3 py-2 text-xs font-bold text-black transition-colors hover:bg-warning/90">
               <CalendarDays className="h-3.5 w-3.5" />
               Open Daily Challenge
             </Link>
@@ -534,7 +534,7 @@ export function PostGameCompletion({ game, messages, userChoices, showEpilogueCt
         <div className="flex flex-col sm:flex-row gap-3">
           <Link
             href={`/games/${game.slug}/worlds`}
-            className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-info/30 bg-info/5 px-5 py-3 text-sm font-semibold text-info-foreground hover:bg-info/10 hover:border-info/50 transition-all"
+            className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl border border-info/30 bg-info/5 px-5 py-3 text-sm font-semibold text-info hover:bg-info/10 hover:border-info/50 transition-all"
           >
             <Boxes className="w-4 h-4" />
             Explore your worlds

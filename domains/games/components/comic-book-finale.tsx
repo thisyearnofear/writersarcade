@@ -578,7 +578,7 @@ export function ComicBookFinale({
                 dismissVideoOffer(false)
                 setShowVideoStyleModal(true)
               }}
-              className="w-full gap-2 bg-brand hover:bg-brand text-white"
+              className="w-full gap-2 bg-brand hover:bg-brand/90 text-brand-foreground"
               size="sm"
             >
               <Clapperboard className="h-4 w-4" />

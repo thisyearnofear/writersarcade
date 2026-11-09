@@ -382,7 +382,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                   href={widgetUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-success px-4 py-3 font-semibold text-white transition hover:bg-success"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-success px-4 py-3 font-semibold text-success-foreground transition hover:bg-success/90"
                 >
                   Continue to Etherfuse <ExternalLink className="h-4 w-4" />
                 </a>
@@ -419,7 +419,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                     <Button
                       onClick={handleSendMagicLink}
                       disabled={quoteLoading || !email.includes('@')}
-                      className="w-full bg-success hover:bg-success text-white"
+                      className="w-full bg-success hover:bg-success/90 text-success-foreground"
                       size="lg"
                     >
                       {quoteLoading ? (
@@ -518,7 +518,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                     <Button
                       onClick={handleBuyCredits}
                       disabled={quoteLoading}
-                      className="mt-4 w-full bg-success hover:bg-success text-white"
+                      className="mt-4 w-full bg-success hover:bg-success/90 text-success-foreground"
                       size="lg"
                     >
                       {quoteLoading ? (
@@ -553,7 +553,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                         )}
                         <a
                           href="/generate"
-                          className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-warning px-4 py-2 font-semibold text-white transition hover:bg-warning"
+                          className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-warning px-4 py-2 font-semibold text-warning-foreground transition hover:bg-warning/90"
                         >
                           Generate a game now <ArrowRight className="h-3.5 w-3.5" />
                         </a>
@@ -596,7 +596,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                             )
                           }}
                           disabled={musdLoading}
-                          className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-warning px-4 py-2 font-semibold text-white transition hover:bg-warning disabled:opacity-50"
+                          className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-warning px-4 py-2 font-semibold text-warning-foreground transition hover:bg-warning/90 disabled:opacity-50"
                         >
                           {musdLoading ? (
                             <><Loader2 className="h-3.5 w-3.5 animate-spin" /> {musdStep ?? 'Verifying…'}</>
@@ -632,7 +632,7 @@ export function BuyCreditsButton({ showPill = true }: { showPill?: boolean }) {
                         <Button
                           onClick={needsWalletSignIn ? () => openWalletConnectModal() : isWrongMezoChain ? () => switchChainAsync({ chainId: MEZO_ACTIVE_CHAIN_ID }).catch(() => {}) : handlePayWithMusd}
                           disabled={musdLoading || (!needsWalletSignIn && !isWrongMezoChain && hasInsufficientMusd)}
-                          className="mt-3 w-full bg-warning hover:bg-warning text-white"
+                          className="mt-3 w-full bg-warning hover:bg-warning/90 text-warning-foreground"
                           size="lg"
                         >
                           {musdLoading ? (

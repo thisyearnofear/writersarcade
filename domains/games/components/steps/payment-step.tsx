@@ -152,7 +152,7 @@ export function PaymentStep({
                     type="button"
                     onClick={onContinueGeneration}
                     disabled={isGenerating || isPreviewingArticle}
-                    className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md bg-success px-3 py-2 text-sm font-semibold text-white transition hover:bg-success disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                    className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md bg-success px-3 py-2 text-sm font-semibold text-success-foreground transition hover:bg-success/90 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                   >
                     {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                     {isGenerating ? 'Generating...' : 'Continue generation'}

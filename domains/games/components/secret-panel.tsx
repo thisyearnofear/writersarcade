@@ -301,7 +301,7 @@ export function SecretPanel({
                               copyToClipboard(text, 'share-text')
                             }
                           }}
-                          className="inline-flex items-center justify-center gap-1.5 rounded-md bg-success px-3 py-2 text-xs font-bold text-black hover:bg-success"
+                          className="inline-flex items-center justify-center gap-1.5 rounded-md bg-success px-3 py-2 text-xs font-bold text-black hover:bg-success/90"
                         >
                           <Share2 className="h-3.5 w-3.5" />
                           Share unlock

@@ -124,7 +124,7 @@ export function WordleGameInterface({ game, maxAttempts }: WordleGameInterfacePr
             <button
               type="button"
               onClick={() => openConnectModal?.()}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-warning px-6 py-3 font-semibold text-white transition-colors hover:bg-warning sm:w-auto"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-warning px-6 py-3 font-semibold text-warning-foreground transition-colors hover:bg-warning/90 sm:w-auto"
             >
               Connect wallet
             </button>
@@ -301,7 +301,7 @@ export function WordleGameInterface({ game, maxAttempts }: WordleGameInterfacePr
               <Button
                 type="submit"
                 disabled={status !== 'in_progress'}
-                className="bg-brand hover:bg-brand"
+                className="bg-brand hover:bg-brand/90"
               >
                 Guess
               </Button>
@@ -323,7 +323,7 @@ export function WordleGameInterface({ game, maxAttempts }: WordleGameInterfacePr
                 <Button
                   type="button"
                   onClick={() => shareGame(game)}
-                  className="bg-info hover:bg-info text-xs"
+                  className="bg-info hover:bg-info/90 text-xs"
                 >
                   Share to Farcaster
                 </Button>

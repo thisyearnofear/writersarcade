@@ -206,7 +206,7 @@ export function VideoShowcase({
                 {currentPanel?.videoUrl && !currentPanel.videoCompanionUrl && onRequestCompanion && (
                   <button
                     onClick={() => { void onRequestCompanion() }}
-                    className="rounded-full bg-brand/90 px-3 py-2 text-[11px] font-bold text-white backdrop-blur-sm transition-colors hover:bg-brand"
+                    className="rounded-full bg-brand/90 px-3 py-2 text-[11px] font-bold text-brand-foreground backdrop-blur-sm transition-colors hover:bg-brand"
                     title="Generate a native 16:9 wide version from the same still"
                   >
                     + Wide
@@ -215,7 +215,7 @@ export function VideoShowcase({
                 {currentPanel?.videoCompanionUrl && (
                   <button
                     onClick={() => { setShowWide(w => !w); setIsPlaying(false) }}
-                    className="rounded-full bg-brand/90 px-3 py-2 text-[11px] font-bold text-white backdrop-blur-sm transition-colors hover:bg-brand"
+                    className="rounded-full bg-brand/90 px-3 py-2 text-[11px] font-bold text-brand-foreground backdrop-blur-sm transition-colors hover:bg-brand"
                     aria-pressed={showWide}
                     title={showWide ? 'Switch to vertical 9:16' : 'Switch to wide 16:9'}
                   >

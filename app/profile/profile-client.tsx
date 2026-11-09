@@ -173,7 +173,7 @@ export function ProfileClient() {
                         <div className="flex items-center space-x-2">
                           <a
                             href={`/games/${game.slug}`}
-                            className="px-3 py-1 bg-brand hover:bg-brand rounded text-sm transition-colors"
+                            className="px-3 py-1 bg-brand hover:bg-brand/90 rounded text-sm transition-colors"
                           >
                             Play
                           </a>
@@ -187,7 +187,7 @@ export function ProfileClient() {
                   <p className="text-muted-foreground mb-4">No games created yet</p>
                   <a
                     href="/generate"
-                    className="inline-flex items-center px-4 py-2 bg-brand hover:bg-brand rounded transition-colors"
+                    className="inline-flex items-center px-4 py-2 bg-brand hover:bg-brand/90 rounded transition-colors"
                   >
                     Create Your First Game
                   </a>

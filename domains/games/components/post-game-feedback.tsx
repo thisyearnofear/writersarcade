@@ -99,7 +99,7 @@ export function PostGameFeedback({
             <button
               onClick={handleNext}
               disabled={npsScore === null}
-              className="flex-1 px-4 py-2 rounded-lg bg-brand hover:bg-brand disabled:opacity-50 disabled:cursor-not-allowed text-white transition-all text-sm font-semibold"
+              className="flex-1 px-4 py-2 rounded-lg bg-brand hover:bg-brand/90 disabled:opacity-50 disabled:cursor-not-allowed text-brand-foreground transition-all text-sm font-semibold"
             >
               Next
             </button>
@@ -143,7 +143,7 @@ export function PostGameFeedback({
             <button
               onClick={handleNext}
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2 rounded-lg bg-brand hover:bg-brand disabled:opacity-50 disabled:cursor-not-allowed text-white transition-all text-sm font-semibold"
+              className="flex-1 px-4 py-2 rounded-lg bg-brand hover:bg-brand/90 disabled:opacity-50 disabled:cursor-not-allowed text-brand-foreground transition-all text-sm font-semibold"
             >
               {isSubmitting ? 'Sending...' : 'Send Feedback'}
             </button>
@@ -176,7 +176,7 @@ export function PostGameFeedback({
           </p>
           <button
             onClick={onSkip}
-            className="w-full px-4 py-3 rounded-lg bg-brand hover:bg-brand text-white font-semibold transition-all"
+            className="w-full px-4 py-3 rounded-lg bg-brand hover:bg-brand/90 text-brand-foreground font-semibold transition-all"
           >
             Continue
           </button>

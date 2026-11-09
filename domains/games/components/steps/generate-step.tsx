@@ -41,7 +41,7 @@ export function GenerateStep({
       <Button
         type="submit"
         disabled={isGenerating || isPreviewingArticle}
-        className="relative w-full whitespace-normal bg-brand text-white hover:bg-brand disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100 focus:ring-2 focus:ring-brand focus:ring-offset-2 focus:ring-offset-black"
+        className="relative w-full whitespace-normal bg-brand text-brand-foreground hover:bg-brand/90 disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100 focus:ring-2 focus:ring-brand focus:ring-offset-2 focus:ring-offset-black"
         size="mobile"
         arcade
       >

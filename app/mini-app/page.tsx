@@ -17,7 +17,7 @@ function DesktopGate() {
             className="space-y-8 max-w-md mx-auto"
         >
             <div className="space-y-4">
-                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-brand font-black text-white italic text-4xl shadow-[0_0_30px_rgba(168,85,247,0.4)] mx-auto">
+                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-brand font-black text-brand-foreground italic text-4xl shadow-[0_0_30px_rgba(168,85,247,0.4)] mx-auto">
                     W
                 </div>
                 <h1 className="text-3xl font-black text-white uppercase italic tracking-tight">Writers Arcade</h1>
@@ -65,7 +65,7 @@ function DesktopGate() {
                         rel="noopener noreferrer"
                     >
                         <Button 
-                            className="w-full h-12 bg-brand hover:bg-brand font-bold uppercase tracking-widest"
+                            className="w-full h-12 bg-brand hover:bg-brand/90 font-bold uppercase tracking-widest"
                         >
                             Open in Warpcast
                         </Button>
@@ -102,7 +102,7 @@ export default function MiniAppPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-6 max-w-sm"
             >
-                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-brand font-black text-white italic text-4xl shadow-[0_0_30px_rgba(168,85,247,0.4)] mx-auto">
+                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-brand font-black text-brand-foreground italic text-4xl shadow-[0_0_30px_rgba(168,85,247,0.4)] mx-auto">
                     W
                 </div>
                 
@@ -114,7 +114,7 @@ export default function MiniAppPage() {
                 <div className="pt-6 space-y-3">
                     <Button 
                         onClick={() => router.push('/mini-app/create')}
-                        className="w-full h-12 bg-brand hover:bg-brand font-bold uppercase tracking-widest"
+                        className="w-full h-12 bg-brand hover:bg-brand/90 font-bold uppercase tracking-widest"
                     >
                         Build a Game
                     </Button>

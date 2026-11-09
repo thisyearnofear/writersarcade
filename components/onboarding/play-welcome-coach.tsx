@@ -138,7 +138,7 @@ export function PlayWelcomeCoach({ gameSlug }: PlayWelcomeCoachProps) {
               </Button>
             )}
             <Button
-              className="flex-1 bg-brand hover:bg-brand"
+              className="flex-1 bg-brand hover:bg-brand/90"
               onClick={() => (isLast ? dismiss() : setStep(step + 1))}
             >
               {isLast ? 'Start playing' : 'Next'}

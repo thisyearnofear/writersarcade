@@ -162,7 +162,7 @@ export function FinaleFooter({
             <Button
               onClick={onFundGame}
               disabled={isFunding}
-              className="gap-2 bg-success hover:bg-success text-white"
+              className="gap-2 bg-success hover:bg-success/90 text-success-foreground"
             >
               {isFunding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wallet className="w-4 h-4" />}
               {isFunding ? 'Paying…' : `Pay ${fundCostLabel || ''} to Own`}
@@ -170,7 +170,7 @@ export function FinaleFooter({
           ) : onConnectWallet ? (
             <Button
               onClick={onConnectWallet}
-              className="gap-2 bg-brand hover:bg-brand text-white"
+              className="gap-2 bg-brand hover:bg-brand/90 text-brand-foreground"
             >
               <Wallet className="w-4 h-4" />
               Connect to Own

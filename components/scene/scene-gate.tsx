@@ -83,7 +83,7 @@ export function SceneGate({ slug, status, error, bundled = false }: SceneGatePro
           <button
             onClick={generate}
             disabled={busy}
-            className="rounded-lg bg-warning px-6 py-3 font-semibold text-black transition hover:bg-warning disabled:opacity-50"
+            className="rounded-lg bg-warning px-6 py-3 font-semibold text-black transition hover:bg-warning/90 disabled:opacity-50"
           >
             {busy
               ? 'Generating…'

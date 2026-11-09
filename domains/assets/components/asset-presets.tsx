@@ -133,7 +133,7 @@ export function AssetPresets({ currentAssets, onLoadPreset }: AssetPresetsProps)
                                     <div className="flex gap-2">
                                         <button
                                             onClick={handleSavePreset}
-                                            className="flex-1 py-1 bg-success hover:bg-success text-white rounded text-xs font-bold transition-colors"
+                                            className="flex-1 py-1 bg-success hover:bg-success/90 text-success-foreground rounded text-xs font-bold transition-colors"
                                         >
                                             Save
                                         </button>
@@ -189,7 +189,7 @@ export function AssetPresets({ currentAssets, onLoadPreset }: AssetPresetsProps)
                                             <div className="flex gap-2">
                                                 <button
                                                     onClick={() => handleLoadPreset(preset)}
-                                                    className="flex-1 py-1 bg-brand hover:bg-brand text-white rounded text-xs font-medium transition-colors"
+                                                    className="flex-1 py-1 bg-brand hover:bg-brand/90 text-brand-foreground rounded text-xs font-medium transition-colors"
                                                 >
                                                     Load
                                                 </button>

@@ -70,7 +70,7 @@ export function BasePaintCollectionView() {
             <button
               type="button"
               onClick={() => openConnectModal?.()}
-              className="mx-auto flex items-center gap-2 rounded-lg bg-brand px-6 py-3 text-sm font-semibold text-white hover:bg-brand"
+              className="mx-auto flex items-center gap-2 rounded-lg bg-brand px-6 py-3 text-sm font-semibold text-brand-foreground hover:bg-brand/90"
             >
               <Wallet className="h-4 w-4" />
               Connect wallet

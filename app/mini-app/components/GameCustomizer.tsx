@@ -211,8 +211,8 @@ export function GameCustomizer({ writerCoin, isMUSD, articleUrl, onBack, onGameG
                     "flex-1 rounded-xl py-2.5 text-[10px] font-black uppercase tracking-widest transition-all",
                     mode === 'story' 
                     ? isMUSD 
-                        ? 'bg-warning text-white shadow-[0_0_15px_rgba(245,158,11,0.4)]'
-                        : 'bg-brand text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]' 
+                        ? 'bg-warning text-warning-foreground shadow-[0_0_15px_rgba(245,158,11,0.4)]'
+                        : 'bg-brand text-brand-foreground shadow-[0_0_15px_rgba(168,85,247,0.4)]' 
                     : isMUSD 
                         ? 'text-warning/60 hover:text-warning'
                         : 'text-brand/60 hover:text-brand'
@@ -226,8 +226,8 @@ export function GameCustomizer({ writerCoin, isMUSD, articleUrl, onBack, onGameG
                     "flex-1 rounded-xl py-2.5 text-[10px] font-black uppercase tracking-widest transition-all",
                     mode === 'wordle' 
                     ? isMUSD 
-                        ? 'bg-warning text-white shadow-[0_0_15px_rgba(245,158,11,0.4)]'
-                        : 'bg-brand text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]' 
+                        ? 'bg-warning text-warning-foreground shadow-[0_0_15px_rgba(245,158,11,0.4)]'
+                        : 'bg-brand text-brand-foreground shadow-[0_0_15px_rgba(168,85,247,0.4)]' 
                     : isMUSD 
                         ? 'text-warning/60 hover:text-warning'
                         : 'text-brand/60 hover:text-brand'
@@ -313,7 +313,7 @@ export function GameCustomizer({ writerCoin, isMUSD, articleUrl, onBack, onGameG
             type="button"
             onClick={() => generateGame()}
             disabled={isGenerating}
-            className="w-full rounded-2xl bg-brand py-4 text-sm font-black uppercase tracking-[0.2em] italic text-white shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all hover:bg-brand hover:shadow-[0_0_25px_rgba(168,85,247,0.5)] active:scale-[0.98] disabled:opacity-50"
+            className="w-full rounded-2xl bg-brand py-4 text-sm font-black uppercase tracking-[0.2em] italic text-brand-foreground shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all hover:bg-brand/90 hover:shadow-[0_0_25px_rgba(168,85,247,0.5)] active:scale-[0.98] disabled:opacity-50"
           >
             Synthesize Experience
           </button>

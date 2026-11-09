@@ -122,7 +122,7 @@ export function CustomizeStep({
                         <button
                           type="button"
                           onClick={onSetMusdPath}
-                          className="inline-flex min-h-10 items-center justify-center rounded-md bg-warning px-3 py-2 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-warning"
+                          className="inline-flex min-h-10 items-center justify-center rounded-md bg-warning px-3 py-2 text-xs font-bold uppercase tracking-wider text-warning-foreground transition hover:bg-warning/90"
                         >
                           Use MUSD
                         </button>
@@ -181,7 +181,7 @@ export function CustomizeStep({
                           <button
                             type="button"
                             onClick={onToggleWriterSelector}
-                            className="text-xs text-brand hover:text-brand underline decoration-dotted"
+                            className="text-xs text-brand hover:text-foreground underline decoration-dotted"
                           >
                             {showWriterSelector ? 'Done' : 'Change writer'}
                           </button>
@@ -305,7 +305,7 @@ export function CustomizeStep({
                   </div>
                   <button
                     type="button"
-                    className="text-xs text-brand hover:text-brand underline decoration-dotted disabled:opacity-50"
+                    className="text-xs text-brand hover:text-foreground underline decoration-dotted disabled:opacity-50"
                     onClick={onResetDefaults}
                     disabled={isGenerating}
                   >
@@ -316,10 +316,10 @@ export function CustomizeStep({
                 <StylePreview genre={genre} difficulty={difficulty} />
 
                 <div className="flex justify-center gap-2 text-xs">
-                  <span className="inline-flex items-center rounded-full bg-brand/80 border border-brand/80 px-3 py-1 text-brand font-medium">
+                  <span className="inline-flex items-center rounded-full bg-brand/80 border border-brand/80 px-3 py-1 text-brand-foreground font-medium">
                     Tone: {GENRE_LABEL[genre]}
                   </span>
-                  <span className="inline-flex items-center rounded-full bg-brand/80 border border-brand/80 px-3 py-1 text-brand font-medium">
+                  <span className="inline-flex items-center rounded-full bg-brand/80 border border-brand/80 px-3 py-1 text-brand-foreground font-medium">
                     Intensity: {DIFFICULTY_LABEL[difficulty]}
                   </span>
                 </div>
@@ -343,8 +343,8 @@ export function CustomizeStep({
                       disabled={isGenerating}
                       className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
                         imageQuality === 'fast'
-                          ? 'bg-brand text-white border-2 border-brand'
-                          : 'bg-brand/30 text-brand border-2 border-brand/50 hover:border-brand'
+                          ? 'bg-brand text-brand-foreground border-2 border-brand'
+                          : 'bg-brand/10 text-brand border-2 border-brand/30 hover:bg-brand/20 hover:border-brand/60'
                       }`}                      >
                       Explore quickly
                     </button>
@@ -354,8 +354,8 @@ export function CustomizeStep({
                       disabled={isGenerating}
                       className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
                         imageQuality === 'quality'
-                          ? 'bg-brand text-white border-2 border-brand'
-                          : 'bg-brand/30 text-brand border-2 border-brand/50 hover:border-brand'
+                          ? 'bg-brand text-brand-foreground border-2 border-brand'
+                          : 'bg-brand/10 text-brand border-2 border-brand/30 hover:bg-brand/20 hover:border-brand/60'
                       }`}                      >
                       Refined visuals
                     </button>
@@ -369,7 +369,7 @@ export function CustomizeStep({
                 </div>
 
                 <motion.div
-                  className="p-3 rounded-lg bg-brand/50 border border-brand/30 text-sm text-brand flex items-start gap-2"
+                  className="p-3 rounded-lg bg-brand/10 border border-brand/30 text-sm text-brand flex items-start gap-2"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2, duration: 0.3 }}

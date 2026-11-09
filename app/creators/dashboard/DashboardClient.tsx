@@ -89,7 +89,7 @@ export function DashboardClient({ initialSummary }: DashboardClientProps) {
                 </div>
                 <Link
                   href="/my-games"
-                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand"
+                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground transition-colors hover:bg-brand/90"
                 >
                   Open library
                   <ChevronRight className="w-4 h-4" />
@@ -265,7 +265,7 @@ function RecentGamesSection({ games }: { games: CreatorStudioSummary['games']['r
           <p className="text-sm text-muted-foreground mb-3">No games yet.</p>
           <Link
             href="/generate"
-            className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand"
+            className="inline-flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground transition-colors hover:bg-brand/90"
           >
             Create your first game
           </Link>

@@ -93,7 +93,7 @@ export default function MiniAppPage() {
             <header className="sticky top-0 z-[60] border-b border-white/5 bg-[#0a0a14]/60 backdrop-blur-2xl">
                 <div className="mx-auto flex max-w-2xl items-center justify-between px-6 py-4">
                     <div className="flex items-center space-x-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand font-black text-white italic text-lg shadow-[0_0_15px_rgba(168,85,247,0.4)]">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand font-black text-brand-foreground italic text-lg shadow-[0_0_15px_rgba(168,85,247,0.4)]">
                             W
                         </div>
                         <h1 className="text-md font-black tracking-tighter text-white uppercase italic hidden sm:block">writersarcade</h1>

@@ -413,9 +413,9 @@ export function PaymentFlow({
         className={cn(
           "w-full whitespace-normal rounded-lg py-4 text-sm font-bold transition-all duration-300 shadow-lg group sm:py-7 sm:text-base",
           isWrongChain ? "bg-card hover:bg-muted text-white"
-          : isCredits ? "bg-success hover:bg-success text-white shadow-success/20"
-          : isMUSD ? "bg-warning hover:bg-warning text-white shadow-warning/20"
-          : "bg-brand hover:bg-brand text-white shadow-brand/20"
+          : isCredits ? "bg-success hover:bg-success/90 text-success-foreground shadow-success/20"
+          : isMUSD ? "bg-warning hover:bg-warning/90 text-warning-foreground shadow-warning/20"
+          : "bg-brand hover:bg-brand/90 text-brand-foreground shadow-brand/20"
         )}
       >
         {isProcessing ? (

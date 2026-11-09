@@ -370,7 +370,7 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false }: DioramaView
             <div className="mt-3 flex items-center justify-center gap-4">
               <Link
                 href={`/games/${slug}?play=1`}
-                className="rounded-lg bg-success px-4 py-2 text-sm font-semibold text-black transition hover:bg-success"
+                className="rounded-lg bg-success px-4 py-2 text-sm font-semibold text-black transition hover:bg-success/90"
               >
                 Back to the comic
               </Link>

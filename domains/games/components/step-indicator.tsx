@@ -117,7 +117,7 @@ export function MobileStepNav({
               <div
                 className={`flex h-7 w-7 items-center justify-center rounded-lg transition-all duration-300 ${
                   idx === currentIdx
-                    ? 'bg-brand text-white shadow-[0_0_12px_rgba(168,85,247,0.4)] scale-110'
+                    ? 'bg-brand text-brand-foreground shadow-[0_0_12px_rgba(168,85,247,0.4)] scale-110'
                     : idx < currentIdx
                     ? 'bg-success/20 text-success'
                     : 'bg-muted text-muted-foreground/30'
@@ -146,7 +146,7 @@ export function MobileStepNav({
               animate={{ opacity: 1, scale: 1 }}
               whileTap={{ scale: 0.95 }}
               onClick={onForward}
-              className="inline-flex min-h-12 items-center gap-1.5 rounded-2xl bg-brand px-4 text-xs font-bold text-white shadow-lg shadow-brand/30"
+              className="inline-flex min-h-12 items-center gap-1.5 rounded-2xl bg-brand px-4 text-xs font-bold text-brand-foreground shadow-lg shadow-brand/30"
             >
               {forwardLabel}
               <ArrowRight className="h-4 w-4" />

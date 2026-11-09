@@ -262,7 +262,7 @@ export function HeroScreen({
                   <Button
                     onClick={onPaymentConfirm}
                     disabled={isPaying}
-                    className="flex-1 bg-brand hover:bg-brand"
+                    className="flex-1 bg-brand hover:bg-brand/90"
                   >
                     {isPaying ? (
                       <>

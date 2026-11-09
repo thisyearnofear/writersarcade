@@ -492,7 +492,7 @@ export function DailyChallengeView({ variant = 'arcade' }: DailyChallengeViewPro
                           href={d === challenge.day ? '/basepaint' : `/basepaint/day/${d}`}
                           className={`rounded-md border px-2.5 py-1 font-mono text-xs ${
                             d === challenge.day
-                              ? 'border-brand/50 bg-brand/40 text-brand'
+                              ? 'border-brand/50 bg-brand/20 text-brand'
                               : 'border-white/10 text-white/60 hover:border-brand/40 hover:text-brand'
                           }`}
                         >
