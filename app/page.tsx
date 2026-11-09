@@ -2,6 +2,7 @@ import { HomeClient } from './home-client'
 import { getTaggedPublicGamesWithClips } from '@/domains/games/services/public-games.service'
 import { GameDatabaseService } from '@/domains/games/services/game-database.service'
 import { prisma } from '@/lib/prisma'
+import { config } from '@/lib/config'
 import type { SampleGame } from '@/domains/games/components/hero-game-strip'
 import type { HeroTransformationProps } from '@/domains/games/components/hero-transformation'
 
@@ -46,12 +47,30 @@ export default async function HomePage() {
         .map((p) => p.imageUrl)
         .filter((u): u is string => Boolean(u))
       if (panelUrls.length >= 3) {
+        // Third visual beat: a real auto-captured world thumbnail, when the
+        // scene pipeline has produced one. Silent otherwise. The tile links
+        // to the scene's own game — the thumbnail may come from any story.
+        let worldImage: string | undefined
+        let worldHref: string | undefined
+        if (config.features.sceneDiorama) {
+          const scene = await prisma.gameScene.findFirst({
+            where: { status: 'completed', thumbnailUrl: { not: null } },
+            orderBy: { updatedAt: 'desc' },
+            select: { thumbnailUrl: true, game: { select: { slug: true } } },
+          })
+          if (scene?.thumbnailUrl) {
+            worldImage = scene.thumbnailUrl
+            worldHref = `/games/${scene.game.slug}/scene`
+          }
+        }
         featuredArtifact = {
           slug: sourceGame.slug,
           title: sourceGame.title,
           panels: panelUrls,
           author: sourceGame.authorParagraphUsername,
           publication: sourceGame.publicationName,
+          worldImage,
+          worldHref,
         }
       }
     }

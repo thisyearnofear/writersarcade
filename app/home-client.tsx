@@ -269,7 +269,9 @@ export function HomeClient({ initialSampleGames, initialStats, featuredArtifact 
                 .
               </p>
 
-              {gameCount !== null && gameCount.publicGames >= 10 && (
+              {/* Social proof — hidden until the numbers are worth showing;
+                  "2 plays" undermines more than it proves. */}
+              {gameCount !== null && gameCount.publicGames >= 10 && gameCount.totalPlays >= 10 && (
                 <p
                   className="text-sm text-muted-foreground mb-6 animate-fade-in [animation-delay:300ms] [animation-fill-mode:both] motion-reduce:animate-none"
                 >
@@ -482,10 +484,10 @@ export function HomeClient({ initialSampleGames, initialStats, featuredArtifact 
                 </div>
               </div>
               <Link
-                href="/studio"
+                href="/creators/dashboard"
                 className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-emerald-500"
               >
-                Create for insights <ArrowUpRight className="h-4 w-4" />
+                See creator insights <ArrowUpRight className="h-4 w-4" />
               </Link>
             </div>
           </section>

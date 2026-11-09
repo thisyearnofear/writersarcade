@@ -82,11 +82,11 @@ function supportingCopy(preview: DailyPreview | null): string {
   }
   if (preview.sourceType === 'dual') {
     return preview.live === false
-      ? `A featured writer’s piece staged in today’s BasePaint canvas${preview.canvasTheme ? ` (${preview.canvasTheme})` : ''}. Leaderboard scoring joins when setup finishes.`
+      ? `A featured writer’s piece staged in today’s BasePaint canvas${preview.canvasTheme ? ` (${preview.canvasTheme})` : ''}.`
       : `A featured writer’s piece inside today’s BasePaint canvas — same world, your secret hand of five encrypted modifiers.`
   }
   return preview.live === false
-    ? "Today's BasePaint canvas is ready to preview. Play in the arcade while the Daily Challenge leaderboard finishes setup."
+    ? "Today's BasePaint canvas is ready to preview — open it below."
     : "writersarcade Daily Challenge — today's BasePaint canvas, 5 encrypted modifier cards on Base. Same source, different story."
 }
 

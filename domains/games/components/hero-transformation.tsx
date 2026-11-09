@@ -7,6 +7,10 @@ export interface HeroTransformationProps {
   panels: string[] // panel image URLs, 3-5
   author?: string // Paragraph username
   publication?: string
+  /** Auto-captured 3D-world thumbnail — visual proof of the "walk through it" claim. */
+  worldImage?: string
+  /** Destination for the world tile — defaults to this game's scene page. */
+  worldHref?: string
 }
 
 /** Below this we render nothing — a two-panel "transformation" reads as a bug, not proof. */
@@ -24,7 +28,7 @@ const TILT = [-3, 1.5, -1, 2.5, -2]
  *
  * Server component — statically rendered with the page's first paint.
  */
-export function HeroTransformation({ slug, title, panels, author, publication }: HeroTransformationProps) {
+export function HeroTransformation({ slug, title, panels, author, publication, worldImage, worldHref }: HeroTransformationProps) {
   if (panels.length < MIN_PANELS) return null
 
   return (
@@ -80,9 +84,38 @@ export function HeroTransformation({ slug, title, panels, author, publication }:
             </li>
           ))}
         </ul>
+
+        {/* The world form — a real auto-captured scene thumbnail, when the
+            diorama feature has produced one. Extends the article→comic→world
+            promise into a third visual beat. */}
+        {worldImage && (
+          <>
+            <ArrowRight
+              className="h-5 w-5 shrink-0 rotate-90 text-muted-foreground/60 sm:rotate-0"
+              aria-hidden="true"
+            />
+            <Link
+              href={worldHref ?? `/games/${slug}/scene`}
+              title={`${title} — 3D world`}
+              className="group block shrink-0 overflow-hidden rounded-md border-2 border-white/90 shadow-md transition-all hover:-translate-y-1 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              <img
+                src={worldImage}
+                alt=""
+                width={72}
+                height={72}
+                loading="lazy"
+                decoding="async"
+                className="h-16 w-16 object-cover transition-transform duration-500 group-hover:scale-105 sm:h-[4.5rem] sm:w-[4.5rem]"
+              />
+              <span className="sr-only">{title} — 3D world</span>
+            </Link>
+          </>
+        )}
       </div>
       <p className="text-[11px] text-muted-foreground">
         From a real Paragraph article{author ? ` — @${author}` : ''}
+        {worldImage ? ' · walkable world included' : ''}
       </p>
     </div>
   )
