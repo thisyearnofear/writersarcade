@@ -11,6 +11,7 @@ overrides:
   '@rainbow-me/rainbowkit': 2.2.11
   viem: 2.48.8
   ox: 0.14.20
+  qr: 0.5.5
 
 patchedDependencies:
   '@gelatonetwork/relay-sdk@5.7.0':
@@ -7851,8 +7852,8 @@ packages:
   pure-rand@6.1.0:
     resolution: {integrity: sha512-bVWawvoZoBYpp6yIoQtQXHZjmz35RSVHnUOTefl8Vcjr8snTPY1wnpSPMWekcFwbxI6gtmT7rSYPFvz71ldiOA==}
 
-  qr@0.6.0:
-    resolution: {integrity: sha512-P23VoX7SipHALdiIYG+D+LT/6n22dNKwV92FAb3d+Nlki/5WisSsfLt0UDFz2XEBtuwrECTznvu+chKKFCSYhA==}
+  qr@0.5.5:
+    resolution: {integrity: sha512-iQBvKj7MRKO+co+MY0IZpyLO+ezvttxsmV86WywrgPuAmgBkv0pytyi03wourniSoPgzffeBW6cBgIkpqcvjTg==}
     engines: {node: '>= 20.19.0'}
 
   qrcode.react@4.2.0:
@@ -15900,7 +15901,7 @@ snapshots:
 
   cuer@0.0.3(react-dom@19.2.2(react@19.2.2))(react@19.2.2)(typescript@5.9.3):
     dependencies:
-      qr: 0.6.0
+      qr: 0.5.5
       react: 19.2.2
       react-dom: 19.2.2(react@19.2.2)
     optionalDependencies:
@@ -19260,7 +19261,7 @@ snapshots:
 
   pure-rand@6.1.0: {}
 
-  qr@0.6.0: {}
+  qr@0.5.5: {}
 
   qrcode.react@4.2.0(react@19.2.2):
     dependencies:

@@ -39,6 +39,9 @@ overrides:
   "@rainbow-me/rainbowkit": "2.2.11"
   viem: "2.48.8"
   ox: "0.14.20"
+  # cuer (rainbowkit's WalletConnect QR) passes border:0; qr@0.6.0 rejects
+  # border<=0 and crashes the whole wallet provider ("invalid border=0").
+  qr: "0.5.5"
 
 patchedDependencies:
   "@gelatonetwork/relay-sdk@5.7.0": "patches/@gelatonetwork__relay-sdk@5.7.0.patch"
