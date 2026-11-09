@@ -19,8 +19,8 @@ import {
   xverseWalletMezoMainnet,
   PassportProvider
 } from '@mezo-org/passport';
-import { walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
 import { WagmiProvider } from 'wagmi';
+import { walletConnectBaseOnly } from '@/lib/wallet/walletconnect';
 import {
   base,
   baseSepolia,
@@ -81,7 +81,7 @@ function getWagmiConfig() {
         },
         {
           groupName: 'Ethereum',
-          wallets: [({ projectId }) => walletConnectWallet({ projectId })],
+          wallets: [({ projectId }) => walletConnectBaseOnly({ projectId })],
         },
       ],
       multiInjectedProviderDiscovery: true,
