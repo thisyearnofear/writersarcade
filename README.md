@@ -4,12 +4,38 @@
 
 Turn Paragraph.xyz articles into interactive, mintable games. Players pay with writer coins, creators mint and share games, and revenue splits are enforced on-chain.
 
+## Prompt → World (`/worlds`)
+
+**Describe a place in plain language; walk into it as an explorable 3D world.**
+
+This is the browser-native prompt-to-3D surface. A visitor types a scene — *"an
+abandoned subway station where the trains still arrive on schedule, but for
+ghosts"* — and an AI set designer returns a walkable diorama: zones to visit,
+characters to talk to, objects that carry story, and a thread to follow to the
+end. No account, no wallet, no credits, no article required.
+
+Under the hood this is the same constrained-planner pipeline that powers the
+game worlds, wired to a standalone route:
+
+```
+plain-language prompt
+  → ScenePlannerService   (one structured-output call → validated ScenePlan)
+  → critique → revise     (a second pass scores and repairs the plan)
+  → GameScene-shaped JSON  (zones, objects, NPCs, interactables, objective)
+  → React Three Fiber      (walkable scene, click-to-inspect, talk-to-NPC)
+```
+
+The plan is a **contract, not a prompt**: the LLM composes inside a Zod schema
+with enums and bounds, so the renderer never has to guess. Design notes, and the
+prior art this draws on, are in [`docs/DIORAMA_RESEARCH.md`](docs/DIORAMA_RESEARCH.md).
+
 ## Daily Challenge (`/basepaint`)
 
 The shared daily ritual: a featured writer's Paragraph article staged inside today's BasePaint canvas — same world for everyone, unique encrypted Inco modifier hand per player, leaderboard. Implementation notes live in [`docs/BASEPAINT.md`](docs/BASEPAINT.md); hackathon submission history lives in [`docs/HACKATHONS_ARCHIVE.md`](docs/HACKATHONS_ARCHIVE.md).
 
 ## What it does
 
+- **Prompt → World** (`/worlds`): plain language → an explorable 3D diorama, browser-native, no account required
 - **Generate playable stories** from article URLs, marketing copy, or any pasted text (`/studio`)
 - **iMessage agent (Flynn)**: text a link to prose and get a playable story back, with optional natural-language tone
 - **No wallet required to start**: try one free story, then upgrade with credits or crypto
@@ -46,6 +72,9 @@ pnpm dev
 # Open http://localhost:3000
 ```
 
+To try the prompt-to-world surface without any keys beyond a model provider:
+`http://localhost:3000/worlds`.
+
 See [docs/DEVELOPMENT.md](./docs/DEVELOPMENT.md) for full setup.
 
 ## Documentation
@@ -54,6 +83,7 @@ See [docs/DEVELOPMENT.md](./docs/DEVELOPMENT.md) for full setup.
 |-----|---------|
 | [Architecture](./docs/ARCHITECTURE.md) | System design, tech stack, data models, smart contracts, Inco mechanics |
 | [Features](./docs/FEATURES.md) | Platform features, roadmap, integrations, video pipeline |
+| [Diorama research](./docs/DIORAMA_RESEARCH.md) | Prompt-to-3D design notes, prior art, schema decisions |
 | [Creation UX](./docs/CREATION_UX.md) | Creation contract, UX principles, feedback triage, mobile rules |
 | [Development](./docs/DEVELOPMENT.md) | Setup, commands, environment, API endpoints, troubleshooting |
 | [BasePaint](./docs/BASEPAINT.md) | Daily Challenge dual-source design, `lib/basepaint/` modules, ops routes |

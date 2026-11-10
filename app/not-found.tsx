@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import { Gamepad2, Home, Sparkles, MapPinOff } from 'lucide-react'
 import { Header } from '@/components/layout/header'

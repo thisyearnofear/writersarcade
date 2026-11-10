@@ -12,6 +12,81 @@ import { clampCopy } from './generation-prompts'
 
 const hexColor = z.string().regex(/^#[0-9A-Fa-f]{6}$/)
 
+/**
+ * Repair a raw LLM scene plan so it satisfies the schema.
+ *
+ * Structured-output providers do not reliably honour every constraint — fal's
+ * strict `json_schema` mode (Anthropic under the hood) accepted `y: -3` for a
+ * field constrained to `min(0)`, and returned six objectives for a field
+ * capped at five. A single violation fails the whole parse and throws away a
+ * 40-60s generation, so we normalise instead of rejecting.
+ *
+ * The repair is deliberately conservative: it clamps numbers into range,
+ * truncates over-long arrays, coerces unknown enum values to a safe default,
+ * and leaves everything else untouched. The schema the *model* sees is
+ * unchanged and still strict — this only affects how we parse what comes back.
+ */
+export function repairScenePlan(raw: unknown): unknown {
+  if (!raw || typeof raw !== 'object') return raw
+  const plan = raw as Record<string, any>
+
+  const clamp = (v: unknown, min: number, max: number, fallback: number): number => {
+    const n = typeof v === 'number' ? v : Number(v)
+    if (!Number.isFinite(n)) return fallback
+    return Math.min(max, Math.max(min, n))
+  }
+
+  // Palette — the sky needs at least two stops.
+  if (plan.palette && typeof plan.palette === 'object') {
+    const sky = Array.isArray(plan.palette.sky) ? plan.palette.sky.filter((c: unknown) => typeof c === 'string') : []
+    if (sky.length === 1) sky.push(sky[0])
+    plan.palette.sky = sky.slice(0, 3)
+  }
+
+  if (Array.isArray(plan.zones)) plan.zones = plan.zones.slice(0, 6)
+  if (Array.isArray(plan.npcs)) plan.npcs = plan.npcs.slice(0, 6)
+
+  if (Array.isArray(plan.objects)) {
+    plan.objects = plan.objects.slice(0, 40).map((obj: any) => {
+      if (!obj || typeof obj !== 'object') return obj
+      const position = obj.position && typeof obj.position === 'object' ? obj.position : {}
+      obj.position = {
+        x: clamp(position.x, -40, 40, 0),
+        y: clamp(position.y, 0, 20, 0),
+        z: clamp(position.z, -40, 40, 0),
+      }
+      obj.scale = clamp(obj.scale, 0.2, 8, 1)
+      obj.rotationY = clamp(obj.rotationY, 0, Math.PI * 2, 0)
+      // The model sometimes answers with a category where a primitive belongs.
+      if (!['box', 'cylinder', 'sphere', 'cone', 'plane', 'torus', 'icosahedron', 'dodecahedron'].includes(obj.primitive)) {
+        obj.primitive = 'box'
+      }
+      if (!['landmark', 'structure', 'prop', 'flora', 'npc', 'interactable'].includes(obj.category)) {
+        obj.category = 'prop'
+      }
+      return obj
+    })
+  }
+
+  // The explorable goal — cap objectives and keep them pointing at real objects.
+  if (plan.game && typeof plan.game === 'object') {
+    const ids = Array.isArray(plan.game.objectiveIds) ? plan.game.objectiveIds.filter((id: unknown) => typeof id === 'string') : []
+    const objectIds = new Set((plan.objects ?? []).map((o: any) => o?.id).filter(Boolean))
+    const resolved = ids.filter((id: string) => objectIds.has(id)).slice(0, 5)
+    if (resolved.length > 0) {
+      plan.game.objectiveIds = resolved
+    } else {
+      // No valid objectives — the world still renders, just without a goal.
+      delete plan.game
+    }
+  }
+
+  if (!['dawn', 'day', 'dusk', 'night'].includes(plan.mood)) plan.mood = 'day'
+  if (!['grass', 'sand', 'snow', 'stone', 'water', 'meadow', 'void'].includes(plan.ground)) plan.ground = 'grass'
+
+  return plan
+}
+
 const paletteSchema = z.object({
   sky: z.array(hexColor).min(2).max(3).describe('Sky gradient stops, horizon to zenith'),
   ground: hexColor,
@@ -84,6 +159,27 @@ export type ScenePlan = z.infer<typeof scenePlanSchema>
 export type SceneObject = z.infer<typeof sceneObjectSchema>
 
 /**
+ * Parse a raw LLM scene plan, repairing drift before validation.
+ *
+ * `Output.object` validates the model's JSON against the strict schema, so a
+ * single out-of-range number or over-long array would discard an entire
+ * generation. The repair pass normalises those first.
+ */
+export function parseScenePlan(raw: unknown): ScenePlan {
+  return scenePlanSchema.parse(repairScenePlan(raw))
+}
+
+/**
+ * The schema handed to `Output.object`.
+ *
+ * The preprocess runs before validation, so drift is repaired rather than
+ * rejected. Crucially the *model-facing* JSON Schema is unchanged — the AI
+ * SDK renders a `ZodEffects` wrapper using its inner schema, so the LLM still
+ * sees the strict min/max/enum constraints and is guided correctly.
+ */
+export const scenePlanOutputSchema = z.preprocess(repairScenePlan, scenePlanSchema)
+
+/**
  * Referential integrity the schema can't express: zoneIds and game.objectiveIds
  * must resolve, and assetKey must exist in the manifest — the LLM can
  * hallucinate either. Mutates and returns the plan. Shared by initial
@@ -149,7 +245,7 @@ Design ONE walkable scene that dramatizes the story plan's world. Rules:
 - assetKey: prefer a curated asset when one fits the object — available keys: ${sceneAssetVocabulary()}. primitive is the guaranteed fallback for anything without a match.
 - Give every object a color chosen from the palette (accent for landmarks/interactables, ground/fog tones for set dressing). Asset-keyed objects ignore color (they use their baked texture).`,
       prompt: `SOURCE MATERIAL:\n${context}\n\nOUTPUT a ScenePlan for a "${input.genre}" diorama (${input.subgenre ?? 'subgenre optional'}) titled "${input.title}".`,
-      output: Output.object({ schema: scenePlanSchema }),
+      output: Output.object({ schema: scenePlanOutputSchema }),
     })
 
     // Referential integrity the schema can't express: game.objectiveIds and

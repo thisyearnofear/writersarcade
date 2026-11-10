@@ -4,6 +4,11 @@ import { anthropic } from '@ai-sdk/anthropic';
 import type { UserAIPreferences } from '@/lib/user-ai-preferences.service';
 import type { LanguageModel } from 'ai';
 import { logger } from '@/lib/config';
+import {
+  getCompatibleFalModel,
+  hasFalConfiguration,
+  FAL_DEFAULT_MODEL,
+} from '@/lib/fal-provider';
 
 // Define a consistent interface for all AI models
 export type CompatibleLanguageModel = LanguageModel;
@@ -98,8 +103,11 @@ export function hasFeatherlessConfiguration(): boolean {
 // Priority: Venice (if configured) -> Gemini (if enabled) -> OpenAI
 // IMPORTANT: Always prefer Venice when available to avoid OpenAI quota issues
 export function getModel(modelName: string, userPreferences?: UserAIPreferences): CompatibleLanguageModel {
-  // If no model specified, use default priority: Venice -> Gemini -> OpenAI
+  // If no model specified, use default priority: fal -> Venice -> Gemini -> OpenAI
   if (!modelName) {
+    if (hasFalConfiguration()) {
+      return getCompatibleFalModel(FAL_DEFAULT_MODEL);
+    }
     if (hasVeniceConfiguration()) {
       return getCompatibleVeniceModel(VENICE_DEFAULT_MODEL);
     }
@@ -146,7 +154,10 @@ export function getModel(modelName: string, userPreferences?: UserAIPreferences)
     return getCompatibleAnthropicModel(modelName);
   }
 
-  // Default fallback - try Venice first if configured
+  // Default fallback - fal first (the only funded route), then Venice.
+  if (hasFalConfiguration()) {
+    return getCompatibleFalModel(modelName);
+  }
   if (hasVeniceConfiguration()) {
     return getCompatibleVeniceModel(VENICE_DEFAULT_MODEL);
   }
@@ -164,6 +175,11 @@ export function getModel(modelName: string, userPreferences?: UserAIPreferences)
  */
 export function getStructuredOutputModel(userPreferences?: UserAIPreferences): CompatibleLanguageModel {
   // Prefer a JSON-mode-capable provider over Venice.
+  // fal comes first: it is the only funded route, and it supports strict
+  // JSON-schema structured output (Anthropic under the hood).
+  if (hasFalConfiguration()) {
+    return getCompatibleFalModel(FAL_DEFAULT_MODEL);
+  }
   if (hasGeminiConfiguration(userPreferences)) {
     const apiKey = userPreferences?.googleApiKey || process.env.GOOGLE_API_KEY;
     if (apiKey) {
@@ -200,6 +216,11 @@ export function getJsonCapableModel(modelName: string, userPreferences?: UserAIP
       return getCompatibleGoogleModel(modelName, apiKey);
     }
     // Not configured — fall through to the structured-output default.
+  }
+  // fal serves JSON-schema structured output for every upstream model, so any
+  // named model routes through it rather than the un-funded Featherless route.
+  if (hasFalConfiguration()) {
+    return getCompatibleFalModel(modelName || FAL_DEFAULT_MODEL);
   }
   if (modelName.startsWith('gpt') && hasFeatherlessConfiguration()) {
     return getCompatibleFeatherlessModel(modelName);

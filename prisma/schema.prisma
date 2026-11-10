@@ -324,6 +324,37 @@ model GameScene {
   @@map("game_scenes")
 }
 
+// A standalone explorable 3D world generated from a plain-language prompt.
+//
+// Worlds are the "prompt-to-world" surface: no article, no game, no wallet,
+// no credits — a visitor describes a place and explores it in the browser.
+// Stored separately from Game so a world never appears in the arcade listings
+// and never implies a paid artifact.
+model World {
+  id     String @id @default(cuid())
+  slug   String @unique
+  title  String
+  // The visitor's prompt, verbatim — shown in the UI and echoed in metadata.
+  prompt String @db.Text
+  // Optional genre hint the visitor picked (mystery, fantasy, …).
+  genre String @default("exploration")
+
+  // 'pending' | 'completed' | 'failed'
+  status    String @default("pending")
+  // ScenePlannerService scenePlanSchema output — rendered directly.
+  sceneJson Json?
+  error     String? @db.Text
+
+  // Model that produced the plan, for provenance in the writeup.
+  model String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@map("worlds")
+}
+
 // Product funnel events are intentionally separate from gameplay resonance events.
 // Properties are sanitized at the analytics API boundary and contain no raw URLs,
 // wallet addresses, or article text.

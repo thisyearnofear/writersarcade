@@ -21,6 +21,7 @@ import {
   VENICE_STRUCTURED_MODEL,
   type CompatibleLanguageModel,
 } from '@/lib/ai-model-compatibility'
+import { getCompatibleFalModel, hasFalConfiguration, FAL_DEFAULT_MODEL } from '@/lib/fal-provider'
 import type { UserAIPreferences } from '@/lib/user-ai-preferences.service'
 import { logger } from '@/lib/config'
 
@@ -28,6 +29,7 @@ import { logger } from '@/lib/config'
  *  provider. `ogw_`/non-`sk-` tokens in OPENAI_API_KEY are gateway keys — not
  *  usable against api.openai.com without a base URL. */
 function hasUsableJsonProvider(userPreferences?: UserAIPreferences): boolean {
+  if (hasFalConfiguration()) return true
   if (hasGeminiConfiguration(userPreferences)) return true
   const featherlessKey = process.env.FEATHERLESS_API_KEY
   if (featherlessKey && /^sk-/.test(featherlessKey)) return true
@@ -48,6 +50,9 @@ export async function generateStructuredObject<T>(opts: {
   const { model: modelName = '', schema, prompt, userPreferences } = opts
 
   const attempts: CompatibleLanguageModel[] = []
+  if (hasFalConfiguration()) {
+    attempts.push(getCompatibleFalModel(modelName || FAL_DEFAULT_MODEL))
+  }
   if (hasUsableJsonProvider(userPreferences)) {
     attempts.push(getJsonCapableModel(modelName, userPreferences))
   }

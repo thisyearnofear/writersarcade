@@ -7,12 +7,23 @@ import { OrbitControls, Text, Billboard, useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 import type { ScenePlan, SceneObject } from '@/domains/games/services/scene-planner.service'
 import { getSceneAsset } from '@/lib/scene-assets'
+import { VRButton } from '@/components/scene/vr-button'
 
 interface DioramaViewerProps {
   scene: ScenePlan
   slug: string
   /** True when GameScene.thumbnailUrl already exists — skips auto-capture. */
   hasThumbnail?: boolean
+  /**
+   * Standalone mode — used by the prompt-to-world surface.
+   *
+   * A world has no owning game, so the comic links, the thumbnail save and
+   * the game-scoped progress key are all suppressed, and the VR affordance is
+   * surfaced instead.
+   */
+  standalone?: boolean
+  /** The prompt that produced this world, shown in the overlay. */
+  prompt?: string
 }
 
 type SelectedObject = { label: string; narrativeHook?: string; action?: string } | null
@@ -31,10 +42,10 @@ function loadVisited(slug: string): Set<string> {
 }
 
 const moodLighting = {
-  dawn: { ambient: 0.55, sun: 0.9, sunColor: '#ffd9b3', sunPos: [30, 18, -20] as const },
-  day: { ambient: 0.75, sun: 1.1, sunColor: '#fff4e0', sunPos: [40, 50, 30] as const },
-  dusk: { ambient: 0.4, sun: 0.7, sunColor: '#ff9a5c', sunPos: [-35, 12, -25] as const },
-  night: { ambient: 0.22, sun: 0.35, sunColor: '#7a9cc6', sunPos: [-20, 35, -30] as const },
+  dawn: { ambient: 0.7, sun: 1.0, sunColor: '#ffd9b3', sunPos: [30, 18, -20] as const },
+  day: { ambient: 0.85, sun: 1.2, sunColor: '#fff4e0', sunPos: [40, 50, 30] as const },
+  dusk: { ambient: 0.6, sun: 0.85, sunColor: '#ff9a5c', sunPos: [-35, 12, -25] as const },
+  night: { ambient: 0.45, sun: 0.5, sunColor: '#8fb0dc', sunPos: [-20, 35, -30] as const },
 } as const
 
 const categoryFallbackColor: Record<SceneObject['category'], string> = {
@@ -161,7 +172,7 @@ function SceneObjectMesh({ obj, color, isObjective, visited, onSelect }: {
   )
 }
 
-export function DioramaViewer({ scene, slug, hasThumbnail = false }: DioramaViewerProps) {
+export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = false, prompt }: DioramaViewerProps) {
   const [selected, setSelected] = useState<SelectedObject>(null)
   const [npcDialogue, setNpcDialogue] = useState<NpcDialogue>(null)
   const [visitedIds, setVisitedIds] = useState<Set<string>>(() => loadVisited(slug))
@@ -169,6 +180,7 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false }: DioramaView
   const [thumbState, setThumbState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [intro, setIntro] = useState(true)
   const glRef = useRef<THREE.WebGLRenderer | null>(null)
+  const [renderer, setRenderer] = useState<THREE.WebGLRenderer | null>(null)
   const lighting = moodLighting[scene.mood] ?? moodLighting.day
   const objectiveIds = useMemo(() => scene.game?.objectiveIds ?? [], [scene.game])
   const objectiveIdSet = useMemo(() => new Set(objectiveIds), [objectiveIds])
@@ -201,7 +213,7 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false }: DioramaView
 
   const captureThumbnail = async () => {
     const gl = glRef.current
-    if (!gl || thumbState === 'saving') return false
+    if (!gl || thumbState === 'saving' || standalone) return false
     setThumbState('saving')
     try {
       const dataUrl = gl.domElement.toDataURL('image/jpeg', 0.85)
@@ -221,7 +233,7 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false }: DioramaView
   // Auto-capture once per scene so every viewer generates the share artifact;
   // skipped entirely when a thumbnail already exists server-side.
   useEffect(() => {
-    if (hasThumbnail) return
+    if (hasThumbnail || standalone) return
     const t = setTimeout(() => { void captureThumbnail() }, 3000)
     return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -241,17 +253,99 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false }: DioramaView
       .map(([id, v]) => ({ id, label: v.label, x: v.x / v.count, z: v.z / v.count }))
   }, [scene.zones, scene.objects])
 
+  // Frame the camera on the actual content. A fixed camera leaves small
+  // scenes lost in the middle of the ground disc and large scenes cropped.
+  //
+  // The distance is solved in screen space: for a chosen view direction we
+  // project every object's bounds onto the camera's right/up axes and solve
+  // for the smallest distance that keeps them all inside the frustum. A
+  // bounding-sphere approximation over-shoots badly for flat scenes (a
+  // subway platform is long but low), which leaves the world tiny on screen.
+  const framing = useMemo(() => {
+    const points: THREE.Vector3[] = []
+    for (const obj of scene.objects) {
+      const half = Math.max(1.2, obj.scale * 0.9)
+      points.push(
+        new THREE.Vector3(obj.position.x, obj.position.y, obj.position.z),
+        new THREE.Vector3(obj.position.x + half, obj.position.y + half, obj.position.z + half),
+        new THREE.Vector3(obj.position.x - half, obj.position.y - half, obj.position.z - half),
+      )
+    }
+    if (points.length === 0) {
+      return {
+        center: new THREE.Vector3(0, 1.5, 0),
+        radius: 45,
+        position: new THREE.Vector3(26, 22, 30),
+      }
+    }
+
+    const box = new THREE.Box3().setFromPoints(points)
+    const center = box.getCenter(new THREE.Vector3())
+    // Keep the orbit target a little above the ground plane so the scene
+    // does not sit low in the frame.
+    center.y = Math.max(1.5, center.y)
+    // The ground disc is sized to the content — a fixed 45-unit disc makes a
+    // 20-unit scene look like a handful of props lost in an empty field.
+    const radius = Math.max(10, box.getSize(new THREE.Vector3()).length() / 2 + 6)
+
+    // View direction: 45° azimuth, ~38° elevation.
+    const dir = new THREE.Vector3(0.72, 0.62, 0.72).normalize()
+    const right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0)).normalize()
+    const up = new THREE.Vector3().crossVectors(right, dir).normalize()
+
+    const fov = 50
+    const aspect = 16 / 9
+    const tanV = Math.tan((fov / 2) * (Math.PI / 180))
+    const tanH = tanV * aspect
+
+    let distance = 12
+    for (const p of points) {
+      const v = p.clone().sub(center)
+      const x = Math.abs(v.dot(right))
+      const y = Math.abs(v.dot(up))
+      const z = v.dot(dir)
+      distance = Math.max(distance, z + x / tanH, z + y / tanV)
+    }
+    distance = Math.min(110, distance * 1.12)
+
+    return {
+      center,
+      radius,
+      position: center.clone().add(dir.multiplyScalar(distance)),
+    }
+  }, [scene.objects])
+
+  const camera = useMemo(
+    () => ({
+      position: [framing.position.x, framing.position.y, framing.position.z] as [number, number, number],
+      fov: 50,
+    }),
+    [framing],
+  )
+
+  // Keep the orbit target on the scene's centre rather than the origin.
+  const orbitTarget = useMemo<[number, number, number]>(
+    () => [framing.center.x, framing.center.y, framing.center.z],
+    [framing],
+  )
+
+  // Zone labels are world-space text, so they must scale with the scene or
+  // they swallow the frame once the camera moves in close. Text width grows
+  // with the label's length, so the size is kept small.
+  const labelSize = Math.max(0.16, Math.min(0.38, framing.radius * 0.016))
+  const labelHeight = Math.max(3, framing.radius * 0.42)
+
   return (
     <div className="relative h-full w-full">
       <Canvas
         shadows
-        camera={{ position: [26, 22, 30], fov: 50 }}
+        camera={camera}
         gl={{ antialias: true, preserveDrawingBuffer: true }}
-        onCreated={({ gl }) => { glRef.current = gl }}
+        onCreated={({ gl }) => { glRef.current = gl; setRenderer(gl) }}
         onPointerMissed={() => { setSelected(null); setNpcDialogue(null) }}
       >
         <color attach="background" args={[scene.palette.sky[0]]} />
-        <fog attach="fog" args={[scene.palette.fog, 40, 110]} />
+        <fog attach="fog" args={[scene.palette.fog, framing.radius * 2.4, framing.radius * 6]} />
         <ambientLight intensity={lighting.ambient} />
         <directionalLight
           position={[lighting.sunPos[0], lighting.sunPos[1], lighting.sunPos[2]]}
@@ -260,16 +354,26 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false }: DioramaView
           castShadow
           shadow-mapSize={[2048, 2048]}
         />
-        <hemisphereLight args={[scene.palette.sky[1] ?? scene.palette.sky[0], scene.palette.ground, 0.35]} />
+        <hemisphereLight args={[scene.palette.sky[1] ?? scene.palette.sky[0], scene.palette.ground, 0.55]} />
+        {/* Fill light from the opposite side so shadowed faces are readable. */}
+        <directionalLight
+          position={[-lighting.sunPos[0], lighting.sunPos[1] * 0.5, -lighting.sunPos[2]]}
+          intensity={lighting.sun * 0.35}
+          color={scene.palette.sky[1] ?? scene.palette.sky[0]}
+        />
 
-        {/* Ground disc */}
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]} receiveShadow>
-          <circleGeometry args={[45, 64]} />
-          <meshStandardMaterial color={scene.palette.ground} roughness={0.95} />
+        {/* Ground disc — sized to the scene so the world fills the frame */}
+        <mesh
+          rotation={[-Math.PI / 2, 0, 0]}
+          position={[framing.center.x, -0.02, framing.center.z]}
+          receiveShadow
+        >
+          <circleGeometry args={[framing.radius, 64]} />
+          <meshStandardMaterial color={scene.palette.ground} roughness={0.9} metalness={0} emissive={scene.palette.ground} emissiveIntensity={0.22} />
         </mesh>
         {/* Subtle horizon ring in the accent color */}
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}>
-          <ringGeometry args={[44.5, 45, 64]} />
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[framing.center.x, -0.01, framing.center.z]}>
+          <ringGeometry args={[framing.radius - 0.5, framing.radius, 64]} />
           <meshBasicMaterial color={scene.palette.accent} transparent opacity={0.25} side={THREE.DoubleSide} />
         </mesh>
 
@@ -306,7 +410,13 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false }: DioramaView
                 </mesh>
               )}
               <Billboard position={[0, 2.1, 0]}>
-                <Text fontSize={0.35} color="#ffffff" anchorX="center" outlineWidth={0.02} outlineColor="#000000">
+                <Text
+                  fontSize={labelSize * 0.6}
+                  color="#ffffff"
+                  anchorX="center"
+                  outlineWidth={labelSize * 0.03}
+                  outlineColor="#000000"
+                >
                   {npc.name}
                 </Text>
               </Billboard>
@@ -330,8 +440,15 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false }: DioramaView
         })}
 
         {zoneCentroids.map((z) => (
-          <Billboard key={z.id} position={[z.x, 6, z.z]}>
-            <Text fontSize={0.6} color={scene.palette.accent} anchorX="center" outlineWidth={0.03} outlineColor="#000000" fillOpacity={0.85}>
+          <Billboard key={z.id} position={[z.x, labelHeight, z.z]}>
+            <Text
+              fontSize={labelSize}
+              color={scene.palette.accent}
+              anchorX="center"
+              outlineWidth={labelSize * 0.05}
+              outlineColor="#000000"
+              fillOpacity={0.85}
+            >
               {z.label}
             </Text>
           </Billboard>
@@ -339,9 +456,9 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false }: DioramaView
 
         <OrbitControls
           makeDefault
-          target={[0, 1.5, 0]}
+          target={orbitTarget}
           minDistance={6}
-          maxDistance={80}
+          maxDistance={110}
           maxPolarAngle={Math.PI / 2.05}
           autoRotate={intro}
           autoRotateSpeed={0.7}
@@ -368,15 +485,26 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false }: DioramaView
             <p className="text-xs font-bold uppercase tracking-[0.25em] text-success">World complete</p>
             <p className="mt-1 font-serif text-xl text-white">You&rsquo;ve traced every thread of {scene.title}.</p>
             <div className="mt-3 flex items-center justify-center gap-4">
-              <Link
-                href={`/games/${slug}?play=1`}
-                className="rounded-lg bg-success px-4 py-2 text-sm font-semibold text-black transition hover:bg-success/90"
-              >
-                Back to the comic
-              </Link>
-              <Link href={`/games/${slug}/worlds`} className="text-sm text-white/60 hover:text-white">
-                All worlds →
-              </Link>
+              {standalone ? (
+                <Link
+                  href="/worlds"
+                  className="rounded-lg bg-success px-4 py-2 text-sm font-semibold text-black transition hover:bg-success/90"
+                >
+                  Describe another world
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href={`/games/${slug}?play=1`}
+                    className="rounded-lg bg-success px-4 py-2 text-sm font-semibold text-black transition hover:bg-success/90"
+                  >
+                    Back to the comic
+                  </Link>
+                  <Link href={`/games/${slug}/worlds`} className="text-sm text-white/60 hover:text-white">
+                    All worlds →
+                  </Link>
+                </>
+              )}
             </div>
             <button
               onClick={() => setCompleteDismissed(true)}
@@ -390,10 +518,13 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false }: DioramaView
 
       {/* Overlay UI */}
       <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-4">
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="text-xl font-bold text-white drop-shadow-lg">{scene.title}</h1>
             <p className="text-sm capitalize text-white/70 drop-shadow">{scene.mood} · {scene.ground}</p>
+            {standalone && prompt && (
+              <p className="mt-1 max-w-md text-xs italic text-white/60 drop-shadow">“{prompt}”</p>
+            )}
           </div>
           {scene.game && (
             <div className="pointer-events-auto rounded-lg bg-black/50 px-3 py-2 text-sm text-warning backdrop-blur">
@@ -426,13 +557,16 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false }: DioramaView
                 {selected.narrativeHook && <p className="mt-1 text-sm text-white/85">{selected.narrativeHook}</p>}
               </div>
             )}
-            <button
-              onClick={saveThumbnail}
-              disabled={thumbState === 'saving' || thumbState === 'saved'}
-              className="rounded-lg bg-white/10 px-3 py-2 text-xs font-medium text-white backdrop-blur hover:bg-white/20 disabled:opacity-50"
-            >
-              {thumbState === 'saving' ? 'Saving…' : thumbState === 'saved' ? 'Thumbnail saved' : thumbState === 'error' ? 'Retry thumbnail' : 'Save thumbnail'}
-            </button>
+            {!standalone && (
+              <button
+                onClick={saveThumbnail}
+                disabled={thumbState === 'saving' || thumbState === 'saved'}
+                className="rounded-lg bg-white/10 px-3 py-2 text-xs font-medium text-white backdrop-blur hover:bg-white/20 disabled:opacity-50"
+              >
+                {thumbState === 'saving' ? 'Saving…' : thumbState === 'saved' ? 'Thumbnail saved' : thumbState === 'error' ? 'Retry thumbnail' : 'Save thumbnail'}
+              </button>
+            )}
+            <VRButton renderer={renderer} />
           </div>
         </div>
       </div>

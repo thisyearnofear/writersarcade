@@ -9,6 +9,7 @@ import type {
 } from '../types'
 import type { UserAIPreferences } from '@/lib/user-ai-preferences.service'
 import { getModel, hasGeminiConfiguration, hasVeniceConfiguration, hasFeatherlessConfiguration, VENICE_DEFAULT_MODEL, FEATHERLESS_MODEL } from '@/lib/ai-model-compatibility'
+import { hasFalConfiguration, FAL_DEFAULT_MODEL, FAL_FAST_MODEL } from '@/lib/fal-provider'
 import { generateStructuredObject } from '@/lib/ai-structured'
 import { isFeatureEnabled, logger } from '@/lib/config'
 import { StoryPlannerService } from './story-planner.service'
@@ -371,6 +372,8 @@ export class GameAIService {
 
   private static fallbackModelNames(primary: string, userPreferences?: UserAIPreferences): string[] {
     const names: string[] = []
+    if (primary !== FAL_DEFAULT_MODEL && hasFalConfiguration()) names.push(FAL_DEFAULT_MODEL)
+    if (primary !== FAL_FAST_MODEL && hasFalConfiguration()) names.push(FAL_FAST_MODEL)
     if (primary !== VENICE_DEFAULT_MODEL && hasVeniceConfiguration()) names.push(VENICE_DEFAULT_MODEL)
     if (primary !== 'gemini-2.0-flash' && hasGeminiConfiguration(userPreferences)) names.push('gemini-2.0-flash')
     if (primary !== FEATHERLESS_MODEL && hasFeatherlessConfiguration()) names.push(FEATHERLESS_MODEL)
