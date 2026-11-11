@@ -1,0 +1,43 @@
+{
+  "title": "The Missing Ship",
+  "game": {
+    "goal": "Find the three pieces of evidence that reveal the Aurora's fate",
+    "objectiveIds": ["cargo-barrel", "missing-log", "broken-crate", "ships-wheel"]
+  },
+  "objects": [
+    {
+      "id": "cargo-barrel",
+      "label": "Cargo Barrel",
+      "interactable": {
+        "narrativeHook": "Stencilled 'Aurora'. The tide left it above the cliff path."
+      }
+    },
+    {
+      "id": "broken-crate",
+      "label": "Broken Crate",
+      "interactable": {
+        "narrativeHook": "   "
+      }
+    },
+    {
+      "id": "ships-wheel",
+      "label": "Ship's Wheel",
+      "interactable": {
+        "narrativeHook": "The wheel is splintered, and the nameplate is still readable."
+      }
+    }
+  ],
+  "npcs": [
+    {
+      "id": "keeper",
+      "name": "The Lighthouse Keeper",
+      "persona": "Speaks softly, as if the fog might answer.",
+      "dilemma": "Relight the beam, or keep the cliff dark so the wreck stays hidden."
+    },
+    {
+      "id": "harbormaster",
+      "name": "Harbormaster Chen",
+      "persona": "Counts every ship that fails to make the harbor."
+    }
+  ]
+}
