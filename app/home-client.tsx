@@ -30,6 +30,7 @@ import {
   ArrowUpRight,
   ChevronDown,
   Sparkles,
+  Box,
 } from 'lucide-react'
 import { GridSkeleton } from '@/components/effects'
 import { WRITER_COINS } from '@/lib/writer-coins'
@@ -339,6 +340,13 @@ export function HomeClient({ initialSampleGames, initialStats, featuredArtifact,
                 >
                   New here?
                 </button>
+                <Link
+                  href="/worlds"
+                  className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
+                >
+                  <Box className="h-3.5 w-3.5" />
+                  Or skip the article — describe a place and walk into it
+                </Link>
               </motion.div>
 
               {/* Social proof that is also a way in: each chip leads to the writer's

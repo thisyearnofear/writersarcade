@@ -14,6 +14,9 @@ ghosts"* — and an AI set designer returns a walkable diorama: zones to visit,
 characters to talk to, objects that carry story, and a thread to follow to the
 end. No account, no wallet, no credits, no article required.
 
+🎬 [Demo video (38s)](docs/demo/writersarcade-prompt-to-world.mp4) ·
+[Hackathon writeup](docs/HACKATHON_VR.md)
+
 Under the hood this is the same constrained-planner pipeline that powers the
 game worlds, wired to a standalone route:
 
