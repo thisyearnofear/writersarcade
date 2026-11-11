@@ -13,6 +13,57 @@ import { clampCopy } from './generation-prompts'
 const hexColor = z.string().regex(/^#[0-9A-Fa-f]{6}$/)
 
 /**
+ * Word → asset keys, built from the manifest's labels.
+ *
+ * Used to recover an asset for objects the planner left unassigned: the
+ * model names the thing ("safety rail", "exit sign") but omits the key, and
+ * an unnamed object renders as a coloured primitive. Matching on the label
+ * recovers most of those without inventing anything.
+ */
+const ASSET_WORD_INDEX: Map<string, string[]> = (() => {
+  const index = new Map<string, string[]>()
+  for (const [key, def] of Object.entries(SCENE_ASSETS)) {
+    for (const word of def.label.toLowerCase().split(/[^a-z]+/)) {
+      if (word.length < 4) continue
+      const list = index.get(word)
+      if (list) list.push(key)
+      else index.set(word, [key])
+    }
+  }
+  return index
+})()
+
+/** Words too generic to match on — they would fire on almost any label. */
+const GENERIC_ASSET_WORDS = new Set(['thing', 'place', 'object', 'item', 'piece', 'part'])
+
+/**
+ * Best asset key for an object the planner left unassigned, or undefined.
+ *
+ * Prefers a candidate whose categories include the object's own category, so
+ * a "structure" does not get handed a decorative prop.
+ */
+function inferAssetKey(label: unknown, category: string | undefined): string | undefined {
+  if (typeof label !== 'string') return undefined
+  const words = label.toLowerCase().split(/[^a-z]+/).filter((w) => w.length >= 4 && !GENERIC_ASSET_WORDS.has(w))
+  for (const word of words) {
+    const candidates = ASSET_WORD_INDEX.get(word)
+    if (!candidates?.length) continue
+    // Prefer the simplest label: "street lamp" over "double street lamp".
+    const ranked = [...candidates].sort(
+      (a, b) => SCENE_ASSETS[a].label.split(' ').length - SCENE_ASSETS[b].label.split(' ').length
+    )
+    if (category) {
+      const exact = ranked.find((key) => SCENE_ASSETS[key].categories.includes(category as any))
+      if (exact) return exact
+    }
+    // Fall back to a prop — the most permissive category.
+    const generic = ranked.find((key) => SCENE_ASSETS[key].categories.includes('prop'))
+    return generic ?? ranked[0]
+  }
+  return undefined
+}
+
+/**
  * Repair a raw LLM scene plan so it satisfies the schema.
  *
  * Structured-output providers do not reliably honour every constraint — fal's
@@ -23,8 +74,9 @@ const hexColor = z.string().regex(/^#[0-9A-Fa-f]{6}$/)
  *
  * The repair is deliberately conservative: it clamps numbers into range,
  * truncates over-long arrays, coerces unknown enum values to a safe default,
- * and leaves everything else untouched. The schema the *model* sees is
- * unchanged and still strict — this only affects how we parse what comes back.
+ * recovers a missing asset key from the object's own name, and leaves
+ * everything else untouched. The schema the *model* sees is unchanged and
+ * still strict — this only affects how we parse what comes back.
  */
 export function repairScenePlan(raw: unknown): unknown {
   if (!raw || typeof raw !== 'object') return raw
@@ -63,6 +115,15 @@ export function repairScenePlan(raw: unknown): unknown {
       }
       if (!['landmark', 'structure', 'prop', 'flora', 'npc', 'interactable'].includes(obj.category)) {
         obj.category = 'prop'
+      }
+      // Recover a missing OR invalid asset key from the object's own name, so
+      // an unassigned object renders as a real model instead of a primitive.
+      // (An invalid key would otherwise be dropped later by sanitizeScenePlan,
+      // losing the chance to recover it.)
+      if (!obj.assetKey || !SCENE_ASSETS[obj.assetKey]) {
+        const inferred = inferAssetKey(obj.label, obj.category)
+        if (inferred) obj.assetKey = inferred
+        else if (obj.assetKey && !SCENE_ASSETS[obj.assetKey]) delete obj.assetKey
       }
       return obj
     })

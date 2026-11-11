@@ -60,14 +60,22 @@ which is repairable.
 honour numeric bounds. Anthropic (via fal) returned `y: -3` for a field
 capped at `min(0)`, and six objectives for a field capped at five. Each
 violation failed the whole parse and discarded a 40–60 second generation. A
-repair pass now clamps numbers, truncates arrays, and coerces unknown enum
-values *before* validation — while the schema the model sees stays strict,
-so the model is still guided correctly.
+repair pass now clamps numbers, truncates arrays, coerces unknown enum
+values, and recovers a missing asset key from the object's own name —
+*before* validation — while the schema the model sees stays strict, so the
+model is still guided correctly.
 
 **3. Derive the goal from the premise.** The planner is instructed to emit a
 concrete objective from the story's central conflict, with
 `objectiveIds` pointing at clickable objects. This is what separates a
 diorama from a place: there is something to *do*.
+
+**4. Measure, don't assume.** Our first two asset packs looked like they
+would fix the "everything is a coloured box" problem. Measuring across 32
+generated worlds showed they did not — coverage moved 55% → 51%. The gain was
+diversity (40 → 67 distinct models used), not coverage. It took a
+measurement-driven fix (the label-matching recovery pass) to move the number
+that actually mattered.
 
 ## Engineering notes
 
@@ -86,9 +94,13 @@ an HDR — it works offline and in a sandboxed judging environment. Camera
 distance is solved in screen space against the real viewport aspect, with
 percentile clipping so one stray prop cannot shrink the scene.
 
-**Assets.** Seven Kenney CC0 packs, 303 models. Coverage of generated
-scenes rose from ~55% to ~74% of objects using a real model rather than a
-fallback primitive.
+**Assets.** Seven Kenney CC0 packs, 303 models. Adding the packs alone did
+*not* raise coverage — the model simply had more to choose from and used it
+(67 distinct models instead of 40), but the share of objects using a real
+model stayed at ~53%. The fix was a recovery pass: when the planner names an
+object but omits its asset key ("safety rail", "exit sign"), we match the
+label against the manifest and recover the key. Coverage went 53% → 61%, and
+an object the model hallucinated a key for is replaced rather than dropped.
 
 **Loading states.** Generation takes 40–60 seconds. Instead of a spinner we
 flick through a title reel of real artefact covers — comics, worlds, films
@@ -101,10 +113,11 @@ Live and working: plain language → explorable 3D world with a goal, an
 objective, interactive objects and talking characters; the same source
 becoming an interactive comic; a shared title-reel loading state; VR entry.
 
-Next: richer asset coverage (procedurally forged models for subjects with no
-CC0 equivalent), per-object voice, and letting a world become a film's
-shot list. The article → comic → world → film pipeline already exists and
-now shares one loading language and one artefact vocabulary.
+Next: procedurally forged models for subjects with no CC0 equivalent (the
+remaining ~39% of objects are still primitives), per-object voice, and
+letting a world become a film's shot list. The article → comic → world →
+film pipeline already exists and now shares one loading language and one
+artefact vocabulary.
 
 ## Licence and attribution
 
