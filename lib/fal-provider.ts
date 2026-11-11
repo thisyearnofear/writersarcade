@@ -5,9 +5,10 @@ import type { CompatibleLanguageModel } from '@/lib/ai-model-compatibility'
  * fal.ai `any-llm` provider.
  *
  * fal fronts many upstream models (OpenAI, Anthropic, Google, Meta, …) behind
- * one tiny HTTP protocol. It is the only funded LLM route in this project
- * today — the Featherless, OpenAI, Venice, Anthropic and Parallel keys are all
- * rejected at the provider — so it has to carry the whole product.
+ * one tiny HTTP protocol. It was the only funded LLM route when this provider
+ * was written — SandBase (`lib/sandbase-provider.ts`) is now the priority
+ * route and fal is the fallback — but it still has to carry structured output
+ * whenever SandBase is unconfigured.
  *
  * `any-llm` is NOT OpenAI-compatible, so we borrow the OpenAI provider from
  * the AI SDK and translate the wire format in a custom `fetch`:

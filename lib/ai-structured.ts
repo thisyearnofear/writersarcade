@@ -22,6 +22,11 @@ import {
   type CompatibleLanguageModel,
 } from '@/lib/ai-model-compatibility'
 import { getCompatibleFalModel, hasFalConfiguration, FAL_DEFAULT_MODEL } from '@/lib/fal-provider'
+import {
+  getCompatibleSandbaseModel,
+  hasSandbaseConfiguration,
+  SANDBASE_DEFAULT_MODEL,
+} from '@/lib/sandbase-provider'
 import type { UserAIPreferences } from '@/lib/user-ai-preferences.service'
 import { logger } from '@/lib/config'
 
@@ -29,6 +34,7 @@ import { logger } from '@/lib/config'
  *  provider. `ogw_`/non-`sk-` tokens in OPENAI_API_KEY are gateway keys — not
  *  usable against api.openai.com without a base URL. */
 function hasUsableJsonProvider(userPreferences?: UserAIPreferences): boolean {
+  if (hasSandbaseConfiguration()) return true
   if (hasFalConfiguration()) return true
   if (hasGeminiConfiguration(userPreferences)) return true
   const featherlessKey = process.env.FEATHERLESS_API_KEY
@@ -50,6 +56,9 @@ export async function generateStructuredObject<T>(opts: {
   const { model: modelName = '', schema, prompt, userPreferences } = opts
 
   const attempts: CompatibleLanguageModel[] = []
+  if (hasSandbaseConfiguration()) {
+    attempts.push(getCompatibleSandbaseModel(modelName || SANDBASE_DEFAULT_MODEL))
+  }
   if (hasFalConfiguration()) {
     attempts.push(getCompatibleFalModel(modelName || FAL_DEFAULT_MODEL))
   }

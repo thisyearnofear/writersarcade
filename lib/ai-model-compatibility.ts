@@ -9,6 +9,11 @@ import {
   hasFalConfiguration,
   FAL_DEFAULT_MODEL,
 } from '@/lib/fal-provider';
+import {
+  getCompatibleSandbaseModel,
+  hasSandbaseConfiguration,
+  SANDBASE_DEFAULT_MODEL,
+} from '@/lib/sandbase-provider';
 
 // Define a consistent interface for all AI models
 export type CompatibleLanguageModel = LanguageModel;
@@ -103,8 +108,11 @@ export function hasFeatherlessConfiguration(): boolean {
 // Priority: Venice (if configured) -> Gemini (if enabled) -> OpenAI
 // IMPORTANT: Always prefer Venice when available to avoid OpenAI quota issues
 export function getModel(modelName: string, userPreferences?: UserAIPreferences): CompatibleLanguageModel {
-  // If no model specified, use default priority: fal -> Venice -> Gemini -> OpenAI
+  // If no model specified, use default priority: sandbase -> fal -> Venice -> Gemini -> OpenAI
   if (!modelName) {
+    if (hasSandbaseConfiguration()) {
+      return getCompatibleSandbaseModel(SANDBASE_DEFAULT_MODEL);
+    }
     if (hasFalConfiguration()) {
       return getCompatibleFalModel(FAL_DEFAULT_MODEL);
     }
@@ -154,7 +162,10 @@ export function getModel(modelName: string, userPreferences?: UserAIPreferences)
     return getCompatibleAnthropicModel(modelName);
   }
 
-  // Default fallback - fal first (the only funded route), then Venice.
+  // Default fallback - sandbase first (the funded priority route), then fal.
+  if (hasSandbaseConfiguration()) {
+    return getCompatibleSandbaseModel(modelName);
+  }
   if (hasFalConfiguration()) {
     return getCompatibleFalModel(modelName);
   }
@@ -175,8 +186,13 @@ export function getModel(modelName: string, userPreferences?: UserAIPreferences)
  */
 export function getStructuredOutputModel(userPreferences?: UserAIPreferences): CompatibleLanguageModel {
   // Prefer a JSON-mode-capable provider over Venice.
-  // fal comes first: it is the only funded route, and it supports strict
-  // JSON-schema structured output (Anthropic under the hood).
+  // SandBase first — it is the funded priority route and its openai/* and
+  // google/* models enforce response_format strictly.
+  if (hasSandbaseConfiguration()) {
+    return getCompatibleSandbaseModel(SANDBASE_DEFAULT_MODEL);
+  }
+  // fal comes next: it supports strict JSON-schema structured output
+  // (Anthropic under the hood).
   if (hasFalConfiguration()) {
     return getCompatibleFalModel(FAL_DEFAULT_MODEL);
   }
@@ -216,6 +232,12 @@ export function getJsonCapableModel(modelName: string, userPreferences?: UserAIP
       return getCompatibleGoogleModel(modelName, apiKey);
     }
     // Not configured — fall through to the structured-output default.
+  }
+  // SandBase is the funded priority route; its openai/* and google/* models
+  // enforce response_format strictly (anthropic/* ids are redirected inside
+  // resolveSandbaseModel because they ignore it).
+  if (hasSandbaseConfiguration()) {
+    return getCompatibleSandbaseModel(modelName || SANDBASE_DEFAULT_MODEL);
   }
   // fal serves JSON-schema structured output for every upstream model, so any
   // named model routes through it rather than the un-funded Featherless route.
