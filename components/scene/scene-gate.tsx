@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { TitleSequence, type TitleCard } from '@/components/generation/title-sequence'
 
 interface SceneGateProps {
   slug: string
@@ -27,6 +28,21 @@ export function SceneGate({ slug, status, error, bundled = false }: SceneGatePro
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [phase, setPhase] = useState(0)
+  const [titleCards, setTitleCards] = useState<TitleCard[]>([])
+
+  // Title cards for the loading reel — real artefact covers.
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/title-cards')
+      .then((r) => r.json())
+      .then((body: { success?: boolean; data?: { cards?: TitleCard[] } }) => {
+        if (!cancelled && body?.success && body.data?.cards?.length) {
+          setTitleCards(body.data.cards)
+        }
+      })
+      .catch(() => { /* reel falls back to typographic cards */ })
+    return () => { cancelled = true }
+  }, [])
 
   const isPending = status === 'pending' || busy
   useEffect(() => {
@@ -61,8 +77,10 @@ export function SceneGate({ slug, status, error, bundled = false }: SceneGatePro
     <div className="flex h-full flex-col items-center justify-center gap-4 p-8 text-center">
       {isPending ? (
         <>
-          <div className="h-10 w-10 animate-spin rounded-full border-2 border-warning border-t-transparent" />
-          <p className="text-white/80">{GEN_PHASES[phase]}</p>
+          <div className="w-full max-w-xl">
+            <TitleSequence cards={titleCards} intervalMs={1800} />
+          </div>
+          <p className="mt-1 text-sm text-white/80">{GEN_PHASES[phase]}</p>
           <p className="text-xs text-white/50">Usually under a minute</p>
           <button onClick={() => router.refresh()} className="text-sm text-warning underline">Refresh</button>
         </>

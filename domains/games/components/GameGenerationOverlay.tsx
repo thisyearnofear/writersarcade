@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, useMemo } from 'react'
 import { Loader2, Sparkles, Gamepad2, X, Lightbulb, BookOpen, Quote, CreditCard, Search, FileText, Save } from 'lucide-react'
 import { ProgressBar } from '@/domains/games/components/ProgressBar'
 import { useOverlay, OverlayPortal } from '@/components/ui/overlay'
+import { TitleSequence, type TitleCard } from '@/components/generation/title-sequence'
 
 type LoadingStep = 'payment' | 'validate' | 'extract' | 'generate' | 'save'
 type StepStatus = 'pending' | 'in-progress' | 'completed' | 'error'
@@ -74,8 +75,26 @@ export function GameGenerationOverlay({
   const [tipIndex, setTipIndex] = useState(0)
   const [showSlowWarning, setShowSlowWarning] = useState(false)
   const [showStallWarning, setShowStallWarning] = useState(false)
+  const [titleCards, setTitleCards] = useState<TitleCard[]>([])
   const slowTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const stallTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Title cards for the loading reel — real artefact covers from the corpus.
+  // Fetched once when the overlay opens; failures fall back to typographic
+  // cards inside <TitleSequence>.
+  useEffect(() => {
+    if (!isOpen) return
+    let cancelled = false
+    fetch('/api/title-cards')
+      .then((r) => r.json())
+      .then((body: { success?: boolean; data?: { cards?: TitleCard[] } }) => {
+        if (!cancelled && body?.success && body.data?.cards?.length) {
+          setTitleCards(body.data.cards)
+        }
+      })
+      .catch(() => { /* reel falls back to typographic cards */ })
+    return () => { cancelled = true }
+  }, [isOpen])
 
   const backgroundParticles = useMemo(() => {
     let seed = 67890
@@ -175,6 +194,11 @@ export function GameGenerationOverlay({
                   {genre} · {difficulty}
                 </p>
               </div>
+
+              {/* Title sequence — real artefact covers flicking past while the
+                  article is turned into a story. Gives the long wait a sense
+                  of momentum and previews what the platform makes. */}
+              <TitleSequence cards={titleCards} intervalMs={1800} />
 
               {/* Progress bar */}
               <div>

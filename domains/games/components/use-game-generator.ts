@@ -45,6 +45,13 @@ interface UseGameGeneratorOptions {
   onGameGenerated?: (game: { id: string; title: string; slug: string; genre: string }) => void
   initialUrl?: string
   initialSourceKind?: 'article' | 'text'
+  /**
+   * Prefilled source text for the "paste your copy" path.
+   *
+   * Used when a 3D world is turned into a comic: the world's prompt becomes
+   * the comic's source, so the artefacts stay one story.
+   */
+  initialSourceText?: string
   initialPaymentPath?: 'musd' | 'writercoin'
   initialMode?: 'story' | 'wordle'
   initialBasePaintDay?: number
@@ -63,6 +70,7 @@ export function useGameGenerator({
   onGameGenerated,
   initialUrl,
   initialSourceKind,
+  initialSourceText,
   initialPaymentPath,
   initialMode,
   initialBasePaintDay,
@@ -152,6 +160,10 @@ export function useGameGenerator({
   useEffect(() => {
     if (initialUrl) store.setUrl(initialUrl)
     if (initialSourceKind) store.setSourceKind(initialSourceKind)
+    if (initialSourceText) {
+      store.setSourceKind('text')
+      store.setSourceText(initialSourceText)
+    }
     if (initialPaymentPath) store.setPaymentPath(initialPaymentPath)
     if (initialMode) store.setMode(initialMode)
     if (initialPaymentPath === 'writercoin') store.toggleAdvancedPayment()

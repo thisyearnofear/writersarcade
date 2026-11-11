@@ -3,7 +3,7 @@
 import { Component, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Text, Billboard, useGLTF } from '@react-three/drei'
+import { OrbitControls, Text, Billboard, useGLTF, Environment, Lightformer, ContactShadows } from '@react-three/drei'
 import * as THREE from 'three'
 import type { ScenePlan, SceneObject } from '@/domains/games/services/scene-planner.service'
 import { getSceneAsset } from '@/lib/scene-assets'
@@ -42,10 +42,10 @@ function loadVisited(slug: string): Set<string> {
 }
 
 const moodLighting = {
-  dawn: { ambient: 0.7, sun: 1.0, sunColor: '#ffd9b3', sunPos: [30, 18, -20] as const },
-  day: { ambient: 0.85, sun: 1.2, sunColor: '#fff4e0', sunPos: [40, 50, 30] as const },
-  dusk: { ambient: 0.6, sun: 0.85, sunColor: '#ff9a5c', sunPos: [-35, 12, -25] as const },
-  night: { ambient: 0.45, sun: 0.5, sunColor: '#8fb0dc', sunPos: [-20, 35, -30] as const },
+  dawn: { ambient: 0.9, sun: 1.2, sunColor: '#ffd9b3', sunPos: [30, 18, -20] as const },
+  day: { ambient: 1.05, sun: 1.4, sunColor: '#fff4e0', sunPos: [40, 50, 30] as const },
+  dusk: { ambient: 0.85, sun: 1.05, sunColor: '#ff9a5c', sunPos: [-35, 12, -25] as const },
+  night: { ambient: 0.7, sun: 0.75, sunColor: '#a8c4e8', sunPos: [-20, 35, -30] as const },
 } as const
 
 const categoryFallbackColor: Record<SceneObject['category'], string> = {
@@ -61,6 +61,23 @@ function hashHue(id: string): number {
   let h = 0
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0
   return Math.abs(h) % 360
+}
+
+/**
+ * Lighten a hex colour toward white by `amount` (0-1).
+ *
+ * Night and dusk palettes are legitimately near-black; used raw, large
+ * surfaces (the ground disc) swallow the whole lower half of the frame.
+ */
+function liftColor(hex: string, amount: number): string {
+  const m = /^#([0-9a-f]{6})$/i.exec(hex)
+  if (!m) return hex
+  const num = parseInt(m[1], 16)
+  const r = (num >> 16) & 0xff
+  const g = (num >> 8) & 0xff
+  const b = num & 0xff
+  const lift = (c: number) => Math.round(c + (255 - c) * amount)
+  return `#${((lift(r) << 16) | (lift(g) << 8) | lift(b)).toString(16).padStart(6, '0')}`
 }
 
 function objectColor(obj: SceneObject, palette: ScenePlan['palette']): string {
@@ -118,17 +135,102 @@ function PrimitiveShape({ obj, color, isObjective, visited, onSelect }: {
     onPointerOver: clickable ? () => { document.body.style.cursor = 'pointer' } : undefined,
     onPointerOut: clickable ? () => { document.body.style.cursor = 'default' } : undefined,
   }
+  const material = (
+    <meshStandardMaterial
+      color={color}
+      emissive={emissive}
+      emissiveIntensity={emissiveIntensity}
+      roughness={0.72}
+      metalness={0.05}
+    />
+  )
+
+  // Primitives are the fallback when no curated asset matches. Proportions
+  // vary by category so a fallback scene reads as designed blocks rather than
+  // a row of identical unit cubes.
+  //
+  // Dimensions are deliberately near-unit: the parent group already applies
+  // `obj.scale`, so large base dimensions would compound into oversized
+  // geometry (a "landmark" cylinder at scale 3 became a 13-unit tower).
+  const dims = (() => {
+    switch (obj.category) {
+      case 'landmark': return { w: 0.9, h: 1.7, d: 0.9 }
+      case 'structure': return { w: 1.0, h: 0.9, d: 1.0 }
+      case 'flora': return { w: 0.3, h: 1.0, d: 0.3 }
+      case 'npc': return { w: 0.3, h: 0.8, d: 0.3 }
+      case 'interactable': return { w: 0.45, h: 0.45, d: 0.45 }
+      default: return { w: 0.55, h: 0.55, d: 0.55 }
+    }
+  })()
 
   return (
     <>
-      {obj.primitive === 'box' && <mesh {...common}><boxGeometry args={[1, 1, 1]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={emissiveIntensity} /></mesh>}
-      {obj.primitive === 'cylinder' && <mesh {...common}><cylinderGeometry args={[0.5, 0.5, 1, 20]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={emissiveIntensity} /></mesh>}
-      {obj.primitive === 'sphere' && <mesh {...common}><sphereGeometry args={[0.5, 24, 24]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={emissiveIntensity} /></mesh>}
-      {obj.primitive === 'cone' && <mesh {...common}><coneGeometry args={[0.5, 1, 20]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={emissiveIntensity} /></mesh>}
-      {obj.primitive === 'plane' && <mesh {...common} rotation={[-Math.PI / 2, 0, 0]}><planeGeometry args={[2, 2]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={emissiveIntensity} side={THREE.DoubleSide} /></mesh>}
-      {obj.primitive === 'torus' && <mesh {...common}><torusGeometry args={[0.5, 0.15, 16, 32]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={emissiveIntensity} /></mesh>}
-      {obj.primitive === 'icosahedron' && <mesh {...common}><icosahedronGeometry args={[0.5, 0]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={emissiveIntensity} flatShading /></mesh>}
-      {obj.primitive === 'dodecahedron' && <mesh {...common}><dodecahedronGeometry args={[0.5, 0]} /><meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={emissiveIntensity} flatShading /></mesh>}
+      {obj.primitive === 'box' && (
+        <mesh {...common} position={[0, dims.h / 2, 0]}>
+          <boxGeometry args={[dims.w, dims.h, dims.d]} />
+          {material}
+        </mesh>
+      )}
+      {obj.primitive === 'cylinder' && (
+        <mesh {...common} position={[0, dims.h / 2, 0]}>
+          <cylinderGeometry args={[dims.w / 2, dims.w / 2, dims.h, 20]} />
+          {material}
+        </mesh>
+      )}
+      {obj.primitive === 'sphere' && (
+        <mesh {...common} position={[0, dims.h / 2, 0]}>
+          <sphereGeometry args={[dims.w / 2, 24, 24]} />
+          {material}
+        </mesh>
+      )}
+      {obj.primitive === 'cone' && (
+        <mesh {...common} position={[0, dims.h / 2, 0]}>
+          <coneGeometry args={[dims.w / 2, dims.h, 20]} />
+          {material}
+        </mesh>
+      )}
+      {obj.primitive === 'plane' && (
+        <mesh {...common} position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[dims.w * 2, dims.d * 2]} />
+          <meshStandardMaterial
+            color={color}
+            emissive={emissive}
+            emissiveIntensity={emissiveIntensity}
+            roughness={0.85}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      )}
+      {obj.primitive === 'torus' && (
+        <mesh {...common} position={[0, dims.h / 2, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[dims.w / 2, dims.w / 5, 16, 32]} />
+          {material}
+        </mesh>
+      )}
+      {obj.primitive === 'icosahedron' && (
+        <mesh {...common} position={[0, dims.h / 2, 0]}>
+          <icosahedronGeometry args={[dims.w / 2, 0]} />
+          <meshStandardMaterial
+            color={color}
+            emissive={emissive}
+            emissiveIntensity={emissiveIntensity}
+            roughness={0.8}
+            flatShading
+          />
+        </mesh>
+      )}
+      {obj.primitive === 'dodecahedron' && (
+        <mesh {...common} position={[0, dims.h / 2, 0]}>
+          <dodecahedronGeometry args={[dims.w / 2, 0]} />
+          <meshStandardMaterial
+            color={color}
+            emissive={emissive}
+            emissiveIntensity={emissiveIntensity}
+            roughness={0.8}
+            flatShading
+          />
+        </mesh>
+      )}
     </>
   )
 }
@@ -346,6 +448,38 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = 
       >
         <color attach="background" args={[scene.palette.sky[0]]} />
         <fog attach="fog" args={[scene.palette.fog, framing.radius * 2.4, framing.radius * 6]} />
+
+        {/* Image-based lighting rendered locally from lightformers — no HDR
+            download, so it works offline and in a judging sandbox. Without
+            this, PBR materials have no environment to reflect and the scene
+            reads flat and muddy. */}
+        <Environment resolution={128} frames={1}>
+          <Lightformer
+            form="circle"
+            intensity={2.2}
+            color={lighting.sunColor}
+            position={[12, 14, 8]}
+            scale={16}
+            target={[0, 0, 0]}
+          />
+          <Lightformer
+            form="circle"
+            intensity={0.9}
+            color={scene.palette.sky[1] ?? scene.palette.sky[0]}
+            position={[-14, 9, -10]}
+            scale={20}
+            target={[0, 0, 0]}
+          />
+          <Lightformer
+            form="rect"
+            intensity={0.5}
+            color={scene.palette.ground}
+            position={[0, -8, 0]}
+            scale={[40, 40, 1]}
+            rotation={[Math.PI / 2, 0, 0]}
+          />
+        </Environment>
+
         <ambientLight intensity={lighting.ambient} />
         <directionalLight
           position={[lighting.sunPos[0], lighting.sunPos[1], lighting.sunPos[2]]}
@@ -353,6 +487,12 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = 
           color={lighting.sunColor}
           castShadow
           shadow-mapSize={[2048, 2048]}
+          shadow-camera-near={1}
+          shadow-camera-far={120}
+          shadow-camera-left={-framing.radius * 1.6}
+          shadow-camera-right={framing.radius * 1.6}
+          shadow-camera-top={framing.radius * 1.6}
+          shadow-camera-bottom={-framing.radius * 1.6}
         />
         <hemisphereLight args={[scene.palette.sky[1] ?? scene.palette.sky[0], scene.palette.ground, 0.55]} />
         {/* Fill light from the opposite side so shadowed faces are readable. */}
@@ -362,20 +502,42 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = 
           color={scene.palette.sky[1] ?? scene.palette.sky[0]}
         />
 
-        {/* Ground disc — sized to the scene so the world fills the frame */}
+        {/* Ground disc — sized to the scene so the world fills the frame.
+            The palette's ground colour is often near-black (night scenes),
+            so it is lifted toward the fog tone and given a faint emissive
+            floor to keep the lower half of the frame readable. */}
         <mesh
           rotation={[-Math.PI / 2, 0, 0]}
           position={[framing.center.x, -0.02, framing.center.z]}
           receiveShadow
         >
           <circleGeometry args={[framing.radius, 64]} />
-          <meshStandardMaterial color={scene.palette.ground} roughness={0.9} metalness={0} emissive={scene.palette.ground} emissiveIntensity={0.22} />
+          <meshStandardMaterial
+            color={liftColor(scene.palette.ground, 0.16)}
+            roughness={0.92}
+            metalness={0}
+            emissive={scene.palette.fog}
+            emissiveIntensity={0.3}
+          />
         </mesh>
         {/* Subtle horizon ring in the accent color */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[framing.center.x, -0.01, framing.center.z]}>
           <ringGeometry args={[framing.radius - 0.5, framing.radius, 64]} />
           <meshBasicMaterial color={scene.palette.accent} transparent opacity={0.25} side={THREE.DoubleSide} />
         </mesh>
+
+        {/* Contact shadows — grounds the objects so they do not float on the
+            ground disc. Cheaper and softer than shadow-mapping alone. */}
+        <ContactShadows
+          position={[framing.center.x, 0.01, framing.center.z]}
+          scale={framing.radius * 2.2}
+          far={framing.radius * 0.9}
+          blur={2.4}
+          opacity={0.45}
+          resolution={512}
+          frames={1}
+          color="#000000"
+        />
 
         {scene.objects.map((obj) => (
           <SceneObjectMesh

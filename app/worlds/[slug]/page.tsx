@@ -33,8 +33,8 @@ export default async function WorldPage({ params }: WorldPageProps) {
 
   return (
     <div className="flex h-screen flex-col bg-black">
-      <header className="flex items-center justify-between border-b border-white/10 px-4 py-2">
-        <Link href="/worlds" className="text-sm text-white/60 hover:text-white">
+      <header className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-2">
+        <Link href="/worlds" className="shrink-0 text-sm text-white/60 hover:text-white">
           ← All worlds
         </Link>
         <div className="min-w-0 text-center">
@@ -43,7 +43,16 @@ export default async function WorldPage({ params }: WorldPageProps) {
             <p className="truncate text-xs italic text-white/50">{world.prompt}</p>
           )}
         </div>
-        <span className="shrink-0 text-xs capitalize text-white/50">{world.genre}</span>
+        <div className="flex shrink-0 items-center gap-3">
+          {/* The same source becomes a comic or a film — one story, many forms. */}
+          <Link
+            href={`/generate?source=text&prompt=${encodeURIComponent(world.prompt)}`}
+            className="rounded-lg bg-brand/20 px-3 py-1.5 text-xs font-semibold text-brand transition hover:bg-brand/30"
+          >
+            Make a comic
+          </Link>
+          <span className="text-xs capitalize text-white/50">{world.genre}</span>
+        </div>
       </header>
 
       <main className="min-h-0 flex-1">

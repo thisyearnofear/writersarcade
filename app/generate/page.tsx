@@ -43,6 +43,9 @@ function GeneratePageContent() {
   const payParam = paymentPathFromParam(searchParams.get('pay'))
   const isWordleMode = searchParams.get('mode') === 'wordle'
   const isTextSource = searchParams.get('source') === 'text'
+  // Prefilled copy — lets a 3D world be turned into a comic/film without
+  // re-typing the prompt.
+  const promptParam = searchParams.get('prompt')
   const sourceParam = searchParams.get('source')
   const isDailyChallenge = searchParams.get('daily') === '1'
   const isBasePaintSource = sourceParam === 'basepaint' || sourceParam === 'daily'
@@ -121,6 +124,7 @@ function GeneratePageContent() {
           <GameGenerator
             initialUrl={urlParam || undefined}
             initialSourceKind={isTextSource ? 'text' : undefined}
+            initialSourceText={promptParam || undefined}
             initialPaymentPath={payParam}
             initialMode={isWordleMode ? 'wordle' : undefined}
             initialBasePaintDay={isBasePaintSource && basePaintDay && !Number.isNaN(basePaintDay) ? basePaintDay : undefined}

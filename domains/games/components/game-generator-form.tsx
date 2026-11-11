@@ -15,6 +15,8 @@ interface GameGeneratorFormProps {
   onGameGenerated?: (game: { id: string; title: string; slug: string; genre: string }) => void
   initialUrl?: string
   initialSourceKind?: 'article' | 'text'
+  /** Prefilled copy for the "paste your copy" path (e.g. from a 3D world). */
+  initialSourceText?: string
   initialPaymentPath?: 'musd' | 'writercoin'
   initialMode?: 'story' | 'wordle'
   initialBasePaintDay?: number
@@ -25,6 +27,7 @@ export function GameGeneratorForm({
   onGameGenerated,
   initialUrl,
   initialSourceKind,
+  initialSourceText,
   initialPaymentPath,
   initialMode,
   initialBasePaintDay,
@@ -34,6 +37,7 @@ export function GameGeneratorForm({
     onGameGenerated,
     initialUrl,
     initialSourceKind,
+    initialSourceText,
     initialPaymentPath,
     initialMode,
     initialBasePaintDay,

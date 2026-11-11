@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { TitleSequence, type TitleCard } from '@/components/generation/title-sequence'
 
 interface WorldSummary {
   slug: string
@@ -18,13 +19,10 @@ interface WorldListResponse {
   error?: string
 }
 
-const PHASES = [
-  'Reading your world…',
-  'Designing its zones…',
-  'Placing landmarks…',
-  'Weaving narrative hooks…',
-  'Lighting the scene…',
-]
+interface TitleCardsResponse {
+  success: boolean
+  data?: { cards: TitleCard[] }
+}
 
 const GENRES = [
   'exploration',
@@ -48,8 +46,7 @@ const EXAMPLES = [
  * Prompt-to-world surface.
  *
  * The visitor describes a place; the server plans an explorable 3D diorama
- * from it. No account, no wallet, no credits — the only friction is the
- * ~40-60s the planner takes.
+ * from it. No account, no wallet, no credits.
  */
 export function WorldBuilder() {
   const router = useRouter()
@@ -58,7 +55,7 @@ export function WorldBuilder() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [worlds, setWorlds] = useState<WorldSummary[]>([])
-  const [phase, setPhase] = useState(0)
+  const [cards, setCards] = useState<TitleCard[]>([])
 
   const loadWorlds = useCallback(async () => {
     try {
@@ -76,12 +73,19 @@ export function WorldBuilder() {
     void loadWorlds()
   }, [loadWorlds])
 
-  // Rotating captions during generation — perceived progress beats a spinner.
+  // Title cards for the loading reel: real artefact covers from the corpus.
   useEffect(() => {
-    if (!busy) return
-    const t = setInterval(() => setPhase((p) => (p + 1) % PHASES.length), 4000)
-    return () => clearInterval(t)
-  }, [busy])
+    let cancelled = false
+    fetch('/api/title-cards')
+      .then((r) => r.json())
+      .then((body: TitleCardsResponse) => {
+        if (!cancelled && body.success && body.data?.cards?.length) {
+          setCards(body.data.cards)
+        }
+      })
+      .catch(() => { /* the reel falls back to typographic cards */ })
+    return () => { cancelled = true }
+  }, [])
 
   const submit = async () => {
     const trimmed = prompt.trim()
@@ -91,7 +95,6 @@ export function WorldBuilder() {
     }
     setError(null)
     setBusy(true)
-    setPhase(0)
     try {
       const res = await fetch('/api/worlds', {
         method: 'POST',
@@ -109,6 +112,28 @@ export function WorldBuilder() {
       setError('Network error — please try again.')
       setBusy(false)
     }
+  }
+
+  if (busy) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-black px-4 py-12">
+        <div className="w-full max-w-2xl">
+          <TitleSequence cards={cards} />
+          <p className="mt-6 text-center text-sm text-white/70">
+            <span className="font-semibold text-white">Building your world…</span>
+          </p>
+          <p className="mt-1 text-center text-xs text-white/45">
+            The set designer needs about a minute. Keep this tab open.
+          </p>
+          <button
+            onClick={() => setBusy(false)}
+            className="mt-6 block w-full text-center text-xs text-white/40 hover:text-white/70"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -175,16 +200,10 @@ export function WorldBuilder() {
 
           <button
             onClick={submit}
-            disabled={busy}
-            className="mt-4 w-full rounded-xl bg-brand px-6 py-3.5 text-base font-semibold text-brand-foreground transition hover:bg-brand/90 disabled:opacity-60 sm:w-auto"
+            className="mt-4 w-full rounded-xl bg-brand px-6 py-3.5 text-base font-semibold text-brand-foreground transition hover:bg-brand/90 sm:w-auto"
           >
-            {busy ? PHASES[phase] : 'Build this world'}
+            Build this world
           </button>
-          {busy && (
-            <p className="mt-2 text-xs text-muted-foreground">
-              The set designer needs about a minute. Keep this tab open.
-            </p>
-          )}
         </div>
 
         <div className="mt-6">

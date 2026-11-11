@@ -4,17 +4,22 @@ This project uses the following third-party software and assets. Each is used
 under its own licence; the licence text for redistributed assets ships in the
 repository alongside the assets themselves.
 
-## 3D assets — Kenney "Mini" asset packs (CC0)
+## 3D assets — Kenney asset packs (CC0)
 
-The diorama scenes use two low-poly asset packs by **Kenney** (www.kenney.nl):
+The diorama scenes use seven low-poly asset packs by **Kenney** (www.kenney.nl):
 
-- `Mini Forest` — `public/assets/scene/kenney/forest/`
-  Licence: `public/assets/scene/kenney/FOREST-LICENSE.txt`
-- `Mini Dungeon` — `public/assets/scene/kenney/dungeon/`
-  Licence: `public/assets/scene/kenney/DUNGEON-LICENSE.txt`
+| Pack | Path | Licence |
+|---|---|---|
+| Mini Forest | `public/assets/scene/kenney/forest/` | `public/assets/scene/kenney/FOREST-LICENSE.txt` |
+| Mini Dungeon | `public/assets/scene/kenney/dungeon/` | `public/assets/scene/kenney/DUNGEON-LICENSE.txt` |
+| Mini Characters | `public/assets/scene/characters/` | `public/assets/scene/characters/LICENSE.txt` |
+| Mini Shop | `public/assets/scene/shop/` | `public/assets/scene/shop/LICENSE.txt` |
+| City Kit (Commercial) | `public/assets/scene/city/` | `public/assets/scene/city/LICENSE.txt` |
+| City Kit (Roads) | `public/assets/scene/roads/` | `public/assets/scene/roads/LICENSE.txt` |
+| Mini Skate | `public/assets/scene/skate/` | `public/assets/scene/skate/LICENSE.txt` |
 
-Both are released under **Creative Commons Zero (CC0 1.0 Universal)** — public
-domain, no attribution required. They are credited here voluntarily.
+All seven are released under **Creative Commons Zero (CC0 1.0 Universal)** —
+public domain, no attribution required. They are credited here voluntarily.
 
 The curated manifest that maps model names onto these files lives in
 `lib/scene-assets.ts`.
