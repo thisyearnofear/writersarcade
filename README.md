@@ -15,7 +15,8 @@ characters to talk to, objects that carry story, and a thread to follow to the
 end. **Step in** walks the world in first person. A second sentence reshapes
 it. No account, no wallet, no credits, no article required.
 
-🎬 [Demo video (38s)](docs/demo/writersarcade-prompt-to-world.mp4) ·
+🎬 [Demo video](docs/demo/writersarcade-prompt-to-world.mp4) ·
+[Walk the lighthouse](https://writersarcade.vercel.app/worlds/a-lighthouse-on-a-cliff-at-dusk-its-beam-sweepi-l2vt) ·
 [Hackathon writeup](docs/HACKATHON_VR.md)
 
 Under the hood this is the same constrained-planner pipeline that powers the

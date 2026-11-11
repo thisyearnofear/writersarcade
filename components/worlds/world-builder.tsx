@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { TitleSequence, type TitleCard } from '@/components/generation/title-sequence'
+import { SHOWCASE_WORLD } from '@/lib/showcase-world'
 
 interface WorldSummary {
   slug: string
@@ -177,8 +178,23 @@ export function WorldBuilder() {
           </p>
         </div>
 
+        <Link
+          href={`/worlds/${SHOWCASE_WORLD.slug}`}
+          className="mt-8 block rounded-2xl border border-brand/40 bg-brand/10 p-5 transition hover:border-brand hover:bg-brand/15"
+        >
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand">Walk in now</p>
+          <p className="mt-2 font-serif text-2xl font-bold">{SHOWCASE_WORLD.title}</p>
+          <p className="mt-2 text-sm italic text-muted-foreground">“{SHOWCASE_WORLD.prompt}”</p>
+          <p className="mt-3 text-sm text-foreground/80">
+            The goal is already on the card. Step in and walk, then change the world with a second sentence.
+          </p>
+        </Link>
+
         <div className="mt-8 rounded-2xl border border-border/60 bg-card/40 p-5">
-          <label htmlFor="world-prompt" className="text-sm font-semibold">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            Or describe your own
+          </p>
+          <label htmlFor="world-prompt" className="sr-only">
             Your world
           </label>
           <textarea

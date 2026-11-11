@@ -2,7 +2,7 @@
 
 **Describe a place in plain language. Walk into it as an explorable 3D world.**
 
-Live demo: https://writersarcade.vercel.app/worlds
+Live demo: https://writersarcade.vercel.app/worlds/a-lighthouse-on-a-cliff-at-dusk-its-beam-sweepi-l2vt
 Code: https://github.com/thisyearnofear/writersarcade
 Track: **AI 3D Scene Generation**
 
@@ -22,10 +22,17 @@ any of them.
 
 ## What we built
 
-A browser-native prompt-to-world system. One sentence in; a walkable diorama
-out. No account, no wallet, no credits, no GPU.
+Open the lighthouse. The sentence that made it is on the screen. Step in and
+walk. The goal is on the card: find what happened to the ship. Click a glowing
+object and it checks off. Talk to the keeper. Type a second sentence — “make
+it night and add the missing ship” — and the world you are standing in
+changes. If that call fails, the world stays.
 
-The pipeline is a **contract, not a prompt**:
+That is the product. One sentence in, a walkable diorama out. No account, no
+wallet, no credits, no GPU. The same lighthouse sentence opens the saved
+world immediately. A different sentence still plans a new one.
+
+The pipeline underneath is a **contract, not a prompt**:
 
 ```
 plain-language prompt

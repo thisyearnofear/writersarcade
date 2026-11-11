@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/config'
+import { SHOWCASE_WORLD, isShowcasePrompt } from '@/lib/showcase-world'
 import { ScenePlannerService, type ScenePlan } from '@/domains/games/services/scene-planner.service'
 
 /**
@@ -127,9 +128,32 @@ export interface CreatedWorld {
  * Returns the completed world. On planner failure the row is marked 'failed'
  * with the reason so the UI can explain itself rather than hang.
  */
+/**
+ * The lighthouse sentence returns the saved world. A missing row falls
+ * through to a fresh generation so the sentence still works.
+ */
+export async function findShowcaseWorld(prompt: string): Promise<CreatedWorld | null> {
+  if (!isShowcasePrompt(prompt)) return null
+  const row = await prisma.world.findUnique({
+    where: { slug: SHOWCASE_WORLD.slug },
+    select: { slug: true, title: true, prompt: true, genre: true, status: true, sceneJson: true },
+  })
+  if (!row || row.status !== 'completed' || row.sceneJson == null) return null
+  return {
+    slug: row.slug,
+    title: row.title,
+    prompt: row.prompt,
+    genre: row.genre,
+    status: row.status,
+  }
+}
+
 export async function createWorld(input: CreateWorldInput): Promise<CreatedWorld> {
   const prompt = normalizePrompt(input.prompt)
   const genre = normalizeGenre(input.genre)
+
+  const showcase = await findShowcaseWorld(prompt)
+  if (showcase) return showcase
 
   // Reserve the row first so a slow generation is still addressable.
   const slug = await uniqueSlug(prompt.slice(0, 48))

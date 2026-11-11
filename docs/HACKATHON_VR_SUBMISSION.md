@@ -11,8 +11,8 @@ the Kaggle writeup form at
 | Item | Value |
 |---|---|
 | **Public repository** | https://github.com/thisyearnofear/writersarcade |
-| **Live demo** | https://writersarcade.vercel.app/worlds |
-| **Demo video (file)** | `docs/demo/writersarcade-prompt-to-world.mp4` — 38s, H.264 1280×720 |
+| **Live demo** | https://writersarcade.vercel.app/worlds/a-lighthouse-on-a-cliff-at-dusk-its-beam-sweepi-l2vt |
+| **Demo video (file)** | `docs/demo/writersarcade-prompt-to-world.mp4` — 41s, H.264 1280×720 |
 | **Video (public URL)** | https://raw.githubusercontent.com/thisyearnofear/writersarcade/main/docs/demo/writersarcade-prompt-to-world.mp4 |
 | **Cover image** | `docs/demo/prompt-to-world-cover.png` (1280×720) |
 | **Focus category** | Prompt-to-world creation (Kaggle track: *AI 3D Scene Generation*) |
@@ -30,7 +30,7 @@ Pick the closest available option; if there is a free-text field, use
 
 ## Writeup
 
-The full writeup is in [`docs/HACKATHON_VR.md`](HACKATHON_VR.md) (1,277 words,
+The full writeup is in [`docs/HACKATHON_VR.md`](HACKATHON_VR.md) (1,364 words,
 limit 1,500). It is structured as:
 
 1. Title / subtitle
@@ -48,25 +48,18 @@ limit 1,500). It is structured as:
 
 ## One-paragraph summary (for the gallery / overview)
 
-> A browser-native prompt-to-3D system. One sentence becomes a walkable
-> diorama with zones to visit, objects that carry story, characters who answer
-> back, and a goal derived from the prompt's own premise. No account, no
-> wallet, no credits, no GPU — the LLM never emits geometry, it composes
-> inside a schema the renderer can assemble deterministically.
+> A browser-native prompt-to-3D system. Open a finished lighthouse, walk it,
+> check off the goal, and change it with a second sentence. The same sentence
+> returns that world immediately. A new sentence plans another. No account,
+> no wallet, no credits, no GPU.
 
 ## Live demo — what a judge should do
 
-1. Open <https://writersarcade.vercel.app/worlds>. No sign-in.
-2. Type any scene, e.g. *"A lighthouse on a cliff at dusk, its beam sweeping
-   the fog where a ship is missing"*, pick a genre, press **Build this world**.
-3. Watch the loading reel (real artefact covers, not a spinner), ~50s.
-4. In the world: read the quest card (goal, named threads, characters). Drag
-   to orbit, or press **Step in** and walk with WASD. Click a glowing object
-   to check off a thread. Click a character to hear their dilemma.
-5. In **Change this world**, type *"make it night and add the missing ship"*
-   and press **Reshape**. The current world stays until the revision lands
-   (~a minute).
-6. Press **Make a comic** to turn the same source into an interactive comic.
+1. Open <https://writersarcade.vercel.app/worlds/a-lighthouse-on-a-cliff-at-dusk-its-beam-sweepi-l2vt>. No sign-in. The sentence is in the header. The goal is on the card.
+2. Press **Step in** and walk with WASD. Q and E turn if the browser will not lock the pointer. Esc steps back. Click a glowing object to check off a thread. Click the keeper or the harbormaster to hear them.
+3. In **Change this world**, type *"make it night and add the missing ship"* and press **Reshape**. The lighthouse stays until the revision lands (~a minute). A failed call leaves it unchanged.
+4. To build another place, go back to <https://writersarcade.vercel.app/worlds>. The lighthouse sentence returns this world. Any other sentence plans a new one (~50s).
+5. Press **Make a comic** to turn the same source into an interactive comic.
 
 Judges are encouraged to try their own prompts — the planner is prompted to
 work from any plain-language scene description, per the rules.
@@ -79,8 +72,9 @@ work from any plain-language scene description, per the rules.
 | Works from arbitrary prompts | Any sentence works; the demo used five unrelated prompts. |
 | Real logic, not a static mesh | The quest card lists the goal and each thread. Clicking one checks it off. |
 | You can walk in | **Step in**, then WASD. Q and E turn if the browser will not lock the pointer. Esc returns to orbit. |
+| The lighthouse sentence is instant | On `/worlds`, submit “A lighthouse on a cliff at dusk, its beam sweeping the fog where a ship is missing”. It opens The Missing Ship without a new generation. |
 | You can change it | **Change this world**, then **Reshape**. A failed call leaves the current scene up. |
-| Video | The 38s mp4 shows prompt → orbit → inspect, recorded before walk and reshape. Those two are on the live demo. |
+| Video | The 41s mp4 is The Missing Ship: the sentence, the goal card, a short walk, then the reshape sentence typed and not sent, so the world judges walk stays the lighthouse. |
 
 ## Repo notes for judges
 
