@@ -27,7 +27,10 @@ export interface StoryBeat {
 }
 
 /** Pure. Same scene in, same beats out. Empty game/npcs still return a cover. */
-export function beatsFromScene(scene: ScenePlan): StoryBeat[]
+export function beatsFromScene(
+  scene: StoryBeatSource,
+  options?: { prompt?: string },
+): StoryBeat[]
 ```
 
 Order, and only these sources:
@@ -89,29 +92,49 @@ Owns:
 
 - `components/worlds/story-comic.tsx`
 - `components/worlds/story-film.tsx`
+- `components/generation/title-sequence.tsx` — **additive only** (see below)
 
-Does not import Prisma. Props are `{ title, prompt, beats: StoryBeat[] }`.
-Build against the fixture until Track A's pages exist.
+Does not import Prisma. Props are `{ slug, beats: StoryBeat[] }` — the slug
+powers the "Walk this story" / cross-view links; title and prompt already
+live inside the cover beat. Build against the fixture until Track A's pages
+exist. `components/worlds/story-beat-stack.tsx` stays as the shared
+beat-list renderer — the film page reuses it as the always-visible script
+under the player, and `STORY_BEAT_KIND_LABEL` is exported from it for the
+kind eyebrow on both views.
 
-**Read.** A vertical stack of beats. Cover, then goal, then each thread, then
-each character. One beat is one panel: kind as a small label, title, body.
-Palette can come from a later prop; v1 uses the existing dark world chrome
+`title-sequence.tsx` changes are backward-compatible additions; the
+generation loading state keeps today's defaults:
+
+- `TitleCard.body?: string` — a readable serif sentence rendered under the
+  title. `label` stays the small uppercase eyebrow (it maps beat *kind*,
+  never beat body — a sentence in that slot would overflow).
+- `playing?: boolean` (default `true`) — when false the sequence holds the
+  first card until the caller flips it.
+- `loop?: boolean` (default `true`) — when false the sequence stops on the
+  last card instead of wrapping.
+- `onEnd?: () => void` — fires once when a non-looping sequence reaches the
+  last card. Callers should pass a stable callback.
+
+**Read.** `story-comic.tsx` is a server component: a vertical stack of
+beats — an oversized cover panel (scene title as the h1, prompt as the
+lede), then one panel per remaining beat with kind as a small label,
+thread panels numbered in objective order, character panels showing the
+speaker's name. Footer links cross to Walk and Watch. Dark world chrome
 (`bg-black`, white type, `border-white/10`). Keyboard: the page is a normal
 document, so scroll is enough. No wallet, no "generate" button on this page.
 
-**Watch.** The same beats played through the existing `TitleSequence`
-(`components/generation/title-sequence.tsx`). Map each beat to a `TitleCard`:
-`title` = beat title, `label` = beat body, no `imageUrl` (typographic cards
-are already the component's empty-image path). Interval about 4 seconds so a
-sentence can be read. First card holds until the visitor presses play; after
-the last card, stop on the last card and show **Walk this story** back to
-`/worlds/[slug]`. `prefers-reduced-motion` already collapses `TitleSequence`
-to a still card — also render the beat list underneath so the film is readable
-without motion.
-
-Copy on the film page says this is the story, cut as title cards. It does not
-say the world was filmed. Motion (the existing `video-montage` / `video-upsell`
-paths) stays a paid continuation on a game, and is out of scope here.
+**Watch.** `story-film.tsx` is a client component playing the same beats
+through `TitleSequence`: each beat maps to a `TitleCard` with `title` =
+beat title, `label` = kind label, `body` = beat body, no `imageUrl`.
+`intervalMs` ≈ 4000 so a sentence can be read. The player starts paused on
+the cover card behind a play button; on play it runs once (`loop={false}`)
+and stops on the last card, where **Walk this story** links back to
+`/worlds/[slug]` alongside a Replay that remounts the sequence. Copy calls
+it a title-card cut of the story — it does not say the world was filmed.
+The beat list (`StoryBeatStack`) renders underneath at all times, so the
+film is fully readable without motion and under `prefers-reduced-motion`.
+Motion (the existing `video-montage` / `video-upsell` paths) stays a paid
+continuation on a game, and is out of scope here.
 
 ## Acceptance
 
