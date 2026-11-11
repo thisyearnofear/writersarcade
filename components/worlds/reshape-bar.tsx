@@ -15,7 +15,7 @@ const SUGGESTIONS = [
  * The current scene stays on screen until a revised plan comes back. A
  * failure tells the visitor the world they are looking at did not change.
  */
-export function ReshapeBar({ slug }: { slug: string }) {
+export function ReshapeBar({ slug, forks = false }: { slug: string; forks?: boolean }) {
   const router = useRouter()
   const [instruction, setInstruction] = useState('')
   const [busy, setBusy] = useState(false)
@@ -47,7 +47,11 @@ export function ReshapeBar({ slug }: { slug: string }) {
         return
       }
       setInstruction('')
-      setNote('World updated.')
+      if (forks && body.data?.slug && body.data.slug !== slug) {
+        router.push(`/worlds/${body.data.slug}`)
+        return
+      }
+      setNote('Updated. Read and Watch match this version.')
       router.refresh()
       setBusy(false)
     } catch {
@@ -68,7 +72,7 @@ export function ReshapeBar({ slug }: { slug: string }) {
     >
       <div className="mx-auto flex max-w-5xl flex-col gap-2 sm:flex-row sm:items-center">
         <label htmlFor="reshape-instruction" className="shrink-0 text-xs font-semibold uppercase tracking-[0.16em] text-white/50">
-          Change this world
+          {forks ? 'Try a change' : 'Change this world'}
         </label>
         <input
           id="reshape-instruction"
@@ -102,8 +106,15 @@ export function ReshapeBar({ slug }: { slug: string }) {
             {suggestion}
           </button>
         ))}
+        {forks && !busy && !error && !note && (
+          <span className="text-[11px] text-white/50">Opens a new world. This lighthouse stays.</span>
+        )}
         {busy && (
-          <span className="text-[11px] text-white/50">About a minute. This world stays until the new one is ready.</span>
+          <span className="text-[11px] text-white/50">
+            {forks
+              ? 'About a minute. This lighthouse stays while the new world is planned.'
+              : 'About a minute. This world stays until the new one is ready.'}
+          </span>
         )}
         {error && <span className="text-[11px] text-red-300">{error}</span>}
         {note && !busy && !error && <span className="text-[11px] text-emerald-300">{note}</span>}

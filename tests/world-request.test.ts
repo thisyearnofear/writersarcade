@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { isPlannerTimeout, validateRevision, normalizeRevision } from '@/domains/games/services/world.service'
-import { isShowcasePrompt, SHOWCASE_WORLD } from '@/lib/showcase-world'
+import { isShowcasePrompt, isShowcaseSlug, SHOWCASE_WORLD } from '@/lib/showcase-world'
 
 describe('world reshape requests', () => {
   it('rejects a revision that is too short to be an instruction', () => {
@@ -17,6 +17,11 @@ describe('world reshape requests', () => {
     expect(isShowcasePrompt(SHOWCASE_WORLD.prompt)).toBe(true)
     expect(isShowcasePrompt(`  ${SHOWCASE_WORLD.prompt}  `)).toBe(true)
     expect(isShowcasePrompt('A lighthouse keeper on a storm-battered cliff who must relight the beacon')).toBe(false)
+  })
+
+  it('keeps the lighthouse row when that world is reshaped', () => {
+    expect(isShowcaseSlug(SHOWCASE_WORLD.slug)).toBe(true)
+    expect(isShowcaseSlug(`${SHOWCASE_WORLD.slug}-copy`)).toBe(false)
   })
 
   it('recognises a model timeout without treating every error as one', () => {

@@ -2,26 +2,35 @@
 
 import { useCallback, useState } from 'react'
 import Link from 'next/link'
+import { useReducedMotion } from 'framer-motion'
 import { TitleSequence, type TitleCard } from '@/components/generation/title-sequence'
-import { StoryBeatStack, STORY_BEAT_KIND_LABEL } from '@/components/worlds/story-beat-stack'
+import { STORY_BEAT_KIND_LABEL } from '@/components/worlds/story-beat-stack'
 import type { StoryBeat } from '@/lib/story-beats'
 
 /**
- * Watch — the same beats played as a title-card cut of the story.
- * No planner call, no credits, no Game row. The beat list renders
- * underneath so the film is readable without motion.
+ * Watch — the same beats as title cards.
+ * The first card is readable before play. The written list stays available
+ * for reduced motion and for anyone who would rather read.
  */
 export function StoryFilm({ slug, beats }: { slug: string; beats: StoryBeat[] }) {
+  const reduced = useReducedMotion()
   const [playing, setPlaying] = useState(false)
+  const [started, setStarted] = useState(false)
   const [finished, setFinished] = useState(beats.length <= 1)
   const [run, setRun] = useState(0)
   const handleEnd = useCallback(() => setFinished(true), [])
 
   const cards: TitleCard[] = beats.map((beat) => ({
-    title: beat.title,
-    label: STORY_BEAT_KIND_LABEL[beat.kind],
-    body: beat.body || undefined,
+    title: beat.kind === 'goal' || beat.kind === 'character' ? beat.body || beat.title : beat.title,
+    label: beat.kind === 'character' ? beat.speaker ?? STORY_BEAT_KIND_LABEL.character : STORY_BEAT_KIND_LABEL[beat.kind],
+    body: beat.kind === 'goal' || beat.kind === 'character' ? undefined : beat.body || undefined,
   }))
+
+  const play = () => {
+    setStarted(true)
+    setFinished(false)
+    setPlaying(true)
+  }
 
   const replay = () => {
     setFinished(false)
@@ -30,69 +39,80 @@ export function StoryFilm({ slug, beats }: { slug: string; beats: StoryBeat[] })
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col px-4 py-8">
-      <header className="mb-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/40">
-          Title-card cut
-        </p>
-        <p className="mt-2 max-w-prose text-sm leading-relaxed text-white/60">
-          The same story the world walks you through, read as title cards. Motion and
-          drawn panels are part of the paid comic — this cut costs nothing.
-        </p>
-      </header>
+    <div className="mx-auto flex w-full max-w-3xl flex-col px-4 py-6 sm:py-8">
+      <p className="mb-4 text-sm text-white/55">
+        Press play. Each card is one beat of the place you can walk.
+      </p>
 
-      <div className="relative">
-        <TitleSequence
-          key={run}
-          cards={cards}
-          intervalMs={4000}
-          playing={playing}
-          loop={false}
-          onEnd={handleEnd}
-        />
+      <TitleSequence
+        key={run}
+        cards={cards}
+        intervalMs={4200}
+        playing={playing}
+        loop={false}
+        onEnd={handleEnd}
+      />
 
-        {!playing && !finished && (
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        {!started && !finished && (
           <button
             type="button"
-            onClick={() => setPlaying(true)}
-            aria-label="Play the story"
-            className="absolute inset-0 flex items-center justify-center bg-black/30 transition hover:bg-black/20"
+            onClick={play}
+            className="rounded-full bg-white px-5 py-2 text-sm font-semibold text-black hover:bg-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
-            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-brand text-brand-foreground shadow-lg transition hover:scale-105">
-              <svg viewBox="0 0 24 24" className="ml-1 h-7 w-7 fill-current" aria-hidden="true">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            </span>
+            Play
           </button>
+        )}
+        {started && !finished && (
+          <button
+            type="button"
+            onClick={() => setPlaying((on) => !on)}
+            className="rounded-full bg-white px-5 py-2 text-sm font-semibold text-black hover:bg-white/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          >
+            {playing ? 'Pause' : 'Resume'}
+          </button>
+        )}
+        {finished && (
+          <>
+            <Link
+              href={`/worlds/${slug}`}
+              className="rounded-full bg-white px-5 py-2 text-sm font-semibold text-black hover:bg-white/90"
+            >
+              Walk this place
+            </Link>
+            <Link href={`/worlds/${slug}/comic`} className="px-2 py-2 text-sm font-semibold text-white/70 hover:text-white">
+              Read it
+            </Link>
+            {beats.length > 1 && (
+              <button type="button" onClick={replay} className="px-2 py-2 text-sm font-semibold text-white/70 hover:text-white">
+                Replay
+              </button>
+            )}
+          </>
         )}
       </div>
 
-      {finished && (
-        <div className="mt-4 flex items-center justify-between gap-3">
-          <Link
-            href={`/worlds/${slug}`}
-            className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground transition hover:opacity-90"
-          >
-            Walk this story
-          </Link>
-          {beats.length > 1 && (
-            <button
-              type="button"
-              onClick={replay}
-              className="rounded-lg px-4 py-2 text-sm font-semibold text-white/60 transition hover:text-white"
-            >
-              Replay
-            </button>
-          )}
-        </div>
-      )}
-
-      <section className="mt-10">
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.3em] text-white/40">
-          The script
-        </h2>
-        <StoryBeatStack beats={beats} />
-      </section>
+      <details className="mt-8 border-t border-white/10 pt-4" open={reduced ? true : undefined}>
+        <summary className="cursor-pointer text-sm text-white/60 hover:text-white">Read the cards as text</summary>
+        <ol className="mt-3 flex flex-col">
+          {beats.map((beat) => (
+            <li key={beat.id} className="border-b border-white/10 py-3">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/40">
+                {beat.kind === 'character' ? beat.speaker ?? beat.title : STORY_BEAT_KIND_LABEL[beat.kind]}
+              </p>
+              <p className="mt-1 text-sm leading-relaxed text-white/85">
+                {beat.kind === 'goal' || beat.kind === 'character' ? beat.body : beat.title}
+              </p>
+              {beat.kind === 'thread' && beat.body && (
+                <p className="mt-1 text-sm leading-relaxed text-white/60">{beat.body}</p>
+              )}
+              {beat.kind === 'cover' && beat.body && (
+                <p className="mt-1 text-sm leading-relaxed text-white/60">{beat.body}</p>
+              )}
+            </li>
+          ))}
+        </ol>
+      </details>
     </div>
   )
 }

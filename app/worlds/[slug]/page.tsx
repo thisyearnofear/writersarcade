@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { DioramaLoader } from '@/components/scene/diorama-loader'
 import { ReshapeBar } from '@/components/worlds/reshape-bar'
 import { WorldStoryHeader, WorldStoryPending } from '@/components/worlds/world-story-header'
+import { isShowcaseSlug } from '@/lib/showcase-world'
 import type { ScenePlan } from '@/domains/games/services/scene-planner.service'
 
 export const dynamic = 'force-dynamic'
@@ -38,12 +39,11 @@ export default async function WorldPage({ params }: WorldPageProps) {
         slug={world.slug}
         title={world.title}
         prompt={world.prompt}
-        genre={world.genre}
         ready={Boolean(ready)}
         active="walk"
       />
 
-      {ready && <ReshapeBar slug={world.slug} />}
+      {ready && <ReshapeBar slug={world.slug} forks={isShowcaseSlug(world.slug)} />}
 
       <main className="min-h-0 flex-1">
         {ready ? (
@@ -53,6 +53,7 @@ export default async function WorldPage({ params }: WorldPageProps) {
             slug={`world-${world.slug}`}
             standalone
             prompt={world.prompt}
+            storySlug={world.slug}
           />
         ) : (
           <WorldStoryPending status={world.status} error={world.error} />

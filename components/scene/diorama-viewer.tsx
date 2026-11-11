@@ -26,6 +26,8 @@ interface DioramaViewerProps {
   standalone?: boolean
   /** The prompt that produced this world, shown in the overlay. */
   prompt?: string
+  /** When set, the goal card links to this world's comic and film. */
+  storySlug?: string
 }
 
 type SelectedObject = { label: string; narrativeHook?: string; action?: string } | null
@@ -459,12 +461,14 @@ function QuestCard({
   visitedIds,
   objectivesFound,
   worldComplete,
+  storySlug,
 }: {
   scene: ScenePlan
   objectiveIds: string[]
   visitedIds: Set<string>
   objectivesFound: number
   worldComplete: boolean
+  storySlug?: string
 }) {
   const goal = scene.game?.goal
   const threads = objectiveIds.map((id) => ({
@@ -501,11 +505,17 @@ function QuestCard({
           Talk to {scene.npcs.map((npc) => npc.name).join(', ')}
         </p>
       )}
+      {storySlug && (
+        <p className="mt-3 flex gap-3 text-[11px] font-semibold">
+          <Link href={`/worlds/${storySlug}/comic`} className="text-white hover:text-brand">Read</Link>
+          <Link href={`/worlds/${storySlug}/film`} className="text-white hover:text-brand">Watch</Link>
+        </p>
+      )}
     </aside>
   )
 }
 
-export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = false, prompt }: DioramaViewerProps) {
+export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = false, prompt, storySlug }: DioramaViewerProps) {
   const [selected, setSelected] = useState<SelectedObject>(null)
   const [npcDialogue, setNpcDialogue] = useState<NpcDialogue>(null)
   const [visitedIds, setVisitedIds] = useState<Set<string>>(() => loadVisited(slug))
@@ -984,7 +994,9 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = 
         aria-hidden={!intro}
       >
         <div className="text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/60">A walkable diorama</p>
+          <p className="text-xs font-bold uppercase tracking-[0.3em] text-white/60">
+            {standalone ? 'Walk it. Read it. Watch it.' : 'A walkable diorama'}
+          </p>
           <h2 className="mt-2 font-serif text-4xl font-bold text-white drop-shadow-lg sm:text-5xl">{scene.title}</h2>
           <p className="mt-3 text-sm capitalize text-white/70">{scene.mood} · {scene.ground}</p>
         </div>
@@ -998,12 +1010,24 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = 
             <p className="mt-1 font-serif text-xl text-white">You&rsquo;ve traced every thread of {scene.title}.</p>
             <div className="mt-3 flex items-center justify-center gap-4">
               {standalone ? (
-                <Link
-                  href="/worlds"
-                  className="rounded-lg bg-success px-4 py-2 text-sm font-semibold text-black transition hover:bg-success/90"
-                >
-                  Describe another world
-                </Link>
+                <div className="flex flex-wrap items-center justify-center gap-3">
+                  {storySlug && (
+                    <Link
+                      href={`/worlds/${storySlug}/comic`}
+                      className="rounded-lg bg-success px-4 py-2 text-sm font-semibold text-black transition hover:bg-success/90"
+                    >
+                      Read the story
+                    </Link>
+                  )}
+                  {storySlug && (
+                    <Link href={`/worlds/${storySlug}/film`} className="text-sm font-semibold text-white hover:text-white/80">
+                      Watch it
+                    </Link>
+                  )}
+                  <Link href="/worlds" className="text-sm text-white/60 hover:text-white">
+                    Describe another
+                  </Link>
+                </div>
               ) : (
                 <>
                   <Link
@@ -1044,6 +1068,7 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = 
             visitedIds={visitedIds}
             objectivesFound={objectivesFound}
             worldComplete={worldComplete}
+            storySlug={storySlug}
           />
         </div>
         <div className="flex items-end justify-between gap-3">

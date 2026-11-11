@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { logger } from '@/lib/config'
-import { SHOWCASE_WORLD, isShowcasePrompt } from '@/lib/showcase-world'
+import { SHOWCASE_WORLD, isShowcasePrompt, isShowcaseSlug } from '@/lib/showcase-world'
 import { ScenePlannerService, type ScenePlan } from '@/domains/games/services/scene-planner.service'
 
 /**
@@ -258,10 +258,29 @@ export async function reviseWorld(slug: string, instruction: string): Promise<Cr
     throw new WorldRequestError('Could not reshape this world. It is unchanged — try again.', 502)
   }
 
+  const title = plan.title || world.title
+  // The lighthouse is the shared demo. A reshape is saved as its own world
+  // so the link in the writeup keeps the scene the judges were shown.
+  if (isShowcaseSlug(world.slug)) {
+    const slug = await uniqueSlug(title)
+    await prisma.world.create({
+      data: {
+        slug,
+        title,
+        prompt: `${world.prompt}\n\n${text}`,
+        genre: world.genre,
+        status: 'completed',
+        sceneJson: plan as unknown as object,
+        model: world.model,
+      },
+    })
+    return { slug, title, prompt: world.prompt, genre: world.genre, status: 'completed' }
+  }
+
   await prisma.world.update({
     where: { id: world.id },
     data: {
-      title: plan.title || world.title,
+      title,
       sceneJson: plan as unknown as object,
       status: 'completed',
       error: null,
@@ -270,7 +289,7 @@ export async function reviseWorld(slug: string, instruction: string): Promise<Cr
 
   return {
     slug: world.slug,
-    title: plan.title || world.title,
+    title,
     prompt: world.prompt,
     genre: world.genre,
     status: 'completed',

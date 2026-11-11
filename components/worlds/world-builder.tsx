@@ -186,7 +186,7 @@ export function WorldBuilder() {
           <p className="mt-2 font-serif text-2xl font-bold">{SHOWCASE_WORLD.title}</p>
           <p className="mt-2 text-sm italic text-muted-foreground">“{SHOWCASE_WORLD.prompt}”</p>
           <p className="mt-3 text-sm text-foreground/80">
-            The goal is already on the card. Step in and walk, then change the world with a second sentence.
+            Step in and walk it. Read and Watch are the same story, already waiting.
           </p>
         </Link>
 

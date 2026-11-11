@@ -1,44 +1,45 @@
 import Link from 'next/link'
 
 const VIEWS = [
-  { id: 'walk', label: 'Walk', href: (slug: string) => `/worlds/${slug}` },
-  { id: 'read', label: 'Read', href: (slug: string) => `/worlds/${slug}/comic` },
-  { id: 'watch', label: 'Watch', href: (slug: string) => `/worlds/${slug}/film` },
+  { id: 'walk', label: 'Walk', hint: 'Step into the place', href: (slug: string) => `/worlds/${slug}` },
+  { id: 'read', label: 'Read', hint: 'The story as panels', href: (slug: string) => `/worlds/${slug}/comic` },
+  { id: 'watch', label: 'Watch', hint: 'The same beats as cards', href: (slug: string) => `/worlds/${slug}/film` },
 ] as const
 
 export type StoryView = (typeof VIEWS)[number]['id']
 
 /**
- * Walk, Read, and Watch are three views of one saved world.
- * Pending and failed worlds stay on the back link until a scene exists.
+ * One story, three ways in. The switcher stays in the same place on every view
+ * so Walk, Read, and Watch feel like one place rather than three products.
  */
 export function WorldStoryHeader({
   slug,
   title,
   prompt,
-  genre,
   ready,
   active,
 }: {
   slug: string
   title: string
   prompt: string
-  genre: string
   ready: boolean
   active: StoryView
 }) {
   return (
-    <header className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-2">
-      <Link href="/worlds" className="shrink-0 text-sm text-white/60 hover:text-white">
-        ← All worlds
-      </Link>
-      <div className="min-w-0 text-center">
-        <p className="truncate text-sm font-semibold text-white">{title}</p>
-        {prompt && <p className="truncate text-xs italic text-white/50">{prompt}</p>}
+    <header className="border-b border-white/10">
+      <div className="flex items-center gap-3 px-3 py-2 sm:px-4">
+        <Link href="/worlds" className="shrink-0 text-sm text-white/60 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+          ← Worlds
+        </Link>
+        <div className="min-w-0 flex-1 text-center">
+          <p className="truncate text-sm font-semibold text-white">{title}</p>
+          {prompt && <p className="truncate text-xs text-white/45">{prompt}</p>}
+        </div>
+        <span className="hidden w-16 shrink-0 sm:block" aria-hidden="true" />
       </div>
-      <div className="flex shrink-0 items-center gap-3">
-        {ready && (
-          <nav className="flex items-center gap-1" aria-label="Story views">
+      {ready && (
+        <nav className="flex justify-center px-3 pb-2" aria-label="This story">
+          <div className="flex rounded-full bg-white/10 p-0.5 ring-1 ring-white/10">
             {VIEWS.map((view) => {
               const current = view.id === active
               return (
@@ -46,20 +47,20 @@ export function WorldStoryHeader({
                   key={view.id}
                   href={view.href(slug)}
                   aria-current={current ? 'page' : undefined}
+                  aria-label={`${view.label}. ${view.hint}`}
                   className={
                     current
-                      ? 'rounded-lg bg-brand/20 px-3 py-1.5 text-xs font-semibold text-brand'
-                      : 'rounded-lg px-3 py-1.5 text-xs font-semibold text-white/60 hover:text-white'
+                      ? 'rounded-full bg-white px-4 py-1.5 text-xs font-semibold text-black'
+                      : 'rounded-full px-4 py-1.5 text-xs font-semibold text-white/70 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand'
                   }
                 >
                   {view.label}
                 </Link>
               )
             })}
-          </nav>
-        )}
-        <span className="text-xs capitalize text-white/50">{genre}</span>
-      </div>
+          </div>
+        </nav>
+      )}
     </header>
   )
 }

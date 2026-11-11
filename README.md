@@ -12,8 +12,10 @@ This is the browser-native prompt-to-3D surface. A visitor types a scene — *"a
 abandoned subway station where the trains still arrive on schedule, but for
 ghosts"* — and an AI set designer returns a walkable diorama: zones to visit,
 characters to talk to, objects that carry story, and a thread to follow to the
-end. **Step in** walks the world in first person. A second sentence reshapes
-it. No account, no wallet, no credits, no article required.
+end. **Step in** walks the world in first person. **Read** and **Watch** are
+the same plan as a comic and as title cards. A second sentence reshapes the
+world. On the lighthouse demo that opens a new world and leaves the original
+in place. No account, no wallet, no credits, no article required.
 
 🎬 [Demo video](docs/demo/writersarcade-prompt-to-world.mp4) ·
 [Walk the lighthouse](https://writersarcade.vercel.app/worlds/a-lighthouse-on-a-cliff-at-dusk-its-beam-sweepi-l2vt) ·
@@ -28,7 +30,7 @@ plain-language prompt
   → repair pass           (clamps drift, recovers missing asset keys)
   → ScenePlan JSON        (zones, objects, NPCs, interactables, objective)
   → React Three Fiber     (orbit or first-person walk, click-to-inspect, talk-to-NPC)
-  → optional reshape      (a follow-up sentence replaces the plan in place)
+  → optional reshape      (a follow-up sentence; the lighthouse demo saves a new world)
 ```
 
 The plan is a **contract, not a prompt**: the LLM composes inside a Zod schema
@@ -41,7 +43,7 @@ The shared daily ritual: a featured writer's Paragraph article staged inside tod
 
 ## What it does
 
-- **Prompt → World** (`/worlds`): plain language → an explorable 3D diorama you can walk and reshape, browser-native, no account required
+- **Prompt → World** (`/worlds`): plain language → an explorable 3D diorama you can walk, read, and watch, browser-native, no account required
 - **Generate playable stories** from article URLs, marketing copy, or any pasted text (`/studio`)
 - **iMessage agent (Flynn)**: text a link to prose and get a playable story back, with optional natural-language tone
 - **No wallet required to start**: try one free story, then upgrade with credits or crypto

@@ -30,7 +30,7 @@ Pick the closest available option; if there is a free-text field, use
 
 ## Writeup
 
-The full writeup is in [`docs/HACKATHON_VR.md`](HACKATHON_VR.md) (1,364 words,
+The full writeup is in [`docs/HACKATHON_VR.md`](HACKATHON_VR.md) (1,422 words,
 limit 1,500). It is structured as:
 
 1. Title / subtitle
@@ -57,12 +57,9 @@ limit 1,500). It is structured as:
 
 1. Open <https://writersarcade.vercel.app/worlds/a-lighthouse-on-a-cliff-at-dusk-its-beam-sweepi-l2vt>. No sign-in. The sentence is in the header. The goal is on the card.
 2. Press **Step in** and walk with WASD. Q and E turn if the browser will not lock the pointer. Esc steps back. Click a glowing object to check off a thread. Click the keeper or the harbormaster to hear them.
-3. In **Change this world**, type *"make it night and add the missing ship"* and press **Reshape**. The lighthouse stays until the revision lands (~a minute). A failed call leaves it unchanged.
+3. In **Try a change**, type *"make it night and add the missing ship"* and press **Reshape**. That opens a new world. The lighthouse at the demo link stays as it is. A failed call leaves both unchanged.
 4. To build another place, go back to <https://writersarcade.vercel.app/worlds>. The lighthouse sentence returns this world. Any other sentence plans a new one (~50s).
-5. The header offers **Walk**, **Read**, and **Watch** — three views of the
-   same scene plan. **Read** renders the story as a comic strip of its beats;
-   **Watch** plays them as title cards. Neither calls a model nor spends
-   credits, and a refresh regenerates nothing.
+5. The header, and the goal card, offer **Read** and **Watch** — the same scene plan as a comic and as title cards. Neither calls a model nor spends credits.
 
 Judges are encouraged to try their own prompts — the planner is prompted to
 work from any plain-language scene description, per the rules.
@@ -76,7 +73,7 @@ work from any plain-language scene description, per the rules.
 | Real logic, not a static mesh | The quest card lists the goal and each thread. Clicking one checks it off. |
 | You can walk in | **Step in**, then WASD. Q and E turn if the browser will not lock the pointer. Esc returns to orbit. |
 | The lighthouse sentence is instant | On `/worlds`, submit “A lighthouse on a cliff at dusk, its beam sweeping the fog where a ship is missing”. It opens The Missing Ship without a new generation. |
-| You can change it | **Change this world**, then **Reshape**. A failed call leaves the current scene up. |
+| You can change it | On the lighthouse, **Try a change** then **Reshape** opens a new world. The demo link stays the lighthouse. On any other world, reshape updates that world, and a failed call leaves it up. |
 | One plan, three views | On any completed world, the header's **Walk / Read / Watch** show the same beats — diorama, comic strip, title-card cut — with no model call and no credits. |
 | Video | The 41s mp4 is The Missing Ship: the sentence, the goal card, a short walk, then the reshape sentence typed and not sent, so the world judges walk stays the lighthouse. |
 
@@ -112,5 +109,5 @@ work from any plain-language scene description, per the rules.
   reports a headset, and we have not exercised it on a headset.
 - The planner occasionally mis-assigns an asset; the recovery pass corrects
   most of it, not all.
-- The AI provider is a single funded route (fal). Every other configured
-  provider rejected our key at the time of writing.
+- Funded LLM routes are SandBase (priority) and fal (fallback). Every other
+  configured provider rejected our key at the time of writing.

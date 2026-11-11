@@ -16,12 +16,14 @@ export function DioramaLoader({
   hasThumbnail,
   standalone,
   prompt,
+  storySlug,
 }: {
   scene: ScenePlan
   slug: string
   hasThumbnail?: boolean
   standalone?: boolean
   prompt?: string
+  storySlug?: string
 }) {
   return (
     <DioramaViewer
@@ -30,6 +32,7 @@ export function DioramaLoader({
       hasThumbnail={hasThumbnail}
       standalone={standalone}
       prompt={prompt}
+      storySlug={storySlug}
     />
   )
 }

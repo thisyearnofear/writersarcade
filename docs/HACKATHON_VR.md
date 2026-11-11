@@ -23,10 +23,10 @@ any of them.
 ## What we built
 
 Open the lighthouse. The sentence that made it is on the screen. Step in and
-walk. The goal is on the card: find what happened to the ship. Click a glowing
+walk. The goal card carries Read and Watch for the same plan. Click a glowing
 object and it checks off. Talk to the keeper. Type a second sentence — “make
-it night and add the missing ship” — and the world you are standing in
-changes. If that call fails, the world stays.
+it night and add the missing ship” — and a new world opens. The lighthouse at
+this link stays. If that call fails, nothing changes.
 
 That is the product. One sentence in, a walkable diorama out. No account, no
 wallet, no credits, no GPU. The same lighthouse sentence opens the saved
@@ -68,10 +68,11 @@ objective completes the world.
 view on a normal laptop: WASD, mouse look (Q and E turn if the browser will
 not lock the pointer), the same click-to-inspect. Esc returns to orbit. A
 headset still gets the WebXR entry when the browser reports one. Under the
-title, a second prompt reshapes the world you are
-standing in ("make it night and add the missing ship") — one more structured
-call through the same repair path. The current scene stays up until the new
-plan validates, so a failed reshape never blanks the world.
+title, a second prompt reshapes the world ("make it night and add the missing
+ship") — one more structured call through the same repair path. On the
+lighthouse that opens a new world, so this demo link stays. On any other
+world it replaces the plan in place. The scene you are looking at stays up
+until the new plan validates, so a failed reshape never blanks it.
 
 ## Four decisions that made it work
 
@@ -152,12 +153,10 @@ world does not sit on a noon lawn. Structure
 and landmark fallbacks use oak, and props use iron; flora and characters
 stay flat color.
 
-Next: procedurally forged
-models for subjects with no CC0 equivalent (the remaining ~39% of objects
-are still primitives), per-object voice, and
-letting a world become a film's shot list. The article → comic → world →
-film pipeline already exists and now shares one loading language and one
-artefact vocabulary.
+Next: procedurally forged models for subjects with no CC0 equivalent (the
+remaining ~39% of objects are still primitives), and per-object voice. A
+reshape of the lighthouse saves a new world, so the demo link keeps the
+scene this writeup describes.
 
 ## Licence and attribution
 

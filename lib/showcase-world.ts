@@ -15,3 +15,8 @@ export const SHOWCASE_WORLD = {
 export function isShowcasePrompt(prompt: string): boolean {
   return prompt.replace(/\s+/g, ' ').trim() === SHOWCASE_WORLD.prompt
 }
+
+/** A reshape of this slug must open a new world. The lighthouse row stays. */
+export function isShowcaseSlug(slug: string): boolean {
+  return slug === SHOWCASE_WORLD.slug
+}

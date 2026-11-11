@@ -38,7 +38,6 @@ export default async function WorldComicPage({ params }: WorldPageProps) {
         slug={world.slug}
         title={world.title}
         prompt={world.prompt}
-        genre={world.genre}
         ready={ready}
         active="read"
       />
