@@ -30,7 +30,7 @@ The pipeline is a **contract, not a prompt**:
 ```
 plain-language prompt
   → ScenePlannerService   one structured-output call → validated ScenePlan
-  → critique → revise     a second pass scores and repairs the plan
+  → repair pass           clamps drift, recovers missing asset keys
   → ScenePlan JSON        zones, objects, NPCs, interactables, objective
   → React Three Fiber     walkable scene, click-to-inspect, talk-to-NPC
 ```
@@ -41,13 +41,18 @@ renderer assembles deterministically. A fixed 303-model CC0 asset library
 (Kenney) supplies the visuals; anything unmatched falls back to a primitive
 that is shaped by category.
 
+(The game pipeline additionally runs a critique-and-revise pass — a second
+structured call that scores the plan against the story and repairs it. The
+standalone prompt path skips it deliberately: it would double a 50-second
+wait, and the repair pass already covers the failure modes we measured.)
+
 **The world has working logic, not just geometry.** Every scene carries a
 goal derived from its own premise ("find the three keys to understanding why
 the station stopped"). Objective objects glow. Clicking one reveals a
 narrative hook tied to the prompt. Clicking a character opens their
 dilemma. Finding every objective completes the world.
 
-## Three decisions that made it work
+## Four decisions that made it work
 
 **1. The schema is the interface.** We tried free-form descriptions first;
 the model invented objects that had no position, no size, and no category.
@@ -105,13 +110,17 @@ an object the model hallucinated a key for is replaced rather than dropped.
 **Loading states.** Generation takes 40–60 seconds. Instead of a spinner we
 flick through a title reel of real artefact covers — comics, worlds, films
 the platform has actually produced. The wait becomes a preview of the
-product. One shared component, used by every generation surface.
+product. One shared component, now used by the prompt surface, the game
+generation overlay and the in-game 3D world gate.
 
 ## What is real, and what is next
 
 Live and working: plain language → explorable 3D world with a goal, an
 objective, interactive objects and talking characters; the same source
-becoming an interactive comic; a shared title-reel loading state; VR entry.
+becoming an interactive comic; a shared title-reel loading state. Also
+implemented: a WebXR "Enter VR" entry point on the diorama (R3F owns the
+session lifecycle) — the button appears only on a device that reports
+`immersive-vr` support, so we could not exercise it on the hardware we had.
 
 Next: procedurally forged models for subjects with no CC0 equivalent (the
 remaining ~39% of objects are still primitives), per-object voice, and
