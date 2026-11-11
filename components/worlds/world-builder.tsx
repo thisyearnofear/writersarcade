@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { TitleSequence, type TitleCard } from '@/components/generation/title-sequence'
@@ -56,6 +56,7 @@ export function WorldBuilder() {
   const [error, setError] = useState<string | null>(null)
   const [worlds, setWorlds] = useState<WorldSummary[]>([])
   const [cards, setCards] = useState<TitleCard[]>([])
+  const buildAbort = useRef<AbortController | null>(null)
 
   const loadWorlds = useCallback(async () => {
     try {
@@ -95,22 +96,34 @@ export function WorldBuilder() {
     }
     setError(null)
     setBusy(true)
+    const controller = new AbortController()
+    buildAbort.current = controller
+    const timer = window.setTimeout(() => controller.abort(), 100_000)
     try {
       const res = await fetch('/api/worlds', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: trimmed, genre }),
+        signal: controller.signal,
       })
       const body = await res.json().catch(() => ({}))
       if (!res.ok || !body.success) {
-        setError(body.error || 'Could not build that world.')
+        setError(body.error || 'Could not build that world. Your description is still here.')
         setBusy(false)
         return
       }
       router.push(`/worlds/${body.data.slug}`)
-    } catch {
-      setError('Network error — please try again.')
+    } catch (err) {
+      const aborted = err instanceof DOMException && err.name === 'AbortError'
+      setError(
+        aborted
+          ? 'That build was cancelled or took too long. Your description is still here.'
+          : 'Network error — your description is still here. Please try again.',
+      )
       setBusy(false)
+    } finally {
+      window.clearTimeout(timer)
+      if (buildAbort.current === controller) buildAbort.current = null
     }
   }
 
@@ -122,14 +135,15 @@ export function WorldBuilder() {
           <p className="mt-6 text-center text-sm text-white/70">
             <span className="font-semibold text-white">Building your world…</span>
           </p>
+          <p className="mx-auto mt-2 max-w-lg text-center text-sm italic text-white/55">“{prompt.trim()}”</p>
           <p className="mt-1 text-center text-xs text-white/45">
             The set designer needs about a minute. Keep this tab open.
           </p>
           <button
-            onClick={() => setBusy(false)}
+            onClick={() => buildAbort.current?.abort()}
             className="mt-6 block w-full text-center text-xs text-white/40 hover:text-white/70"
           >
-            Cancel
+            Cancel and keep this description
           </button>
         </div>
       </div>

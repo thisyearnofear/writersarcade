@@ -12,7 +12,8 @@ This is the browser-native prompt-to-3D surface. A visitor types a scene — *"a
 abandoned subway station where the trains still arrive on schedule, but for
 ghosts"* — and an AI set designer returns a walkable diorama: zones to visit,
 characters to talk to, objects that carry story, and a thread to follow to the
-end. No account, no wallet, no credits, no article required.
+end. **Step in** walks the world in first person. A second sentence reshapes
+it. No account, no wallet, no credits, no article required.
 
 🎬 [Demo video (38s)](docs/demo/writersarcade-prompt-to-world.mp4) ·
 [Hackathon writeup](docs/HACKATHON_VR.md)
@@ -23,9 +24,10 @@ game worlds, wired to a standalone route:
 ```
 plain-language prompt
   → ScenePlannerService   (one structured-output call → validated ScenePlan)
-  → critique → revise     (a second pass scores and repairs the plan)
-  → GameScene-shaped JSON  (zones, objects, NPCs, interactables, objective)
-  → React Three Fiber      (walkable scene, click-to-inspect, talk-to-NPC)
+  → repair pass           (clamps drift, recovers missing asset keys)
+  → ScenePlan JSON        (zones, objects, NPCs, interactables, objective)
+  → React Three Fiber     (orbit or first-person walk, click-to-inspect, talk-to-NPC)
+  → optional reshape      (a follow-up sentence replaces the plan in place)
 ```
 
 The plan is a **contract, not a prompt**: the LLM composes inside a Zod schema
@@ -38,7 +40,7 @@ The shared daily ritual: a featured writer's Paragraph article staged inside tod
 
 ## What it does
 
-- **Prompt → World** (`/worlds`): plain language → an explorable 3D diorama, browser-native, no account required
+- **Prompt → World** (`/worlds`): plain language → an explorable 3D diorama you can walk and reshape, browser-native, no account required
 - **Generate playable stories** from article URLs, marketing copy, or any pasted text (`/studio`)
 - **iMessage agent (Flynn)**: text a link to prose and get a playable story back, with optional natural-language tone
 - **No wallet required to start**: try one free story, then upgrade with credits or crypto

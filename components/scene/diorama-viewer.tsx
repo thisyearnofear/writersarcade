@@ -8,6 +8,7 @@ import * as THREE from 'three'
 import type { ScenePlan, SceneObject } from '@/domains/games/services/scene-planner.service'
 import { getSceneAsset } from '@/lib/scene-assets'
 import { VRButton } from '@/components/scene/vr-button'
+import { Walker } from '@/components/scene/walker'
 
 interface DioramaViewerProps {
   scene: ScenePlan
@@ -246,6 +247,7 @@ function PrimitiveShape({ obj, color, isObjective, visited, onSelect }: {
 function CameraRig({
   framing,
   controlsRef,
+  enabled,
 }: {
   framing: {
     center: THREE.Vector3
@@ -257,10 +259,12 @@ function CameraRig({
     distance: number
   }
   controlsRef: React.RefObject<any>
+  enabled: boolean
 }) {
   const { camera, size } = useThree()
 
   useEffect(() => {
+    if (!enabled) return
     const aspect = size.width / Math.max(1, size.height)
     const tanH = framing.tanV * aspect
 
@@ -285,7 +289,7 @@ function CameraRig({
       controls.target.copy(framing.center)
       controls.update()
     }
-  }, [camera, size.width, size.height, framing, controlsRef])
+  }, [camera, size.width, size.height, framing, controlsRef, enabled])
 
   return null
 }
@@ -329,6 +333,58 @@ function SceneObjectMesh({ obj, color, isObjective, visited, onSelect }: {
   )
 }
 
+function QuestCard({
+  scene,
+  objectiveIds,
+  visitedIds,
+  objectivesFound,
+  worldComplete,
+}: {
+  scene: ScenePlan
+  objectiveIds: string[]
+  visitedIds: Set<string>
+  objectivesFound: number
+  worldComplete: boolean
+}) {
+  const goal = scene.game?.goal
+  const threads = objectiveIds.map((id) => ({
+    id,
+    label: scene.objects.find((object) => object.id === id)?.label ?? id,
+    found: visitedIds.has(id),
+  }))
+
+  return (
+    <aside className="pointer-events-auto w-64 max-w-[70vw] rounded-xl border border-white/15 bg-black/75 p-3 text-white shadow-lg backdrop-blur">
+      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-warning">
+        {goal ? 'Goal' : 'This place'}
+      </p>
+      <p className="mt-1 text-sm font-semibold leading-snug">
+        {goal ?? scene.title}
+      </p>
+      {threads.length > 0 && (
+        <ul className="mt-2 space-y-1">
+          {threads.map((thread) => (
+            <li key={thread.id} className={`text-xs ${thread.found ? 'text-success' : 'text-white/75'}`}>
+              <span className="mr-1.5">{thread.found ? '✓' : '○'}</span>
+              {thread.label}
+            </li>
+          ))}
+        </ul>
+      )}
+      {threads.length > 0 && (
+        <p className={`mt-2 text-[11px] ${worldComplete ? 'text-success' : 'text-white/50'}`}>
+          Threads {objectivesFound}/{objectiveIds.length}{worldComplete ? ' — world complete' : ''}
+        </p>
+      )}
+      {scene.npcs.length > 0 && (
+        <p className="mt-2 text-[11px] text-white/60">
+          Talk to {scene.npcs.map((npc) => npc.name).join(', ')}
+        </p>
+      )}
+    </aside>
+  )
+}
+
 export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = false, prompt }: DioramaViewerProps) {
   const [selected, setSelected] = useState<SelectedObject>(null)
   const [npcDialogue, setNpcDialogue] = useState<NpcDialogue>(null)
@@ -336,6 +392,8 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = 
   const [completeDismissed, setCompleteDismissed] = useState(false)
   const [thumbState, setThumbState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [intro, setIntro] = useState(true)
+  const [walking, setWalking] = useState(false)
+  const [walkHint, setWalkHint] = useState<string | null>(null)
   const glRef = useRef<THREE.WebGLRenderer | null>(null)
   const controlsRef = useRef<any>(null)
   const [renderer, setRenderer] = useState<THREE.WebGLRenderer | null>(null)
@@ -537,7 +595,16 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = 
         onCreated={({ gl }) => { glRef.current = gl; setRenderer(gl) }}
         onPointerMissed={() => { setSelected(null); setNpcDialogue(null) }}
       >
-        <CameraRig framing={framing} controlsRef={controlsRef} />
+        <CameraRig framing={framing} controlsRef={controlsRef} enabled={!walking} />
+        <Walker
+          active={walking}
+          center={{ x: framing.center.x, z: framing.center.z }}
+          radius={framing.radius}
+          onExit={() => {
+            setWalking(false)
+            setWalkHint(null)
+          }}
+        />
 
         <color attach="background" args={[scene.palette.sky[0]]} />
         {/* Fog tuned to the scene so the ground dissolves into the sky at the
@@ -758,20 +825,30 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = 
 
         <OrbitControls
           makeDefault
+          enabled={!walking}
           ref={controlsRef}
           target={orbitTarget}
           minDistance={6}
           maxDistance={110}
           maxPolarAngle={Math.PI / 2.05}
-          autoRotate={intro}
+          autoRotate={intro && !walking}
           autoRotateSpeed={0.7}
           onStart={() => setIntro(false)}
         />
       </Canvas>
 
+      {walking && (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center" aria-hidden="true">
+          <div className="relative h-4 w-4">
+            <span className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-white/80" />
+            <span className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-white/80" />
+          </div>
+        </div>
+      )}
+
       {/* Reveal title card — fades out as the camera sweep ends */}
       <div
-        className={`pointer-events-none absolute inset-0 flex items-center justify-center transition-opacity duration-700 ${intro ? 'opacity-100' : 'opacity-0'}`}
+        className={`pointer-events-none absolute inset-0 flex items-center justify-center transition-opacity duration-700 ${intro && !walking ? 'opacity-100' : 'opacity-0'}`}
         aria-hidden={!intro}
       >
         <div className="text-center">
@@ -829,20 +906,21 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = 
               <p className="mt-1 max-w-md text-xs italic text-white/60 drop-shadow">“{prompt}”</p>
             )}
           </div>
-          {scene.game && (
-            <div className="pointer-events-auto rounded-lg bg-black/50 px-3 py-2 text-sm text-warning backdrop-blur">
-              <p>Goal: {scene.game.goal}</p>
-              {objectiveIds.length > 0 && (
-                <p className={`mt-0.5 text-xs ${worldComplete ? 'text-success' : 'text-white/60'}`}>
-                  Threads found {objectivesFound}/{objectiveIds.length}{worldComplete ? ' — world complete' : ''}
-                </p>
-              )}
-            </div>
-          )}
+          <QuestCard
+            scene={scene}
+            objectiveIds={objectiveIds}
+            visitedIds={visitedIds}
+            objectivesFound={objectivesFound}
+            worldComplete={worldComplete}
+          />
         </div>
         <div className="flex items-end justify-between gap-3">
           <p className="text-xs text-white/60 drop-shadow">
-            Drag to orbit · scroll to zoom · click glowing objects{scene.npcs.length > 0 ? ' · click characters to talk' : ''}
+            {walkHint
+              ? walkHint
+              : walking
+                ? 'WASD to walk · mouse to look, or Q/E to turn · click to inspect · Esc to step back'
+                : `Drag to orbit · scroll to zoom · click glowing objects${scene.npcs.length > 0 ? ' · click characters to talk' : ''}`}
           </p>
           <div className="pointer-events-auto flex items-center gap-2">
             {npcDialogue && (
@@ -867,6 +945,27 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = 
                 className="rounded-lg bg-white/10 px-3 py-2 text-xs font-medium text-white backdrop-blur hover:bg-white/20 disabled:opacity-50"
               >
                 {thumbState === 'saving' ? 'Saving…' : thumbState === 'saved' ? 'Thumbnail saved' : thumbState === 'error' ? 'Retry thumbnail' : 'Save thumbnail'}
+              </button>
+            )}
+            {!walking && (
+              <button
+                type="button"
+                onClick={() => {
+                  const canvas = glRef.current?.domElement
+                  if (!canvas) return
+                  setIntro(false)
+                  setWalkHint(null)
+                  setWalking(true)
+                  const lock = canvas.requestPointerLock()
+                  if (lock && typeof (lock as Promise<void>).catch === 'function') {
+                    void (lock as Promise<void>).catch(() => {
+                      setWalkHint('Mouse look was blocked. Q and E turn, WASD walks, Esc steps back.')
+                    })
+                  }
+                }}
+                className="rounded-lg bg-brand px-3 py-2 text-xs font-semibold text-brand-foreground backdrop-blur transition hover:bg-brand/90"
+              >
+                Step in
               </button>
             )}
             <VRButton renderer={renderer} />

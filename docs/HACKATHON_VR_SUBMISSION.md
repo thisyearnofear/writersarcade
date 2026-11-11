@@ -30,7 +30,7 @@ Pick the closest available option; if there is a free-text field, use
 
 ## Writeup
 
-The full writeup is in [`docs/HACKATHON_VR.md`](HACKATHON_VR.md) (958 words,
+The full writeup is in [`docs/HACKATHON_VR.md`](HACKATHON_VR.md) (1,191 words,
 limit 1,500). It is structured as:
 
 1. Title / subtitle
@@ -60,10 +60,13 @@ limit 1,500). It is structured as:
 2. Type any scene, e.g. *"A lighthouse on a cliff at dusk, its beam sweeping
    the fog where a ship is missing"*, pick a genre, press **Build this world**.
 3. Watch the loading reel (real artefact covers, not a spinner), ~50s.
-4. In the world: drag to orbit, click a glowing object to read its story
-   hook, click a character to hear their dilemma, and watch the thread
-   counter climb toward the goal.
-5. Press **Make a comic** to turn the same source into an interactive comic.
+4. In the world: read the quest card (goal, named threads, characters). Drag
+   to orbit, or press **Step in** and walk with WASD. Click a glowing object
+   to check off a thread. Click a character to hear their dilemma.
+5. In **Change this world**, type *"make it night and add the missing ship"*
+   and press **Reshape**. The current world stays until the revision lands
+   (~a minute).
+6. Press **Make a comic** to turn the same source into an interactive comic.
 
 Judges are encouraged to try their own prompts — the planner is prompted to
 work from any plain-language scene description, per the rules.
@@ -74,16 +77,21 @@ work from any plain-language scene description, per the rules.
 |---|---|
 | No account needed | Open `/worlds` in a private window; nothing is asked for. |
 | Works from arbitrary prompts | Any sentence works; the demo used five unrelated prompts. |
-| Real logic, not a static mesh | Click objects/NPCs; the thread counter increments. |
-| Video shows the same thing | The mp4 is the demo, recorded against production. |
+| Real logic, not a static mesh | The quest card lists the goal and each thread. Clicking one checks it off. |
+| You can walk in | **Step in**, then WASD. Q and E turn if the browser will not lock the pointer. Esc returns to orbit. |
+| You can change it | **Change this world**, then **Reshape**. A failed call leaves the current scene up. |
+| Video | The 38s mp4 shows prompt → orbit → inspect, recorded before walk and reshape. Those two are on the live demo. |
 
 ## Repo notes for judges
 
 - `lib/fal-provider.ts` — the fal `any-llm` provider (wire-format translation).
 - `domains/games/services/scene-planner.service.ts` — the schema, the repair
-  pass, and the asset-recovery pass.
+  pass, the asset-recovery pass, and `reviseScenePlan`.
+- `app/api/worlds/[slug]/revise/route.ts` — the follow-up prompt. A failure
+  does not blank the stored world.
 - `components/scene/diorama-viewer.tsx` — the renderer: local IBL, contact
-  shadows, screen-space camera framing, gradient sky.
+  shadows, screen-space camera framing, gradient sky, quest card, Step in.
+- `components/scene/walker.tsx` — desktop first-person movement.
 - `components/generation/title-sequence.tsx` — the shared loading reel.
 - `lib/scene-assets.ts` — the 303-model CC0 manifest.
 - `docs/DIORAMA_RESEARCH.md` — prior art and design decisions.
@@ -91,7 +99,10 @@ work from any plain-language scene description, per the rules.
 ## Known limitations (state them; judges reward honesty)
 
 - ~39% of objects still render as category-shaped primitives — there is no CC0
-  model for every subject, and procedural forging is future work.
+  model for every subject, and procedural forging is future work. Reshaping
+  and walking do not change that number.
+- "Step in" is desktop first-person. "Enter VR" only appears when the browser
+  reports a headset, and we have not exercised it on a headset.
 - The planner occasionally mis-assigns an asset; the recovery pass corrects
   most of it, not all.
 - The AI provider is a single funded route (fal). Every other configured

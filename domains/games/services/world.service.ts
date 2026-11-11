@@ -17,6 +17,27 @@ import { ScenePlannerService, type ScenePlan } from '@/domains/games/services/sc
 
 const MAX_PROMPT_CHARS = 1200
 const MIN_PROMPT_CHARS = 12
+const MAX_REVISION_CHARS = 400
+const MIN_REVISION_CHARS = 8
+
+/** One model attempt. A retry would blow the 120s route budget. */
+export const WORLD_PLAN_TIMEOUT_MS = 90_000
+
+const WORLD_PLAN_CALL = { timeoutMs: WORLD_PLAN_TIMEOUT_MS, maxRetries: 0 }
+
+export class WorldRequestError extends Error {
+  readonly status: number
+  constructor(message: string, status: number) {
+    super(message)
+    this.name = 'WorldRequestError'
+    this.status = status
+  }
+}
+
+export function isPlannerTimeout(error: unknown): boolean {
+  if (!(error instanceof Error)) return false
+  return error.name === 'TimeoutError' || error.name === 'AbortError' || /timeout|timed out|aborted/i.test(error.message)
+}
 
 /** Genre hints offered in the UI; also used to steer the planner. */
 export const WORLD_GENRES = [
@@ -47,6 +68,18 @@ export function normalizePrompt(value: unknown): string {
 export function validatePrompt(prompt: string): string | null {
   if (prompt.length < MIN_PROMPT_CHARS) {
     return `Describe a place in at least ${MIN_PROMPT_CHARS} characters.`
+  }
+  return null
+}
+
+export function normalizeRevision(value: unknown): string {
+  if (typeof value !== 'string') return ''
+  return value.replace(/\s+/g, ' ').trim().slice(0, MAX_REVISION_CHARS)
+}
+
+export function validateRevision(instruction: string): string | null {
+  if (instruction.length < MIN_REVISION_CHARS) {
+    return 'Say what to change in a few more words.'
   }
   return null
 }
@@ -129,6 +162,12 @@ export async function createWorld(input: CreateWorldInput): Promise<CreatedWorld
       where: { id: row.id },
       data: { status: 'failed', error: message.slice(0, 500) },
     })
+    if (isPlannerTimeout(error)) {
+      throw new WorldRequestError(
+        'The set designer took too long. Your description is still here — try again.',
+        504,
+      )
+    }
     throw error
   }
 
@@ -155,8 +194,63 @@ export async function planWorld(prompt: string, genre: string): Promise<ScenePla
     description: prompt,
     genre,
     subgenre: undefined,
-  })
+  }, undefined, WORLD_PLAN_CALL)
   return plan
+}
+
+/**
+ * Reshape a completed world from a follow-up instruction.
+ *
+ * The previous scene stays in place until a new plan validates. A timeout or
+ * a provider error leaves the world completed and unchanged.
+ */
+export async function reviseWorld(slug: string, instruction: string): Promise<CreatedWorld> {
+  const text = normalizeRevision(instruction)
+  const invalid = validateRevision(text)
+  if (invalid) throw new WorldRequestError(invalid, 400)
+
+  const world = await prisma.world.findUnique({ where: { slug } })
+  if (!world || world.status !== 'completed' || !world.sceneJson) {
+    throw new WorldRequestError('That world is not ready to reshape.', 409)
+  }
+
+  let plan: ScenePlan
+  try {
+    plan = await ScenePlannerService.reviseScenePlan(
+      world.sceneJson as unknown as ScenePlan,
+      text,
+      { prompt: world.prompt, genre: world.genre },
+      undefined,
+      WORLD_PLAN_CALL,
+    )
+  } catch (error) {
+    logger.error('World reshape failed:', error)
+    if (isPlannerTimeout(error)) {
+      throw new WorldRequestError(
+        'The reshape took too long. This world is unchanged — try a shorter instruction.',
+        504,
+      )
+    }
+    throw new WorldRequestError('Could not reshape this world. It is unchanged — try again.', 502)
+  }
+
+  await prisma.world.update({
+    where: { id: world.id },
+    data: {
+      title: plan.title || world.title,
+      sceneJson: plan as unknown as object,
+      status: 'completed',
+      error: null,
+    },
+  })
+
+  return {
+    slug: world.slug,
+    title: plan.title || world.title,
+    prompt: world.prompt,
+    genre: world.genre,
+    status: 'completed',
+  }
 }
 
 /** Recent completed worlds, newest first. */

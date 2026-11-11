@@ -8,6 +8,7 @@ import {
   normalizePrompt,
   validatePrompt,
   WORLD_GENRES,
+  WorldRequestError,
 } from '@/domains/games/services/world.service'
 
 /**
@@ -53,6 +54,7 @@ export const POST = apiHandler(async (request: NextRequest) => {
     const world = await createWorld({ prompt, genre: parsed.data.genre })
     return ok(world, 201)
   } catch (error) {
+    if (error instanceof WorldRequestError) return fail(error.message, error.status)
     console.error('[api/worlds] generation failed:', error)
     return fail('World generation failed. Please try again.', 502)
   }

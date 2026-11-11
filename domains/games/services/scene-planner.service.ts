@@ -275,6 +275,23 @@ export interface ScenePlannerInput {
   storyPlan?: StoryPlan | null
 }
 
+export interface ScenePlannerCall {
+  /** Abort the model call after this many milliseconds. */
+  timeoutMs?: number
+  /** Retries after a provider error. Defaults to the AI SDK's own default. */
+  maxRetries?: number
+}
+
+const SCENE_RULES = `Rules:
+- zones[] should mirror the story arc beats (one zone per major beat, max 6).
+- Every object is EXACTLY ONE physical thing — a single tree, a single chair, never a scene and never "and".
+- Spread objects across zones with breathing room; no overlapping positions.
+- 30-50% of objects should be interactable, each with a narrativeHook that references a panel moment or dilemma.
+- npcs[] are characters from the story placed in zones, each carrying a persona line and, when relevant, the dilemma they embody.
+- ALWAYS emit a game block: derive a concrete explorable objective from the story's central conflict (e.g. "find the three witnesses", "reach the beacon before dusk"). objectiveIds must reference objects the player can click — give each a meaningful interactable.narrativeHook. The player "wins" the world by discovering every objective.
+- assetKey: prefer a curated asset when one fits the object — available keys: ${sceneAssetVocabulary()}. primitive is the guaranteed fallback for anything without a match.
+- Give every object a color chosen from the palette (accent for landmarks/interactables, ground/fog tones for set dressing). Asset-keyed objects ignore color (they use their baked texture).`
+
 /**
  * Generate a 3D diorama blueprint from a game's story plan.
  * One structured-output call; objects reference zones derived from arc beats.
@@ -282,7 +299,8 @@ export interface ScenePlannerInput {
 export class ScenePlannerService {
   static async generateScenePlan(
     input: ScenePlannerInput,
-    userPreferences?: UserAIPreferences
+    userPreferences?: UserAIPreferences,
+    call?: ScenePlannerCall,
   ): Promise<ScenePlan> {
     const model = getStructuredOutputModel(userPreferences)
 
@@ -295,16 +313,10 @@ export class ScenePlannerService {
 
     const { output } = await generateText({
       model,
+      timeout: call?.timeoutMs,
+      maxRetries: call?.maxRetries,
       instructions: `You are the set designer for WritersArcade dioramas — explorable 3D scenes generated from interactive comics.
-Design ONE walkable scene that dramatizes the story plan's world. Rules:
-- zones[] should mirror the story arc beats (one zone per major beat, max 6).
-- Every object is EXACTLY ONE physical thing — a single tree, a single chair, never a scene and never "and".
-- Spread objects across zones with breathing room; no overlapping positions.
-- 30-50% of objects should be interactable, each with a narrativeHook that references a panel moment or dilemma.
-- npcs[] are characters from the story placed in zones, each carrying a persona line and, when relevant, the dilemma they embody.
-- ALWAYS emit a game block: derive a concrete explorable objective from the story's central conflict (e.g. "find the three witnesses", "reach the beacon before dusk"). objectiveIds must reference objects the player can click — give each a meaningful interactable.narrativeHook. The player "wins" the world by discovering every objective.
-- assetKey: prefer a curated asset when one fits the object — available keys: ${sceneAssetVocabulary()}. primitive is the guaranteed fallback for anything without a match.
-- Give every object a color chosen from the palette (accent for landmarks/interactables, ground/fog tones for set dressing). Asset-keyed objects ignore color (they use their baked texture).`,
+Design ONE walkable scene that dramatizes the story plan's world. ${SCENE_RULES}`,
       prompt: `SOURCE MATERIAL:\n${context}\n\nOUTPUT a ScenePlan for a "${input.genre}" diorama (${input.subgenre ?? 'subgenre optional'}) titled "${input.title}".`,
       output: Output.object({ schema: scenePlanOutputSchema }),
     })
@@ -312,6 +324,33 @@ Design ONE walkable scene that dramatizes the story plan's world. Rules:
     // Referential integrity the schema can't express: game.objectiveIds and
     // zoneIds must resolve, or the renderer hits dangling references. Same for
     // assetKey — the LLM can hallucinate keys outside the manifest.
+    return sanitizeScenePlan(output)
+  }
+
+  /**
+   * Apply a follow-up instruction to a world that already exists.
+   *
+   * Returns a full replacement plan. The caller keeps the previous plan if
+   * this throws, so a failed reshape never blanks a world a judge is standing in.
+   */
+  static async reviseScenePlan(
+    plan: ScenePlan,
+    instruction: string,
+    context: { prompt: string; genre: string },
+    userPreferences?: UserAIPreferences,
+    call?: ScenePlannerCall,
+  ): Promise<ScenePlan> {
+    const model = getStructuredOutputModel(userPreferences)
+    const { output } = await generateText({
+      model,
+      timeout: call?.timeoutMs,
+      maxRetries: call?.maxRetries,
+      instructions: `You revise an existing WritersArcade ScenePlan. Apply the visitor's instruction and return the FULL updated ScenePlan, not a diff.
+The change must be visible: a request for night sets mood to night and shifts the palette; a request to add something adds an object with that label; a request to remove something removes it. Keep ids, positions, and copy for everything the instruction does not mention.
+${SCENE_RULES}`,
+      prompt: `ORIGINAL PROMPT:\n${context.prompt}\n\nGENRE: ${context.genre}\n\nCURRENT PLAN:\n${JSON.stringify(plan)}\n\nINSTRUCTION:\n${instruction}\n\nOUTPUT the full revised ScenePlan.`,
+      output: Output.object({ schema: scenePlanOutputSchema }),
+    })
     return sanitizeScenePlan(output)
   }
 }

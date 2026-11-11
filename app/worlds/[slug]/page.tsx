@@ -3,6 +3,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { prisma } from '@/lib/prisma'
 import { DioramaLoader } from '@/components/scene/diorama-loader'
+import { ReshapeBar } from '@/components/worlds/reshape-bar'
 import type { ScenePlan } from '@/domains/games/services/scene-planner.service'
 
 export const dynamic = 'force-dynamic'
@@ -55,9 +56,12 @@ export default async function WorldPage({ params }: WorldPageProps) {
         </div>
       </header>
 
+      {ready && <ReshapeBar slug={world.slug} />}
+
       <main className="min-h-0 flex-1">
         {ready ? (
           <DioramaLoader
+            key={world.updatedAt.toISOString()}
             scene={world.sceneJson as unknown as ScenePlan}
             slug={`world-${world.slug}`}
             standalone

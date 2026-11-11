@@ -48,9 +48,19 @@ wait, and the repair pass already covers the failure modes we measured.)
 
 **The world has working logic, not just geometry.** Every scene carries a
 goal derived from its own premise ("find the three keys to understanding why
-the station stopped"). Objective objects glow. Clicking one reveals a
-narrative hook tied to the prompt. Clicking a character opens their
-dilemma. Finding every objective completes the world.
+the station stopped"). A quest card stays on screen: the goal, each thread
+by name, and who you can talk to. Objective objects glow. Clicking one
+checks it off. Clicking a character opens their dilemma. Finding every
+objective completes the world.
+
+**You can walk into it, and you can change it.** "Step in" is a first-person
+view on a normal laptop: WASD, mouse look (Q and E turn if the browser will
+not lock the pointer), the same click-to-inspect. Esc returns to orbit. A
+headset still gets the WebXR entry when the browser reports one. Under the
+title, a second prompt reshapes the world you are
+standing in ("make it night and add the missing ship") — one more structured
+call through the same repair path. The current scene stays up until the new
+plan validates, so a failed reshape never blanks the world.
 
 ## Four decisions that made it work
 
@@ -116,11 +126,13 @@ generation overlay and the in-game 3D world gate.
 ## What is real, and what is next
 
 Live and working: plain language → explorable 3D world with a goal, an
-objective, interactive objects and talking characters; the same source
+objective, interactive objects and talking characters; a desktop first-person
+walk; a follow-up sentence that reshapes the same world; the same source
 becoming an interactive comic; a shared title-reel loading state. Also
 implemented: a WebXR "Enter VR" entry point on the diorama (R3F owns the
 session lifecycle) — the button appears only on a device that reports
 `immersive-vr` support, so we could not exercise it on the hardware we had.
+The walk judges can use without a headset is the "Step in" control.
 
 Next: procedurally forged models for subjects with no CC0 equivalent (the
 remaining ~39% of objects are still primitives), per-object voice, and
