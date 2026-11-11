@@ -30,7 +30,7 @@ Pick the closest available option; if there is a free-text field, use
 
 ## Writeup
 
-The full writeup is in [`docs/HACKATHON_VR.md`](HACKATHON_VR.md) (1,191 words,
+The full writeup is in [`docs/HACKATHON_VR.md`](HACKATHON_VR.md) (1,277 words,
 limit 1,500). It is structured as:
 
 1. Title / subtitle
@@ -92,6 +92,7 @@ work from any plain-language scene description, per the rules.
 - `components/scene/diorama-viewer.tsx` — the renderer: local IBL, contact
   shadows, screen-space camera framing, gradient sky, quest card, Step in.
 - `components/scene/walker.tsx` — desktop first-person movement.
+- `components/scene/ground-surface.tsx` — baked PBR maps for the grounds.
 - `components/generation/title-sequence.tsx` — the shared loading reel.
 - `lib/scene-assets.ts` — the 303-model CC0 manifest.
 - `docs/DIORAMA_RESEARCH.md` — prior art and design decisions.
@@ -100,7 +101,11 @@ work from any plain-language scene description, per the rules.
 
 - ~39% of objects still render as category-shaped primitives — there is no CC0
   model for every subject, and procedural forging is future work. Reshaping
-  and walking do not change that number.
+  and walking do not change that number. Structure and landmark fallbacks
+  use oak maps, props use iron, and flora and characters stay a flat color.
+  Kenney models keep their own textures.
+- Grass, meadow, sand, snow, stone, and water use baked PBRgen maps.
+  Void has no ground disc.
 - "Step in" is desktop first-person. "Enter VR" only appears when the browser
   reports a headset, and we have not exercised it on a headset.
 - The planner occasionally mis-assigns an asset; the recovery pass corrects

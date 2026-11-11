@@ -1,14 +1,15 @@
 'use client'
 
-import { Component, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { Component, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import Link from 'next/link'
 import { Canvas, useThree } from '@react-three/fiber'
-import { OrbitControls, Text, Billboard, useGLTF, Environment, Lightformer, ContactShadows } from '@react-three/drei'
+import { OrbitControls, Text, Billboard, useGLTF, useTexture, Environment, Lightformer, ContactShadows } from '@react-three/drei'
 import * as THREE from 'three'
 import type { ScenePlan, SceneObject } from '@/domains/games/services/scene-planner.service'
 import { getSceneAsset } from '@/lib/scene-assets'
 import { VRButton } from '@/components/scene/vr-button'
 import { Walker } from '@/components/scene/walker'
+import { FlatGround, hasGroundMaps, TexturedGround } from '@/components/scene/ground-surface'
 
 interface DioramaViewerProps {
   scene: ScenePlan
@@ -119,12 +120,124 @@ function AssetMesh({ src, onSelect, clickable }: { src: string; onSelect: () => 
   )
 }
 
+interface SurfaceMaps {
+  col: string
+  rough: string
+  nrm: string
+  roughness: number
+  metalness: number
+}
+
+const WOOD_MAPS: SurfaceMaps = {
+  col: '/assets/scene/grounds/wood-col.webp',
+  rough: '/assets/scene/grounds/wood-rough.webp',
+  nrm: '/assets/scene/grounds/wood-nrm.webp',
+  roughness: 1,
+  metalness: 0,
+}
+
+const METAL_MAPS: SurfaceMaps = {
+  col: '/assets/scene/grounds/metal-col.webp',
+  rough: '/assets/scene/grounds/metal-rough.webp',
+  nrm: '/assets/scene/grounds/metal-nrm.webp',
+  roughness: 1,
+  metalness: 1,
+}
+
+/** Oak on built fallbacks, iron on props. Flora and characters stay flat. */
+const PRIMITIVE_SURFACE: Partial<Record<SceneObject['category'], SurfaceMaps>> = {
+  structure: WOOD_MAPS,
+  landmark: WOOD_MAPS,
+  prop: METAL_MAPS,
+}
+
+useTexture.preload([
+  WOOD_MAPS.col, WOOD_MAPS.rough, WOOD_MAPS.nrm,
+  METAL_MAPS.col, METAL_MAPS.rough, METAL_MAPS.nrm,
+])
+
 function PrimitiveShape({ obj, color, isObjective, visited, onSelect }: {
   obj: SceneObject
   color: string
   isObjective: boolean
   visited: boolean
   onSelect: (o: SceneObject) => void
+}) {
+  const spec = PRIMITIVE_SURFACE[obj.category]
+  if (!spec) return <PrimitiveMeshes obj={obj} color={color} isObjective={isObjective} visited={visited} onSelect={onSelect} />
+  return (
+    <Suspense fallback={<PrimitiveMeshes obj={obj} color={color} isObjective={isObjective} visited={visited} onSelect={onSelect} />}>
+      <SurfacedPrimitiveMeshes spec={spec} obj={obj} color={color} isObjective={isObjective} visited={visited} onSelect={onSelect} />
+    </Suspense>
+  )
+}
+
+function SurfacedPrimitiveMeshes({
+  spec,
+  obj,
+  color,
+  isObjective,
+  visited,
+  onSelect,
+}: {
+  spec: SurfaceMaps
+  obj: SceneObject
+  color: string
+  isObjective: boolean
+  visited: boolean
+  onSelect: (o: SceneObject) => void
+}) {
+  const [col, rough, nrm] = useTexture([spec.col, spec.rough, spec.nrm])
+  const normalScale = useMemo(() => new THREE.Vector2(1, 1), [])
+  const clickable = Boolean(obj.interactable) || isObjective
+  const emissive = visited ? '#34d399' : isObjective ? '#ffcc00' : clickable ? color : '#000000'
+  const emissiveIntensity = visited ? 0.3 : isObjective ? 0.35 : clickable ? 0.18 : 0
+
+  useLayoutEffect(() => {
+    for (const tex of [col, rough, nrm]) {
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping
+      tex.repeat.set(1, 1)
+      tex.anisotropy = 8
+      tex.needsUpdate = true
+    }
+    col.colorSpace = THREE.SRGBColorSpace
+    rough.colorSpace = THREE.NoColorSpace
+    nrm.colorSpace = THREE.NoColorSpace
+  }, [col, rough, nrm])
+
+  const shared = {
+    map: col,
+    roughnessMap: rough,
+    normalMap: nrm,
+    normalScale,
+    color: '#ffffff',
+    emissive,
+    emissiveIntensity,
+    roughness: spec.roughness,
+    metalness: spec.metalness,
+  }
+
+  return (
+    <PrimitiveMeshes
+      obj={obj}
+      color="#ffffff"
+      isObjective={isObjective}
+      visited={visited}
+      onSelect={onSelect}
+      material={<meshStandardMaterial {...shared} />}
+      planeMaterial={<meshStandardMaterial {...shared} side={THREE.DoubleSide} />}
+    />
+  )
+}
+
+function PrimitiveMeshes({ obj, color, isObjective, visited, onSelect, material, planeMaterial }: {
+  obj: SceneObject
+  color: string
+  isObjective: boolean
+  visited: boolean
+  onSelect: (o: SceneObject) => void
+  material?: ReactNode
+  planeMaterial?: ReactNode
 }) {
   const clickable = Boolean(obj.interactable) || isObjective
   const emissive = visited ? '#34d399' : isObjective ? '#ffcc00' : clickable ? color : '#000000'
@@ -136,7 +249,7 @@ function PrimitiveShape({ obj, color, isObjective, visited, onSelect }: {
     onPointerOver: clickable ? () => { document.body.style.cursor = 'pointer' } : undefined,
     onPointerOut: clickable ? () => { document.body.style.cursor = 'default' } : undefined,
   }
-  const material = (
+  const flatMaterial = (
     <meshStandardMaterial
       color={color}
       emissive={emissive}
@@ -145,6 +258,7 @@ function PrimitiveShape({ obj, color, isObjective, visited, onSelect }: {
       metalness={0.05}
     />
   )
+  const bodyMaterial = material ?? flatMaterial
 
   // Primitives are the fallback when no curated asset matches. Proportions
   // vary by category so a fallback scene reads as designed blocks rather than
@@ -169,67 +283,73 @@ function PrimitiveShape({ obj, color, isObjective, visited, onSelect }: {
       {obj.primitive === 'box' && (
         <mesh {...common} position={[0, dims.h / 2, 0]}>
           <boxGeometry args={[dims.w, dims.h, dims.d]} />
-          {material}
+          {bodyMaterial}
         </mesh>
       )}
       {obj.primitive === 'cylinder' && (
         <mesh {...common} position={[0, dims.h / 2, 0]}>
           <cylinderGeometry args={[dims.w / 2, dims.w / 2, dims.h, 20]} />
-          {material}
+          {bodyMaterial}
         </mesh>
       )}
       {obj.primitive === 'sphere' && (
         <mesh {...common} position={[0, dims.h / 2, 0]}>
           <sphereGeometry args={[dims.w / 2, 24, 24]} />
-          {material}
+          {bodyMaterial}
         </mesh>
       )}
       {obj.primitive === 'cone' && (
         <mesh {...common} position={[0, dims.h / 2, 0]}>
           <coneGeometry args={[dims.w / 2, dims.h, 20]} />
-          {material}
+          {bodyMaterial}
         </mesh>
       )}
       {obj.primitive === 'plane' && (
         <mesh {...common} position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[dims.w * 2, dims.d * 2]} />
-          <meshStandardMaterial
-            color={color}
-            emissive={emissive}
-            emissiveIntensity={emissiveIntensity}
-            roughness={0.85}
-            side={THREE.DoubleSide}
-          />
+          {planeMaterial ?? (
+            <meshStandardMaterial
+              color={color}
+              emissive={emissive}
+              emissiveIntensity={emissiveIntensity}
+              roughness={0.85}
+              side={THREE.DoubleSide}
+            />
+          )}
         </mesh>
       )}
       {obj.primitive === 'torus' && (
         <mesh {...common} position={[0, dims.h / 2, 0]} rotation={[Math.PI / 2, 0, 0]}>
           <torusGeometry args={[dims.w / 2, dims.w / 5, 16, 32]} />
-          {material}
+          {bodyMaterial}
         </mesh>
       )}
       {obj.primitive === 'icosahedron' && (
         <mesh {...common} position={[0, dims.h / 2, 0]}>
           <icosahedronGeometry args={[dims.w / 2, 0]} />
-          <meshStandardMaterial
-            color={color}
-            emissive={emissive}
-            emissiveIntensity={emissiveIntensity}
-            roughness={0.8}
-            flatShading
-          />
+          {material ?? (
+            <meshStandardMaterial
+              color={color}
+              emissive={emissive}
+              emissiveIntensity={emissiveIntensity}
+              roughness={0.8}
+              flatShading
+            />
+          )}
         </mesh>
       )}
       {obj.primitive === 'dodecahedron' && (
         <mesh {...common} position={[0, dims.h / 2, 0]}>
           <dodecahedronGeometry args={[dims.w / 2, 0]} />
-          <meshStandardMaterial
-            color={color}
-            emissive={emissive}
-            emissiveIntensity={emissiveIntensity}
-            roughness={0.8}
-            flatShading
-          />
+          {material ?? (
+            <meshStandardMaterial
+              color={color}
+              emissive={emissive}
+              emissiveIntensity={emissiveIntensity}
+              roughness={0.8}
+              flatShading
+            />
+          )}
         </mesh>
       )}
     </>
@@ -709,21 +829,33 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = 
             disc into a flat, over-bright mass with no depth.
             A 'void' ground means there is no ground — the scene floats, so
             no disc and no horizon ring. */}
-        {scene.ground !== 'void' && (
-          <mesh
-            rotation={[-Math.PI / 2, 0, 0]}
-            position={[framing.center.x, -0.02, framing.center.z]}
-            receiveShadow
+        {scene.ground !== 'void' && hasGroundMaps(scene.ground) && (
+          <Suspense
+            fallback={
+              <FlatGround
+                radius={framing.radius}
+                center={{ x: framing.center.x, z: framing.center.z }}
+                color={liftColor(scene.palette.ground, 0.07)}
+                fog={scene.palette.fog}
+              />
+            }
           >
-            <circleGeometry args={[framing.radius, 64]} />
-            <meshStandardMaterial
-              color={liftColor(scene.palette.ground, 0.07)}
-              roughness={0.95}
-              metalness={0}
-              emissive={scene.palette.fog}
-              emissiveIntensity={0.12}
+            <TexturedGround
+              ground={scene.ground}
+              radius={framing.radius}
+              center={{ x: framing.center.x, z: framing.center.z }}
+              mood={scene.mood}
+              fog={scene.palette.fog}
             />
-          </mesh>
+          </Suspense>
+        )}
+        {scene.ground !== 'void' && !hasGroundMaps(scene.ground) && (
+          <FlatGround
+            radius={framing.radius}
+            center={{ x: framing.center.x, z: framing.center.z }}
+            color={liftColor(scene.palette.ground, 0.07)}
+            fog={scene.palette.fog}
+          />
         )}
         {/* Subtle horizon ring in the accent color */}
         {scene.ground !== 'void' && (

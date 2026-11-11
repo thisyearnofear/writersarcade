@@ -134,15 +134,25 @@ session lifecycle) — the button appears only on a device that reports
 `immersive-vr` support, so we could not exercise it on the hardware we had.
 The walk judges can use without a headset is the "Step in" control.
 
-Next: procedurally forged models for subjects with no CC0 equivalent (the
-remaining ~39% of objects are still primitives), per-object voice, and
+Grass, meadow, sand, snow, stone, and water grounds use a baked tileable
+PBR set (color, roughness, normal), tinted by the scene mood so a night
+world does not sit on a noon lawn. Structure
+and landmark fallbacks use oak, and props use iron; flora and characters
+stay flat color.
+
+Next: procedurally forged
+models for subjects with no CC0 equivalent (the remaining ~39% of objects
+are still primitives), per-object voice, and
 letting a world become a film's shot list. The article → comic → world →
 film pipeline already exists and now shares one loading language and one
 artefact vocabulary.
 
 ## Licence and attribution
 
-Application code: MIT. All 3D assets are Kenney, CC0 (public domain) —
-credits in `THIRD_PARTY_NOTICES.md`. Design prior art is credited in
+Application code: MIT. All 3D models are Kenney, CC0 (public domain) —
+credits in `THIRD_PARTY_NOTICES.md`. Ground maps, and the oak and iron maps
+on fallback primitives, were generated in PBRgen under a Pro commercial
+licence and shipped as static files; the app does not call PBRgen when a
+judge opens a world. Design prior art is credited in
 `docs/DIORAMA_RESEARCH.md` (three.ws, SceneTeller, SceneCraft, Holodeck,
 OptiScene).

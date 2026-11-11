@@ -65,7 +65,10 @@ are free to borrow with attribution.
    - v0: primitives + flat colors (spike demo).
    - v1: **retrieval-first** — curated CC0/Kenney-style low-poly pack per biome;
      LLM picks asset + layout. Instant, ~free, deterministic, clean licensing
-     story for NFT/IP provenance.
+     story for NFT/IP provenance. Shipped grounds (grass, meadow, sand, snow,
+     stone, water) and the structure, landmark, and prop fallbacks use baked
+     PBRgen maps. Flora and characters stay flat color. Kenney models keep
+     their own textures.
    - v2 (optional): premium objects via image-gen → Meshy/Tripo image→3D → GLB,
      billed as a higher credit tier.
 3. **Critique loop**: ✅ implemented as `SceneCritiqueService` — a second

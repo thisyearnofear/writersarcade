@@ -24,6 +24,15 @@ public domain, no attribution required. They are credited here voluntarily.
 The curated manifest that maps model names onto these files lives in
 `lib/scene-assets.ts`.
 
+## Ground and fallback textures — PBRgen
+
+The tileable color, roughness, and normal maps in
+`public/assets/scene/grounds/` were generated in [PBRgen](https://app.pbrgen.com/)
+on a Pro account that includes commercial use, then shipped as static files.
+Grass, meadow, sand, snow, stone, and water use them on the ground disc.
+Unmatched structure and landmark primitives use the oak set, and props use
+the iron set. The app does not call PBRgen when a world is opened.
+
 ## Software dependencies
 
 | Package | Licence | Used for |
