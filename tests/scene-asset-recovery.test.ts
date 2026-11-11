@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { repairScenePlan, parseScenePlan } from '@/domains/games/services/scene-planner.service'
+import { parseScenePlan } from '@/domains/games/services/scene-planner.service'
 import { SCENE_ASSETS } from '@/lib/scene-assets'
 
 type TestObject = {
