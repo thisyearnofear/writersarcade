@@ -23,9 +23,15 @@ const MAX_REQUESTS = 10 // Max requests per window
 /**
  * Check if request exceeds rate limit
  * @param identifier - Unique identifier (wallet address, IP, etc.)
+ * @param max - Max requests per window (defaults to the shared limit)
+ * @param windowMs - Window length in ms (defaults to 1 minute)
  * @returns { allowed: boolean, remaining: number, resetIn: number }
  */
-export function checkRateLimit(identifier: string): {
+export function checkRateLimit(
+  identifier: string,
+  max: number = MAX_REQUESTS,
+  windowMs: number = RATE_LIMIT_WINDOW_MS,
+): {
   allowed: boolean
   remaining: number
   resetIn: number
@@ -42,13 +48,13 @@ export function checkRateLimit(identifier: string): {
   if (!entry || now > entry.resetTime) {
     rateLimitStore.set(identifier, {
       count: 1,
-      resetTime: now + RATE_LIMIT_WINDOW_MS,
+      resetTime: now + windowMs,
     })
-    return { allowed: true, remaining: MAX_REQUESTS - 1, resetIn: RATE_LIMIT_WINDOW_MS }
+    return { allowed: true, remaining: max - 1, resetIn: windowMs }
   }
 
   // Existing entry within window
-  if (entry.count >= MAX_REQUESTS) {
+  if (entry.count >= max) {
     const resetIn = entry.resetTime - now
     return { allowed: false, remaining: 0, resetIn }
   }
@@ -59,7 +65,7 @@ export function checkRateLimit(identifier: string): {
 
   return {
     allowed: true,
-    remaining: MAX_REQUESTS - entry.count,
+    remaining: max - entry.count,
     resetIn: entry.resetTime - now,
   }
 }

@@ -26,7 +26,10 @@ const createWorldSchema = z.object({
 
 export const POST = apiHandler(async (request: NextRequest) => {
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
-  const burst = checkRateLimit(`world:${ip}`)
+  // Each generation is a real model call, so the limit exists to stop a
+  // runaway loop rather than to police ordinary use — it is generous enough
+  // that a visitor (or a judge) can explore several prompts in a row.
+  const burst = checkRateLimit(`world:${ip}`, 30, 60_000)
   if (!burst.allowed) {
     return fail(
       `Too many worlds generated. Try again in ${Math.ceil(burst.resetIn / 1000)}s.`,

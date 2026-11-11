@@ -2,7 +2,7 @@
 
 import { Component, Suspense, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import Link from 'next/link'
-import { Canvas } from '@react-three/fiber'
+import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls, Text, Billboard, useGLTF, Environment, Lightformer, ContactShadows } from '@react-three/drei'
 import * as THREE from 'three'
 import type { ScenePlan, SceneObject } from '@/domains/games/services/scene-planner.service'
@@ -235,6 +235,61 @@ function PrimitiveShape({ obj, color, isObjective, visited, onSelect }: {
   )
 }
 
+/**
+ * Positions the camera to frame the scene in the ACTUAL viewport.
+ *
+ * The camera distance has to satisfy two constraints at once: the content
+ * must fit vertically (aspect-independent) and horizontally (which depends on
+ * the viewport). Only the canvas knows the real aspect ratio, so the solve
+ * happens here rather than in the parent.
+ */
+function CameraRig({
+  framing,
+  controlsRef,
+}: {
+  framing: {
+    center: THREE.Vector3
+    dir: THREE.Vector3
+    right: THREE.Vector3
+    up: THREE.Vector3
+    tanV: number
+    points: THREE.Vector3[]
+    distance: number
+  }
+  controlsRef: React.RefObject<any>
+}) {
+  const { camera, size } = useThree()
+
+  useEffect(() => {
+    const aspect = size.width / Math.max(1, size.height)
+    const tanH = framing.tanV * aspect
+
+    let distance = 12
+    for (const p of framing.points) {
+      const v = p.clone().sub(framing.center)
+      const x = Math.abs(v.dot(framing.right))
+      const y = Math.abs(v.dot(framing.up))
+      const z = v.dot(framing.dir)
+      distance = Math.max(distance, z + x / tanH, z + y / framing.tanV)
+    }
+    distance = Math.min(110, distance * 1.08)
+
+    camera.position.copy(framing.center).add(framing.dir.clone().multiplyScalar(distance))
+    camera.lookAt(framing.center)
+    camera.updateProjectionMatrix()
+
+    // OrbitControls keeps its own target; point it at the scene centre so
+    // orbiting pivots around the content, not the world origin.
+    const controls = controlsRef.current
+    if (controls) {
+      controls.target.copy(framing.center)
+      controls.update()
+    }
+  }, [camera, size.width, size.height, framing, controlsRef])
+
+  return null
+}
+
 function SceneObjectMesh({ obj, color, isObjective, visited, onSelect }: {
   obj: SceneObject
   color: string
@@ -282,6 +337,7 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = 
   const [thumbState, setThumbState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [intro, setIntro] = useState(true)
   const glRef = useRef<THREE.WebGLRenderer | null>(null)
+  const controlsRef = useRef<any>(null)
   const [renderer, setRenderer] = useState<THREE.WebGLRenderer | null>(null)
   const lighting = moodLighting[scene.mood] ?? moodLighting.day
   const objectiveIds = useMemo(() => scene.game?.objectiveIds ?? [], [scene.game])
@@ -364,19 +420,47 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = 
   // bounding-sphere approximation over-shoots badly for flat scenes (a
   // subway platform is long but low), which leaves the world tiny on screen.
   const framing = useMemo(() => {
+    // Frame on the bulk of the scene, not its extremes. One far-flung prop
+    // would otherwise push the camera back until everything looked like a
+    // speck. Percentile clipping keeps the outliers visible at the edges
+    // without letting them dictate the framing.
+    const pts = scene.objects.map((o) => o.position)
+    const quantile = (arr: number[], q: number) => {
+      if (arr.length === 0) return 0
+      const sorted = [...arr].sort((a, b) => a - b)
+      const idx = Math.min(sorted.length - 1, Math.max(0, Math.round((sorted.length - 1) * q)))
+      return sorted[idx]
+    }
+    const xs = pts.map((p) => p.x)
+    const ys = pts.map((p) => p.y)
+    const zs = pts.map((p) => p.z)
+    const lo = 0.06
+    const hi = 0.94
+    const minX = quantile(xs, lo); const maxX = quantile(xs, hi)
+    const minY = quantile(ys, lo); const maxY = quantile(ys, hi)
+    const minZ = quantile(zs, lo); const maxZ = quantile(zs, hi)
+
     const points: THREE.Vector3[] = []
     for (const obj of scene.objects) {
-      const half = Math.max(1.2, obj.scale * 0.9)
+      const half = Math.max(1.0, obj.scale * 0.6)
       points.push(
-        new THREE.Vector3(obj.position.x, obj.position.y, obj.position.z),
-        new THREE.Vector3(obj.position.x + half, obj.position.y + half, obj.position.z + half),
-        new THREE.Vector3(obj.position.x - half, obj.position.y - half, obj.position.z - half),
+        new THREE.Vector3(
+          THREE.MathUtils.clamp(obj.position.x, minX - half, maxX + half),
+          THREE.MathUtils.clamp(obj.position.y, minY, maxY + half),
+          THREE.MathUtils.clamp(obj.position.z, minZ - half, maxZ + half),
+        ),
       )
     }
     if (points.length === 0) {
       return {
         center: new THREE.Vector3(0, 1.5, 0),
         radius: 45,
+        dir: new THREE.Vector3(0.72, 0.62, 0.72).normalize(),
+        right: new THREE.Vector3(1, 0, 0),
+        up: new THREE.Vector3(0, 1, 0),
+        tanV: Math.tan(25 * (Math.PI / 180)),
+        points: [],
+        distance: 45,
         position: new THREE.Vector3(26, 22, 30),
       }
     }
@@ -388,7 +472,7 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = 
     center.y = Math.max(1.5, center.y)
     // The ground disc is sized to the content — a fixed 45-unit disc makes a
     // 20-unit scene look like a handful of props lost in an empty field.
-    const radius = Math.max(10, box.getSize(new THREE.Vector3()).length() / 2 + 6)
+    const radius = Math.max(10, box.getSize(new THREE.Vector3()).length() / 2 + 4)
 
     // View direction: 45° azimuth, ~38° elevation.
     const dir = new THREE.Vector3(0.72, 0.62, 0.72).normalize()
@@ -396,30 +480,37 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = 
     const up = new THREE.Vector3().crossVectors(right, dir).normalize()
 
     const fov = 50
-    const aspect = 16 / 9
     const tanV = Math.tan((fov / 2) * (Math.PI / 180))
-    const tanH = tanV * aspect
 
+    // The camera distance depends on the viewport aspect, which is only known
+    // once the canvas is measured — <CameraRig> solves for it and positions
+    // the camera. Here we only solve for the VERTICAL fit, which is
+    // aspect-independent, and let the rig tighten it horizontally.
     let distance = 12
     for (const p of points) {
       const v = p.clone().sub(center)
-      const x = Math.abs(v.dot(right))
       const y = Math.abs(v.dot(up))
       const z = v.dot(dir)
-      distance = Math.max(distance, z + x / tanH, z + y / tanV)
+      distance = Math.max(distance, z + y / tanV)
     }
     distance = Math.min(110, distance * 1.12)
 
     return {
       center,
       radius,
-      position: center.clone().add(dir.multiplyScalar(distance)),
+      dir,
+      right,
+      up,
+      tanV,
+      points,
+      distance,
+      position: center.clone().add(dir.clone().multiplyScalar(distance)),
     }
   }, [scene.objects])
 
   const camera = useMemo(
     () => ({
-      position: [framing.position.x, framing.position.y, framing.position.z] as [number, number, number],
+      position: framing.position.toArray() as [number, number, number],
       fov: 50,
     }),
     [framing],
@@ -446,8 +537,50 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = 
         onCreated={({ gl }) => { glRef.current = gl; setRenderer(gl) }}
         onPointerMissed={() => { setSelected(null); setNpcDialogue(null) }}
       >
+        <CameraRig framing={framing} controlsRef={controlsRef} />
+
         <color attach="background" args={[scene.palette.sky[0]]} />
-        <fog attach="fog" args={[scene.palette.fog, framing.radius * 2.4, framing.radius * 6]} />
+        {/* Fog tuned to the scene so the ground dissolves into the sky at the
+            horizon instead of ending on a hard rim. */}
+        <fog attach="fog" args={[scene.palette.fog, framing.radius * 0.9, framing.radius * 2.8]} />
+
+        {/* Gradient sky dome — the palette's sky is a 2-3 stop ramp, and a flat
+            background colour wastes it. Rendered on the inside of a large
+            sphere so it reads as atmosphere rather than a backdrop. */}
+        <mesh scale={[-1, 1, 1]} frustumCulled={false}>
+          <sphereGeometry args={[framing.radius * 12, 32, 16]} />
+          <shaderMaterial
+            side={THREE.BackSide}
+            depthWrite={false}
+            fog={false}
+            uniforms={{
+              topColor: { value: new THREE.Color(scene.palette.sky[2] ?? scene.palette.sky[0]) },
+              midColor: { value: new THREE.Color(scene.palette.sky[0]) },
+              bottomColor: { value: new THREE.Color(scene.palette.sky[1] ?? scene.palette.sky[0]) },
+            }}
+            vertexShader={`
+              varying vec3 vWorld;
+              void main() {
+                vWorld = (modelMatrix * vec4(position, 1.0)).xyz;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+              }
+            `}
+            fragmentShader={`
+              uniform vec3 topColor;
+              uniform vec3 midColor;
+              uniform vec3 bottomColor;
+              varying vec3 vWorld;
+              void main() {
+                float h = normalize(vWorld).y;
+                vec3 c = h > 0.0
+                  ? mix(midColor, topColor, pow(h, 0.65))
+                  : mix(midColor, bottomColor, pow(-h, 0.8));
+                gl_FragColor = vec4(c, 1.0);
+                #include <colorspace_fragment>
+              }
+            `}
+          />
+        </mesh>
 
         {/* Image-based lighting rendered locally from lightformers — no HDR
             download, so it works offline and in a judging sandbox. Without
@@ -504,27 +637,34 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = 
 
         {/* Ground disc — sized to the scene so the world fills the frame.
             The palette's ground colour is often near-black (night scenes),
-            so it is lifted toward the fog tone and given a faint emissive
-            floor to keep the lower half of the frame readable. */}
-        <mesh
-          rotation={[-Math.PI / 2, 0, 0]}
-          position={[framing.center.x, -0.02, framing.center.z]}
-          receiveShadow
-        >
-          <circleGeometry args={[framing.radius, 64]} />
-          <meshStandardMaterial
-            color={liftColor(scene.palette.ground, 0.16)}
-            roughness={0.92}
-            metalness={0}
-            emissive={scene.palette.fog}
-            emissiveIntensity={0.3}
-          />
-        </mesh>
+            so it is lifted a little toward the fog tone and given a faint
+            emissive floor. The lift is kept small: a large lift turns the
+            disc into a flat, over-bright mass with no depth.
+            A 'void' ground means there is no ground — the scene floats, so
+            no disc and no horizon ring. */}
+        {scene.ground !== 'void' && (
+          <mesh
+            rotation={[-Math.PI / 2, 0, 0]}
+            position={[framing.center.x, -0.02, framing.center.z]}
+            receiveShadow
+          >
+            <circleGeometry args={[framing.radius, 64]} />
+            <meshStandardMaterial
+              color={liftColor(scene.palette.ground, 0.07)}
+              roughness={0.95}
+              metalness={0}
+              emissive={scene.palette.fog}
+              emissiveIntensity={0.12}
+            />
+          </mesh>
+        )}
         {/* Subtle horizon ring in the accent color */}
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[framing.center.x, -0.01, framing.center.z]}>
-          <ringGeometry args={[framing.radius - 0.5, framing.radius, 64]} />
-          <meshBasicMaterial color={scene.palette.accent} transparent opacity={0.25} side={THREE.DoubleSide} />
-        </mesh>
+        {scene.ground !== 'void' && (
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[framing.center.x, -0.01, framing.center.z]}>
+            <ringGeometry args={[framing.radius - 0.5, framing.radius, 64]} />
+            <meshBasicMaterial color={scene.palette.accent} transparent opacity={0.25} side={THREE.DoubleSide} />
+          </mesh>
+        )}
 
         {/* Contact shadows — grounds the objects so they do not float on the
             ground disc. Cheaper and softer than shadow-mapping alone. */}
@@ -618,6 +758,7 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = 
 
         <OrbitControls
           makeDefault
+          ref={controlsRef}
           target={orbitTarget}
           minDistance={6}
           maxDistance={110}
