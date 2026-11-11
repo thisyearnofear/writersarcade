@@ -23,8 +23,10 @@ export interface TitleCard {
   imageUrl?: string | null
   /** Primary line — the artefact's title. */
   title: string
-  /** Secondary line — the modality, e.g. "3D world". */
+  /** Secondary line — the modality, e.g. "3D world". Small uppercase eyebrow. */
   label?: string
+  /** A readable sentence under the title — story copy, not a modality. */
+  body?: string
   /** Optional accent colour for the rule under the title. */
   accent?: string
 }
@@ -34,22 +36,44 @@ interface TitleSequenceProps {
   /** Milliseconds per card. */
   intervalMs?: number
   className?: string
+  /** When false, holds the first card until the caller flips it. Default true. */
+  playing?: boolean
+  /** When false, stops on the last card instead of wrapping. Default true. */
+  loop?: boolean
+  /** Fires once when a non-looping sequence reaches its last card. */
+  onEnd?: () => void
 }
 
 /** Hard-cut timing: fast in, hold, fast out. */
 const CUT = { duration: 0.42, ease: [0.16, 1, 0.3, 1] as const }
 
-export function TitleSequence({ cards, intervalMs = 1500, className }: TitleSequenceProps) {
+export function TitleSequence({
+  cards,
+  intervalMs = 1500,
+  className,
+  playing = true,
+  loop = true,
+  onEnd,
+}: TitleSequenceProps) {
   const reduced = useReducedMotion()
   const [index, setIndex] = useState(0)
 
   const list = useMemo(() => cards.filter((c) => c.title), [cards])
+  const last = list.length - 1
+  const finished = !loop && last > 0 && index >= last
 
   useEffect(() => {
-    if (list.length <= 1) return
-    const t = setInterval(() => setIndex((i) => (i + 1) % list.length), intervalMs)
+    if (!playing || finished || last <= 0) return
+    const t = setInterval(
+      () => setIndex((i) => (loop ? (i + 1) % list.length : Math.min(i + 1, last))),
+      intervalMs,
+    )
     return () => clearInterval(t)
-  }, [list.length, intervalMs])
+  }, [playing, finished, loop, last, list.length, intervalMs])
+
+  useEffect(() => {
+    if (finished) onEnd?.()
+  }, [finished, onEnd])
 
   if (list.length === 0) return null
   const card = list[index % list.length]
@@ -107,6 +131,11 @@ export function TitleSequence({ cards, intervalMs = 1500, className }: TitleSequ
           <h2 className="mt-1 font-serif text-2xl font-bold leading-tight text-white drop-shadow-lg sm:text-4xl">
             {card.title}
           </h2>
+          {card.body && (
+            <p className="mt-2 line-clamp-3 max-w-xl font-serif text-sm leading-relaxed text-white/90 drop-shadow sm:text-lg">
+              {card.body}
+            </p>
+          )}
           <div
             className="mt-3 h-px w-24"
             style={{ background: card.accent ?? '#ffcc00' }}
