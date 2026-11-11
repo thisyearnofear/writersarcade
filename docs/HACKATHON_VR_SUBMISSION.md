@@ -59,7 +59,10 @@ limit 1,500). It is structured as:
 2. Press **Step in** and walk with WASD. Q and E turn if the browser will not lock the pointer. Esc steps back. Click a glowing object to check off a thread. Click the keeper or the harbormaster to hear them.
 3. In **Change this world**, type *"make it night and add the missing ship"* and press **Reshape**. The lighthouse stays until the revision lands (~a minute). A failed call leaves it unchanged.
 4. To build another place, go back to <https://writersarcade.vercel.app/worlds>. The lighthouse sentence returns this world. Any other sentence plans a new one (~50s).
-5. Press **Make a comic** to turn the same source into an interactive comic.
+5. The header offers **Walk**, **Read**, and **Watch** — three views of the
+   same scene plan. **Read** renders the story as a comic strip of its beats;
+   **Watch** plays them as title cards. Neither calls a model nor spends
+   credits, and a refresh regenerates nothing.
 
 Judges are encouraged to try their own prompts — the planner is prompted to
 work from any plain-language scene description, per the rules.
@@ -74,6 +77,7 @@ work from any plain-language scene description, per the rules.
 | You can walk in | **Step in**, then WASD. Q and E turn if the browser will not lock the pointer. Esc returns to orbit. |
 | The lighthouse sentence is instant | On `/worlds`, submit “A lighthouse on a cliff at dusk, its beam sweeping the fog where a ship is missing”. It opens The Missing Ship without a new generation. |
 | You can change it | **Change this world**, then **Reshape**. A failed call leaves the current scene up. |
+| One plan, three views | On any completed world, the header's **Walk / Read / Watch** show the same beats — diorama, comic strip, title-card cut — with no model call and no credits. |
 | Video | The 41s mp4 is The Missing Ship: the sentence, the goal card, a short walk, then the reshape sentence typed and not sent, so the world judges walk stays the lighthouse. |
 
 ## Repo notes for judges
@@ -87,7 +91,11 @@ work from any plain-language scene description, per the rules.
   shadows, screen-space camera framing, gradient sky, quest card, Step in.
 - `components/scene/walker.tsx` — desktop first-person movement.
 - `components/scene/ground-surface.tsx` — baked PBR maps for the grounds.
-- `components/generation/title-sequence.tsx` — the shared loading reel.
+- `components/generation/title-sequence.tsx` — the shared loading reel, and
+  the title-card player behind **Watch**.
+- `lib/story-beats.ts` — the beat compiler: one `ScenePlan` → the ordered
+  beats behind **Read** and **Watch**.
+- `components/worlds/story-comic.tsx` / `story-film.tsx` — the two free views.
 - `lib/scene-assets.ts` — the 303-model CC0 manifest.
 - `docs/DIORAMA_RESEARCH.md` — prior art and design decisions.
 

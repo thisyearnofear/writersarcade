@@ -32,6 +32,10 @@ That is the product. One sentence in, a walkable diorama out. No account, no
 wallet, no credits, no GPU. The same lighthouse sentence opens the saved
 world immediately. A different sentence still plans a new one.
 
+Walk, Read, and Watch are three views of that one plan: the diorama, a comic
+strip of its beats, and a title-card cut of the same sentences. Reading and
+watching call no model and spend no credits.
+
 The pipeline underneath is a **contract, not a prompt**:
 
 ```
@@ -134,8 +138,9 @@ generation overlay and the in-game 3D world gate.
 
 Live and working: plain language → explorable 3D world with a goal, an
 objective, interactive objects and talking characters; a desktop first-person
-walk; a follow-up sentence that reshapes the same world; the same source
-becoming an interactive comic; a shared title-reel loading state. Also
+walk; a follow-up sentence that reshapes the same world; one scene plan read
+three ways — walked, read as a comic, watched as title cards; a shared
+title-reel loading state. Also
 implemented: a WebXR "Enter VR" entry point on the diorama (R3F owns the
 session lifecycle) — the button appears only on a device that reports
 `immersive-vr` support, so we could not exercise it on the hardware we had.
