@@ -5,7 +5,7 @@ import { privateKeyToAccount } from 'viem/accounts'
 import * as fs from 'fs'
 
 const BASE = process.env.E2E_BASE || 'https://writersarcade.vercel.app'
-const TX_HASH = '0x67246c1504cca1ac99d7638c641a52a866f47f9b86aa17f1f220b605f1839ce1'
+const TX_HASH = process.env.E2E_TX_HASH || '0x3e49919cf3c8515a3a03ba7117727e957c0644773c5c06e86bd9997ff3ceb90d' // 10 MUSD → ArcadeMusdFloat
 const env = {}
 fs.readFileSync('.env.local','utf8').split('\n').forEach(l => { const m = l.match(/^([^#\s]+)="?(.*?)"?\s*$/); if (m) env[m[1]] = m[2] })
 const account = privateKeyToAccount(env.MEZO_DEPLOYER_PRIVATE_KEY)

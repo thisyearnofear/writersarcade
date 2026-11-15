@@ -1,8 +1,9 @@
-# Mezo Buildathon — Wave 2 strategy (WritersArcade)
+# Mezo Buildathon — Wave 2 submission kit (WritersArcade)
 
-Status: **planning**. Wave 2 window **Nov 2–15, 2026**, pool **$5,000 in
-MEZO**, judged by the Mezo core team on AKINDO. Wave 1 outcome and what it
-taught us: see "Outcome" in [`MEZO_BUILDATHON_W1.md`](./MEZO_BUILDATHON_W1.md).
+Status: **submitted-day build**. Wave 2 window **Nov 2–15, 2026**, pool
+**$5,000 in MEZO**, judged by the Mezo core team on AKINDO. Wave 1 outcome
+and what it taught us: see "Outcome" in
+[`MEZO_BUILDATHON_W1.md`](./MEZO_BUILDATHON_W1.md).
 
 ## Ground rules (from the AKINDO program page)
 
@@ -62,6 +63,24 @@ Ordered by judge-impact per unit of effort. #1+#2 alone are a credible
 - Reuses: `POST /api/credits/purchase-musd` (idempotent by tx hash),
   `GetMusdOptions`, `MezoBoostedSplitter`.
 
+## What shipped for Wave 2 (Nov 15)
+
+- **`ArcadeMusdFloat` — the credit float moved on-chain.** MUSD users pay
+  for arcade credits no longer lands in an EOA: it accumulates in a
+  contract — publicly auditable on the explorer — as the float that funds
+  the prepaid-credit economy. Contract:
+  [`0xfC7339D7Ca83381f27B6b1C3f59B81FC87aB20ba`](https://explorer.test.mezo.org/address/0xfC7339D7Ca83381f27B6b1C3f59B81FC87aB20ba)
+  ([`contracts/src/ArcadeMusdFloat.sol`](../contracts/src/ArcadeMusdFloat.sol)).
+  Owner `sweepMusd` keeps the float movable — the next step is routing it
+  into the MUSD savings vault (sMUSD) so float yield funds free plays.
+- Same verification path, now against a contract: plain
+  `MUSD.transfer(float, amount)` verified by calldata + Transfer event +
+  sender binding, idempotent by tx hash. No UX change for users.
+- Live float deposit (10 MUSD):
+  https://explorer.test.mezo.org/tx/0x3e49919cf3c8515a3a03ba7117727e957c0644773c5c06e86bd9997ff3ceb90d
+- Deploy tx:
+  https://explorer.test.mezo.org/tx/0xd14f535dd804b52f75ab9031cd26dece47026e306379bfdd6673eed2afec1d04
+
 ### 3. Credit float in the MUSD savings vault — the depth move
 - Hold the prepaid-credit treasury float in Mezo's **MUSD savings vault**
   (the primitive Keel built on) and route yield into free plays / prize
@@ -92,6 +111,48 @@ then the float (protocol depth), then mainnet proof.
 - Ship #3 or #4 as well → competitive with the DeFi entries on their axis.
 - Ship nothing new → submit anyway (proportional rewards) but expect the
   Wave 1 outcome to repeat; do not count it as a real attempt.
+
+## AKINDO form (paste-ready)
+
+**TL;DR:** WritersArcade turns any article into a playable, mintable
+mini-game — and now an explorable 3D world, comic and film — paid for with
+Bitcoin-backed MUSD on Mezo. New this wave: the prepaid-credit float is no
+longer a wallet — it sits in a dedicated on-chain contract
+(`ArcadeMusdFloat`), so every MUSD top-up is MUSD held on Mezo, auditable
+on the explorer, and positioned to earn sMUSD yield that funds free plays.
+
+**How it works:**
+Paste an article URL → WritersArcade generates a 5-panel story game bundled
+with a walkable 3D diorama, a readable comic and a watchable film — one
+MUSD payment produces the whole artifact family. The dual rail stays:
+off-chain credits for wallet-free users, MUSD on Mezo for on-chain users.
+MUSD game payments route through `MezoBoostedSplitter` (atomic
+platform/writer/creator splits, on-chain +10% boost for ≥1 MEZO holders via
+the precompile). **New in Wave 2:** `MUSD.transfer` top-ups for credits now
+settle into `ArcadeMusdFloat` instead of a treasury EOA — the credit
+economy's float is verifiably held on-chain, with an owner sweep into the
+MUSD savings vault as the next step. Verified end-to-end on the live app:
+one tx → credits granted idempotently by tx hash, +10% for MEZO holders.
+
+**What's new in Wave 2 (Nov 2026):**
+- `ArcadeMusdFloat` contract holds the credit-economy float on-chain
+  (`0xfC7339D7Ca83381f27B6b1C3f59B81FC87aB20ba`) — MUSD is now *held* on
+  Mezo, not just passed through.
+- Every paid generation now bundles an explorable 3D world + comic + film
+  on top of the playable game ("one story, many forms") — more MUSD-funded
+  surface per payment.
+- Payment resilience: receipt polling across Mezo RPC nodes, refunds for
+  paid-but-failed generations, stall-aware provider fallback.
+- Explorer evidence: float deposit `0x3e49…b90d`, deploy `0xd14f…d1d04`,
+  plus Wave 1's `payForGeneration` (boosted) and treasury top-up txs.
+
+**Why this answers the track:** Access & Distribution — MUSD is the funding
+layer for a consumer media economy: users acquire it to play, the float
+holds it on Mezo, and (next) vault yield buys it back as free plays.
+
+**Roadmap (Wave 3+):** sMUSD yield routing for the float → funded daily
+free-generate; Flynn iMessage "text a link, pay MUSD, get a game"; mainnet
+`MezoBoostedSplitter` + `GameNFTMezo` deploys (scripts in-repo).
 
 ## Open questions
 
