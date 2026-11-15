@@ -298,6 +298,10 @@ The Mezo contracts under `contracts/src` are separate from the Base redeploy:
 - `GameNFTMezo.sol`: open-mint Mezo testnet NFT contract.
 - `MezoBoostedSplitter.sol`: MUSD splitter with MEZO-holder boost.
 - `MezoPaymentSplitter.sol`: earlier MUSD splitter.
+- `ArcadeMusdFloat.sol`: on-chain float holding the prepaid-credit MUSD
+  treasury (testnet `0xfC7339D7Ca83381f27B6b1C3f59B81FC87aB20ba`, deployed
+  2026-11-15, tx `0xd14f535dd804b52f75ab9031cd26dece47026e306379bfdd6673eed2afec1d04`).
+  Top-ups arrive as plain `MUSD.transfer`; owner moves funds via `sweepMusd`.
 
 Do not redeploy these as part of the Base writer-coin payment fix unless the
 Mezo flow is being intentionally changed.

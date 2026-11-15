@@ -85,6 +85,16 @@ Vercel prod** — read it only via `getPlatformSignerKey()` in
 it needs a lockfile regen that pnpm 12's exotic-subdep check blocks — don't
 work around it by disabling `blockExoticSubdeps`.
 
+## 💰 MUSD credit float is a contract, not an EOA
+
+`MEZO_TREASURY_ADDRESS` (`lib/writer-coins.ts`) points at **`ArcadeMusdFloat`**
+(`0xfC7339D7Ca83381f27B6b1C3f59B81FC87aB20ba` on Mezo testnet, deployed
+2026-11-15). MUSD top-ups for credits accumulate **in the contract** —
+`floatBalance()` is publicly auditable. To move funds, the deployer/owner key
+(`0xb8CE…5a85`) calls `sweepMusd(to, amount)`; do not expect the treasury to
+sign arbitrary sends. `rescueToken` recovers non-MUSD tokens. Roadmap: sweep
+into the MUSD savings vault so float yield funds free plays.
+
 ## ⛓️ Mezo network switch
 
 `NEXT_PUBLIC_MEZO_NETWORK=testnet|mainnet` (default testnet) drives the MUSD

@@ -122,8 +122,9 @@ See [docs/DEVELOPMENT.md](./docs/DEVELOPMENT.md) for full setup.
 - **MezoBoostedSplitter v3**: [`0x5eEb15C32F54B242B07B5Dc23859a3DC71D0C592`](https://explorer.test.mezo.org/address/0x5eEb15C32F54B242B07B5Dc23859a3DC71D0C592) — `payForGeneration` + `payAndMintGame` with an on-chain MEZO-holder boost (+10% to writer/creator share, funded by platform share)
 - **GameNFTMezo**: [`0xb6001687e4700843e0a04a442031525f669465e7`](https://explorer.test.mezo.org/address/0xb6001687e4700843e0a04a442031525f669465e7)
 - **MUSD token**: `0x118917a40FAF1CD7a13dB0Ef56C86De7973Ac503` · **MEZO precompile**: `0x7B7c…0001`
-- **Buy credits with MUSD**: `POST /api/credits/purchase-musd` verifies a plain `MUSD.transfer(treasury, amount)` and grants 10 credits per 1 MUSD (+10% for MEZO holders), idempotent by tx hash
-- Verified on-chain (Oct 25, 2026): `payForGeneration` w/ `boosted=true` [`0x43893294…430b`](https://explorer.test.mezo.org/tx/0x43893294991ffa921f0c026251b7a988328602b481b9d00cd549577efb6c430b) · treasury transfer for credit grant [`0x67246c15…9ce1`](https://explorer.test.mezo.org/tx/0x67246c1504cca1ac99d7638c641a52a866f47f9b86aa17f1f220b605f1839ce1)
+- **ArcadeMusdFloat** (credit-economy float, Nov 15 2026): [`0xfC7339D7Ca83381f27B6b1C3f59B81FC87aB20ba`](https://explorer.test.mezo.org/address/0xfC7339D7Ca83381f27B6b1C3f59B81FC87aB20ba) — MUSD top-ups for credits accumulate **in this contract** (auditable `floatBalance`); owner moves funds via `sweepMusd`, next step is the MUSD savings vault
+- **Buy credits with MUSD**: `POST /api/credits/purchase-musd` verifies a plain `MUSD.transfer(float, amount)` and grants 10 credits per 1 MUSD (+10% for MEZO holders), idempotent by tx hash
+- Verified on-chain: `payForGeneration` w/ `boosted=true` [`0x43893294…430b`](https://explorer.test.mezo.org/tx/0x43893294991ffa921f0c026251b7a988328602b481b9d00cd549577efb6c430b) · treasury transfer for credit grant [`0x67246c15…9ce1`](https://explorer.test.mezo.org/tx/0x67246c1504cca1ac99d7638c641a52a866f47f9b86aa17f1f220b605f1839ce1) (Oct 25) · **10 MUSD float deposit → 110 credits granted** [`0x3e49919c…b90d`](https://explorer.test.mezo.org/tx/0x3e49919cf3c8515a3a03ba7117727e957c0644773c5c06e86bd9997ff3ceb90d) (Nov 15)
 - Mainnet deploy: `scripts/deploy/deploy-mezo-mainnet.sh`
 
 Revenue splits enforced on-chain, configurable per writer coin.

@@ -320,6 +320,11 @@ See [`docs/HACKATHONS_ARCHIVE.md`](./HACKATHONS_ARCHIVE.md#3-mezo-hackathon-musd
 - Users pay gas only; base64 data URI tokenURIs (no IPFS)
 - Compiled with Foundry + OpenZeppelin v5.6.1
 
+**ArcadeMusdFloat** (`0xfC7339D7Ca83381f27B6b1C3f59B81FC87aB20ba`) — live
+- Holds the MUSD credit-economy float on-chain; `MEZO_TREASURY_ADDRESS` points here
+- Plain `MUSD.transfer(float, amount)` top-ups; verified by Transfer event + sender binding
+- `floatBalance()` is publicly auditable; owner `sweepMusd` moves funds (MUSD savings vault next)
+
 ### Revenue Splits (configurable per coin)
 
 **Generation**: 60% Writer / 20% Platform / 20% Creator Pool  
