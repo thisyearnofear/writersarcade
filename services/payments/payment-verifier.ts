@@ -363,6 +363,12 @@ export async function verifyOnChainPayment(params: VerifyPaymentParams): Promise
         .getTransaction({ hash: params.transactionHash })),
   ])
 
+  // fetchAcrossNodes returns null when no node has the tx (unknown hash or
+  // still unindexed) — callers map this message to a retryable 4xx, not a 500.
+  if (!receipt || !transaction) {
+    throw new Error(`Transaction receipt could not be found on chain ${params.chainId}`)
+  }
+
   return verifyPaymentEvidence({
     ...params,
     receipt,
@@ -481,6 +487,10 @@ export async function verifyMusdTreasuryTransfer(
       (c as unknown as { getTransaction: (a: { hash: string }) => Promise<PaymentTransaction> })
         .getTransaction({ hash: params.transactionHash })),
   ])
+
+  if (!receipt || !transaction) {
+    throw new Error(`Transaction receipt could not be found on chain ${params.chainId}`)
+  }
 
   return verifyMusdTransferEvidence({ ...params, receipt, transaction })
 }
