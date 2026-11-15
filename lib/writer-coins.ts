@@ -357,7 +357,7 @@ export const MEZO_CONFIG = {
  */
 export const MEZO_TREASURY_ADDRESS =
     (process.env.NEXT_PUBLIC_MEZO_TREASURY_ADDRESS as `0x${string}` | undefined) ||
-    "0xb8CE765cD679ECB958c0D2869d516C386b9d5a85" // platform treasury / deployer
+    "0xfC7339D7Ca83381f27B6b1C3f59B81FC87aB20ba" // ArcadeMusdFloat on Mezo testnet — credit-economy float held on-chain (deployed 2026-11-15)
 
 export type PaymentToken = 
     | { type: 'writercoin'; coin: WriterCoin }
