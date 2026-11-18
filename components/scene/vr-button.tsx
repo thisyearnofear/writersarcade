@@ -1,19 +1,19 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import type * as THREE from 'three'
+import { getDioramaXRStore } from '@/components/scene/xr-store'
 
 /**
  * "Enter VR" button for a diorama.
  *
- * R3F wires the XR session lifecycle itself (it swaps the render loop on
- * `sessionstart` / `sessionend`), so all this has to do is ask the browser for
- * an immersive session and hand it to the renderer.
+ * The shared XR store owns the session lifecycle and the renderer binding
+ * (its <XR> component lives inside the Canvas), so the button only has to
+ * ask for the session. Hand tracking is requested by the store itself.
  *
  * The button only renders when the device actually reports VR support, so
  * desktop visitors never see a dead control.
  */
-export function VRButton({ renderer }: { renderer: THREE.WebGLRenderer | null }) {
+export function VRButton() {
   const [supported, setSupported] = useState(false)
   const [presenting, setPresenting] = useState(false)
 
@@ -29,30 +29,17 @@ export function VRButton({ renderer }: { renderer: THREE.WebGLRenderer | null })
     return () => { cancelled = true }
   }, [])
 
-  useEffect(() => {
-    if (!renderer) return
-    const onSessionChange = () => setPresenting(Boolean(renderer.xr.isPresenting))
-    renderer.xr.addEventListener('sessionstart', onSessionChange)
-    renderer.xr.addEventListener('sessionend', onSessionChange)
-    return () => {
-      renderer.xr.removeEventListener('sessionstart', onSessionChange)
-      renderer.xr.removeEventListener('sessionend', onSessionChange)
-    }
-  }, [renderer])
+  useEffect(
+    () => getDioramaXRStore().subscribe((s) => setPresenting(Boolean(s.session))),
+    [],
+  )
 
-  if (!supported || !renderer) return null
+  if (!supported) return null
 
-  const enterVR = async () => {
-    try {
-      const xr = (navigator as any).xr
-      const session = await xr.requestSession('immersive-vr', {
-        optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking'],
-      })
-      await renderer.xr.setSession(session)
-      setPresenting(true)
-    } catch {
-      // User declined, or the session request was rejected — stay on the page.
-    }
+  const enterVR = () => {
+    void getDioramaXRStore()
+      .enterVR()
+      .catch(() => { /* user declined, or the session request was rejected */ })
   }
 
   return (

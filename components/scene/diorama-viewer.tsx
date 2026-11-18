@@ -7,6 +7,8 @@ import { OrbitControls, Text, Billboard, useGLTF, useTexture, Environment, Light
 import * as THREE from 'three'
 import type { ScenePlan, SceneObject } from '@/domains/games/services/scene-planner.service'
 import { getSceneAsset } from '@/lib/scene-assets'
+import { XR } from '@react-three/xr'
+import { getDioramaXRStore } from '@/components/scene/xr-store'
 import { VRButton } from '@/components/scene/vr-button'
 import { Walker } from '@/components/scene/walker'
 import { FlatGround, hasGroundMaps, TexturedGround } from '@/components/scene/ground-surface'
@@ -34,6 +36,13 @@ type SelectedObject = { label: string; narrativeHook?: string; action?: string }
 type NpcDialogue = { name: string; persona: string; dilemma?: string } | null
 
 const visitedStorageKey = (slug: string) => `wa-world-visited-${slug}`
+
+// Seated tabletop presentation: in an immersive session the whole diorama
+// shrinks onto a notional desk just in front of the viewer. Every prop and
+// character stays inside arm's reach — the airplane-seat test by design.
+const TABLE_Y = 0.78
+const TABLE_Z = 0.62
+const TABLE_DIAMETER = 1.1
 
 function loadVisited(slug: string): Set<string> {
   if (typeof window === 'undefined') return new Set()
@@ -515,6 +524,160 @@ function QuestCard({
   )
 }
 
+/**
+ * Seated tabletop presentation of the diorama.
+ *
+ * Inside an immersive session the scene recentres, shrinks and spins so the
+ * face the orbit camera prefers points at the viewer — a model village on a
+ * desk. The nested groups always render (identity transform off-session) so
+ * toggling never remounts the world.
+ */
+function Tabletop({
+  presenting,
+  anchorX,
+  anchorZ,
+  azimuth,
+  radius,
+  children,
+}: {
+  presenting: boolean
+  anchorX: number
+  anchorZ: number
+  azimuth: number
+  radius: number
+  children: ReactNode
+}) {
+  const s = presenting ? TABLE_DIAMETER / (2 * Math.max(8, radius)) : 1
+  return (
+    <group position={[0, presenting ? TABLE_Y : 0, presenting ? -TABLE_Z : 0]}>
+      <group rotation={[0, presenting ? -azimuth : 0, 0]}>
+        <group scale={s} position={[-s * anchorX, 0, -s * anchorZ]}>
+          {children}
+        </group>
+      </group>
+    </group>
+  )
+}
+
+/**
+ * In-world counterpart of the overlay cards — a small placard floating at
+ * the table's right edge that carries whichever card is live: the goal and
+ * threads, an inspected object, an NPC's line, or the completion moment.
+ * DOM overlays do not render inside a headset, so the same state is drawn
+ * here instead. The "Leave VR" affordance keeps the exit one pinch away.
+ */
+function VRPlacard({
+  scene,
+  selected,
+  npcDialogue,
+  objectiveIds,
+  visitedIds,
+  objectivesFound,
+  worldComplete,
+}: {
+  scene: ScenePlan
+  selected: SelectedObject
+  npcDialogue: NpcDialogue
+  objectiveIds: string[]
+  visitedIds: Set<string>
+  objectivesFound: number
+  worldComplete: boolean
+}) {
+  const goal = scene.game?.goal
+  const threads = objectiveIds.map((id) => ({
+    id,
+    label: scene.objects.find((o) => o.id === id)?.label ?? id,
+    found: visitedIds.has(id),
+  }))
+
+  const header = worldComplete
+    ? 'World complete'
+    : npcDialogue
+      ? npcDialogue.name
+      : selected
+        ? (selected.action ? `${selected.action}: ${selected.label}` : selected.label)
+        : 'Goal'
+
+  const untruncated = npcDialogue
+    ? `“${npcDialogue.persona}”${npcDialogue.dilemma ? `\n\nAt stake: ${npcDialogue.dilemma}` : ''}`
+    : selected
+      ? (selected.narrativeHook ?? selected.label)
+      : worldComplete
+        ? `You've traced every thread of ${scene.title}.`
+        : threads.length > 0
+          ? `${goal ?? scene.title}\n\n${threads.map((t) => `${t.found ? '✓' : '○'} ${t.label}`).join('\n')}\n\nThreads ${objectivesFound}/${objectiveIds.length}`
+          : (goal ?? scene.title)
+  const body = untruncated.length > 420 ? `${untruncated.slice(0, 417)}…` : untruncated
+
+  const hint = npcDialogue || selected
+    ? 'Pinch empty air to close'
+    : scene.npcs.length > 0
+      ? 'Pinch a glowing object · pinch a character to talk'
+      : 'Pinch a glowing object'
+
+  // Right edge of the table, angled back at the seated viewer.
+  const px = 0.55, py = 1.06, pz = -0.28
+  const rotY = Math.atan2(-px, -pz)
+
+  return (
+    <group position={[px, py, pz]} rotation={[0, rotY, 0]}>
+      <mesh position={[0, 0, -0.002]}>
+        <planeGeometry args={[0.46, 0.315]} />
+        <meshBasicMaterial color={scene.palette.accent} transparent opacity={0.55} />
+      </mesh>
+      <mesh>
+        <planeGeometry args={[0.45, 0.305]} />
+        <meshStandardMaterial color="#0b0b12" transparent opacity={0.88} roughness={0.9} />
+      </mesh>
+      <Text
+        position={[0, 0.118, 0.004]}
+        fontSize={0.014}
+        color={scene.palette.accent}
+        anchorX="center"
+        anchorY="middle"
+        maxWidth={0.41}
+        letterSpacing={0.06}
+      >
+        {header}
+      </Text>
+      <Text
+        position={[-0.2, 0.088, 0.004]}
+        fontSize={0.0115}
+        color="#f5f5f4"
+        anchorX="left"
+        anchorY="top"
+        maxWidth={0.4}
+        lineHeight={1.45}
+      >
+        {body}
+      </Text>
+      <Text
+        position={[-0.2, -0.108, 0.004]}
+        fontSize={0.0095}
+        color="#a3a3a3"
+        anchorX="left"
+        anchorY="middle"
+        maxWidth={0.4}
+      >
+        {hint}
+      </Text>
+      <Text
+        position={[0.2, -0.125, 0.004]}
+        fontSize={0.011}
+        color="#fca5a5"
+        anchorX="right"
+        anchorY="middle"
+        onClick={(e) => {
+          e.stopPropagation()
+          void getDioramaXRStore().getState().session?.end()
+        }}
+      >
+        Leave VR ✕
+      </Text>
+    </group>
+  )
+}
+
 export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = false, prompt, storySlug }: DioramaViewerProps) {
   const [selected, setSelected] = useState<SelectedObject>(null)
   const [npcDialogue, setNpcDialogue] = useState<NpcDialogue>(null)
@@ -526,7 +689,12 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = 
   const [walkHint, setWalkHint] = useState<string | null>(null)
   const glRef = useRef<THREE.WebGLRenderer | null>(null)
   const controlsRef = useRef<any>(null)
-  const [renderer, setRenderer] = useState<THREE.WebGLRenderer | null>(null)
+  const [presenting, setPresenting] = useState(false)
+  const xrStore = useMemo(() => getDioramaXRStore(), [])
+  useEffect(
+    () => xrStore.subscribe((s) => setPresenting(Boolean(s.session))),
+    [xrStore],
+  )
   const lighting = moodLighting[scene.mood] ?? moodLighting.day
   const objectiveIds = useMemo(() => scene.game?.objectiveIds ?? [], [scene.game])
   const objectiveIdSet = useMemo(() => new Set(objectiveIds), [objectiveIds])
@@ -559,7 +727,7 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = 
 
   const captureThumbnail = async () => {
     const gl = glRef.current
-    if (!gl || thumbState === 'saving' || standalone) return false
+    if (!gl || gl.xr.isPresenting || thumbState === 'saving' || standalone) return false
     setThumbState('saving')
     try {
       const dataUrl = gl.domElement.toDataURL('image/jpeg', 0.85)
@@ -722,10 +890,11 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = 
         shadows
         camera={camera}
         gl={{ antialias: true, preserveDrawingBuffer: true }}
-        onCreated={({ gl }) => { glRef.current = gl; setRenderer(gl) }}
+        onCreated={({ gl }) => { glRef.current = gl }}
         onPointerMissed={() => { setSelected(null); setNpcDialogue(null) }}
       >
-        <CameraRig framing={framing} controlsRef={controlsRef} enabled={!walking} />
+        <XR store={xrStore}>
+        <CameraRig framing={framing} controlsRef={controlsRef} enabled={!walking && !presenting} />
         <Walker
           active={walking}
           center={{ x: framing.center.x, z: framing.center.z }}
@@ -832,6 +1001,13 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = 
           color={scene.palette.sky[1] ?? scene.palette.sky[0]}
         />
 
+        <Tabletop
+          presenting={presenting}
+          anchorX={framing.center.x}
+          anchorZ={framing.center.z}
+          azimuth={Math.atan2(framing.dir.x, framing.dir.z)}
+          radius={framing.radius}
+        >
         {/* Ground disc — sized to the scene so the world fills the frame.
             The palette's ground colour is often near-black (night scenes),
             so it is lifted a little toward the fog tone and given a faint
@@ -965,18 +1141,33 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = 
           </Billboard>
         ))}
 
+        </Tabletop>
+
+        {presenting && (
+          <VRPlacard
+            scene={scene}
+            selected={selected}
+            npcDialogue={npcDialogue}
+            objectiveIds={objectiveIds}
+            visitedIds={visitedIds}
+            objectivesFound={objectivesFound}
+            worldComplete={worldComplete}
+          />
+        )}
+
         <OrbitControls
           makeDefault
-          enabled={!walking}
+          enabled={!walking && !presenting}
           ref={controlsRef}
           target={orbitTarget}
           minDistance={6}
           maxDistance={110}
           maxPolarAngle={Math.PI / 2.05}
-          autoRotate={intro && !walking}
+          autoRotate={intro && !walking && !presenting}
           autoRotateSpeed={0.7}
           onStart={() => setIntro(false)}
         />
+        </XR>
       </Canvas>
 
       {walking && (
@@ -1125,7 +1316,7 @@ export function DioramaViewer({ scene, slug, hasThumbnail = false, standalone = 
                 Step in
               </button>
             )}
-            <VRButton renderer={renderer} />
+            <VRButton />
           </div>
         </div>
       </div>
