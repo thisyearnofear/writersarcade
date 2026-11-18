@@ -135,17 +135,53 @@ the platform has actually produced. The wait becomes a preview of the
 product. One shared component, now used by the prompt surface, the game
 generation overlay and the in-game 3D world gate.
 
+## Hands-first VR (Meta VR Start update, Nov 2026)
+
+The diorama is now a hands-first seated experience on Meta Quest via WebXR —
+an additive layer over the same scene graph, not a port. Desktop orbit, Step
+in, quest cards, NPC dialogue and thumbnail capture are unchanged outside a
+session.
+
+**Architecture.** `@react-three/xr` wraps the existing Canvas tree in a
+single shared store (`components/scene/xr-store.ts`, kept on `globalThis` —
+dev bundlers can instantiate the module twice, which would otherwise hand
+the Enter VR button and the `<XR>` tree different stores). In-session, the
+`Tabletop` group recentres the world and shrinks it to a ~1.1 m model village
+floating at chest height 55 cm in front of the viewer — every prop stays
+inside arm's reach, the airplane-seat test by design. `VRPlacard` is the
+in-world counterpart of the DOM cards: goal + threads, inspected object, NPC
+dialogue, completion state, and a "Leave VR" pinch target (DOM does not
+render inside a headset). OrbitControls, the intro camera sweep and
+thumbnail capture are disabled while `presenting`.
+
+**Interaction.** A pinch lands on the same R3F pointer events a mouse click
+uses (`onClick`, `onPointerMissed`), so glowing-object inspection, NPC
+dialogue and quest-thread tracking work in-headset with no parallel input
+layer — the competition's "hands-first end to end" requirement reuses the
+code judges already saw working with a mouse.
+
+**Emulator verification (IWER, localhost).** Two gotchas worth recording:
+desktop Chrome ships a deviceless native `navigator.xr` that makes IWER
+refuse to install its emulated runtime — the store force-installs it
+(`installRuntime({ forceInstall: true })`) once the emulator device lands;
+and the IWER DevUI starts **paused** — its session `requestAnimationFrame`
+never fires until "activate play mode" is clicked, which presents as a black
+headset view. With play mode on, we verified in-browser: session enter/exit
+through our own button, both hands registered as `tracked-pointer` input
+sources, the tabletop world, and the placard. Pinch-select was exercised
+against the DevUI pose controls but pixel-perfect aiming in the emulator is
+fiddly — worth a hardware pass before submission.
+
 ## What is real, and what is next
 
 Live and working: plain language → explorable 3D world with a goal, an
 objective, interactive objects and talking characters; a desktop first-person
 walk; a follow-up sentence that reshapes the same world; one scene plan read
 three ways — walked, read as a comic, watched as title cards; a shared
-title-reel loading state. Also
-implemented: a WebXR "Enter VR" entry point on the diorama (R3F owns the
-session lifecycle) — the button appears only on a device that reports
-`immersive-vr` support, so we could not exercise it on the hardware we had.
-The walk judges can use without a headset is the "Step in" control.
+title-reel loading state; and the hands-first WebXR tabletop described above,
+with a working session lifecycle on both the IWER emulator and any
+`immersive-vr`-capable browser. The walk judges can use without a headset is
+the "Step in" control.
 
 Grass, meadow, sand, snow, stone, and water grounds use a baked tileable
 PBR set (color, roughness, normal), tinted by the scene mood so a night

@@ -40,8 +40,8 @@ const visitedStorageKey = (slug: string) => `wa-world-visited-${slug}`
 // Seated tabletop presentation: in an immersive session the whole diorama
 // shrinks onto a notional desk just in front of the viewer. Every prop and
 // character stays inside arm's reach — the airplane-seat test by design.
-const TABLE_Y = 0.78
-const TABLE_Z = 0.62
+const TABLE_Y = 1.05
+const TABLE_Z = 0.55
 const TABLE_DIAMETER = 1.1
 
 function loadVisited(slug: string): Set<string> {
@@ -615,8 +615,9 @@ function VRPlacard({
       ? 'Pinch a glowing object · pinch a character to talk'
       : 'Pinch a glowing object'
 
-  // Right edge of the table, angled back at the seated viewer.
-  const px = 0.55, py = 1.06, pz = -0.28
+  // Upper-right of the table, angled back at the viewer — museum label
+  // placement, clear of the diorama itself.
+  const px = 0.44, py = 1.34, pz = -0.4
   const rotY = Math.atan2(-px, -pz)
 
   return (

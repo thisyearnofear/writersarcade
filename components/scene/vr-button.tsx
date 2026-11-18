@@ -19,14 +19,25 @@ export function VRButton() {
 
   useEffect(() => {
     let cancelled = false
+    const markSupported = () => {
+      if (!cancelled) setSupported(true)
+    }
+    // Emulated runtimes land on the store asynchronously (localhost dev,
+    // sandboxed judging) — real support detection alone would hide the button.
+    const unsubscribe = getDioramaXRStore().subscribe((s) => {
+      if (s.emulator) markSupported()
+    })
+    if (getDioramaXRStore().getState().emulator) markSupported()
     const xr = (navigator as any).xr
-    if (!xr?.isSessionSupported) return
-    xr.isSessionSupported('immersive-vr')
-      .then((ok: boolean) => {
-        if (!cancelled) setSupported(ok)
-      })
-      .catch(() => { /* device has no XR runtime — leave the button hidden */ })
-    return () => { cancelled = true }
+    if (xr?.isSessionSupported) {
+      xr.isSessionSupported('immersive-vr')
+        .then((ok: boolean) => { if (ok) markSupported() })
+        .catch(() => { /* device has no XR runtime — rely on emulation state */ })
+    }
+    return () => {
+      cancelled = true
+      unsubscribe()
+    }
   }, [])
 
   useEffect(
