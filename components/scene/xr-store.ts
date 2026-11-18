@@ -29,9 +29,11 @@ export function getDioramaXRStore(): XRStore {
       foveation: 0.5,
       offerSession: false,
       domOverlay: false,
-      // Localhost emulation mirrors the product: hands first, controllers as
-      // fallback. Without it there is no way to smoke-test the session path.
-      emulate: { type: 'metaQuest3', primaryInputMode: 'hand' },
+      // Emulation mirrors the product: hands first, controllers as fallback.
+      // inject: true loads IWER anywhere immersive-vr is unsupported — the
+      // submission link self-demonstrates on a desktop browser, while a real
+      // Quest reports support and is never touched.
+      emulate: { type: 'metaQuest3', primaryInputMode: 'hand', inject: true },
     })
     // Desktop Chrome ships a deviceless native navigator.xr, which makes IWER
     // refuse to install its emulated runtime — sessions become impossible even
