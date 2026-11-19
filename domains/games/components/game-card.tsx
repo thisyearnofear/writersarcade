@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { genreCoverUrl } from '@/domains/games/utils/genre-cover';
 import { Compass, Eye, Sword, Zap, Brain, Store, BookOpen, Play, TrendingUp, Clock, Clapperboard, Boxes } from 'lucide-react';
 
 const GENRE_STYLES: Record<string, { gradient: string; icon: React.ElementType }> = {
@@ -26,6 +27,10 @@ interface GameCardProps {
   hasAnimation?: boolean;
   /** 'film' | 'world' — extra artifact forms this story exists as. */
   artifactBadges?: string[];
+  /** Publish date — games under two weeks old get the NEW ISSUE! burst. */
+  createdAt?: string | Date | null;
+  /** Games with an inco secret panel get the SECRET PANEL burst. */
+  secretPanelGenerated?: boolean;
 }
 
 function formatLastPlayed(dateStr: string): string {
@@ -43,10 +48,11 @@ function formatLastPlayed(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString()
 }
 
-export function GameCard({ slug, title, description, genre, imageUrl, primaryColor, symbol, playCount, lastPlayedAt, hasAnimation, artifactBadges }: GameCardProps) {
+export function GameCard({ slug, title, description, genre, imageUrl, primaryColor, symbol, playCount, lastPlayedAt, hasAnimation, artifactBadges, createdAt, secretPanelGenerated }: GameCardProps) {
   const genreStyle = GENRE_STYLES[genre] || DEFAULT_STYLE;
   const GenreIcon = genreStyle.icon;
   const displaySymbol = symbol.startsWith('$') ? symbol : `$${symbol}`;
+  const isNew = createdAt ? Date.now() - new Date(createdAt).getTime() < 14 * 86400000 : false;
 
   return (
     <Card 
@@ -58,8 +64,8 @@ export function GameCard({ slug, title, description, genre, imageUrl, primaryCol
             modal / venice / the VPS image backend). Only basepaint canvas URLs go through
             /api/image-proxy, so next/image would require widening remotePatterns to every
             provider host. Route these through the proxy instead of swapping the element. */}
-        {imageUrl ? (
-          <img src={imageUrl} alt={title} loading="lazy" decoding="async" className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-105" />
+        {imageUrl || genreCoverUrl(genre) ? (
+          <img src={imageUrl || genreCoverUrl(genre)!} alt={title} loading="lazy" decoding="async" className="object-cover w-full h-full transform transition-transform duration-500 group-hover:scale-105" />
         ) : (
           <div className={`w-full h-full bg-gradient-to-br ${genreStyle.gradient} flex flex-col items-center justify-center gap-2`}>
             <GenreIcon className="w-10 h-10 text-white/30" />
@@ -71,6 +77,14 @@ export function GameCard({ slug, title, description, genre, imageUrl, primaryCol
             <Clapperboard className="h-3 w-3" />
             Animated
           </div>
+        )}
+        {isNew && (
+          // eslint-disable-next-line @next/next/no-img-element -- static pulp burst
+          <img src="/badges/new-issue.webp" alt="New issue" className="absolute -left-1 -top-1 z-10 w-16 -rotate-12 drop-shadow-lg" />
+        )}
+        {secretPanelGenerated && (
+          // eslint-disable-next-line @next/next/no-img-element -- static pulp burst
+          <img src="/badges/secret-panel.webp" alt="Has a secret panel" title="Has a secret panel" className="absolute -bottom-2 -right-1 z-10 w-16 rotate-6 drop-shadow-lg" />
         )}
         {artifactBadges && artifactBadges.length > 0 && (
           <div className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5">

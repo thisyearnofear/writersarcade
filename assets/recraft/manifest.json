@@ -1,0 +1,34 @@
+{
+  "account": "papaandthejimjams",
+  "style": {
+    "id": "30fedbf7-c504-4bb9-a3f1-5ca7a1f74162",
+    "name": "writersarcade-pulp-arcade",
+    "note": "Retro pulp comic cover: bold ink, halftone, off-register print, dark indigo + one neon accent. Reuse for artefact covers and OG art."
+  },
+  "files": {
+    "fallback-comic.webp": "Loading-reel fallback card \u2014 'A comic'. Served from public/title-cards/, referenced in domains/games/services/title-cards.service.ts fallbackTitleCards().",
+    "fallback-world.webp": "Loading-reel fallback card \u2014 'A 3D world'.",
+    "fallback-film.webp": "Loading-reel fallback card \u2014 'A film'.",
+    "covers/adventure.webp": "Pulp genre cover \u2014 Adventure. Fallback in GameCard/artifact hero via domains/games/utils/genre-cover.ts.",
+    "covers/action.webp": "Pulp genre cover \u2014 Action (hero leaps through explosion).",
+    "covers/strategy.webp": "Pulp genre cover \u2014 Strategy (chess king on war map).",
+    "covers/puzzle.webp": "Pulp genre cover \u2014 Puzzle (brass key over puzzle-gear maze).",
+    "covers/simulation.webp": "Pulp genre cover \u2014 Simulation (city under glass dome).",
+    "covers/noir.webp": "Pulp genre cover \u2014 fiction keyword fallback (noir/detective/crime/mystery).",
+    "covers/sci-fi.webp": "Pulp genre cover \u2014 fiction keyword fallback (sci-fi/space/robot).",
+    "covers/fantasy.webp": "Pulp genre cover \u2014 fiction keyword fallback (fantasy/magic/dragon).",
+    "covers/horror.webp": "Pulp genre cover \u2014 fiction keyword fallback (horror/ghost/spooky).",
+    "covers/romance.webp": "Pulp genre cover \u2014 fiction keyword fallback (romance/love).",
+    "stamps/minted.svg": "MINTED certificate stamp (transparent bg) \u2014 rotated overlay on artifact hero when hasMintRecord.",
+    "mascot/archivist.webp": "The Archivist \u2014 pulp arcade keeper mascot. EmptyState image prop (components/ui/empty-state.tsx), used by game-grid empty state.",
+    "badges/new-issue.webp": "NEW ISSUE! pulp starburst \u2014 on GameCard when createdAt < 14 days.",
+    "badges/secret-panel.webp": "SECRET PANEL pulp starburst \u2014 on GameCard when secretPanelGenerated."
+  },
+  "copied_to": [
+    "public/title-cards/",
+    "public/covers/",
+    "public/stamps/",
+    "public/mascot/",
+    "public/badges/"
+  ]
+}

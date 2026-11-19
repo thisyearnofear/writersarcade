@@ -29,6 +29,7 @@ import type { Game, SavedGamePanel } from '../types'
 import { getWriterCoinById, MUSD_CONFIG } from '@/lib/writer-coins'
 import { parsePanel, pullQuote } from '../utils/text-parser'
 import { coverFocalClass, getPanelMedia } from '../utils/artifact-media'
+import { genreCoverUrl } from '../utils/genre-cover'
 import { RelatedPlayStrip } from './related-play-strip'
 import { trackEvent } from '@/services/analytics'
 import { Button } from '@/components/ui/button'
@@ -216,9 +217,9 @@ export function GameArtifactView({ game, currentUserWallet }: GameArtifactViewPr
   return (
     <main className="min-h-screen overflow-x-clip bg-black text-white">
       <section className="relative min-h-[72vh] overflow-hidden">
-        {game.imageUrl ? (
+        {game.imageUrl || genreCoverUrl(game.genre) ? (
           <img
-            src={game.imageUrl}
+            src={game.imageUrl || genreCoverUrl(game.genre)!}
             alt=""
             className="absolute inset-0 h-full w-full object-cover"
           />
@@ -231,6 +232,15 @@ export function GameArtifactView({ game, currentUserWallet }: GameArtifactViewPr
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-black/25" />
+
+        {hasMintRecord && (
+          // eslint-disable-next-line @next/next/no-img-element -- static certificate stamp
+          <img
+            src="/stamps/minted.svg"
+            alt="Minted"
+            className="pointer-events-none absolute right-6 top-20 w-28 rotate-12 opacity-90 drop-shadow-lg sm:w-36"
+          />
+        )}
 
         <div className="relative mx-auto flex min-h-[72vh] max-w-6xl flex-col justify-between px-4 py-5">
           <div className="flex items-center justify-between">

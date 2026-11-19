@@ -102,9 +102,9 @@ export async function collectTitleCards(excludeTitle?: string): Promise<Artefact
  */
 export function fallbackTitleCards(): ArtefactCover[] {
   return [
-    { imageUrl: null, title: 'A comic', label: 'Interactive comic', accent: '#ffcc00' },
-    { imageUrl: null, title: 'A 3D world', label: 'Walkable diorama', accent: '#34d399' },
-    { imageUrl: null, title: 'A film', label: 'Your run, rendered', accent: '#60a5fa' },
+    { imageUrl: '/title-cards/fallback-comic.webp', title: 'A comic', label: 'Interactive comic', accent: '#ffcc00' },
+    { imageUrl: '/title-cards/fallback-world.webp', title: 'A 3D world', label: 'Walkable diorama', accent: '#34d399' },
+    { imageUrl: '/title-cards/fallback-film.webp', title: 'A film', label: 'Your run, rendered', accent: '#60a5fa' },
   ]
 }
 

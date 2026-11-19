@@ -8,6 +8,8 @@ import { cn } from '@/lib/utils'
 
 interface EmptyStateProps {
   icon?: LucideIcon
+  /** Static illustration shown instead of the icon (e.g. the Archivist mascot). */
+  image?: { src: string; className?: string }
   title: string
   description?: string
   action?: {
@@ -23,7 +25,7 @@ interface EmptyStateProps {
  * - Uses semantic colors instead of hardcoded gray values
  * - Supports custom className for layout adjustments
  */
-export function EmptyState({ icon: Icon, title, description, action, className }: EmptyStateProps) {
+export function EmptyState({ icon: Icon, image, title, description, action, className }: EmptyStateProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -33,7 +35,10 @@ export function EmptyState({ icon: Icon, title, description, action, className }
         className
       )}
     >
-      {Icon && (
+      {image ? (
+        // eslint-disable-next-line @next/next/no-img-element -- static illustration
+        <img src={image.src} alt="" className={cn("mb-4 w-36", image.className)} />
+      ) : Icon && (
         <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
           <Icon className="w-8 h-8 text-muted-foreground" />
         </div>

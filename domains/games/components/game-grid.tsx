@@ -146,6 +146,7 @@ export function GameGrid({
     return (
       <EmptyState
         icon={isFiltered ? SearchX : Gamepad2}
+        image={isFiltered ? undefined : { src: '/mascot/archivist.webp' }}
         title={title}
         description={description}
         action={{ label: emptyActionLabel, href: emptyActionHref }}
@@ -188,6 +189,8 @@ export function GameGrid({
             lastPlayedAt={game.lastPlayedAt ? new Date(game.lastPlayedAt).toISOString() : null}
             hasAnimation={game.videoUpsellStatus === 'completed'}
             artifactBadges={game.artifactBadges}
+            createdAt={game.createdAt}
+            secretPanelGenerated={game.secretPanelGenerated}
           />
         </motion.div>
       ))}
